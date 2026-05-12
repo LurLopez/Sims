@@ -1,0 +1,18 @@
+[gd_scene load_steps=3 format=3 uid="uid://dpe8g375fh48v"]
+
+[ext_resource type="Script" uid="uid://dv4iby553igxj" path="res://Scripts/Globales/Menu.gd" id="1_b4wyv"]
+[ext_resource type="Script" uid="uid://bf811v0ko576d" path="res://Scripts/Logica/Menu/Boton_Escena_Principal/Boton_Escen_Principal.gd" id="2_1iyu4"]
+
+[node name="Menu" type="Node2D"]
+script = ExtResource("1_b4wyv")
+
+[node name="Boton_Escena_Principal" type="Button" parent="."]
+offset_left = 265.0
+offset_top = 915.0
+offset_right = 462.0
+offset_bottom = 1044.0
+text = "EMPEZAR
+"
+script = ExtResource("2_1iyu4")
+
+[connection signal="pressed" from="Boton_Escena_Principal" to="Boton_Escena_Principal" method="_on_pressed"]

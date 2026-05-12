@@ -1,0 +1,949 @@
+[gd_scene load_steps=18 format=3 uid="uid://1rnm0dk8tc50"]
+
+[ext_resource type="Script" uid="uid://c5mbdpn1a1kg3" path="res://Scripts/Globales/Script_Principal.gd" id="1_fcut6"]
+[ext_resource type="Texture2D" uid="uid://xv1rubod4qfa" path="res://Imagenes/Juego/Icono_Habilidades.png" id="4_i2k83"]
+[ext_resource type="Texture2D" uid="uid://c4rpu3q2g06tp" path="res://Imagenes/Juego/Icono_Progreso.png" id="5_rkwud"]
+[ext_resource type="Texture2D" uid="uid://cvxbjcsi2w8i7" path="res://Imagenes/Juego/Icono_Salud.png" id="6_3gpo3"]
+[ext_resource type="Texture2D" uid="uid://bsxr5ol28m753" path="res://Imagenes/Juego/Icono_Actividades.png" id="6_4nwi6"]
+[ext_resource type="Texture2D" uid="uid://c1ov6vpgx1hj3" path="res://Imagenes/Juego/fondoa.jpg" id="7_ry1og"]
+[ext_resource type="Texture2D" uid="uid://bjj4duehmq3fq" path="res://Imagenes/Juego/Flecha.png" id="8_8fp1q"]
+[ext_resource type="Texture2D" uid="uid://bron46wux6ffn" path="res://Imagenes/Juego/Icono_Moneda.png" id="9_qavxk"]
+[ext_resource type="Texture2D" uid="uid://b3peknp6wp5q3" path="res://Imagenes/Juego/Flecha_Atras.png" id="10_gm38p"]
+[ext_resource type="FontFile" uid="uid://cv7qxhihm0bbj" path="res://Fuentes/Call of Ops Duty.otf" id="10_m1ee0"]
+[ext_resource type="Theme" uid="uid://cl8a4xknfugec" path="res://Imagenes/Juego/Horario/Rojo.tres" id="11_gahox"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_fi1h3"]
+font_size = 40
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_w1o68"]
+bg_color = Color(0, 1, 0, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_lri7o"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_jq3s2"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_p2sou"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_o7et2"]
+
+[node name="Node2D" type="Node2D"]
+script = ExtResource("1_fcut6")
+
+[node name="Barra_Abajo" type="HBoxContainer" parent="."]
+custom_minimum_size = Vector2(150, 150)
+offset_top = 1050.0
+offset_right = 720.0
+offset_bottom = 1250.0
+theme_override_constants/separation = 20
+alignment = 1
+metadata/_edit_lock_ = true
+
+[node name="Boton_Habilidades" type="Button" parent="Barra_Abajo"]
+custom_minimum_size = Vector2(150, 150)
+layout_mode = 2
+size_flags_stretch_ratio = 6.68
+theme_override_constants/h_separation = 0
+icon = ExtResource("4_i2k83")
+flat = true
+expand_icon = true
+
+[node name="Boton_Progreso" type="Button" parent="Barra_Abajo"]
+custom_minimum_size = Vector2(150, 150)
+layout_mode = 2
+text = "
+"
+icon = ExtResource("5_rkwud")
+flat = true
+expand_icon = true
+
+[node name="Boton_Actividades" type="Button" parent="Barra_Abajo"]
+custom_minimum_size = Vector2(150, 150)
+layout_mode = 2
+text = "
+"
+icon = ExtResource("6_4nwi6")
+flat = true
+expand_icon = true
+
+[node name="Boton_Necesidades_Basicas" type="Button" parent="Barra_Abajo"]
+custom_minimum_size = Vector2(150, 150)
+layout_mode = 2
+text = "
+"
+icon = ExtResource("6_3gpo3")
+flat = true
+expand_icon = true
+
+[node name="Fondo" type="Sprite2D" parent="."]
+z_index = -9
+z_as_relative = false
+position = Vector2(360, 640)
+scale = Vector2(1.17647, 3.13725)
+texture = ExtResource("7_ry1og")
+
+[node name="Progreso" type="Control" parent="."]
+visible = false
+layout_mode = 3
+anchors_preset = 0
+
+[node name="Progreso_Barra" type="VBoxContainer" parent="Progreso"]
+layout_mode = 0
+offset_left = 270.0
+offset_top = 350.0
+offset_right = 670.0
+offset_bottom = 800.0
+theme_override_constants/separation = 50
+
+[node name="Deporte" type="ProgressBar" parent="Progreso/Progreso_Barra"]
+custom_minimum_size = Vector2(150, 50)
+layout_mode = 2
+value = 50.0
+metadata/_edit_lock_ = true
+
+[node name="Academico" type="ProgressBar" parent="Progreso/Progreso_Barra"]
+custom_minimum_size = Vector2(150, 50)
+layout_mode = 2
+value = 30.0
+
+[node name="Manualidades" type="ProgressBar" parent="Progreso/Progreso_Barra"]
+custom_minimum_size = Vector2(150, 50)
+layout_mode = 2
+value = 30.0
+
+[node name="Manualidades2" type="ProgressBar" parent="Progreso/Progreso_Barra"]
+custom_minimum_size = Vector2(150, 50)
+layout_mode = 2
+value = 30.0
+
+[node name="Manualidades3" type="ProgressBar" parent="Progreso/Progreso_Barra"]
+custom_minimum_size = Vector2(150, 50)
+layout_mode = 2
+value = 30.0
+
+[node name="Flecha_Arriba" type="Button" parent="Progreso"]
+visible = false
+custom_minimum_size = Vector2(100, 100)
+layout_mode = 0
+offset_left = 420.0
+offset_top = 300.0
+offset_right = 520.0
+offset_bottom = 400.0
+rotation = 4.71239
+icon = ExtResource("8_8fp1q")
+flat = true
+expand_icon = true
+
+[node name="Flecha_Abajo" type="Button" parent="Progreso"]
+visible = false
+custom_minimum_size = Vector2(100, 100)
+layout_mode = 0
+offset_left = 520.0
+offset_top = 850.0
+offset_right = 620.0
+offset_bottom = 950.0
+rotation = -4.71239
+icon = ExtResource("8_8fp1q")
+flat = true
+expand_icon = true
+
+[node name="Progreso_Texto" type="VBoxContainer" parent="Progreso"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 1
+anchors_preset = -1
+offset_top = 356.0
+offset_right = 260.0
+offset_bottom = 806.0
+theme_override_constants/separation = 57
+
+[node name="DEPORTE" type="Label" parent="Progreso/Progreso_Texto"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("10_m1ee0")
+text = "DEPORTE"
+label_settings = SubResource("LabelSettings_fi1h3")
+horizontal_alignment = 2
+
+[node name="ACADEMIA" type="Label" parent="Progreso/Progreso_Texto"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("10_m1ee0")
+text = "ACADEMIA"
+label_settings = SubResource("LabelSettings_fi1h3")
+horizontal_alignment = 2
+
+[node name="MANUALIDADES" type="Label" parent="Progreso/Progreso_Texto"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("10_m1ee0")
+text = "MANUALIDADES"
+label_settings = SubResource("LabelSettings_fi1h3")
+horizontal_alignment = 2
+
+[node name="Moneda" type="Sprite2D" parent="."]
+position = Vector2(659.551, 81.7)
+scale = Vector2(0.21016, 0.207353)
+texture = ExtResource("9_qavxk")
+
+[node name="Necesidades_Basicas" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="Necesidades_Basicas_Barra" type="VBoxContainer" parent="Necesidades_Basicas"]
+layout_mode = 0
+offset_left = 270.0
+offset_top = 350.0
+offset_right = 670.0
+offset_bottom = 800.0
+theme_override_constants/separation = 50
+
+[node name="Salud_Fisica" type="ProgressBar" parent="Necesidades_Basicas/Necesidades_Basicas_Barra"]
+custom_minimum_size = Vector2(150, 50)
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_styles/fill = SubResource("StyleBoxFlat_w1o68")
+value = 50.0
+metadata/_edit_lock_ = true
+
+[node name="Salud_Mental" type="ProgressBar" parent="Necesidades_Basicas/Necesidades_Basicas_Barra"]
+custom_minimum_size = Vector2(150, 50)
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_styles/fill = SubResource("StyleBoxFlat_lri7o")
+value = 30.0
+
+[node name="Hambre" type="ProgressBar" parent="Necesidades_Basicas/Necesidades_Basicas_Barra"]
+custom_minimum_size = Vector2(150, 50)
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_styles/fill = SubResource("StyleBoxFlat_jq3s2")
+value = 30.0
+
+[node name="Descanso" type="ProgressBar" parent="Necesidades_Basicas/Necesidades_Basicas_Barra"]
+custom_minimum_size = Vector2(150, 50)
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_styles/fill = SubResource("StyleBoxFlat_p2sou")
+value = 30.0
+
+[node name="Higiene" type="ProgressBar" parent="Necesidades_Basicas/Necesidades_Basicas_Barra"]
+custom_minimum_size = Vector2(150, 50)
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_styles/fill = SubResource("StyleBoxFlat_o7et2")
+value = 30.0
+
+[node name="Necesidades_Basicas_Texto" type="VBoxContainer" parent="Necesidades_Basicas"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 1
+anchors_preset = -1
+offset_top = 356.0
+offset_right = 260.0
+offset_bottom = 806.0
+theme_override_constants/separation = 57
+
+[node name="SALUD_FISICA" type="Label" parent="Necesidades_Basicas/Necesidades_Basicas_Texto"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("10_m1ee0")
+text = "SALUD FISICA"
+label_settings = SubResource("LabelSettings_fi1h3")
+horizontal_alignment = 2
+
+[node name="SALUD_MENTAL" type="Label" parent="Necesidades_Basicas/Necesidades_Basicas_Texto"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("10_m1ee0")
+text = "SALUD MENTAL"
+label_settings = SubResource("LabelSettings_fi1h3")
+horizontal_alignment = 2
+
+[node name="HAMBRE" type="Label" parent="Necesidades_Basicas/Necesidades_Basicas_Texto"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("10_m1ee0")
+text = "HAMBRE"
+label_settings = SubResource("LabelSettings_fi1h3")
+horizontal_alignment = 2
+
+[node name="DESCANSO" type="Label" parent="Necesidades_Basicas/Necesidades_Basicas_Texto"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("10_m1ee0")
+text = "DESCANSO"
+label_settings = SubResource("LabelSettings_fi1h3")
+horizontal_alignment = 2
+
+[node name="HIGIENE" type="Label" parent="Necesidades_Basicas/Necesidades_Basicas_Texto"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("10_m1ee0")
+text = "HIGIENE"
+label_settings = SubResource("LabelSettings_fi1h3")
+horizontal_alignment = 2
+
+[node name="Trabajo" type="Control" parent="."]
+visible = false
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="Actividades_Trabajo_Opciones2" type="VBoxContainer" parent="Trabajo"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 0
+offset_left = 135.0
+offset_top = 450.0
+offset_right = 585.0
+offset_bottom = 732.0
+theme_override_constants/separation = 57
+
+[node name="COMIDA_RAPIDA" type="Button" parent="Trabajo/Actividades_Trabajo_Opciones2"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_fonts/font = ExtResource("10_m1ee0")
+theme_override_font_sizes/font_size = 45
+text = "NOMINA"
+
+[node name="CARPINTERO" type="Button" parent="Trabajo/Actividades_Trabajo_Opciones2"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_fonts/font = ExtResource("10_m1ee0")
+theme_override_font_sizes/font_size = 45
+text = "TEMPORAL"
+
+[node name="Actividades_Trabajo_Temporal_Opciones" type="VBoxContainer" parent="Trabajo"]
+visible = false
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+offset_left = 135.0
+offset_top = 450.0
+offset_right = 585.0
+offset_bottom = 732.0
+theme_override_constants/separation = 57
+
+[node name="MARATHON" type="Button" parent="Trabajo/Actividades_Trabajo_Temporal_Opciones"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_fonts/font = ExtResource("10_m1ee0")
+theme_override_font_sizes/font_size = 45
+text = "MARATHON"
+
+[node name="Actividades_Trabajo_Nomina_Opciones" type="VBoxContainer" parent="Trabajo"]
+visible = false
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+offset_left = 135.0
+offset_top = 450.0
+offset_right = 585.0
+offset_bottom = 732.0
+theme_override_constants/separation = 57
+
+[node name="COMIDA_RAPIDA" type="Button" parent="Trabajo/Actividades_Trabajo_Nomina_Opciones"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_fonts/font = ExtResource("10_m1ee0")
+theme_override_font_sizes/font_size = 45
+text = "COMIDA_RAPIDA"
+
+[node name="CARPINTERO" type="Button" parent="Trabajo/Actividades_Trabajo_Nomina_Opciones"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_fonts/font = ExtResource("10_m1ee0")
+theme_override_font_sizes/font_size = 45
+text = "CARPINTERO"
+
+[node name="CIENTIFICO" type="Button" parent="Trabajo/Actividades_Trabajo_Nomina_Opciones"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_fonts/font = ExtResource("10_m1ee0")
+theme_override_font_sizes/font_size = 45
+text = "CIENTIFICO"
+
+[node name="Actividades" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="Elegir_Actividad" type="Control" parent="Actividades"]
+layout_mode = 3
+anchors_preset = 0
+
+[node name="Flecha_Arriba" type="Button" parent="Actividades/Elegir_Actividad"]
+visible = false
+custom_minimum_size = Vector2(100, 100)
+layout_mode = 0
+offset_left = 310.0
+offset_top = 300.0
+offset_right = 410.0
+offset_bottom = 400.0
+rotation = 4.71239
+icon = ExtResource("8_8fp1q")
+flat = true
+expand_icon = true
+
+[node name="Flecha_Abajo" type="Button" parent="Actividades/Elegir_Actividad"]
+visible = false
+custom_minimum_size = Vector2(100, 100)
+layout_mode = 0
+offset_left = 410.0
+offset_top = 850.0
+offset_right = 510.0
+offset_bottom = 950.0
+rotation = -4.71239
+icon = ExtResource("8_8fp1q")
+flat = true
+expand_icon = true
+
+[node name="Flecha_Atras" type="Button" parent="Actividades/Elegir_Actividad"]
+custom_minimum_size = Vector2(100, 100)
+layout_mode = 0
+offset_left = 220.0
+offset_top = 300.0
+offset_right = 320.0
+offset_bottom = 400.0
+rotation = 3.14159
+icon = ExtResource("10_gm38p")
+flat = true
+expand_icon = true
+
+[node name="Tipos_De_Actividades" type="VBoxContainer" parent="Actividades/Elegir_Actividad"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 0
+offset_left = 116.0
+offset_top = 351.0
+offset_right = 640.0
+offset_bottom = 805.0
+theme_override_constants/separation = 57
+
+[node name="Temporales" type="Button" parent="Actividades/Elegir_Actividad/Tipos_De_Actividades"]
+visible = false
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_fonts/font = ExtResource("10_m1ee0")
+theme_override_font_sizes/font_size = 45
+text = "ACTIVIDADES TEMPORALES"
+
+[node name="Fijas" type="Button" parent="Actividades/Elegir_Actividad/Tipos_De_Actividades"]
+visible = false
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_fonts/font = ExtResource("10_m1ee0")
+theme_override_font_sizes/font_size = 45
+text = "ACTIVIDADES FIJAS
+"
+
+[node name="Temporales_Opciones" type="VBoxContainer" parent="Actividades/Elegir_Actividad/Tipos_De_Actividades"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+theme_override_constants/separation = 57
+
+[node name="Necesidades_Basicas" type="Button" parent="Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_fonts/font = ExtResource("10_m1ee0")
+theme_override_font_sizes/font_size = 45
+text = "NECESIDADES_BASICAS"
+
+[node name="Progreso" type="Button" parent="Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_fonts/font = ExtResource("10_m1ee0")
+theme_override_font_sizes/font_size = 45
+text = "PROGRESO"
+
+[node name="Especiales" type="Button" parent="Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_fonts/font = ExtResource("10_m1ee0")
+theme_override_font_sizes/font_size = 45
+text = "TRABAJO"
+
+[node name="Progreso_Opciones" type="VBoxContainer" parent="Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones"]
+visible = false
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+theme_override_constants/separation = 57
+
+[node name="Salir_A_Correr" type="Button" parent="Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones/Progreso_Opciones"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_fonts/font = ExtResource("10_m1ee0")
+theme_override_font_sizes/font_size = 45
+text = "SALIR A CORRER"
+
+[node name="Estudiar" type="Button" parent="Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones/Progreso_Opciones"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_fonts/font = ExtResource("10_m1ee0")
+theme_override_font_sizes/font_size = 45
+text = "ESTUDIAR"
+
+[node name="Manualidades" type="Button" parent="Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones/Progreso_Opciones"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_fonts/font = ExtResource("10_m1ee0")
+theme_override_font_sizes/font_size = 45
+text = "PRACTICAR MANUALIDADES"
+
+[node name="Necesidades_Basicas_Opciones" type="VBoxContainer" parent="Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones"]
+visible = false
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+theme_override_constants/separation = 57
+
+[node name="Duchar" type="Button" parent="Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones/Necesidades_Basicas_Opciones"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_fonts/font = ExtResource("10_m1ee0")
+theme_override_font_sizes/font_size = 45
+text = "DUCHAR"
+
+[node name="Dormir" type="Button" parent="Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones/Necesidades_Basicas_Opciones"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_fonts/font = ExtResource("10_m1ee0")
+theme_override_font_sizes/font_size = 45
+text = "DORMIR"
+
+[node name="Comer" type="Button" parent="Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones/Necesidades_Basicas_Opciones"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_fonts/font = ExtResource("10_m1ee0")
+theme_override_font_sizes/font_size = 45
+text = "COMER"
+
+[node name="Ver_La_Television" type="Button" parent="Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones/Necesidades_Basicas_Opciones"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_fonts/font = ExtResource("10_m1ee0")
+theme_override_font_sizes/font_size = 45
+text = "VER LA TELEVISION"
+
+[node name="Horario_Semanal" type="Control" parent="Actividades"]
+layout_mode = 3
+anchors_preset = 0
+offset_top = 123.0
+offset_right = 719.0
+offset_bottom = 979.0
+
+[node name="OPCIONES_CALENDARIO" type="Control" parent="Actividades/Horario_Semanal"]
+layout_mode = 3
+anchors_preset = 0
+offset_top = -123.0
+offset_right = 40.0
+offset_bottom = -83.0
+
+[node name="SIGUIENTE SEMANA" type="Button" parent="Actividades/Horario_Semanal/OPCIONES_CALENDARIO"]
+layout_mode = 0
+offset_left = 532.0
+offset_top = 944.0
+offset_right = 692.0
+offset_bottom = 1044.0
+text = "SIGUIENTE SEMANA"
+
+[node name="ANTERIOR SEMANA" type="Button" parent="Actividades/Horario_Semanal/OPCIONES_CALENDARIO"]
+layout_mode = 0
+offset_left = 26.0
+offset_top = 941.0
+offset_right = 185.0
+offset_bottom = 1052.0
+text = "ANTERIOR SEMANA
+"
+
+[node name="OCUPAR_ACTIVIDAD" type="Button" parent="Actividades/Horario_Semanal/OPCIONES_CALENDARIO"]
+layout_mode = 0
+offset_left = 259.0
+offset_top = 941.0
+offset_right = 446.0
+offset_bottom = 1001.0
+text = "HACER ACTIVIDAD
+"
+
+[node name="ELIMINAR_ACTIVIDAD" type="Button" parent="Actividades/Horario_Semanal/OPCIONES_CALENDARIO"]
+layout_mode = 0
+offset_left = 259.0
+offset_top = 941.0
+offset_right = 446.0
+offset_bottom = 1001.0
+text = "ELIMINAR ACTIVIDAD"
+
+[node name="Actividad_Texto" type="Label" parent="Actividades/Horario_Semanal/OPCIONES_CALENDARIO"]
+layout_mode = 0
+offset_left = 239.0
+offset_top = 1007.0
+offset_right = 475.0
+offset_bottom = 1075.0
+
+[node name="Cabezal_horario" type="HBoxContainer" parent="Actividades/Horario_Semanal"]
+custom_minimum_size = Vector2(674, 0)
+layout_mode = 0
+offset_left = 23.0
+offset_top = -62.0
+offset_right = 697.0
+offset_bottom = 3.0
+theme_override_constants/separation = 0
+
+[node name="Horario" type="Button" parent="Actividades/Horario_Semanal/Cabezal_horario"]
+custom_minimum_size = Vector2(100, 60)
+layout_mode = 2
+text = "Horario"
+
+[node name="Lunes" type="Button" parent="Actividades/Horario_Semanal/Cabezal_horario"]
+custom_minimum_size = Vector2(82, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Lunes"
+
+[node name="Martes" type="Button" parent="Actividades/Horario_Semanal/Cabezal_horario"]
+custom_minimum_size = Vector2(82, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Martes"
+
+[node name="Miercoles" type="Button" parent="Actividades/Horario_Semanal/Cabezal_horario"]
+custom_minimum_size = Vector2(82, 0)
+layout_mode = 2
+text = "Miercole
+"
+
+[node name="Jueves" type="Button" parent="Actividades/Horario_Semanal/Cabezal_horario"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Jueves"
+
+[node name="Viernes" type="Button" parent="Actividades/Horario_Semanal/Cabezal_horario"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Viernes"
+
+[node name="Sabado" type="Button" parent="Actividades/Horario_Semanal/Cabezal_horario"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Sabado"
+
+[node name="Domingo" type="Button" parent="Actividades/Horario_Semanal/Cabezal_horario"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Domingo"
+
+[node name="Mover_Vertical" type="ScrollContainer" parent="Actividades/Horario_Semanal"]
+layout_mode = 0
+offset_left = 23.0
+offset_right = 697.0
+offset_bottom = 816.0
+horizontal_scroll_mode = 0
+vertical_scroll_mode = 2
+
+[node name="Todo calendario" type="HBoxContainer" parent="Actividades/Horario_Semanal/Mover_Vertical"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 0
+
+[node name="Horario" type="VBoxContainer" parent="Actividades/Horario_Semanal/Mover_Vertical/Todo calendario"]
+custom_minimum_size = Vector2(70, 700)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 0
+
+[node name="Dias" type="HBoxContainer" parent="Actividades/Horario_Semanal/Mover_Vertical/Todo calendario"]
+custom_minimum_size = Vector2(500, 750)
+layout_mode = 2
+theme_override_constants/separation = 0
+alignment = 1
+
+[node name="Lunes" type="VBoxContainer" parent="Actividades/Horario_Semanal/Mover_Vertical/Todo calendario/Dias"]
+custom_minimum_size = Vector2(82, 0)
+layout_mode = 2
+theme = ExtResource("11_gahox")
+theme_override_constants/separation = 0
+
+[node name="Martes" type="VBoxContainer" parent="Actividades/Horario_Semanal/Mover_Vertical/Todo calendario/Dias"]
+custom_minimum_size = Vector2(82, 0)
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="Miercoles" type="VBoxContainer" parent="Actividades/Horario_Semanal/Mover_Vertical/Todo calendario/Dias"]
+custom_minimum_size = Vector2(82, 0)
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="Jueves" type="VBoxContainer" parent="Actividades/Horario_Semanal/Mover_Vertical/Todo calendario/Dias"]
+custom_minimum_size = Vector2(82, 0)
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="Viernes" type="VBoxContainer" parent="Actividades/Horario_Semanal/Mover_Vertical/Todo calendario/Dias"]
+custom_minimum_size = Vector2(82, 0)
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="Sabado" type="VBoxContainer" parent="Actividades/Horario_Semanal/Mover_Vertical/Todo calendario/Dias"]
+custom_minimum_size = Vector2(82, 0)
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="Domingo" type="VBoxContainer" parent="Actividades/Horario_Semanal/Mover_Vertical/Todo calendario/Dias"]
+custom_minimum_size = Vector2(82, 0)
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="Seleccionar_Horario" type="Control" parent="Actividades"]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 17.0
+offset_top = 545.0
+offset_right = 734.0
+offset_bottom = 866.0
+
+[node name="Inicio" type="Control" parent="Actividades/Seleccionar_Horario"]
+anchors_preset = 0
+offset_left = 40.0
+offset_top = 178.0
+offset_right = 400.0
+offset_bottom = 322.0
+
+[node name="Inicio_Texto" type="Label" parent="Actividades/Seleccionar_Horario/Inicio"]
+layout_mode = 0
+offset_left = 110.0
+offset_top = -112.0
+offset_right = 225.0
+offset_bottom = -89.0
+text = "Fecha de Inicio"
+
+[node name="Inicio_Hbox" type="HBoxContainer" parent="Actividades/Seleccionar_Horario/Inicio"]
+custom_minimum_size = Vector2(75, 0)
+layout_mode = 0
+offset_left = 21.0
+offset_top = -53.0
+offset_right = 149.0
+offset_bottom = 97.0
+theme_override_constants/separation = 10
+
+[node name="Dia_Vbox" type="VBoxContainer" parent="Actividades/Seleccionar_Horario/Inicio/Inicio_Hbox"]
+custom_minimum_size = Vector2(50, 0)
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="Boton_Arriba" type="Button" parent="Actividades/Seleccionar_Horario/Inicio/Inicio_Hbox/Dia_Vbox"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+text = "▲"
+
+[node name="Dia_Inicio" type="Label" parent="Actividades/Seleccionar_Horario/Inicio/Inicio_Hbox/Dia_Vbox"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+horizontal_alignment = 1
+
+[node name="Boton_Abajo" type="Button" parent="Actividades/Seleccionar_Horario/Inicio/Inicio_Hbox/Dia_Vbox"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+text = "▼"
+
+[node name="Espacio" type="Label" parent="Actividades/Seleccionar_Horario/Inicio/Inicio_Hbox"]
+custom_minimum_size = Vector2(10, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+horizontal_alignment = 1
+
+[node name="Hora_Vbox" type="VBoxContainer" parent="Actividades/Seleccionar_Horario/Inicio/Inicio_Hbox"]
+custom_minimum_size = Vector2(50, 0)
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="Boton_Arriba" type="Button" parent="Actividades/Seleccionar_Horario/Inicio/Inicio_Hbox/Hora_Vbox"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+text = "▲"
+
+[node name="Hora_Inicio" type="Label" parent="Actividades/Seleccionar_Horario/Inicio/Inicio_Hbox/Hora_Vbox"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+horizontal_alignment = 1
+
+[node name="Boton_Abajo" type="Button" parent="Actividades/Seleccionar_Horario/Inicio/Inicio_Hbox/Hora_Vbox"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+text = "▼"
+
+[node name="dos_puntos" type="Label" parent="Actividades/Seleccionar_Horario/Inicio/Inicio_Hbox"]
+custom_minimum_size = Vector2(0, 53)
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+text = ":"
+horizontal_alignment = 1
+
+[node name="Minuto_Vbox" type="VBoxContainer" parent="Actividades/Seleccionar_Horario/Inicio/Inicio_Hbox"]
+custom_minimum_size = Vector2(50, 0)
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="Boton_Arriba" type="Button" parent="Actividades/Seleccionar_Horario/Inicio/Inicio_Hbox/Minuto_Vbox"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+text = "▲"
+
+[node name="Minuto_Inicio" type="Label" parent="Actividades/Seleccionar_Horario/Inicio/Inicio_Hbox/Minuto_Vbox"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+horizontal_alignment = 1
+
+[node name="Boton_Abajo" type="Button" parent="Actividades/Seleccionar_Horario/Inicio/Inicio_Hbox/Minuto_Vbox"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+text = "▼"
+
+[node name="Final" type="Control" parent="Actividades/Seleccionar_Horario"]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 355.0
+offset_top = 177.0
+offset_right = 715.0
+offset_bottom = 416.0
+
+[node name="Final_Texto" type="Label" parent="Actividades/Seleccionar_Horario/Final"]
+layout_mode = 0
+offset_left = 69.0
+offset_top = -108.0
+offset_right = 184.0
+offset_bottom = -85.0
+text = "Fecha Final
+"
+
+[node name="Final_Hbox" type="HBoxContainer" parent="Actividades/Seleccionar_Horario/Final"]
+custom_minimum_size = Vector2(75, 0)
+layout_mode = 0
+offset_left = 21.0
+offset_top = -53.0
+offset_right = 149.0
+offset_bottom = 97.0
+theme_override_constants/separation = 10
+
+[node name="Dia_Vbox" type="VBoxContainer" parent="Actividades/Seleccionar_Horario/Final/Final_Hbox"]
+custom_minimum_size = Vector2(50, 0)
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="Boton_Arriba" type="Button" parent="Actividades/Seleccionar_Horario/Final/Final_Hbox/Dia_Vbox"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+text = "▲"
+
+[node name="Dia_Final" type="Label" parent="Actividades/Seleccionar_Horario/Final/Final_Hbox/Dia_Vbox"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+text = "S"
+horizontal_alignment = 1
+
+[node name="Boton_Abajo" type="Button" parent="Actividades/Seleccionar_Horario/Final/Final_Hbox/Dia_Vbox"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+text = "▼"
+
+[node name="Espacio" type="Label" parent="Actividades/Seleccionar_Horario/Final/Final_Hbox"]
+custom_minimum_size = Vector2(10, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+horizontal_alignment = 1
+
+[node name="Hora_Vbox" type="VBoxContainer" parent="Actividades/Seleccionar_Horario/Final/Final_Hbox"]
+custom_minimum_size = Vector2(50, 0)
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="Boton_Arriba" type="Button" parent="Actividades/Seleccionar_Horario/Final/Final_Hbox/Hora_Vbox"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+text = "▲"
+
+[node name="Hora_Final" type="Label" parent="Actividades/Seleccionar_Horario/Final/Final_Hbox/Hora_Vbox"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+horizontal_alignment = 1
+
+[node name="Boton_Abajo" type="Button" parent="Actividades/Seleccionar_Horario/Final/Final_Hbox/Hora_Vbox"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+text = "▼"
+
+[node name="dos_puntos" type="Label" parent="Actividades/Seleccionar_Horario/Final/Final_Hbox"]
+custom_minimum_size = Vector2(0, 53)
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+text = ":"
+horizontal_alignment = 1
+
+[node name="Minuto_Vbox" type="VBoxContainer" parent="Actividades/Seleccionar_Horario/Final/Final_Hbox"]
+custom_minimum_size = Vector2(50, 0)
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="Boton_Arriba" type="Button" parent="Actividades/Seleccionar_Horario/Final/Final_Hbox/Minuto_Vbox"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+text = "▲"
+
+[node name="Minuto_Final" type="Label" parent="Actividades/Seleccionar_Horario/Final/Final_Hbox/Minuto_Vbox"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+horizontal_alignment = 1
+
+[node name="Boton_Abajo" type="Button" parent="Actividades/Seleccionar_Horario/Final/Final_Hbox/Minuto_Vbox"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+text = "▼"
+
+[node name="Crear_Actividad" type="Button" parent="Actividades/Seleccionar_Horario"]
+visible = false
+layout_mode = 0
+offset_left = 217.0
+offset_top = 482.0
+offset_right = 449.0
+offset_bottom = 534.0
+text = "CREAR ACTIVIDAD"
+
+[connection signal="pressed" from="Barra_Abajo/Boton_Habilidades" to="." method="_on_boton_habilidades_pressed"]
+[connection signal="pressed" from="Barra_Abajo/Boton_Progreso" to="." method="_on_boton_progreso_pressed"]
+[connection signal="pressed" from="Barra_Abajo/Boton_Actividades" to="." method="_on_boton_actividades_pressed"]
+[connection signal="pressed" from="Barra_Abajo/Boton_Necesidades_Basicas" to="." method="_on_boton_necesidades_basicas_pressed"]
+[connection signal="pressed" from="Actividades/Elegir_Actividad/Flecha_Atras" to="." method="Pulsar_Flecha_Atras"]
+[connection signal="pressed" from="Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales" to="." method="_on_temporales_pressed"]
+[connection signal="pressed" from="Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones/Necesidades_Basicas" to="." method="Opciones_Actividades_Necesidades_Basicas"]
+[connection signal="pressed" from="Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones/Progreso" to="." method="Opciones_Actividades_Progreso"]
+[connection signal="pressed" from="Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones/Especiales" to="." method="_on_trabajo_pressed"]
+[connection signal="pressed" from="Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones/Progreso_Opciones/Salir_A_Correr" to="." method="Actividad_Terminada_Salir_A_Correr"]
+[connection signal="pressed" from="Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones/Progreso_Opciones/Estudiar" to="." method="Actividad_Terminada_Estudiar"]
+[connection signal="pressed" from="Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones/Progreso_Opciones/Manualidades" to="." method="Actividad_Terminada_Manualidades"]
+[connection signal="pressed" from="Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones/Necesidades_Basicas_Opciones/Duchar" to="." method="Actividad_Terminada_Duchar"]
+[connection signal="pressed" from="Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones/Necesidades_Basicas_Opciones/Dormir" to="." method="Actividad_Terminada_Dormir"]
+[connection signal="pressed" from="Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones/Necesidades_Basicas_Opciones/Comer" to="." method="Actividad_Terminada_Comer"]
+[connection signal="pressed" from="Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones/Necesidades_Basicas_Opciones/Ver_La_Television" to="." method="Actividad_Terminada_Ver_La_Television"]
+[connection signal="pressed" from="Actividades/Horario_Semanal/OPCIONES_CALENDARIO/SIGUIENTE SEMANA" to="." method="_on_siguiente_semana_pressed"]
+[connection signal="pressed" from="Actividades/Horario_Semanal/OPCIONES_CALENDARIO/ANTERIOR SEMANA" to="." method="_on_anterior_semana_pressed"]
+[connection signal="pressed" from="Actividades/Horario_Semanal/OPCIONES_CALENDARIO/OCUPAR_ACTIVIDAD" to="." method="_on_ocupar_actividad_pressed"]
+[connection signal="pressed" from="Actividades/Horario_Semanal/OPCIONES_CALENDARIO/ELIMINAR_ACTIVIDAD" to="." method="_on_eliminar_actividad_pressed"]
+[connection signal="pressed" from="Actividades/Seleccionar_Horario/Inicio/Inicio_Hbox/Dia_Vbox/Boton_Arriba" to="." method="Inicio_Dia_Arriba"]
+[connection signal="pressed" from="Actividades/Seleccionar_Horario/Inicio/Inicio_Hbox/Dia_Vbox/Boton_Abajo" to="." method="Inicio_Dia_Abajo"]
+[connection signal="pressed" from="Actividades/Seleccionar_Horario/Inicio/Inicio_Hbox/Hora_Vbox/Boton_Arriba" to="." method="Inicio_Hora_Arriba"]
+[connection signal="pressed" from="Actividades/Seleccionar_Horario/Inicio/Inicio_Hbox/Hora_Vbox/Boton_Abajo" to="." method="Inicio_Hora_Abajo"]
+[connection signal="pressed" from="Actividades/Seleccionar_Horario/Inicio/Inicio_Hbox/Minuto_Vbox/Boton_Arriba" to="." method="Inicio_Minuto_Arriba"]
+[connection signal="pressed" from="Actividades/Seleccionar_Horario/Inicio/Inicio_Hbox/Minuto_Vbox/Boton_Abajo" to="." method="Inicio_Minuto_Abajo"]
+[connection signal="pressed" from="Actividades/Seleccionar_Horario/Final/Final_Hbox/Dia_Vbox/Boton_Arriba" to="." method="Final_Dia_Arriba"]
+[connection signal="pressed" from="Actividades/Seleccionar_Horario/Final/Final_Hbox/Dia_Vbox/Boton_Abajo" to="." method="Final_Dia_Abajo"]
+[connection signal="pressed" from="Actividades/Seleccionar_Horario/Final/Final_Hbox/Hora_Vbox/Boton_Arriba" to="." method="Final_Hora_Arriba"]
+[connection signal="pressed" from="Actividades/Seleccionar_Horario/Final/Final_Hbox/Hora_Vbox/Boton_Abajo" to="." method="Final_Hora_Abajo"]
+[connection signal="pressed" from="Actividades/Seleccionar_Horario/Final/Final_Hbox/Minuto_Vbox/Boton_Arriba" to="." method="Final_Minuto_Arriba"]
+[connection signal="pressed" from="Actividades/Seleccionar_Horario/Final/Final_Hbox/Minuto_Vbox/Boton_Abajo" to="." method="Final_Minuto_Abajo"]
+[connection signal="pressed" from="Actividades/Seleccionar_Horario/Crear_Actividad" to="." method="_on_crear_actividad_pressed"]

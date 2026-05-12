@@ -1,0 +1,44 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=5
+
+[application]
+
+config/name="Sims"
+run/main_scene="res://Escenas/Menu/Menu.tscn"
+config/features=PackedStringArray("4.4", "Mobile")
+config/icon="res://icon.svg"
+
+[autoload]
+
+Variables_Dinamicas="*res://Scripts/Globales/Principales_Variables/Variables_Dinamicas.gd"
+Variables_Estaticas="*res://Scripts/Globales/Principales_Variables/Variables_Estaticas.gd"
+Guardar_Variables_Dinamicas="*res://Scripts/Otro/Guardar/Guardar_Variables_Dinamicas.gd"
+Guardar_Variables_Estaticas="*res://Scripts/Otro/Guardar/Guardar_Variables_Estaticas.gd"
+Funciones_Globales="*res://Scripts/Globales/Funciones_Globales.gd"
+Trabajo="*res://Scripts/Logica/Escena_Principal/Actividades/Trabajo/Trabajo.gd"
+Actividades="*res://Scripts/Logica/Escena_Principal/Actividades/Actividades.gd"
+Actividades_Habilidades="*res://Scripts/Logica/Escena_Principal/Actividades/Actividades_Habilidades.gd"
+Actividades_Necesidades_Basicas="*res://Scripts/Logica/Escena_Principal/Actividades/Actividades_Necesidades_Basicas.gd"
+Gestionar_Visibilidad="*res://Scripts/GUI/Escena_Principal/Gestionar_Visibilidad.gd"
+
+[display]
+
+window/size/viewport_width=720
+window/size/viewport_height=1280
+window/stretch/scale=0.77
+
+[input_devices]
+
+pointing/emulate_touch_from_mouse=true
+
+[rendering]
+
+renderer/rendering_method="mobile"
+textures/vram_compression/import_etc2_astc=true
