@@ -74,7 +74,7 @@ func Agregar_Bloques(mirar_semana,raiz):
 					estilo_pulsado.border_color = Color(0, 0, 0, 0)
 					
 					
-					if(libre):
+					if(libre==""):
 						estilo.bg_color = Color(0, 1, 0)   # verde
 						estilo_pulsado.bg_color= Color(0, 0.5, 0)  # Verde oscuro
 					else:
@@ -93,7 +93,7 @@ func Agregar_Bloques(mirar_semana,raiz):
 					if(libre!=matriz_bloques[j][i]):
 						
 						boton.custom_minimum_size=Vector2(0,10*(tamaño_bloque))
-						libre=!libre
+						libre=matriz_bloques[j][i]
 						tamaño_bloque=1
 						if(ultimo_diferente==false and j==287):
 							ultimo_diferente=true

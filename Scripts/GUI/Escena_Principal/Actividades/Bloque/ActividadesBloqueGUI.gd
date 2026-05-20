@@ -177,7 +177,7 @@ func click_bloque(boton,raiz):
 	comprobar_color_boton_seleccionado(boton,raiz)
 	comprobar_izquierda(boton,raiz)
 	comprobar_derecha(boton,raiz)
-	raiz.get_node("Actividades/Horario_Semanal/OPCIONES_CALENDARIO/Actividad_Texto").text=boton.get_meta("actividad")
+	raiz.get_node("Actividades/Horario_Semanal/OPCIONES_CALENDARIO/Actividad_Texto").text = boton.get_meta("actividad")
 func comprobar_izquierda(boton,raiz):
 	var comprobar_izq=true
 	var ver_dia=primer_dia_comprobar(boton,raiz)

@@ -121,18 +121,18 @@ func Devolver_Bloque_Matriz_Semana_(semana):
 		devolver_matriz.append([])
 		for j in range(columna):
 			devolver_matriz[i].append("")
-	
+
 	var minuto_principio=0
-	var dia_principio=0
-	dia_principio=semana*7
+	var dia_principio=semana*7
 	var dia_final=dia_principio+7
 	var dia_de_la_matriz=0
-	
+
 	while(dia_principio<dia_final):
-		var libre=Variables_Dinamicas.Matriz_Jugador[minuto_principio*5][dia_principio]
+		var libre=_Celda_A_Clave(Variables_Dinamicas.Matriz_Jugador[minuto_principio*5][dia_principio])
 		for i in range(0,5):
 			var buscar_minuto=minuto_principio*5+i
-			if (Variables_Dinamicas.Matriz_Jugador[buscar_minuto][dia_principio]=="Actividad_Aleatoria"):
+			var celda=Variables_Dinamicas.Matriz_Jugador[buscar_minuto][dia_principio]
+			if celda is String and celda=="Actividad_Aleatoria":
 				libre="Actividad_Aleatoria"
 		devolver_matriz[minuto_principio][dia_de_la_matriz]=libre
 		if(minuto_principio==287):
@@ -141,9 +141,15 @@ func Devolver_Bloque_Matriz_Semana_(semana):
 			dia_de_la_matriz+=1
 		else:
 			minuto_principio+=1
-	
-	
+
 	return devolver_matriz
+
+func _Celda_A_Clave(celda) -> String:
+	if celda is Actividad:
+		return celda.nombre
+	if celda is String:
+		return celda
+	return ""
 	
 
 
