@@ -23,7 +23,7 @@ func Ejecutar_Actividad_Progreso(sum_habilidades,indice_progreso,por_cuanto_ecua
 	if(por_cuanto_efecto!=0):
 		var max= Calcular_Max_Para_Numero_Aleatorio_Especifico(sum_habilidades,indice_progreso,por_cuanto_ecuacion)
 		var max_ajustado= floor(max/por_cuanto_efecto)
-		if(Funciones_Globales.Generar_Numero_Aleatorio_Entero_Es_Cero(max)):
+		if(Funciones_Globales.Generar_Numero_Aleatorio_Entero_Es_Cero(max_ajustado)):
 			Cambiar_Progreso(indice_progreso)
 
 
@@ -42,4 +42,4 @@ func Calcular_Max_Para_Numero_Aleatorio_Especifico(suma_habilidad,indice_progres
 
 
 func Calcular_Max_Para_Numero_Aleatorio_No_Especifico(suma_habilidad,indice_progreso):
-	Calcular_Max_Para_Numero_Aleatorio_Especifico(suma_habilidad,indice_progreso,5)
+	return Calcular_Max_Para_Numero_Aleatorio_Especifico(suma_habilidad,indice_progreso,5)

@@ -61,9 +61,11 @@ func Crear_Actividad_Aleatoria_Mas_De_30():
 	if(valor>=Variables_Estaticas.Actividades.size()):
 		if(personalidad=="Trabajador_Compulsivo"):
 			return "Estudiar"
-		if(personalidad=="Deportista"):
+		elif(personalidad=="Deportista"):
 			return "Salir_A_Correr"
-		if(personalidad=="Culo_Del_Sofa"):
+		elif(personalidad=="Culo_Del_Sofa"):
+			return "Ver_La_Television"
+		else:
 			return "Ver_La_Television"
 	else:
 		return Variables_Estaticas.Actividades[valor]
@@ -100,12 +102,17 @@ func Crear_Actividad(i,j,actividad):
 
 func Actualizar_Horario(minuto_actual):
 	var diferencia=minuto_actual-Variables_Dinamicas.Minute
-	
-	for i in range(0,diferencia+1):             #+1 para que cuando sea 00:00 por ejemplo, tambien ocupe la casilla numero 0. Si se quiere que cuando sea 00:01 cambiar la casilla 0, entonces hay que quitar ese +1.       
+
+	for i in range(0,diferencia+1):             #+1 para que cuando sea 00:00 por ejemplo, tambien ocupe la casilla numero 0. Si se quiere que cuando sea 00:01 cambiar la casilla 0, entonces hay que quitar ese +1.
 		#en _delta si quiere cambiar a como estaba antes, se tiene que hacer if(minuto_actual-Variables_Dinamicas.Minute!=0) para conseguir una mejor opcimizacion
-		if(Variables_Dinamicas.Matriz_Jugador[Variables_Dinamicas.Minute_Minute][Variables_Dinamicas.Minute_Day]==""):
+		var celda=Variables_Dinamicas.Matriz_Jugador[Variables_Dinamicas.Minute_Minute][Variables_Dinamicas.Minute_Day]
+		if celda==null or celda=="":
 			Variables_Dinamicas.Matriz_Jugador[Variables_Dinamicas.Minute_Minute][Variables_Dinamicas.Minute_Day]="Actividad_Aleatoria"
-		Actividades.Ejecutar_Actividad(Crear_Actividad_Aleatoria())
+			Actividades.Ejecutar_Actividad(Crear_Actividad_Aleatoria())
+		elif celda=="Actividad_Aleatoria":
+			Actividades.Ejecutar_Actividad(Crear_Actividad_Aleatoria())
+		else:
+			Actividades.Ejecutar_Actividad(celda.nombre_actividad)
 		
 		if(Variables_Dinamicas.Minute_Minute==1439):
 			Variables_Dinamicas.Minute_Day=Variables_Dinamicas.Minute_Day+1
