@@ -1,4 +1,4 @@
-[gd_scene load_steps=18 format=3 uid="uid://1rnm0dk8tc50"]
+[gd_scene load_steps=21 format=3 uid="uid://1rnm0dk8tc50"]
 
 [ext_resource type="Script" uid="uid://c5mbdpn1a1kg3" path="res://Scripts/Globales/Script_Principal.gd" id="1_fcut6"]
 [ext_resource type="Texture2D" uid="uid://xv1rubod4qfa" path="res://Imagenes/Juego/Icono_Habilidades.png" id="4_i2k83"]
@@ -12,19 +12,74 @@
 [ext_resource type="FontFile" uid="uid://cv7qxhihm0bbj" path="res://Fuentes/Call of Ops Duty.otf" id="10_m1ee0"]
 [ext_resource type="Theme" uid="uid://cl8a4xknfugec" path="res://Imagenes/Juego/Horario/Rojo.tres" id="11_gahox"]
 
+[sub_resource type="StyleBoxFlat" id="StyleBox_Button_Hover"]
+bg_color = Color(0.15, 0.65, 0.85, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.05, 0.35, 0.55, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_Button_Normal"]
+bg_color = Color(0.1, 0.55, 0.75, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.05, 0.35, 0.55, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
 [sub_resource type="LabelSettings" id="LabelSettings_fi1h3"]
 font_size = 40
 
+[sub_resource type="StyleBoxFlat" id="StyleBox_ProgressBar_Health"]
+bg_color = Color(0.3, 0.3, 0.3, 0.6)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_w1o68"]
-bg_color = Color(0, 1, 0, 1)
+bg_color = Color(0.8, 0.2, 0.2, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_lri7o"]
+bg_color = Color(0.6, 0.3, 0.8, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_jq3s2"]
+bg_color = Color(1, 0.7, 0.2, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_p2sou"]
+bg_color = Color(0.2, 0.7, 0.8, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_o7et2"]
+bg_color = Color(0.4, 0.8, 0.4, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
 
 [node name="Node2D" type="Node2D"]
 script = ExtResource("1_fcut6")
@@ -33,45 +88,43 @@ script = ExtResource("1_fcut6")
 custom_minimum_size = Vector2(150, 150)
 offset_top = 1050.0
 offset_right = 720.0
-offset_bottom = 1250.0
-theme_override_constants/separation = 20
+offset_bottom = 1280.0
+theme_override_constants/separation = 15
 alignment = 1
 metadata/_edit_lock_ = true
 
 [node name="Boton_Habilidades" type="Button" parent="Barra_Abajo"]
-custom_minimum_size = Vector2(150, 150)
+custom_minimum_size = Vector2(140, 140)
 layout_mode = 2
 size_flags_stretch_ratio = 6.68
 theme_override_constants/h_separation = 0
+theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
 icon = ExtResource("4_i2k83")
-flat = true
 expand_icon = true
 
 [node name="Boton_Progreso" type="Button" parent="Barra_Abajo"]
-custom_minimum_size = Vector2(150, 150)
+custom_minimum_size = Vector2(140, 140)
 layout_mode = 2
-text = "
-"
+theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
 icon = ExtResource("5_rkwud")
-flat = true
 expand_icon = true
 
 [node name="Boton_Actividades" type="Button" parent="Barra_Abajo"]
-custom_minimum_size = Vector2(150, 150)
+custom_minimum_size = Vector2(140, 140)
 layout_mode = 2
-text = "
-"
+theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
 icon = ExtResource("6_4nwi6")
-flat = true
 expand_icon = true
 
 [node name="Boton_Necesidades_Basicas" type="Button" parent="Barra_Abajo"]
-custom_minimum_size = Vector2(150, 150)
+custom_minimum_size = Vector2(140, 140)
 layout_mode = 2
-text = "
-"
+theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
 icon = ExtResource("6_3gpo3")
-flat = true
 expand_icon = true
 
 [node name="Fondo" type="Sprite2D" parent="."]
@@ -198,7 +251,8 @@ theme_override_constants/separation = 50
 [node name="Salud_Fisica" type="ProgressBar" parent="Necesidades_Basicas/Necesidades_Basicas_Barra"]
 custom_minimum_size = Vector2(150, 50)
 layout_mode = 2
-theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_styles/background = SubResource("StyleBox_ProgressBar_Health")
 theme_override_styles/fill = SubResource("StyleBoxFlat_w1o68")
 value = 50.0
 metadata/_edit_lock_ = true
@@ -206,28 +260,32 @@ metadata/_edit_lock_ = true
 [node name="Salud_Mental" type="ProgressBar" parent="Necesidades_Basicas/Necesidades_Basicas_Barra"]
 custom_minimum_size = Vector2(150, 50)
 layout_mode = 2
-theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_styles/background = SubResource("StyleBox_ProgressBar_Health")
 theme_override_styles/fill = SubResource("StyleBoxFlat_lri7o")
 value = 30.0
 
 [node name="Hambre" type="ProgressBar" parent="Necesidades_Basicas/Necesidades_Basicas_Barra"]
 custom_minimum_size = Vector2(150, 50)
 layout_mode = 2
-theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_styles/background = SubResource("StyleBox_ProgressBar_Health")
 theme_override_styles/fill = SubResource("StyleBoxFlat_jq3s2")
 value = 30.0
 
 [node name="Descanso" type="ProgressBar" parent="Necesidades_Basicas/Necesidades_Basicas_Barra"]
 custom_minimum_size = Vector2(150, 50)
 layout_mode = 2
-theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_styles/background = SubResource("StyleBox_ProgressBar_Health")
 theme_override_styles/fill = SubResource("StyleBoxFlat_p2sou")
 value = 30.0
 
 [node name="Higiene" type="ProgressBar" parent="Necesidades_Basicas/Necesidades_Basicas_Barra"]
 custom_minimum_size = Vector2(150, 50)
 layout_mode = 2
-theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_styles/background = SubResource("StyleBox_ProgressBar_Health")
 theme_override_styles/fill = SubResource("StyleBoxFlat_o7et2")
 value = 30.0
 
@@ -294,15 +352,21 @@ theme_override_constants/separation = 57
 [node name="COMIDA_RAPIDA" type="Button" parent="Trabajo/Actividades_Trabajo_Opciones2"]
 layout_mode = 2
 size_flags_vertical = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_fonts/font = ExtResource("10_m1ee0")
 theme_override_font_sizes/font_size = 45
+theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
 text = "NOMINA"
 
 [node name="CARPINTERO" type="Button" parent="Trabajo/Actividades_Trabajo_Opciones2"]
 layout_mode = 2
 size_flags_vertical = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_fonts/font = ExtResource("10_m1ee0")
 theme_override_font_sizes/font_size = 45
+theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
 text = "TEMPORAL"
 
 [node name="Actividades_Trabajo_Temporal_Opciones" type="VBoxContainer" parent="Trabajo"]
@@ -318,8 +382,11 @@ theme_override_constants/separation = 57
 [node name="MARATHON" type="Button" parent="Trabajo/Actividades_Trabajo_Temporal_Opciones"]
 layout_mode = 2
 size_flags_vertical = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_fonts/font = ExtResource("10_m1ee0")
 theme_override_font_sizes/font_size = 45
+theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
 text = "MARATHON"
 
 [node name="Actividades_Trabajo_Nomina_Opciones" type="VBoxContainer" parent="Trabajo"]
@@ -335,22 +402,31 @@ theme_override_constants/separation = 57
 [node name="COMIDA_RAPIDA" type="Button" parent="Trabajo/Actividades_Trabajo_Nomina_Opciones"]
 layout_mode = 2
 size_flags_vertical = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_fonts/font = ExtResource("10_m1ee0")
 theme_override_font_sizes/font_size = 45
+theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
 text = "COMIDA_RAPIDA"
 
 [node name="CARPINTERO" type="Button" parent="Trabajo/Actividades_Trabajo_Nomina_Opciones"]
 layout_mode = 2
 size_flags_vertical = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_fonts/font = ExtResource("10_m1ee0")
 theme_override_font_sizes/font_size = 45
+theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
 text = "CARPINTERO"
 
 [node name="CIENTIFICO" type="Button" parent="Trabajo/Actividades_Trabajo_Nomina_Opciones"]
 layout_mode = 2
 size_flags_vertical = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_fonts/font = ExtResource("10_m1ee0")
 theme_override_font_sizes/font_size = 45
+theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
 text = "CIENTIFICO"
 
 [node name="Actividades" type="Control" parent="."]
@@ -414,18 +490,23 @@ theme_override_constants/separation = 57
 visible = false
 layout_mode = 2
 size_flags_vertical = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_fonts/font = ExtResource("10_m1ee0")
 theme_override_font_sizes/font_size = 45
+theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
 text = "ACTIVIDADES TEMPORALES"
 
 [node name="Fijas" type="Button" parent="Actividades/Elegir_Actividad/Tipos_De_Actividades"]
 visible = false
 layout_mode = 2
 size_flags_vertical = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_fonts/font = ExtResource("10_m1ee0")
 theme_override_font_sizes/font_size = 45
-text = "ACTIVIDADES FIJAS
-"
+theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
+text = "ACTIVIDADES FIJAS"
 
 [node name="Temporales_Opciones" type="VBoxContainer" parent="Actividades/Elegir_Actividad/Tipos_De_Actividades"]
 custom_minimum_size = Vector2(0, 50)
@@ -435,22 +516,31 @@ theme_override_constants/separation = 57
 [node name="Necesidades_Basicas" type="Button" parent="Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones"]
 layout_mode = 2
 size_flags_vertical = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_fonts/font = ExtResource("10_m1ee0")
 theme_override_font_sizes/font_size = 45
+theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
 text = "NECESIDADES_BASICAS"
 
 [node name="Progreso" type="Button" parent="Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones"]
 layout_mode = 2
 size_flags_vertical = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_fonts/font = ExtResource("10_m1ee0")
 theme_override_font_sizes/font_size = 45
+theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
 text = "PROGRESO"
 
 [node name="Especiales" type="Button" parent="Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones"]
 layout_mode = 2
 size_flags_vertical = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_fonts/font = ExtResource("10_m1ee0")
 theme_override_font_sizes/font_size = 45
+theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
 text = "TRABAJO"
 
 [node name="Progreso_Opciones" type="VBoxContainer" parent="Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones"]
@@ -462,22 +552,31 @@ theme_override_constants/separation = 57
 [node name="Salir_A_Correr" type="Button" parent="Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones/Progreso_Opciones"]
 layout_mode = 2
 size_flags_vertical = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_fonts/font = ExtResource("10_m1ee0")
 theme_override_font_sizes/font_size = 45
+theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
 text = "SALIR A CORRER"
 
 [node name="Estudiar" type="Button" parent="Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones/Progreso_Opciones"]
 layout_mode = 2
 size_flags_vertical = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_fonts/font = ExtResource("10_m1ee0")
 theme_override_font_sizes/font_size = 45
+theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
 text = "ESTUDIAR"
 
 [node name="Manualidades" type="Button" parent="Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones/Progreso_Opciones"]
 layout_mode = 2
 size_flags_vertical = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_fonts/font = ExtResource("10_m1ee0")
 theme_override_font_sizes/font_size = 45
+theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
 text = "PRACTICAR MANUALIDADES"
 
 [node name="Necesidades_Basicas_Opciones" type="VBoxContainer" parent="Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones"]
@@ -489,29 +588,41 @@ theme_override_constants/separation = 57
 [node name="Duchar" type="Button" parent="Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones/Necesidades_Basicas_Opciones"]
 layout_mode = 2
 size_flags_vertical = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_fonts/font = ExtResource("10_m1ee0")
 theme_override_font_sizes/font_size = 45
+theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
 text = "DUCHAR"
 
 [node name="Dormir" type="Button" parent="Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones/Necesidades_Basicas_Opciones"]
 layout_mode = 2
 size_flags_vertical = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_fonts/font = ExtResource("10_m1ee0")
 theme_override_font_sizes/font_size = 45
+theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
 text = "DORMIR"
 
 [node name="Comer" type="Button" parent="Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones/Necesidades_Basicas_Opciones"]
 layout_mode = 2
 size_flags_vertical = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_fonts/font = ExtResource("10_m1ee0")
 theme_override_font_sizes/font_size = 45
+theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
 text = "COMER"
 
 [node name="Ver_La_Television" type="Button" parent="Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones/Necesidades_Basicas_Opciones"]
 layout_mode = 2
 size_flags_vertical = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_fonts/font = ExtResource("10_m1ee0")
 theme_override_font_sizes/font_size = 45
+theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
 text = "VER LA TELEVISION"
 
 [node name="Horario_Semanal" type="Control" parent="Actividades"]
@@ -534,6 +645,10 @@ offset_left = 532.0
 offset_top = 944.0
 offset_right = 692.0
 offset_bottom = 1044.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 35
+theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
 text = "SIGUIENTE SEMANA"
 
 [node name="ANTERIOR SEMANA" type="Button" parent="Actividades/Horario_Semanal/OPCIONES_CALENDARIO"]
@@ -542,8 +657,11 @@ offset_left = 26.0
 offset_top = 941.0
 offset_right = 185.0
 offset_bottom = 1052.0
-text = "ANTERIOR SEMANA
-"
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 35
+theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
+text = "ANTERIOR SEMANA"
 
 [node name="OCUPAR_ACTIVIDAD" type="Button" parent="Actividades/Horario_Semanal/OPCIONES_CALENDARIO"]
 layout_mode = 0
@@ -551,8 +669,11 @@ offset_left = 259.0
 offset_top = 941.0
 offset_right = 446.0
 offset_bottom = 1001.0
-text = "HACER ACTIVIDAD
-"
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 30
+theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
+text = "HACER ACTIVIDAD"
 
 [node name="ELIMINAR_ACTIVIDAD" type="Button" parent="Actividades/Horario_Semanal/OPCIONES_CALENDARIO"]
 layout_mode = 0
@@ -560,6 +681,10 @@ offset_left = 259.0
 offset_top = 941.0
 offset_right = 446.0
 offset_bottom = 1001.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 30
+theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
 text = "ELIMINAR ACTIVIDAD"
 
 [node name="Actividad_Texto" type="Label" parent="Actividades/Horario_Semanal/OPCIONES_CALENDARIO"]
@@ -581,44 +706,75 @@ theme_override_constants/separation = 0
 [node name="Horario" type="Button" parent="Actividades/Horario_Semanal/Cabezal_horario"]
 custom_minimum_size = Vector2(100, 60)
 layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 32
+theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
 text = "Horario"
 
 [node name="Lunes" type="Button" parent="Actividades/Horario_Semanal/Cabezal_horario"]
 custom_minimum_size = Vector2(82, 0)
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 28
+theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
 text = "Lunes"
 
 [node name="Martes" type="Button" parent="Actividades/Horario_Semanal/Cabezal_horario"]
 custom_minimum_size = Vector2(82, 0)
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 28
+theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
 text = "Martes"
 
 [node name="Miercoles" type="Button" parent="Actividades/Horario_Semanal/Cabezal_horario"]
 custom_minimum_size = Vector2(82, 0)
 layout_mode = 2
-text = "Miercole
-"
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 28
+theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
+text = "Miercoles"
 
 [node name="Jueves" type="Button" parent="Actividades/Horario_Semanal/Cabezal_horario"]
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 28
+theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
 text = "Jueves"
 
 [node name="Viernes" type="Button" parent="Actividades/Horario_Semanal/Cabezal_horario"]
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 28
+theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
 text = "Viernes"
 
 [node name="Sabado" type="Button" parent="Actividades/Horario_Semanal/Cabezal_horario"]
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 28
+theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
 text = "Sabado"
 
 [node name="Domingo" type="Button" parent="Actividades/Horario_Semanal/Cabezal_horario"]
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 28
+theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
 text = "Domingo"
 
 [node name="Mover_Vertical" type="ScrollContainer" parent="Actividades/Horario_Semanal"]
