@@ -1,4 +1,4 @@
-[gd_scene load_steps=21 format=3 uid="uid://1rnm0dk8tc50"]
+[gd_scene load_steps=26 format=3 uid="uid://1rnm0dk8tc50"]
 
 [ext_resource type="Script" uid="uid://c5mbdpn1a1kg3" path="res://Scripts/Globales/Script_Principal.gd" id="1_fcut6"]
 [ext_resource type="Texture2D" uid="uid://xv1rubod4qfa" path="res://Imagenes/Juego/Icono_Habilidades.png" id="4_i2k83"]
@@ -80,6 +80,64 @@ corner_radius_top_left = 10
 corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_Green_Hover"]
+bg_color = Color(0.18, 0.7, 0.25, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.05, 0.35, 0.1, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_Green_Normal"]
+bg_color = Color(0.12, 0.55, 0.18, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.05, 0.35, 0.1, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_Red_Hover"]
+bg_color = Color(0.82, 0.15, 0.12, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.4, 0.04, 0.04, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_Red_Normal"]
+bg_color = Color(0.65, 0.1, 0.08, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.4, 0.04, 0.04, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_Header_Normal"]
+bg_color = Color(0.42, 0.48, 0.56, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 2
+border_color = Color(0.28, 0.33, 0.4, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
 
 [node name="Node2D" type="Node2D"]
 script = ExtResource("1_fcut6")
@@ -628,162 +686,164 @@ text = "VER LA TELEVISION"
 [node name="Horario_Semanal" type="Control" parent="Actividades"]
 layout_mode = 3
 anchors_preset = 0
-offset_top = 123.0
-offset_right = 719.0
-offset_bottom = 979.0
+offset_right = 720.0
+offset_bottom = 1050.0
 
 [node name="OPCIONES_CALENDARIO" type="Control" parent="Actividades/Horario_Semanal"]
 layout_mode = 3
 anchors_preset = 0
-offset_top = -123.0
-offset_right = 40.0
-offset_bottom = -83.0
+offset_right = 720.0
+offset_bottom = 1050.0
 
 [node name="SIGUIENTE SEMANA" type="Button" parent="Actividades/Horario_Semanal/OPCIONES_CALENDARIO"]
 layout_mode = 0
-offset_left = 532.0
-offset_top = 944.0
-offset_right = 692.0
-offset_bottom = 1044.0
+offset_left = 368.0
+offset_top = 910.0
+offset_right = 712.0
+offset_bottom = 958.0
 theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 35
+theme_override_font_sizes/font_size = 26
 theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
 theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
 text = "SIGUIENTE SEMANA"
 
 [node name="ANTERIOR SEMANA" type="Button" parent="Actividades/Horario_Semanal/OPCIONES_CALENDARIO"]
 layout_mode = 0
-offset_left = 26.0
-offset_top = 941.0
-offset_right = 185.0
-offset_bottom = 1052.0
+offset_left = 8.0
+offset_top = 910.0
+offset_right = 352.0
+offset_bottom = 958.0
 theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 35
+theme_override_font_sizes/font_size = 26
 theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
 theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
 text = "ANTERIOR SEMANA"
 
 [node name="OCUPAR_ACTIVIDAD" type="Button" parent="Actividades/Horario_Semanal/OPCIONES_CALENDARIO"]
 layout_mode = 0
-offset_left = 259.0
-offset_top = 941.0
-offset_right = 446.0
-offset_bottom = 1001.0
+offset_left = 165.0
+offset_top = 965.0
+offset_right = 555.0
+offset_bottom = 1040.0
 theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 30
-theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
-theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
+theme_override_font_sizes/font_size = 28
+theme_override_styles/hover = SubResource("StyleBox_Green_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Green_Normal")
 text = "HACER ACTIVIDAD"
 
 [node name="ELIMINAR_ACTIVIDAD" type="Button" parent="Actividades/Horario_Semanal/OPCIONES_CALENDARIO"]
 layout_mode = 0
-offset_left = 259.0
-offset_top = 941.0
-offset_right = 446.0
-offset_bottom = 1001.0
+offset_left = 165.0
+offset_top = 965.0
+offset_right = 555.0
+offset_bottom = 1040.0
 theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 30
-theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
-theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
+theme_override_font_sizes/font_size = 28
+theme_override_styles/hover = SubResource("StyleBox_Red_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Red_Normal")
 text = "ELIMINAR ACTIVIDAD"
 
 [node name="Actividad_Texto" type="Label" parent="Actividades/Horario_Semanal/OPCIONES_CALENDARIO"]
 layout_mode = 0
-offset_left = 239.0
-offset_top = 1007.0
-offset_right = 475.0
-offset_bottom = 1075.0
+offset_left = 130.0
+offset_top = 865.0
+offset_right = 590.0
+offset_bottom = 908.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 26
+horizontal_alignment = 1
 
 [node name="Cabezal_horario" type="HBoxContainer" parent="Actividades/Horario_Semanal"]
 custom_minimum_size = Vector2(674, 0)
 layout_mode = 0
 offset_left = 23.0
-offset_top = -62.0
+offset_top = 55.0
 offset_right = 697.0
-offset_bottom = 3.0
+offset_bottom = 120.0
 theme_override_constants/separation = 0
 
 [node name="Horario" type="Button" parent="Actividades/Horario_Semanal/Cabezal_horario"]
-custom_minimum_size = Vector2(100, 60)
+custom_minimum_size = Vector2(90, 65)
 layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 32
-theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
-theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
-text = "Horario"
+theme_override_colors/font_color = Color(0.8, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 22
+theme_override_styles/hover = SubResource("StyleBox_Header_Normal")
+theme_override_styles/normal = SubResource("StyleBox_Header_Normal")
+text = "Hora"
 
 [node name="Lunes" type="Button" parent="Actividades/Horario_Semanal/Cabezal_horario"]
 custom_minimum_size = Vector2(82, 0)
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 28
-theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
-theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
-text = "Lunes"
+theme_override_colors/font_color = Color(0.8, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 20
+theme_override_styles/hover = SubResource("StyleBox_Header_Normal")
+theme_override_styles/normal = SubResource("StyleBox_Header_Normal")
+text = "L"
 
 [node name="Martes" type="Button" parent="Actividades/Horario_Semanal/Cabezal_horario"]
 custom_minimum_size = Vector2(82, 0)
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 28
-theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
-theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
-text = "Martes"
+theme_override_colors/font_color = Color(0.8, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 20
+theme_override_styles/hover = SubResource("StyleBox_Header_Normal")
+theme_override_styles/normal = SubResource("StyleBox_Header_Normal")
+text = "M"
 
 [node name="Miercoles" type="Button" parent="Actividades/Horario_Semanal/Cabezal_horario"]
 custom_minimum_size = Vector2(82, 0)
 layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 28
-theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
-theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
-text = "Miercoles"
+theme_override_colors/font_color = Color(0.8, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 20
+theme_override_styles/hover = SubResource("StyleBox_Header_Normal")
+theme_override_styles/normal = SubResource("StyleBox_Header_Normal")
+text = "X"
 
 [node name="Jueves" type="Button" parent="Actividades/Horario_Semanal/Cabezal_horario"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 28
-theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
-theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
-text = "Jueves"
+theme_override_colors/font_color = Color(0.8, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 20
+theme_override_styles/hover = SubResource("StyleBox_Header_Normal")
+theme_override_styles/normal = SubResource("StyleBox_Header_Normal")
+text = "J"
 
 [node name="Viernes" type="Button" parent="Actividades/Horario_Semanal/Cabezal_horario"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 28
-theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
-theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
-text = "Viernes"
+theme_override_colors/font_color = Color(0.8, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 20
+theme_override_styles/hover = SubResource("StyleBox_Header_Normal")
+theme_override_styles/normal = SubResource("StyleBox_Header_Normal")
+text = "V"
 
 [node name="Sabado" type="Button" parent="Actividades/Horario_Semanal/Cabezal_horario"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 28
-theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
-theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
-text = "Sabado"
+theme_override_colors/font_color = Color(0.8, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 20
+theme_override_styles/hover = SubResource("StyleBox_Header_Normal")
+theme_override_styles/normal = SubResource("StyleBox_Header_Normal")
+text = "S"
 
 [node name="Domingo" type="Button" parent="Actividades/Horario_Semanal/Cabezal_horario"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 28
-theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
-theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
-text = "Domingo"
+theme_override_colors/font_color = Color(0.8, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 20
+theme_override_styles/hover = SubResource("StyleBox_Header_Normal")
+theme_override_styles/normal = SubResource("StyleBox_Header_Normal")
+text = "D"
 
 [node name="Mover_Vertical" type="ScrollContainer" parent="Actividades/Horario_Semanal"]
 layout_mode = 0
 offset_left = 23.0
+offset_top = 120.0
 offset_right = 697.0
-offset_bottom = 816.0
+offset_bottom = 860.0
 horizontal_scroll_mode = 0
-vertical_scroll_mode = 2
+vertical_scroll_mode = 3
 
 [node name="Todo calendario" type="HBoxContainer" parent="Actividades/Horario_Semanal/Mover_Vertical"]
 layout_mode = 2
@@ -793,49 +853,55 @@ theme_override_constants/separation = 0
 [node name="Horario" type="VBoxContainer" parent="Actividades/Horario_Semanal/Mover_Vertical/Todo calendario"]
 custom_minimum_size = Vector2(70, 700)
 layout_mode = 2
-size_flags_horizontal = 3
 theme_override_constants/separation = 0
 
 [node name="Dias" type="HBoxContainer" parent="Actividades/Horario_Semanal/Mover_Vertical/Todo calendario"]
 custom_minimum_size = Vector2(500, 750)
 layout_mode = 2
+size_flags_horizontal = 3
 theme_override_constants/separation = 0
-alignment = 1
 
 [node name="Lunes" type="VBoxContainer" parent="Actividades/Horario_Semanal/Mover_Vertical/Todo calendario/Dias"]
 custom_minimum_size = Vector2(82, 0)
 layout_mode = 2
+size_flags_horizontal = 3
 theme = ExtResource("11_gahox")
 theme_override_constants/separation = 0
 
 [node name="Martes" type="VBoxContainer" parent="Actividades/Horario_Semanal/Mover_Vertical/Todo calendario/Dias"]
 custom_minimum_size = Vector2(82, 0)
 layout_mode = 2
+size_flags_horizontal = 3
 theme_override_constants/separation = 0
 
 [node name="Miercoles" type="VBoxContainer" parent="Actividades/Horario_Semanal/Mover_Vertical/Todo calendario/Dias"]
 custom_minimum_size = Vector2(82, 0)
 layout_mode = 2
+size_flags_horizontal = 3
 theme_override_constants/separation = 0
 
 [node name="Jueves" type="VBoxContainer" parent="Actividades/Horario_Semanal/Mover_Vertical/Todo calendario/Dias"]
 custom_minimum_size = Vector2(82, 0)
 layout_mode = 2
+size_flags_horizontal = 3
 theme_override_constants/separation = 0
 
 [node name="Viernes" type="VBoxContainer" parent="Actividades/Horario_Semanal/Mover_Vertical/Todo calendario/Dias"]
 custom_minimum_size = Vector2(82, 0)
 layout_mode = 2
+size_flags_horizontal = 3
 theme_override_constants/separation = 0
 
 [node name="Sabado" type="VBoxContainer" parent="Actividades/Horario_Semanal/Mover_Vertical/Todo calendario/Dias"]
 custom_minimum_size = Vector2(82, 0)
 layout_mode = 2
+size_flags_horizontal = 3
 theme_override_constants/separation = 0
 
 [node name="Domingo" type="VBoxContainer" parent="Actividades/Horario_Semanal/Mover_Vertical/Todo calendario/Dias"]
 custom_minimum_size = Vector2(82, 0)
 layout_mode = 2
+size_flags_horizontal = 3
 theme_override_constants/separation = 0
 
 [node name="Seleccionar_Horario" type="Control" parent="Actividades"]

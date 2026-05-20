@@ -1,5 +1,10 @@
 extends Node
 
+const COLOR_LIBRE   = Color(0.08, 0.65, 0.42, 1)
+const COLOR_OCUPADO = Color(0.75, 0.18, 0.2,  1)
+const COLOR_LIBRE_P   = Color(0.04, 0.38, 0.24, 1)
+const COLOR_OCUPADO_P = Color(0.42, 0.08, 0.1,  1)
+
 var bloque_columna
 
 var semana
@@ -30,21 +35,20 @@ func Añadir_Horas_Al_Horario():
 		
 		
 		var estilo = StyleBoxFlat.new()
-		# estilo.bg_color = Color(0.8, 0.8, 0.8)  Para poner un color al boton
+		estilo.bg_color = Color(0.42, 0.48, 0.56, 1)
 		estilo.corner_radius_top_left = 0
 		estilo.corner_radius_top_right = 0
 		estilo.corner_radius_bottom_left = 0
 		estilo.corner_radius_bottom_right = 0
-		
-		estilo.border_width_left = 1
+		estilo.border_width_left = 0
 		estilo.border_width_right = 1
-		estilo.border_width_bottom = 2
-		
-		estilo.border_color = Color.BLACK  
-		
-		
-		boton.add_theme_stylebox_override("normal",estilo)
+		estilo.border_width_bottom = 1
+		estilo.border_width_top = 0
+		estilo.border_color = Color(0.28, 0.33, 0.4, 1)
+		boton.add_theme_stylebox_override("normal", estilo)
 		boton.add_theme_stylebox_override("hover", estilo)
+		boton.add_theme_color_override("font_color", Color(0.95, 0.97, 1, 1))
+		boton.add_theme_font_size_override("font_size", 15)
 		boton.custom_minimum_size=Vector2(0,60)
 		bloque_columna.horario_columna.add_child(boton)
 func Agregar_Bloques(mirar_semana,raiz):
@@ -75,11 +79,11 @@ func Agregar_Bloques(mirar_semana,raiz):
 					
 					
 					if(libre==""):
-						estilo.bg_color = Color(0, 1, 0)   # verde
-						estilo_pulsado.bg_color= Color(0, 0.5, 0)  # Verde oscuro
+						estilo.bg_color = COLOR_LIBRE
+						estilo_pulsado.bg_color = COLOR_LIBRE_P
 					else:
-						estilo.bg_color = Color(1, 0, 0)   # rojo
-						estilo_pulsado.bg_color=Color(0.5, 0, 0)
+						estilo.bg_color = COLOR_OCUPADO
+						estilo_pulsado.bg_color = COLOR_OCUPADO_P
 					boton.add_theme_stylebox_override("normal",estilo)
 					boton.add_theme_stylebox_override("pressed", estilo_pulsado)
 					
@@ -226,13 +230,12 @@ func comprobar_seleccionado_dia(dia):
 					presionado=true
 					var stylebox=child.get_theme_stylebox("normal", "Button")
 					var color=stylebox.bg_color
-					var color_verde_claro=Color(0,1,0)
 					dia_final=calcular_dia(dia)
 					posicion_minuto_final=child.position.y+int(child.size.y)
 					if(dia_inicio==-1):
 						dia_inicio=calcular_dia(dia)
 						posicion_minuto_inicio=child.position.y
-					if(color!=color_verde_claro):
+					if(color!=COLOR_LIBRE):
 						verde=false
 	return verde
 func calcular_dia(dia):
