@@ -13,6 +13,7 @@ func Comprobar_Visibilidad(raiz,horarioblquee):
 	Comprobar_Visibilidad_Arriba_Final()
 	Comprobar_Visibilidad_Medio()
 	UltimaComprobacion()
+	horario.Actualizar_Todo_Contexto()
 
 
 func Comprobar_Visibilidad_Abajo_Inicio():

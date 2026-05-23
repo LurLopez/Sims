@@ -83,10 +83,10 @@ func Actualizar_Horario(minuto_actual):
 
 	for i in range(0, diferencia + 1):
 		var celda = Variables_Dinamicas.Matriz_Jugador[Variables_Dinamicas.Minute_Minute][Variables_Dinamicas.Minute_Day]
-		if celda == null or celda == "":
+		if celda == null or (celda is String and celda == ""):
 			Variables_Dinamicas.Matriz_Jugador[Variables_Dinamicas.Minute_Minute][Variables_Dinamicas.Minute_Day] = "Actividad_Aleatoria"
 			Ejecutar_Actividad(Crear_Actividad_Aleatoria())
-		elif celda == "Actividad_Aleatoria":
+		elif celda is String and celda == "Actividad_Aleatoria":
 			Ejecutar_Actividad(Crear_Actividad_Aleatoria())
 		else:
 			Ejecutar_Actividad(celda)

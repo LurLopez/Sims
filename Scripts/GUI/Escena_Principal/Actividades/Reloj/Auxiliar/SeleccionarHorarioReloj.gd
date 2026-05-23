@@ -155,3 +155,29 @@ func Final_Dia_Abajo() -> void:
 
 func Crear_Actividad(mirar_semana,actividad_seleccionada):
 	Actividades.Crear_Actividad_Especifica(mirar_semana,dia_inicio_a_int(),dia_final_a_int(),hora_inicio_texto.text.to_int(),hora_final_texto.text.to_int(),minuto_inicio_texto.text.to_int(),minuto_final_texto.text.to_int(),actividad_seleccionada)
+
+func Actualizar_Todo_Contexto():
+	Actualizar_Contexto_Inicio()
+	Actualizar_Contexto_Final()
+
+func Actualizar_Contexto_Inicio():
+	var dia = Funciones_Globales.Dia_Reducido_A_Numero(dia_inicio_texto.text)
+	dia_inicio_arriba.text = Funciones_Globales.Devolver_Dia_Reducido((dia + 1) % 7)
+	dia_inicio_abajo.text  = Funciones_Globales.Devolver_Dia_Reducido((dia - 1 + 7) % 7)
+	var hora = hora_inicio_texto.text.to_int()
+	hora_inicio_arriba.text = str((hora + 1) % 24)
+	hora_inicio_abajo.text  = str((hora - 1 + 24) % 24)
+	var minuto = minuto_inicio_texto.text.to_int()
+	minuto_inicio_arriba.text = str((minuto + 5) % 60)
+	minuto_inicio_abajo.text  = str((minuto - 5 + 60) % 60)
+
+func Actualizar_Contexto_Final():
+	var dia = Funciones_Globales.Dia_Reducido_A_Numero(dia_final_texto.text)
+	dia_final_arriba.text = Funciones_Globales.Devolver_Dia_Reducido((dia + 1) % 7)
+	dia_final_abajo.text  = Funciones_Globales.Devolver_Dia_Reducido((dia - 1 + 7) % 7)
+	var hora = hora_final_texto.text.to_int()
+	hora_final_arriba.text = str(min(24, hora + 1))
+	hora_final_abajo.text  = str(max(0, hora - 1))
+	var minuto = minuto_final_texto.text.to_int()
+	minuto_final_arriba.text = str((minuto + 5) % 60)
+	minuto_final_abajo.text  = str((minuto - 5 + 60) % 60)

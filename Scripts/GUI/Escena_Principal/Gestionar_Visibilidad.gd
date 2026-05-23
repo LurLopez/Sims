@@ -6,18 +6,18 @@ func Quitar_Todo(raiz):
 	Visibilizar_Lo_Basico(raiz)
 
 func Recursivo_Desvisibilizar(raiz):
-	raiz.visible=false
+	if raiz is CanvasItem:
+		raiz.visible = false
 	for control in raiz.get_children():
-		if control!=null:
+		if control != null:
 			Recursivo_Desvisibilizar(control)
-			control.visible = false
 
 func Recursivo_Visibilizar(raiz):
-	raiz.visible=true
+	if raiz is CanvasItem:
+		raiz.visible = true
 	for control in raiz.get_children():
-		if control!=null:
+		if control != null:
 			Recursivo_Visibilizar(control)
-			control.visible = true
 
 func Visibilizar_Botones(raiz):
 	raiz.visible=true

@@ -7,7 +7,6 @@ extends Node
 
 var mirar_semana
 
-
 var actividad_seleccionada
 
 var horario_bloque
@@ -17,9 +16,16 @@ var actividades_bloque_gui
 var necesidades_basicas_gui
 var consultar_y_eliminar_actividades_gui
 
-
-
 var first_time_logica
+
+var seleccionar_horario_activo: bool = false
+var drag_inicio_y: float = 0.0
+var drag_threshold: float = 30.0
+var rueda_activa: String = ""
+
+var blink_timer: Timer = null
+var blink_estado: bool = false
+var mini_cal_preview = null
 func _ready():
 	Inicializar_Otros_Scripts()
 	if (Variables_Estaticas.First_Time):
@@ -52,17 +58,20 @@ func Cargar_Variables():
 #Interfaz
 
 func _on_boton_habilidades_pressed():
+	Detener_Blink()
 	Funciones_Globales.Mostrar_Habilidades()
 
 
 
 
 func _on_boton_progreso_pressed():
+	Detener_Blink()
 	Gestionar_Visibilidad.Quitar_Todo(self)
 	Gestionar_Visibilidad.Recursivo_Visibilizar($Progreso)
 
 
 func _on_boton_necesidades_basicas_pressed():
+	Detener_Blink()
 	Gestionar_Visibilidad.Quitar_Todo(self)
 	Gestionar_Visibilidad.Recursivo_Visibilizar($Necesidades_Basicas)
 
@@ -89,6 +98,7 @@ func Quitar_Todo():
 
 
 func _on_boton_actividades_pressed():
+	Detener_Blink()
 	Gestionar_Visibilidad.Visibilizar_Elegir_Actividad(self)
 
 
@@ -106,18 +116,139 @@ func _on_anterior_semana_pressed() -> void:
 	actividades_bloque_gui.Agregar_Bloques(mirar_semana,self)
 
 
+func _input(event: InputEvent) -> void:
+	if not seleccionar_horario_activo:
+		return
+	var pos := Vector2.ZERO
+	var es_presion := false
+	var es_movimiento := false
+	var presionado := false
+	if event is InputEventScreenTouch:
+		pos = event.position; es_presion = true; presionado = event.pressed
+	elif event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+		pos = event.position; es_presion = true; presionado = event.pressed
+	elif event is InputEventScreenDrag:
+		pos = event.position; es_movimiento = true
+	elif event is InputEventMouseMotion and Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
+		pos = event.position; es_movimiento = true
+	if es_presion:
+		if presionado:
+			drag_inicio_y = pos.y
+			rueda_activa = _detectar_rueda(pos)
+		else:
+			rueda_activa = ""
+	elif es_movimiento and rueda_activa != "":
+		var delta := drag_inicio_y - pos.y
+		if abs(delta) >= drag_threshold:
+			_ejecutar_scroll_rueda(rueda_activa, delta > 0)
+			drag_inicio_y = pos.y
+
+func _detectar_rueda(pos: Vector2) -> String:
+	var ruedas := {
+		"inicio_dia":    get_node("Actividades/Seleccionar_Horario/Inicio/Inicio_Hbox/Dia_Vbox"),
+		"inicio_hora":   get_node("Actividades/Seleccionar_Horario/Inicio/Inicio_Hbox/Hora_Vbox"),
+		"inicio_minuto": get_node("Actividades/Seleccionar_Horario/Inicio/Inicio_Hbox/Minuto_Vbox"),
+		"final_dia":     get_node("Actividades/Seleccionar_Horario/Final/Final_Hbox/Dia_Vbox"),
+		"final_hora":    get_node("Actividades/Seleccionar_Horario/Final/Final_Hbox/Hora_Vbox"),
+		"final_minuto":  get_node("Actividades/Seleccionar_Horario/Final/Final_Hbox/Minuto_Vbox"),
+	}
+	for nombre in ruedas:
+		if ruedas[nombre].get_global_rect().has_point(pos):
+			return nombre
+	return ""
+
+func _ejecutar_scroll_rueda(rueda, arriba):
+	var h = actividades_reloj_gui.horario
+	if h == null:
+		return
+	match rueda:
+		"inicio_dia":
+			if arriba and not h.dia_inicio_arriba.disabled: Inicio_Dia_Arriba()
+			elif not arriba and not h.dia_inicio_abajo.disabled: Inicio_Dia_Abajo()
+		"inicio_hora":
+			if arriba and not h.hora_inicio_arriba.disabled: Inicio_Hora_Arriba()
+			elif not arriba and not h.hora_inicio_abajo.disabled: Inicio_Hora_Abajo()
+		"inicio_minuto":
+			if arriba and not h.minuto_inicio_arriba.disabled: Inicio_Minuto_Arriba()
+			elif not arriba and not h.minuto_inicio_abajo.disabled: Inicio_Minuto_Abajo()
+		"final_dia":
+			if arriba and not h.dia_final_arriba.disabled: Final_Dia_Arriba()
+			elif not arriba and not h.dia_final_abajo.disabled: Final_Dia_Abajo()
+		"final_hora":
+			if arriba and not h.hora_final_arriba.disabled: Final_Hora_Arriba()
+			elif not arriba and not h.hora_final_abajo.disabled: Final_Hora_Abajo()
+		"final_minuto":
+			if arriba and not h.minuto_final_arriba.disabled: Final_Minuto_Arriba()
+			elif not arriba and not h.minuto_final_abajo.disabled: Final_Minuto_Abajo()
+
+func Iniciar_Blink() -> void:
+	seleccionar_horario_activo = true
+	if blink_timer == null:
+		blink_timer = Timer.new()
+		blink_timer.wait_time = 0.5
+		blink_timer.connect("timeout", Callable(self, "_on_blink_timeout"))
+		add_child(blink_timer)
+	blink_estado = false
+	mini_cal_preview = MiniCalendarioPreview.new()
+	mini_cal_preview.crear(self, mirar_semana)
+	_actualizar_mini_cal()
+	blink_timer.start()
+
+func _actualizar_mini_cal() -> void:
+	if mini_cal_preview == null:
+		return
+	var h = actividades_reloj_gui.horario
+	if h == null:
+		return
+	mini_cal_preview.actualizar_rango(
+		h.dia_inicio_a_int(),
+		h.hora_inicio_texto.text.to_int(),
+		h.minuto_inicio_texto.text.to_int(),
+		h.dia_final_a_int(),
+		h.hora_final_texto.text.to_int(),
+		h.minuto_final_texto.text.to_int()
+	)
+	mini_cal_preview.aplicar_blink(blink_estado)
+
+func _actualizar_blink_si_activo():
+	if seleccionar_horario_activo:
+		_actualizar_mini_cal()
+
+func Detener_Blink() -> void:
+	seleccionar_horario_activo = false
+	rueda_activa = ""
+	if blink_timer != null:
+		blink_timer.stop()
+	if mini_cal_preview != null:
+		mini_cal_preview.limpiar()
+		mini_cal_preview = null
+
+func _on_blink_timeout() -> void:
+	blink_estado = !blink_estado
+	if mini_cal_preview != null:
+		mini_cal_preview.aplicar_blink(blink_estado)
+
 func _on_ocupar_actividad_pressed() -> void:
 	if(actividades_bloque_gui.comprobar_seleccionado()):
 		horario_bloque=(actividades_bloque_gui.devolver_hora_desde_posiciones())
 		actividades_reloj_gui.Comprobar_Visibilidad(self,horario_bloque)
 		Gestionar_Visibilidad.Visibilizar_Seleccionar_Horario(self)
+		Iniciar_Blink()
 	
 
 func _on_crear_actividad_pressed():
+	Detener_Blink()
 	Gestionar_Visibilidad.Recursivo_Desvisibilizar($Actividades/Seleccionar_Horario)
+	$Actividades/Horario_Semanal.visible = false
 	$Actividades/Elegir_Actividad.visible=true
 	$Actividades/Elegir_Actividad/Tipos_De_Actividades.visible=true
 	Gestionar_Visibilidad.Pulsar_Boton_Opciones_Actividades("Temporales",self)
+
+
+func _on_cancelar_pressed():
+	Detener_Blink()
+	Gestionar_Visibilidad.Recursivo_Desvisibilizar($Actividades/Seleccionar_Horario)
+	Iniciar_Bloques_Actividad()
 
 
 func _on_eliminar_actividad_pressed() -> void:
@@ -136,40 +267,52 @@ func _on_eliminar_actividad_pressed() -> void:
 func Inicio_Minuto_Arriba() -> void:
 	actividades_reloj_gui.horario.Inicio_Minuto_Arriba()
 	actividades_reloj_gui.Comprobar_Visibilidad(self,horario_bloque)
+	_actualizar_blink_si_activo()
 func Inicio_Minuto_Abajo() -> void:
 	actividades_reloj_gui.horario.Inicio_Minuto_Abajo()
 	actividades_reloj_gui.Comprobar_Visibilidad(self,horario_bloque)
+	_actualizar_blink_si_activo()
 func Inicio_Hora_Arriba() -> void:
 	actividades_reloj_gui.horario.Inicio_Hora_Arriba()
 	actividades_reloj_gui.Comprobar_Visibilidad(self,horario_bloque)
+	_actualizar_blink_si_activo()
 func Inicio_Hora_Abajo() -> void:
 	actividades_reloj_gui.horario.Inicio_Hora_Abajo()
 	actividades_reloj_gui.Comprobar_Visibilidad(self,horario_bloque)
+	_actualizar_blink_si_activo()
 func Inicio_Dia_Arriba() -> void:
 	actividades_reloj_gui.horario.Inicio_Dia_Arriba()
 	actividades_reloj_gui.Comprobar_Visibilidad(self,horario_bloque)
+	_actualizar_blink_si_activo()
 func Inicio_Dia_Abajo() -> void:
 	actividades_reloj_gui.horario.Inicio_Dia_Abajo()
 	actividades_reloj_gui.Comprobar_Visibilidad(self,horario_bloque)
+	_actualizar_blink_si_activo()
 ##FINAL
 func Final_Minuto_Arriba() -> void:
 	actividades_reloj_gui.horario.Final_Minuto_Arriba()
 	actividades_reloj_gui.Comprobar_Visibilidad(self,horario_bloque)
+	_actualizar_blink_si_activo()
 func Final_Minuto_Abajo() -> void:
 	actividades_reloj_gui.horario.Final_Minuto_Abajo()
 	actividades_reloj_gui.Comprobar_Visibilidad(self,horario_bloque)
+	_actualizar_blink_si_activo()
 func Final_Hora_Arriba() -> void:
 	actividades_reloj_gui.horario.Final_Hora_Arriba()
 	actividades_reloj_gui.Comprobar_Visibilidad(self,horario_bloque)
+	_actualizar_blink_si_activo()
 func Final_Hora_Abajo() -> void:
 	actividades_reloj_gui.horario.Final_Hora_Abajo()
 	actividades_reloj_gui.Comprobar_Visibilidad(self,horario_bloque)
+	_actualizar_blink_si_activo()
 func Final_Dia_Arriba() -> void:
 	actividades_reloj_gui.horario.Final_Dia_Arriba()
 	actividades_reloj_gui.Comprobar_Visibilidad(self,horario_bloque)
+	_actualizar_blink_si_activo()
 func Final_Dia_Abajo() -> void:
 	actividades_reloj_gui.horario.Final_Dia_Abajo()
 	actividades_reloj_gui.Comprobar_Visibilidad(self,horario_bloque)
+	_actualizar_blink_si_activo()
 
 func Inicializar_Otros_Scripts():
 	var ActividadesGUI = load("res://Scripts/GUI/Escena_Principal/Actividades/Reloj/ActividadesRelojGUI.gd")
@@ -243,5 +386,6 @@ func Crear_Actividad(actividad):
 	Actividad_Terminada()
 
 func Actividad_Terminada():
+	Detener_Blink()
 	_on_boton_actividades_pressed()
 	actividades_bloque_gui.bloque_columna.limpiar_horas_del_horario()
