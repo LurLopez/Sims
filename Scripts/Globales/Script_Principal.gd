@@ -330,9 +330,10 @@ func Inicializar_Otros_Scripts():
 
 
 func Iniciar_Bloques_Actividad():
-	
-	
+
+
 	actividades_bloque_gui.Inicializar(self)
+	actividades_bloque_gui.bloque_columna.limpiar_horas_del_horario()
 	actividades_bloque_gui.Añadir_Horas_Al_Horario()
 	actividades_bloque_gui.bloque_columna.limpiar_todos_los_vboxcontainer()
 	actividades_bloque_gui.Agregar_Bloques(mirar_semana,self)
