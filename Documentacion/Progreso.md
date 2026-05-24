@@ -98,19 +98,7 @@ El Progreso debe bajar con el desuso para mantener la presión de seguir entrena
 
 **Importante**: la decadencia afecta solo al Progreso, NO al Conocimiento ni a la Habilidad mostrada. Lo que descubriste de ti mismo no se olvida; solo pierdes forma.
 
----
 
-## Pistas contextuales tras cada actividad (pendiente)
-
-Inmediatamente después de ejecutar una actividad, mostrar un mensaje breve según el roll de Progreso:
-
-- "Te ha costado bastante" → si el roll no avanzó (suele indicar cap bajo)
-- "Bien" → roll moderado
-- "Lo has bordado" → roll avanzó (suele indicar cap alto)
-
-Este feedback permite al jugador **intuir su talento desde el primer intento**, sin esperar a que el Conocimiento llegue al cap. Útil sobre todo para los caps altos, donde la revelación explícita tarda meses.
-
----
 
 ## Notas de implementación
 

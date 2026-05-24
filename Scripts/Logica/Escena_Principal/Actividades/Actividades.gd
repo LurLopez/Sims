@@ -10,6 +10,10 @@ func Ejecutar_Actividad(actividad: Actividad, es_aleatoria: bool = false):
 	if not es_aleatoria:
 		Actividades_Habilidades.Ejecutar_Actividad_Progreso_Array(actividad.efectos_progreso)
 		Actividades_Habilidades.Ejecutar_Actividad_Mostrar_Habilidad_Array(actividad.efectos_progreso)
+	# Pago de salario al cruzar el último minuto del día laboral
+	if actividad is Actividad_Fija_Trabajo and Variables_Dinamicas.Minute_Minute == actividad.hora_final - 1:
+		var horas_trabajadas = (actividad.hora_final - actividad.hora_inicio) / 60.0
+		Variables_Dinamicas.Dinero += actividad.salario * horas_trabajadas
 
 
 func Crear_Actividad_Aleatoria() -> Actividad:

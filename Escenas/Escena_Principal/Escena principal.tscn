@@ -320,6 +320,17 @@ position = Vector2(659.551, 81.7)
 scale = Vector2(0.21016, 0.207353)
 texture = ExtResource("9_qavxk")
 
+[node name="Dinero_Label" type="Label" parent="."]
+offset_left = 470.0
+offset_top = 60.0
+offset_right = 640.0
+offset_bottom = 105.0
+theme_override_colors/font_color = Color(0.95, 0.83, 0.25, 1)
+theme_override_font_sizes/font_size = 32
+text = "1000"
+horizontal_alignment = 2
+vertical_alignment = 1
+
 [node name="Necesidades_Basicas" type="Control" parent="."]
 layout_mode = 3
 anchors_preset = 0
@@ -717,16 +728,6 @@ theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
 theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
 text = "PROGRESO"
 
-[node name="Especiales" type="Button" parent="Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones"]
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_fonts/font = ExtResource("10_m1ee0")
-theme_override_font_sizes/font_size = 45
-theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
-theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
-text = "TRABAJO"
-
 [node name="Progreso_Opciones" type="VBoxContainer" parent="Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones"]
 visible = false
 custom_minimum_size = Vector2(0, 50)
@@ -808,6 +809,38 @@ theme_override_font_sizes/font_size = 45
 theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
 theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
 text = "VER LA TELEVISION"
+
+[node name="Fijas_Opciones" type="VBoxContainer" parent="Actividades/Elegir_Actividad/Tipos_De_Actividades"]
+visible = false
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+theme_override_constants/separation = 57
+
+[node name="Trabajo" type="Button" parent="Actividades/Elegir_Actividad/Tipos_De_Actividades/Fijas_Opciones"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_fonts/font = ExtResource("10_m1ee0")
+theme_override_font_sizes/font_size = 45
+theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
+text = "TRABAJO"
+
+[node name="Trabajo_Opciones" type="VBoxContainer" parent="Actividades/Elegir_Actividad/Tipos_De_Actividades/Fijas_Opciones"]
+visible = false
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+theme_override_constants/separation = 57
+
+[node name="Comida_Rapida" type="Button" parent="Actividades/Elegir_Actividad/Tipos_De_Actividades/Fijas_Opciones/Trabajo_Opciones"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_fonts/font = ExtResource("10_m1ee0")
+theme_override_font_sizes/font_size = 45
+theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
+text = "COMIDA RAPIDA"
 
 [node name="Horario_Semanal" type="Control" parent="Actividades"]
 layout_mode = 3
@@ -1366,9 +1399,9 @@ text = "CREAR ACTIVIDAD"
 [connection signal="pressed" from="Habilidades/Flecha_Abajo" to="." method="_on_habilidades_flecha_abajo_pressed"]
 [connection signal="pressed" from="Actividades/Elegir_Actividad/Flecha_Atras" to="." method="Pulsar_Flecha_Atras"]
 [connection signal="pressed" from="Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales" to="." method="_on_temporales_pressed"]
+[connection signal="pressed" from="Actividades/Elegir_Actividad/Tipos_De_Actividades/Fijas" to="." method="Opciones_Actividades_Fijas"]
 [connection signal="pressed" from="Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones/Necesidades_Basicas" to="." method="Opciones_Actividades_Necesidades_Basicas"]
 [connection signal="pressed" from="Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones/Progreso" to="." method="Opciones_Actividades_Progreso"]
-[connection signal="pressed" from="Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones/Especiales" to="." method="_on_trabajo_pressed"]
 [connection signal="pressed" from="Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones/Progreso_Opciones/Salir_A_Correr" to="." method="Actividad_Terminada_Salir_A_Correr"]
 [connection signal="pressed" from="Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones/Progreso_Opciones/Estudiar" to="." method="Actividad_Terminada_Estudiar"]
 [connection signal="pressed" from="Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones/Progreso_Opciones/Manualidades" to="." method="Actividad_Terminada_Manualidades"]
@@ -1376,6 +1409,8 @@ text = "CREAR ACTIVIDAD"
 [connection signal="pressed" from="Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones/Necesidades_Basicas_Opciones/Dormir" to="." method="Actividad_Terminada_Dormir"]
 [connection signal="pressed" from="Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones/Necesidades_Basicas_Opciones/Comer" to="." method="Actividad_Terminada_Comer"]
 [connection signal="pressed" from="Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones/Necesidades_Basicas_Opciones/Ver_La_Television" to="." method="Actividad_Terminada_Ver_La_Television"]
+[connection signal="pressed" from="Actividades/Elegir_Actividad/Tipos_De_Actividades/Fijas_Opciones/Trabajo" to="." method="Opciones_Actividades_Trabajo"]
+[connection signal="pressed" from="Actividades/Elegir_Actividad/Tipos_De_Actividades/Fijas_Opciones/Trabajo_Opciones/Comida_Rapida" to="." method="_on_comida_rapida_pressed"]
 [connection signal="pressed" from="Actividades/Horario_Semanal/OPCIONES_CALENDARIO/SIGUIENTE SEMANA" to="." method="_on_siguiente_semana_pressed"]
 [connection signal="pressed" from="Actividades/Horario_Semanal/OPCIONES_CALENDARIO/ANTERIOR SEMANA" to="." method="_on_anterior_semana_pressed"]
 [connection signal="pressed" from="Actividades/Horario_Semanal/OPCIONES_CALENDARIO/OCUPAR_ACTIVIDAD" to="." method="_on_ocupar_actividad_pressed"]

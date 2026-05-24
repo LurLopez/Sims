@@ -37,6 +37,7 @@ func Visibilizar_Lo_Basico(raiz):
 	Recursivo_Visibilizar(raiz.get_node("Barra_Abajo"))
 	raiz.get_node("Fondo").visible=true
 	raiz.get_node("Moneda").visible=true
+	raiz.get_node("Dinero_Label").visible=true
 
 
 

@@ -22,5 +22,22 @@ func Trabajar(actividad: Actividad_Fija_Trabajo):
 	Funciones_Globales.Guardar_Matriz()
 
 
+# Cancela el trabajo: borra TODAS las celdas futuras (desde el minuto actual)
+# que tengan asignada esta actividad de trabajo. El jugador deja de trabajar.
+func Dejar_Trabajo(actividad: Actividad_Fija_Trabajo):
+	var dia_actual = Variables_Dinamicas.Minute_Day
+	var minuto_actual = Variables_Dinamicas.Minute_Minute
+	for i in range(dia_actual, 574):
+		var inicio_dia = 0
+		if i == dia_actual:
+			inicio_dia = minuto_actual
+		for j in range(inicio_dia, 1440):
+			var celda = Variables_Dinamicas.Matriz_Jugador[j][i]
+			# Hay que filtrar strings ("" o "Actividad_Aleatoria") antes de comparar
+			# con la actividad (objeto), porque String == Object lanza error de tipo.
+			if celda is Actividad_Fija_Trabajo and celda == actividad:
+				Variables_Dinamicas.Matriz_Jugador[j][i] = ""
+
+
 func _process(delta):
 	pass

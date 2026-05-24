@@ -46,9 +46,26 @@ func _process(delta):
 			Actividades.Actualizar_Horario(minutos_pendientes)
 			Guardar_Variables_Dinamicas.save_game()
 		Actualizar_Progreso()
+		Actualizar_Dinero()
 		necesidades_basicas_gui.Actualizar_Necesidades_Basicas(self)
 		if $Habilidades.visible:
 			Actualizar_Habilidades()
+
+
+const _DINERO_OFFSET_RIGHT_3_DIGITOS: int = 600
+const _DINERO_DESPLAZAMIENTO_POR_DIGITO_EXTRA: int = 25
+const _DINERO_ANCHO_LABEL: int = 220
+
+func Actualizar_Dinero():
+	var texto = str(int(Variables_Dinamicas.Dinero))
+	$Dinero_Label.text = texto
+	# Reposicionar a la izquierda según número de cifras para evitar solaparse
+	# con el icono de Moneda (que está a la derecha en posición fija).
+	var n = len(texto)
+	var extra_digitos = max(0, n - 3)
+	var offset_right_dinamico = _DINERO_OFFSET_RIGHT_3_DIGITOS - extra_digitos * _DINERO_DESPLAZAMIENTO_POR_DIGITO_EXTRA
+	$Dinero_Label.offset_right = offset_right_dinamico
+	$Dinero_Label.offset_left = offset_right_dinamico - _DINERO_ANCHO_LABEL
 
 # Calcula cuántos minutos LOCALES han pasado desde el último tick procesado.
 # Se basa en la hora del dispositivo (no en Unix delta), así DST y cambios de zona
@@ -317,14 +334,59 @@ func _on_cancelar_pressed():
 
 
 func _on_eliminar_actividad_pressed() -> void:
-	if(actividades_bloque_gui.comprobar_seleccionado()):
-		horario_bloque=(actividades_bloque_gui.devolver_hora_desde_posiciones())
-		actividades_reloj_gui.Comprobar_Visibilidad(self,horario_bloque)
-		
-		#$Seleccionar_Horario.visible=true     Si se quiere seleccionar la hora exacta que se quiere eliminar, solamante hay que activar estas 3 lineas de codigo
-		#$Actividades/Crear_Actividad.visible=true
-		#$Horario_Semanal.visible=false
-		actividades_reloj_gui.horario.Crear_Actividad(mirar_semana,"")
+	if not actividades_bloque_gui.comprobar_seleccionado():
+		return
+	horario_bloque = actividades_bloque_gui.devolver_hora_desde_posiciones()
+
+	# Si la celda seleccionada es un trabajo fijo, eliminar UNA celda no tiene sentido
+	# (el trabajo abarca semanas enteras). En su lugar pedimos confirmación al jugador:
+	# si acepta, se borran todas las celdas futuras de esa actividad (= dejar el trabajo).
+	var dia_index = mirar_semana * 7 + horario_bloque.dia_inicio_int()
+	var minuto_inicio_cell = horario_bloque.hora_inicio * 60 + horario_bloque.minuto_inicio
+	var celda_seleccionada = Variables_Dinamicas.Matriz_Jugador[minuto_inicio_cell][dia_index]
+	if celda_seleccionada is Actividad_Fija_Trabajo:
+		_Mostrar_Confirmacion_Dejar_Trabajo(celda_seleccionada)
+		return
+
+	actividades_reloj_gui.Comprobar_Visibilidad(self,horario_bloque)
+	#$Seleccionar_Horario.visible=true     Si se quiere seleccionar la hora exacta que se quiere eliminar, solamante hay que activar estas 3 lineas de codigo
+	#$Actividades/Crear_Actividad.visible=true
+	#$Horario_Semanal.visible=false
+	actividades_reloj_gui.horario.Crear_Actividad(mirar_semana,"")
+
+
+# Diálogo de confirmación para dejar un trabajo. Se crea perezosamente la primera vez
+# que se necesita y se reutiliza en llamadas posteriores.
+var _trabajo_a_dejar = null
+var _dialog_dejar_trabajo: ConfirmationDialog = null
+
+func _Mostrar_Confirmacion_Dejar_Trabajo(actividad):
+	_trabajo_a_dejar = actividad
+	if _dialog_dejar_trabajo == null:
+		_dialog_dejar_trabajo = ConfirmationDialog.new()
+		_dialog_dejar_trabajo.title = "Dejar trabajo"
+		_dialog_dejar_trabajo.ok_button_text = "Sí, dejar"
+		_dialog_dejar_trabajo.get_cancel_button().text = "Cancelar"
+		_dialog_dejar_trabajo.confirmed.connect(_Confirmar_Dejar_Trabajo)
+		_dialog_dejar_trabajo.canceled.connect(_Cancelar_Dejar_Trabajo)
+		add_child(_dialog_dejar_trabajo)
+	var nombre_legible = actividad.nombre.replace("_", " ")
+	_dialog_dejar_trabajo.dialog_text = "¿Seguro que quieres dejar el trabajo \"%s\"?\nDejarás de ganar dinero." % nombre_legible
+	_dialog_dejar_trabajo.popup_centered(Vector2i(500, 220))
+
+
+func _Confirmar_Dejar_Trabajo():
+	if _trabajo_a_dejar == null:
+		return
+	Trabajo.Dejar_Trabajo(_trabajo_a_dejar)
+	Guardar_Variables_Dinamicas.save_game()
+	actividades_bloque_gui.bloque_columna.limpiar_todos_los_vboxcontainer()
+	actividades_bloque_gui.Agregar_Bloques(mirar_semana, self)
+	_trabajo_a_dejar = null
+
+
+func _Cancelar_Dejar_Trabajo():
+	_trabajo_a_dejar = null
 		
 
 
@@ -413,6 +475,20 @@ func _on_temporales_pressed() -> void:
 	Iniciar_Bloques_Actividad()
 
 
+func Opciones_Actividades_Fijas() -> void:
+	Gestionar_Visibilidad.Pulsar_Boton_Opciones_Actividades("Fijas", self)
+
+
+func Opciones_Actividades_Trabajo() -> void:
+	Gestionar_Visibilidad.Pulsar_Boton_Opciones_Actividades("Trabajo", self)
+
+
+func _on_comida_rapida_pressed() -> void:
+	Trabajo.Trabajar_En_Comida_Rapida()
+	Guardar_Variables_Dinamicas.save_game()
+	Actividad_Terminada()
+
+
 
 func Pulsar_Flecha_Atras() -> void:
 	Gestionar_Visibilidad.Pulsar_Flecha_Atras(self)
@@ -454,4 +530,7 @@ func Crear_Actividad(actividad):
 func Actividad_Terminada():
 	Detener_Blink()
 	_on_boton_actividades_pressed()
-	actividades_bloque_gui.bloque_columna.limpiar_horas_del_horario()
+	# Solo limpiar el calendario si el flujo pasó por él (Temporales). En el flujo
+	# de Fijas (Trabajo → Comida Rápida) nunca se inicializó bloque_columna.
+	if actividades_bloque_gui.bloque_columna != null:
+		actividades_bloque_gui.bloque_columna.limpiar_horas_del_horario()
