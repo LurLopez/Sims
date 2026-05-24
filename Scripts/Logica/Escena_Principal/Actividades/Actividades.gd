@@ -1,9 +1,15 @@
 extends Node
 
-func Ejecutar_Actividad(actividad: Actividad):
+func Ejecutar_Actividad(actividad: Actividad, es_aleatoria: bool = false):
+	# Necesidades básicas SIEMPRE se aplican (incluso en actividades aleatorias),
+	# así el personaje no se muere si el jugador no entra durante tiempo.
 	Actividades_Necesidades_Basicas.Ejecutar_Actividad_Necesidades_Basicas_Array(actividad.efectos_necesidades_basicas)
-	Actividades_Habilidades.Ejecutar_Actividad_Progreso_Array(actividad.efectos_progreso)
-	Actividades_Habilidades.Ejecutar_Actividad_Mostrar_Habilidad_Array(actividad.efectos_progreso)
+	# Progreso y descubrimiento SOLO si la actividad fue programada por el jugador.
+	# Una actividad aleatoria mantiene vivo al personaje pero no le hace avanzar
+	# habilidades; el jugador debe estar presente para crecer.
+	if not es_aleatoria:
+		Actividades_Habilidades.Ejecutar_Actividad_Progreso_Array(actividad.efectos_progreso)
+		Actividades_Habilidades.Ejecutar_Actividad_Mostrar_Habilidad_Array(actividad.efectos_progreso)
 
 
 func Crear_Actividad_Aleatoria() -> Actividad:
@@ -86,9 +92,9 @@ func Actualizar_Horario(minuto_actual):
 		var celda = Variables_Dinamicas.Matriz_Jugador[Variables_Dinamicas.Minute_Minute][Variables_Dinamicas.Minute_Day]
 		if celda == null or (celda is String and celda == ""):
 			Variables_Dinamicas.Matriz_Jugador[Variables_Dinamicas.Minute_Minute][Variables_Dinamicas.Minute_Day] = "Actividad_Aleatoria"
-			Ejecutar_Actividad(Crear_Actividad_Aleatoria())
+			Ejecutar_Actividad(Crear_Actividad_Aleatoria(), true)
 		elif celda is String and celda == "Actividad_Aleatoria":
-			Ejecutar_Actividad(Crear_Actividad_Aleatoria())
+			Ejecutar_Actividad(Crear_Actividad_Aleatoria(), true)
 		else:
 			Ejecutar_Actividad(celda)
 
