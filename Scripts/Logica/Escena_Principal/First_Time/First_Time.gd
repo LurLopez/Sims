@@ -4,6 +4,7 @@ func First_Time_Function():
 		Crear_Matriz()
 		Crear_Personalidad()
 		Crear_Habilidades()
+		Crear_Habilidades_Mostradas()
 		Crear_Necesidades_Basicas()
 		Crear_Progreso()
 		Crear_First_Time_Minute()
@@ -31,8 +32,12 @@ func Crear_Personalidad():
 
 func Crear_Habilidades():
 	for i in range(0,6):
-		
+
 		Variables_Estaticas.Habilidades.append(Funciones_Globales.Generar_Numero_Aleatorio_Entero(1,100))
+
+func Crear_Habilidades_Mostradas():
+	for i in range(0,6):
+		Variables_Dinamicas.Habilidades_Mostradas.append(0)
 
 func Crear_Progreso():
 	for i in range(0,3):

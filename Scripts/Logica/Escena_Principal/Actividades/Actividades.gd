@@ -3,6 +3,7 @@ extends Node
 func Ejecutar_Actividad(actividad: Actividad):
 	Actividades_Necesidades_Basicas.Ejecutar_Actividad_Necesidades_Basicas_Array(actividad.efectos_necesidades_basicas)
 	Actividades_Habilidades.Ejecutar_Actividad_Progreso_Array(actividad.efectos_progreso)
+	Actividades_Habilidades.Ejecutar_Actividad_Mostrar_Habilidad_Array(actividad.efectos_progreso)
 
 
 func Crear_Actividad_Aleatoria() -> Actividad:

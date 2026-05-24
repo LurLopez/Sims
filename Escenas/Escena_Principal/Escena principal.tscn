@@ -515,6 +515,104 @@ theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
 theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
 text = "CIENTIFICO"
 
+[node name="Habilidades" type="Control" parent="."]
+visible = false
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="Habilidades_Barra" type="VBoxContainer" parent="Habilidades"]
+layout_mode = 0
+offset_left = 270.0
+offset_top = 350.0
+offset_right = 670.0
+offset_bottom = 800.0
+theme_override_constants/separation = 50
+
+[node name="Slot_0" type="ProgressBar" parent="Habilidades/Habilidades_Barra"]
+custom_minimum_size = Vector2(150, 50)
+layout_mode = 2
+
+[node name="Slot_1" type="ProgressBar" parent="Habilidades/Habilidades_Barra"]
+custom_minimum_size = Vector2(150, 50)
+layout_mode = 2
+
+[node name="Slot_2" type="ProgressBar" parent="Habilidades/Habilidades_Barra"]
+custom_minimum_size = Vector2(150, 50)
+layout_mode = 2
+
+[node name="Slot_3" type="ProgressBar" parent="Habilidades/Habilidades_Barra"]
+custom_minimum_size = Vector2(150, 50)
+layout_mode = 2
+
+[node name="Slot_4" type="ProgressBar" parent="Habilidades/Habilidades_Barra"]
+custom_minimum_size = Vector2(150, 50)
+layout_mode = 2
+
+[node name="Flecha_Arriba" type="Button" parent="Habilidades"]
+custom_minimum_size = Vector2(100, 100)
+layout_mode = 0
+offset_left = 420.0
+offset_top = 300.0
+offset_right = 520.0
+offset_bottom = 400.0
+rotation = 4.71239
+icon = ExtResource("8_8fp1q")
+flat = true
+expand_icon = true
+
+[node name="Flecha_Abajo" type="Button" parent="Habilidades"]
+custom_minimum_size = Vector2(100, 100)
+layout_mode = 0
+offset_left = 520.0
+offset_top = 850.0
+offset_right = 620.0
+offset_bottom = 950.0
+rotation = -4.71239
+icon = ExtResource("8_8fp1q")
+flat = true
+expand_icon = true
+
+[node name="Habilidades_Texto" type="VBoxContainer" parent="Habilidades"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 1
+anchors_preset = -1
+offset_top = 356.0
+offset_right = 260.0
+offset_bottom = 806.0
+theme_override_constants/separation = 57
+
+[node name="Slot_0" type="Label" parent="Habilidades/Habilidades_Texto"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("10_m1ee0")
+label_settings = SubResource("LabelSettings_fi1h3")
+horizontal_alignment = 2
+
+[node name="Slot_1" type="Label" parent="Habilidades/Habilidades_Texto"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("10_m1ee0")
+label_settings = SubResource("LabelSettings_fi1h3")
+horizontal_alignment = 2
+
+[node name="Slot_2" type="Label" parent="Habilidades/Habilidades_Texto"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("10_m1ee0")
+label_settings = SubResource("LabelSettings_fi1h3")
+horizontal_alignment = 2
+
+[node name="Slot_3" type="Label" parent="Habilidades/Habilidades_Texto"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("10_m1ee0")
+label_settings = SubResource("LabelSettings_fi1h3")
+horizontal_alignment = 2
+
+[node name="Slot_4" type="Label" parent="Habilidades/Habilidades_Texto"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("10_m1ee0")
+label_settings = SubResource("LabelSettings_fi1h3")
+horizontal_alignment = 2
+
 [node name="Actividades" type="Control" parent="."]
 layout_mode = 3
 anchors_preset = 0
@@ -1264,6 +1362,8 @@ text = "CREAR ACTIVIDAD"
 [connection signal="pressed" from="Barra_Abajo/Boton_Progreso" to="." method="_on_boton_progreso_pressed"]
 [connection signal="pressed" from="Barra_Abajo/Boton_Actividades" to="." method="_on_boton_actividades_pressed"]
 [connection signal="pressed" from="Barra_Abajo/Boton_Necesidades_Basicas" to="." method="_on_boton_necesidades_basicas_pressed"]
+[connection signal="pressed" from="Habilidades/Flecha_Arriba" to="." method="_on_habilidades_flecha_arriba_pressed"]
+[connection signal="pressed" from="Habilidades/Flecha_Abajo" to="." method="_on_habilidades_flecha_abajo_pressed"]
 [connection signal="pressed" from="Actividades/Elegir_Actividad/Flecha_Atras" to="." method="Pulsar_Flecha_Atras"]
 [connection signal="pressed" from="Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales" to="." method="_on_temporales_pressed"]
 [connection signal="pressed" from="Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones/Necesidades_Basicas" to="." method="Opciones_Actividades_Necesidades_Basicas"]

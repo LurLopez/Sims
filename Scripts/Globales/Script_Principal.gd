@@ -48,6 +48,8 @@ func _process(delta):
 	if(Variables_Estaticas.First_Time==false):
 		Actualizar_Progreso()
 		necesidades_basicas_gui.Actualizar_Necesidades_Basicas(self)
+		if $Habilidades.visible:
+			Actualizar_Habilidades()
 
 
 func Cargar_Variables():
@@ -59,7 +61,9 @@ func Cargar_Variables():
 
 func _on_boton_habilidades_pressed():
 	Detener_Blink()
-	Funciones_Globales.Mostrar_Habilidades()
+	Gestionar_Visibilidad.Quitar_Todo(self)
+	Gestionar_Visibilidad.Recursivo_Visibilizar($Habilidades)
+	Actualizar_Habilidades()
 
 
 
@@ -82,6 +86,42 @@ func Actualizar_Progreso():
 	$Progreso/Progreso_Barra/Deporte.value=Variables_Dinamicas.Progreso[0]
 	$Progreso/Progreso_Barra/Academico.value=Variables_Dinamicas.Progreso[1]
 	$Progreso/Progreso_Barra/Manualidades.value=Variables_Dinamicas.Progreso[2]
+
+
+const _NOMBRES_HABILIDADES: Array = ["DEPORTE", "INTELIGENCIA", "DESTREZA", "MEMORIA", "LIDERAZGO", "PACIENCIA"]
+const _HABILIDADES_VISIBLES: int = 5
+const _COLOR_HABILIDAD_DESCUBRIENDO: Color = Color(1.0, 0.85, 0.30, 1.0)  # amarillo: aún subiendo
+const _COLOR_HABILIDAD_TOPE: Color = Color(0.30, 0.85, 0.45, 1.0)         # verde: has descubierto el límite
+
+var habilidades_scroll_offset: int = 0
+
+func Actualizar_Habilidades():
+	var max_offset = _NOMBRES_HABILIDADES.size() - _HABILIDADES_VISIBLES
+	for slot in range(_HABILIDADES_VISIBLES):
+		var indice = slot + habilidades_scroll_offset
+		var bar = $Habilidades/Habilidades_Barra.get_node("Slot_" + str(slot))
+		var lbl = $Habilidades/Habilidades_Texto.get_node("Slot_" + str(slot))
+		var mostrado = Variables_Dinamicas.Habilidades_Mostradas[indice]
+		var innato = Variables_Estaticas.Habilidades[indice]
+		bar.value = mostrado
+		lbl.text = _NOMBRES_HABILIDADES[indice]
+		if mostrado >= innato:
+			bar.self_modulate = _COLOR_HABILIDAD_TOPE
+		else:
+			bar.self_modulate = _COLOR_HABILIDAD_DESCUBRIENDO
+	$Habilidades/Flecha_Arriba.visible = habilidades_scroll_offset > 0
+	$Habilidades/Flecha_Abajo.visible = habilidades_scroll_offset < max_offset
+
+func _on_habilidades_flecha_arriba_pressed():
+	if habilidades_scroll_offset > 0:
+		habilidades_scroll_offset -= 1
+		Actualizar_Habilidades()
+
+func _on_habilidades_flecha_abajo_pressed():
+	var max_offset = _NOMBRES_HABILIDADES.size() - _HABILIDADES_VISIBLES
+	if habilidades_scroll_offset < max_offset:
+		habilidades_scroll_offset += 1
+		Actualizar_Habilidades()
 
 
 func Quitar_Todo():

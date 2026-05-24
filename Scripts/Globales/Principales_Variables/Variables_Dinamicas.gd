@@ -3,6 +3,10 @@ extends Node
 var Matriz_Jugador=[]
 var Progreso=[]
 var Necesidades_Basicas=[]
+# Conocimiento descubierto sobre cada habilidad innata (6 ints, 0-100).
+# Solo sube. Capped at Variables_Estaticas.Habilidades[i].
+# Cuando alcanza el valor innato, se "revela" el cap al jugador.
+var Habilidades_Mostradas=[]
 
 #Variables Relacionadas con la gestion del dinero
 var Dinero=0

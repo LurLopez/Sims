@@ -21,6 +21,10 @@ func load_game():
 		Variables_Dinamicas.Minute = game_data["Minute"]
 		Variables_Dinamicas.Minute_Day = game_data["Minute_Day"]
 		Variables_Dinamicas.Minute_Minute = game_data["Minute_Minute"]
+		if game_data.has("Habilidades_Mostradas"):
+			Variables_Dinamicas.Habilidades_Mostradas = game_data["Habilidades_Mostradas"]
+		else:
+			Variables_Dinamicas.Habilidades_Mostradas = [0, 0, 0, 0, 0, 0]
 		save_file = null
 
 func game_data_func():
@@ -31,7 +35,8 @@ func game_data_func():
 		"Dinero": Variables_Dinamicas.Dinero,
 		"Minute": Variables_Dinamicas.Minute,
 		"Minute_Day": Variables_Dinamicas.Minute_Day,
-		"Minute_Minute": Variables_Dinamicas.Minute_Minute
+		"Minute_Minute": Variables_Dinamicas.Minute_Minute,
+		"Habilidades_Mostradas": Variables_Dinamicas.Habilidades_Mostradas
 	}
 	return game_data
 
