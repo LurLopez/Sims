@@ -40,16 +40,41 @@ func _ready():
 	
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
-	var segundo_actual=Time.get_unix_time_from_system()
-	var minuto_actual=floor(segundo_actual/60)
-	if(minuto_actual-Variables_Dinamicas.Minute>-1):
-		Actividades.Actualizar_Horario(minuto_actual)
-		Guardar_Variables_Dinamicas.save_game()
-	if(Variables_Estaticas.First_Time==false):
+	if Variables_Estaticas.First_Time == false:
+		var minutos_pendientes = _Minutos_Pendientes_Por_Procesar()
+		if minutos_pendientes > 0:
+			Actividades.Actualizar_Horario(minutos_pendientes)
+			Guardar_Variables_Dinamicas.save_game()
 		Actualizar_Progreso()
 		necesidades_basicas_gui.Actualizar_Necesidades_Basicas(self)
 		if $Habilidades.visible:
 			Actualizar_Habilidades()
+
+# Calcula cuántos minutos LOCALES han pasado desde el último tick procesado.
+# Se basa en la hora del dispositivo (no en Unix delta), así DST y cambios de zona
+# horaria se reflejan automáticamente: el juego sigue siempre el reloj de pared local.
+func _Minutos_Pendientes_Por_Procesar() -> int:
+	var dict_fecha = Time.get_date_dict_from_system()
+	var dict_hora = Time.get_time_dict_from_system()
+	# "Unix ficticio" tratando la fecha local como si fuera UTC. La diferencia entre dos
+	# de estos valores da el número correcto de días naturales locales transcurridos.
+	var fake_now = Time.get_unix_time_from_datetime_dict({
+		"year": dict_fecha["year"], "month": dict_fecha["month"], "day": dict_fecha["day"],
+		"hour": 0, "minute": 0, "second": 0
+	})
+	var fake_inicio = Time.get_unix_time_from_datetime_dict({
+		"year": Variables_Estaticas.First_Time_Year,
+		"month": Variables_Estaticas.First_Time_Month,
+		"day": Variables_Estaticas.First_Time_Day_Of_Month,
+		"hour": 0, "minute": 0, "second": 0
+	})
+	var dias_desde_inicio = int(round((fake_now - fake_inicio) / 86400.0))
+	var minuto_actual_local = dict_hora["hour"] * 60 + dict_hora["minute"]
+	# Minutos acumulados desde el inicio según el reloj local
+	var minutos_locales_acum = dias_desde_inicio * 1440 + (minuto_actual_local - Variables_Estaticas.First_Time_Minute_Minute)
+	# Minutos acumulados que ya hemos procesado en la matriz
+	var minutos_procesados = (Variables_Dinamicas.Minute_Day - Variables_Estaticas.First_Time_Minute_Day) * 1440 + (Variables_Dinamicas.Minute_Minute - Variables_Estaticas.First_Time_Minute_Minute)
+	return minutos_locales_acum - minutos_procesados
 
 
 func Cargar_Variables():

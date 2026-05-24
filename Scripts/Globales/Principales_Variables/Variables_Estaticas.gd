@@ -8,6 +8,11 @@ var Actividades = []
 var Catalogo_Actividades: Dictionary = {}
 var First_Time_Minute_Day = 0
 var First_Time_Minute_Minute = 0
+# Fecha local (año/mes/día) al crear el personaje. Se usan para calcular cuántos
+# días LOCALES han pasado desde el inicio (insensible a DST y cambios de zona horaria).
+var First_Time_Year = 0
+var First_Time_Month = 0
+var First_Time_Day_Of_Month = 0
 
 func _ready():
 	_Inicializar_Catalogo()

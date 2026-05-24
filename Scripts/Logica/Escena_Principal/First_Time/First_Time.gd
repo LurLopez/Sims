@@ -49,12 +49,16 @@ func Crear_Necesidades_Basicas():
 
 func Crear_First_Time_Minute():
 	var tiempo_actual = Time.get_unix_time_from_system()
+	var dict_fecha = Time.get_date_dict_from_system()
+	var dict_hora = Time.get_time_dict_from_system()
 	#Queremos que 0 sea Lunes, No 1. Y domingo 6, no 0. Para eso se le suma 6: Lunes sera 7 Martes 8... Domingo 6. Y establecememos el restante con el 7, lunes 0, martes 1... domingo 6
-	Variables_Estaticas.First_Time_Minute_Day=((Time.get_date_dict_from_system()["weekday"])+6)%7
-	var hora_actual=Time.get_time_dict_from_system()["hour"]
-	var minuto_actual=Time.get_time_dict_from_system()["minute"]
-	Variables_Estaticas.First_Time_Minute_Minute=(hora_actual*60)+minuto_actual
+	Variables_Estaticas.First_Time_Minute_Day=((dict_fecha["weekday"])+6)%7
+	Variables_Estaticas.First_Time_Minute_Minute=(dict_hora["hour"]*60)+dict_hora["minute"]
 	Variables_Estaticas.First_Time_Minute=floor(tiempo_actual / 60)
+	# Fecha local del primer arranque para aritmética de días insensible a DST/zona horaria
+	Variables_Estaticas.First_Time_Year=dict_fecha["year"]
+	Variables_Estaticas.First_Time_Month=dict_fecha["month"]
+	Variables_Estaticas.First_Time_Day_Of_Month=dict_fecha["day"]
 	Variables_Estaticas.First_Time=false
 	Variables_Dinamicas.Minute=Variables_Estaticas.First_Time_Minute
 	Variables_Dinamicas.Minute_Day=Variables_Estaticas.First_Time_Minute_Day
