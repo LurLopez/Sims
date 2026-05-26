@@ -107,4 +107,18 @@ func Actualizar_Horario(minutos_a_procesar: int):
 			Variables_Dinamicas.Minute_Minute = Variables_Dinamicas.Minute_Minute + 1
 
 		Variables_Dinamicas.Minute = Variables_Dinamicas.Minute + 1
+
+		# Cobrar alquiler al cruzar a lunes 00:00.
+		# Minute_Day % 7 == 0 ⇒ Lunes (las semanas empiezan en lunes en este modelo).
+		# Esto se ejecuta tras avanzar, así que la primera ejecución posible es la
+		# transición desde domingo 23:59 al lunes 00:00 de la SIGUIENTE semana —
+		# nunca cobra el lunes inicial del personaje recién creado.
+		if Variables_Dinamicas.Minute_Minute == 0 and Variables_Dinamicas.Minute_Day % 7 == 0:
+			Variables_Dinamicas.Dinero -= Variables_Estaticas.ALQUILER_SEMANAL
+			# Si el cobro deja al jugador en bancarrota, capar todas las necesidades
+			# a 20 de golpe (no esperar a que la siguiente actividad lo haga).
+			if Variables_Dinamicas.Dinero < 0:
+				for k in range(Variables_Dinamicas.Necesidades_Basicas.size()):
+					if Variables_Dinamicas.Necesidades_Basicas[k] > Variables_Estaticas.BANCARROTA_MAX_NECESIDAD:
+						Variables_Dinamicas.Necesidades_Basicas[k] = Variables_Estaticas.BANCARROTA_MAX_NECESIDAD
 	Funciones_Globales.Guardar_Matriz()

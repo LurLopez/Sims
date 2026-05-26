@@ -1,5 +1,10 @@
 extends Node
 
+# Economía
+const ALQUILER_SEMANAL: int = 200
+# Bancarrota: cuando Dinero < 0, las necesidades básicas no pueden superar este valor.
+const BANCARROTA_MAX_NECESIDAD: int = 20
+
 var First_Time = true
 var First_Time_Minute = 0
 var Personalidad = ""

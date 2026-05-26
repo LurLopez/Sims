@@ -24,3 +24,8 @@ func Cambiar_Necesidades_Basicas(valor,indice):
 	if (valor>0):
 		if (Variables_Dinamicas.Necesidades_Basicas[indice]!=100):
 			Variables_Dinamicas.Necesidades_Basicas[indice]=Variables_Dinamicas.Necesidades_Basicas[indice]+1
+	# Bancarrota: si Dinero < 0, ninguna necesidad puede superar BANCARROTA_MAX_NECESIDAD.
+	# Aplica tanto si acabas de subir como si ya estabas por encima (vivir en la calle te
+	# arrastra rápido a un mal estado general).
+	if Variables_Dinamicas.Dinero < 0 and Variables_Dinamicas.Necesidades_Basicas[indice] > Variables_Estaticas.BANCARROTA_MAX_NECESIDAD:
+		Variables_Dinamicas.Necesidades_Basicas[indice] = Variables_Estaticas.BANCARROTA_MAX_NECESIDAD

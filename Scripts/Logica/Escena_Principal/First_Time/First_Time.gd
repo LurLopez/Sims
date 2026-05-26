@@ -9,6 +9,7 @@ func First_Time_Function():
 		Crear_Progreso()
 		Crear_First_Time_Minute()
 		Variables_Dinamicas.Dinero=1000
+		Crear_Alquiler()
 
 #Creará una matriz de 1339 filas y 574 columnas, llena de "". Las filas representaran los minutos de un día y
 #las columnas los dias, que seran de 7 dias por 82 años 
@@ -38,6 +39,11 @@ func Crear_Habilidades():
 func Crear_Habilidades_Mostradas():
 	for i in range(0,6):
 		Variables_Dinamicas.Habilidades_Mostradas.append(0)
+
+func Crear_Alquiler():
+	# El personaje empieza con casa. El primer alquiler se cobrará 7 días después.
+	Variables_Dinamicas.En_La_Calle = false
+	Variables_Dinamicas.Ultima_Fecha_Alquiler = Variables_Dinamicas.Minute_Day * 1440 + Variables_Dinamicas.Minute_Minute
 
 func Crear_Progreso():
 	for i in range(0,3):
