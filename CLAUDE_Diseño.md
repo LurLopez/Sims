@@ -28,6 +28,18 @@ La escena principal es **compleja con muchos nodos anidados**. Para entenderla b
 
 ---
 
+## ⚠️ Reglas críticas para UI persistente
+
+Cuando agregas un nodo que **siempre debe estar visible** (como botones de navegación, dinero, estado):
+
+1. **Coloca el nodo al FINAL del árbol** en el `.tscn` — Los nodos se dibujan en orden de aparición, así que los últimos están encima.
+2. **Establece `z_index = 10`** para asegurar que esté en frente incluso si otros nodos suben su z_index.
+3. **Hazlo visible en `Gestionar_Visibilidad.Visibilizar_Lo_Basico(raiz)`** — Esta función se llama DESPUÉS de `Quitar_Todo()`, que oculta todo recursivamente.
+
+**Por qué importa:** `Quitar_Todo()` hace `visible = false` a TODOS los nodos. Si tu elemento no está explícitamente en `Visibilizar_Lo_Basico()`, quedará invisible permanentemente.
+
+---
+
 ## Componentes Visuales Clave
 
 ### Barras de Progreso
@@ -94,10 +106,46 @@ La escena principal es **compleja con muchos nodos anidados**. Para entenderla b
 ## Estructura de Pantallas
 
 Gestionar_Visibilidad controla visibilidad recursiva:
-- `Quitar_Todo(raiz)` → solo Barra_Abajo, Fondo, Moneda visibles.
+- `Quitar_Todo(raiz)` → **OCULTA TODO recursivamente**, luego llama `Visibilizar_Lo_Basico()` para mostrar solo elementos base.
 - `Visibilizar_Elegir_Actividad()` → menú de actividades.
 - `Visibilizar_Horario_Semanal()` → calendario.
 - `Visibilizar_Seleccionar_Horario()` → reloj + pickers.
+
+### ⚠️ Cuidado con la visibilidad y Z-index
+
+**Problema:** Elementos nuevos pueden quedar ocultos por `Quitar_Todo()` o tapados por otros nodos.
+
+**Solución:**
+1. **Asegura que el nodo sea visible en `Visibilizar_Lo_Basico()`** — si siempre debe estar visible, agrégalo aquí:
+   ```gdscript
+   func Visibilizar_Lo_Basico(raiz):
+       raiz.visible=true
+       Recursivo_Visibilizar(raiz.get_node("Barra_Abajo"))
+       raiz.get_node("Fondo").visible=true
+       raiz.get_node("Moneda").visible=true
+       raiz.get_node("Dinero_Label").visible=true
+       raiz.get_node("Tienda_Button").visible=true      # ← Agregar aquí
+       raiz.get_node("Alquiler_Button").visible=true
+   ```
+
+2. **Posiciona el nodo al FINAL del árbol de escena** — los últimos hijos en `.tscn` se dibujan encima:
+   ```
+   [node name="Fondo" ...]         ← dibuja primero
+   [node name="Progreso" ...]      ← dibuja encima
+   [node name="Moneda" ...]        ← dibuja encima
+   [node name="Tienda_Button" ...]  ← dibuja último (encima de todo)
+   [node name="Alquiler_Button" ...]← dibuja último
+   ```
+
+3. **Usa `z_index = 10`** en nodos que deben estar siempre en frente:
+   ```
+   [node name="Tienda_Button" type="Button" parent="."]
+   z_index = 10                    # ← Asegura que está en frente
+   offset_left = 10.0
+   offset_top = 10.0
+   ```
+
+**Ejemplo:** Los botones Tienda y Alquiler están al final de la jerarquía con `z_index = 10` y se hacen visibles en `Visibilizar_Lo_Basico()`, garantizando que siempre aparezcan encima sin ser ocultados.
 
 ---
 

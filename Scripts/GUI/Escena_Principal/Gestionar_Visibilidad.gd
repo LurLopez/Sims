@@ -38,6 +38,7 @@ func Visibilizar_Lo_Basico(raiz):
 	raiz.get_node("Fondo").visible=true
 	raiz.get_node("Moneda").visible=true
 	raiz.get_node("Dinero_Label").visible=true
+	raiz.get_node("Tienda_Button").visible=true
 	raiz.get_node("Alquiler_Button").visible=true
 
 
