@@ -191,16 +191,25 @@ func _on_boton_actividades_pressed():
 
 
 func _on_siguiente_semana_pressed() -> void:
-	mirar_semana+=1
-	actividades_bloque_gui.bloque_columna.limpiar_todos_los_vboxcontainer()
-	actividades_bloque_gui.Agregar_Bloques(mirar_semana,self)
-	if mirar_semana==82:
-		print("aa")
+	if mirar_semana < 81:
+		mirar_semana += 1
+		actividades_bloque_gui.bloque_columna.limpiar_todos_los_vboxcontainer()
+		actividades_bloque_gui.Agregar_Bloques(mirar_semana, self)
+		_Actualizar_Visibilidad_Botones_Navegacion()
+
 func _on_anterior_semana_pressed() -> void:
-	if mirar_semana!=0:
-		mirar_semana-=1
-	actividades_bloque_gui.bloque_columna.limpiar_todos_los_vboxcontainer()
-	actividades_bloque_gui.Agregar_Bloques(mirar_semana,self)
+	if mirar_semana > 0:
+		mirar_semana -= 1
+		actividades_bloque_gui.bloque_columna.limpiar_todos_los_vboxcontainer()
+		actividades_bloque_gui.Agregar_Bloques(mirar_semana, self)
+		_Actualizar_Visibilidad_Botones_Navegacion()
+
+func _Actualizar_Visibilidad_Botones_Navegacion() -> void:
+	var boton_anterior = $Actividades/Horario_Semanal/OPCIONES_CALENDARIO.get_node("ANTERIOR SEMANA")
+	var boton_siguiente = $Actividades/Horario_Semanal/OPCIONES_CALENDARIO.get_node("SIGUIENTE SEMANA")
+
+	boton_anterior.visible = mirar_semana > 0
+	boton_siguiente.visible = mirar_semana < 81
 
 
 func _input(event: InputEvent) -> void:
@@ -462,13 +471,12 @@ func Inicializar_Otros_Scripts():
 
 
 func Iniciar_Bloques_Actividad():
-
-
 	actividades_bloque_gui.Inicializar(self)
 	actividades_bloque_gui.bloque_columna.limpiar_horas_del_horario()
 	actividades_bloque_gui.Añadir_Horas_Al_Horario()
 	actividades_bloque_gui.bloque_columna.limpiar_todos_los_vboxcontainer()
-	actividades_bloque_gui.Agregar_Bloques(mirar_semana,self)
+	actividades_bloque_gui.Agregar_Bloques(mirar_semana, self)
+	_Actualizar_Visibilidad_Botones_Navegacion()
 	Gestionar_Visibilidad.Visibilizar_Horario_Semanal(self)
 
 
