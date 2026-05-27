@@ -28,12 +28,15 @@ var blink_estado: bool = false
 var mini_cal_preview = null
 func _ready():
 	Inicializar_Otros_Scripts()
+	$Alquiler_Button.pressed.connect(Callable(self, "_on_alquiler_button_pressed"))
+	Actualizar_Texto_Alquiler()
 	if (Variables_Estaticas.First_Time):
-		first_time_logica.First_Time_Function() 
+		first_time_logica.First_Time_Function()
 		mirar_semana=1
 		Guardar_Variables_Estaticas.save_game()
 		Guardar_Variables_Dinamicas.save_game()
-		
+		Actualizar_Texto_Alquiler()
+
 	else:
 		Gestionar_Visibilidad.Quitar_Todo(self)
 		mirar_semana=Variables_Dinamicas.Minute_Day/7
@@ -66,6 +69,7 @@ func Actualizar_Dinero():
 	var offset_right_dinamico = _DINERO_OFFSET_RIGHT_3_DIGITOS - extra_digitos * _DINERO_DESPLAZAMIENTO_POR_DIGITO_EXTRA
 	$Dinero_Label.offset_right = offset_right_dinamico
 	$Dinero_Label.offset_left = offset_right_dinamico - _DINERO_ANCHO_LABEL
+	Actualizar_Texto_Alquiler()
 
 # Calcula cuántos minutos LOCALES han pasado desde el último tick procesado.
 # Se basa en la hora del dispositivo (no en Unix delta), así DST y cambios de zona
@@ -534,3 +538,31 @@ func Actividad_Terminada():
 	# de Fijas (Trabajo → Comida Rápida) nunca se inicializó bloque_columna.
 	if actividades_bloque_gui.bloque_columna != null:
 		actividades_bloque_gui.bloque_columna.limpiar_horas_del_horario()
+
+
+func Actualizar_Texto_Alquiler():
+	if Variables_Dinamicas.En_La_Calle:
+		$Alquiler_Button.text = "En la calle"
+	else:
+		$Alquiler_Button.text = "En alquiler"
+
+
+func _on_alquiler_button_pressed():
+	if Variables_Dinamicas.En_La_Calle:
+		# Intenta volver a alquiler
+		if Variables_Dinamicas.Dinero >= Variables_Estaticas.ALQUILER_SEMANAL:
+			Actividades.Volver_A_Alquiler()
+			Actualizar_Texto_Alquiler()
+			Guardar_Variables_Dinamicas.save_game()
+		# Si no tiene dinero, no hace nada (se queda en la calle)
+	else:
+		# Intenta ir a la calle (requiere confirmación)
+		var dialogo = ConfirmationDialog.new()
+		dialogo.dialog_text = "¿Estás seguro de que quieres irte a la calle?\n\nTus necesidades básicas se verán afectadas."
+		add_child(dialogo)
+		var resultado = await dialogo.confirmed
+		if resultado:
+			Actividades.Ir_A_La_Calle()
+			Actualizar_Texto_Alquiler()
+			Guardar_Variables_Dinamicas.save_game()
+		dialogo.queue_free()
