@@ -89,6 +89,33 @@ func Crear_Actividad(i, j, actividad):
 	Variables_Dinamicas.Matriz_Jugador[j][i] = actividad
 
 
+func Cobrar_Alquiler():
+	Variables_Dinamicas.Dinero -= Variables_Estaticas.ALQUILER_SEMANAL
+	Variables_Dinamicas.Ultima_Fecha_Alquiler = Variables_Dinamicas.Minute
+
+	if Variables_Dinamicas.Dinero < 0:
+		Ir_A_La_Calle()
+
+
+func Ir_A_La_Calle():
+	Variables_Dinamicas.En_La_Calle = true
+	Variables_Dinamicas.Ultima_Fecha_Alquiler = -1
+	# Capar necesidades básicas a 20 inmediatamente.
+	for k in range(Variables_Dinamicas.Necesidades_Basicas.size()):
+		if Variables_Dinamicas.Necesidades_Basicas[k] > Variables_Estaticas.BANCARROTA_MAX_NECESIDAD:
+			Variables_Dinamicas.Necesidades_Basicas[k] = Variables_Estaticas.BANCARROTA_MAX_NECESIDAD
+
+
+func Volver_A_Alquiler():
+	if Variables_Dinamicas.Dinero >= Variables_Estaticas.ALQUILER_SEMANAL:
+		Variables_Dinamicas.En_La_Calle = false
+		Variables_Dinamicas.Dinero -= Variables_Estaticas.ALQUILER_SEMANAL
+		Variables_Dinamicas.Ultima_Fecha_Alquiler = Variables_Dinamicas.Minute
+	else:
+		# No tienes dinero suficiente, permaneces en la calle
+		pass
+
+
 func Actualizar_Horario(minutos_a_procesar: int):
 	for i in range(minutos_a_procesar):
 		var celda = Variables_Dinamicas.Matriz_Jugador[Variables_Dinamicas.Minute_Minute][Variables_Dinamicas.Minute_Day]
@@ -108,17 +135,10 @@ func Actualizar_Horario(minutos_a_procesar: int):
 
 		Variables_Dinamicas.Minute = Variables_Dinamicas.Minute + 1
 
-		# Cobrar alquiler al cruzar a lunes 00:00.
-		# Minute_Day % 7 == 0 ⇒ Lunes (las semanas empiezan en lunes en este modelo).
-		# Esto se ejecuta tras avanzar, así que la primera ejecución posible es la
-		# transición desde domingo 23:59 al lunes 00:00 de la SIGUIENTE semana —
-		# nunca cobra el lunes inicial del personaje recién creado.
-		if Variables_Dinamicas.Minute_Minute == 0 and Variables_Dinamicas.Minute_Day % 7 == 0:
-			Variables_Dinamicas.Dinero -= Variables_Estaticas.ALQUILER_SEMANAL
-			# Si el cobro deja al jugador en bancarrota, capar todas las necesidades
-			# a 20 de golpe (no esperar a que la siguiente actividad lo haga).
-			if Variables_Dinamicas.Dinero < 0:
-				for k in range(Variables_Dinamicas.Necesidades_Basicas.size()):
-					if Variables_Dinamicas.Necesidades_Basicas[k] > Variables_Estaticas.BANCARROTA_MAX_NECESIDAD:
-						Variables_Dinamicas.Necesidades_Basicas[k] = Variables_Estaticas.BANCARROTA_MAX_NECESIDAD
+		# Cobrar alquiler timer-based (7 días = 7*1440 minutos desde Ultima_Fecha_Alquiler).
+		# Solo se cobra si estás en alquiler (En_La_Calle == false).
+		if not Variables_Dinamicas.En_La_Calle and Variables_Dinamicas.Ultima_Fecha_Alquiler >= 0:
+			var minutos_desde_alquiler = Variables_Dinamicas.Minute - Variables_Dinamicas.Ultima_Fecha_Alquiler
+			if minutos_desde_alquiler >= 7 * 1440:
+				Cobrar_Alquiler()
 	Funciones_Globales.Guardar_Matriz()
