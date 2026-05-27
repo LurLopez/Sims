@@ -27,6 +27,7 @@ Actividades="*res://Scripts/Logica/Escena_Principal/Actividades/Actividades.gd"
 Actividades_Habilidades="*res://Scripts/Logica/Escena_Principal/Actividades/Actividades_Habilidades.gd"
 Actividades_Necesidades_Basicas="*res://Scripts/Logica/Escena_Principal/Actividades/Actividades_Necesidades_Basicas.gd"
 Gestionar_Visibilidad="*res://Scripts/GUI/Escena_Principal/Gestionar_Visibilidad.gd"
+Debug_Cargar_Guardado="*res://Scripts/Otro/Debug/Debug_Cargar_Guardado.gd"
 
 [display]
 

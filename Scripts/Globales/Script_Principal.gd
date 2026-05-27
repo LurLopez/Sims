@@ -26,6 +26,7 @@ var rueda_activa: String = ""
 var blink_timer: Timer = null
 var blink_estado: bool = false
 var mini_cal_preview = null
+var _dialog_ir_a_la_calle: ConfirmationDialog = null
 func _ready():
 	Inicializar_Otros_Scripts()
 	$Alquiler_Button.pressed.connect(Callable(self, "_on_alquiler_button_pressed"))
@@ -557,12 +558,18 @@ func _on_alquiler_button_pressed():
 		# Si no tiene dinero, no hace nada (se queda en la calle)
 	else:
 		# Intenta ir a la calle (requiere confirmación)
-		var dialogo = ConfirmationDialog.new()
-		dialogo.dialog_text = "¿Estás seguro de que quieres irte a la calle?\n\nTus necesidades básicas se verán afectadas."
-		add_child(dialogo)
-		var resultado = await dialogo.confirmed
-		if resultado:
-			Actividades.Ir_A_La_Calle()
-			Actualizar_Texto_Alquiler()
-			Guardar_Variables_Dinamicas.save_game()
-		dialogo.queue_free()
+		if _dialog_ir_a_la_calle == null:
+			_dialog_ir_a_la_calle = ConfirmationDialog.new()
+			_dialog_ir_a_la_calle.title = "Irte a la calle"
+			_dialog_ir_a_la_calle.ok_button_text = "Sí, irme"
+			_dialog_ir_a_la_calle.get_cancel_button().text = "Cancelar"
+			_dialog_ir_a_la_calle.confirmed.connect(Callable(self, "_Confirmar_Ir_A_La_Calle"))
+			add_child(_dialog_ir_a_la_calle)
+		_dialog_ir_a_la_calle.dialog_text = "¿Estás seguro de que quieres irte a la calle?\n\nTus necesidades básicas se verán afectadas drásticamente."
+		_dialog_ir_a_la_calle.popup_centered(Vector2i(500, 220))
+
+
+func _Confirmar_Ir_A_La_Calle():
+	Actividades.Ir_A_La_Calle()
+	Actualizar_Texto_Alquiler()
+	Guardar_Variables_Dinamicas.save_game()

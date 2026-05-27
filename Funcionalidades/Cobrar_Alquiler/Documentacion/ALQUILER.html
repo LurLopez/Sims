@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Alquiler - Documentación</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+            color: #333;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #34495e;
+            margin-top: 30px;
+            padding-top: 15px;
+            border-top: 1px solid #ecf0f1;
+        }
+        h3 {
+            color: #7f8c8d;
+        }
+        .section {
+            margin: 20px 0;
+            padding: 15px;
+            background: #ecf0f1;
+            border-left: 4px solid #3498db;
+            border-radius: 4px;
+        }
+        .highlight {
+            background: #fff3cd;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: white;
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        th {
+            background: #3498db;
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+        td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #ecf0f1;
+        }
+        tr:last-child td {
+            border-bottom: none;
+        }
+        .case {
+            background: #d5f4e6;
+            margin: 20px 0;
+            padding: 15px;
+            border-left: 4px solid #27ae60;
+            border-radius: 4px;
+        }
+        .case h4 {
+            margin: 0 0 10px 0;
+            color: #27ae60;
+        }
+        .code {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+        .checkmark {
+            color: #27ae60;
+            font-weight: bold;
+        }
+        .warning {
+            background: #fadbd8;
+            border-left-color: #e74c3c;
+        }
+        .page-break {
+            page-break-after: always;
+            margin: 30px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏠 Sistema de Alquiler Timer-Based</h1>
+        <p><strong>Versión:</strong> 1.0 | <strong>Fecha:</strong> 2026-05-27</p>
+
+        <h2>📋 Descripción General</h2>
+        <div class="section">
+            <p>Sistema que permite al jugador elegir entre vivir en alquiler o en la calle, con un cobro automático cada 7 días reales (7 días de juego).</p>
+            <p><strong>Objetivo:</strong> Dar libertad económica al jugador mientras mantiene presión financiera realista.</p>
+        </div>
+
+        <h2>💰 Variables Principales</h2>
+        <table>
+            <tr>
+                <th>Variable</th>
+                <th>Tipo</th>
+                <th>Significado</th>
+                <th>Rango</th>
+            </tr>
+            <tr>
+                <td><code>En_La_Calle</code></td>
+                <td>bool</td>
+                <td>true = sin alojamiento | false = alquilando</td>
+                <td>true/false</td>
+            </tr>
+            <tr>
+                <td><code>Ultima_Fecha_Alquiler</code></td>
+                <td>int</td>
+                <td>Minuto absoluto del último alquiler pagado</td>
+                <td>-1 (inactivo) o ≥0</td>
+            </tr>
+            <tr>
+                <td><code>Dinero</code></td>
+                <td>int</td>
+                <td>Dinero disponible (nunca negativo)</td>
+                <td>≥0</td>
+            </tr>
+        </table>
+
+        <h2>⚙️ Lógica de Cobro</h2>
+        <div class="section">
+            <p><span class="highlight">Cada minuto de juego</span>, se ejecuta esta verificación:</p>
+            <div class="code">
+if not En_La_Calle and Ultima_Fecha_Alquiler >= 0:
+    minutos_desde = Minute_Actual - Ultima_Fecha_Alquiler
+    if minutos_desde >= 7 * 1440:  # 7 días
+        Cobrar_Alquiler()
+            </div>
+        </div>
+
+        <h2>📍 Flujo de Estados</h2>
+        <p><strong>Diagrama de transiciones:</strong></p>
+        <div class="code">
+ALQUILANDO (En_La_Calle=false)
+    ↓
+    ├─→ [Usuario pulsa botón] → Confirmación → IR_A_LA_CALLE
+    │                                              ↓
+    │   EN_LA_CALLE (En_La_Calle=true)
+    │       ├─→ [Dinero ≥ 200€] → Pulsar botón → ALQUILANDO
+    │       └─→ [Dinero < 200€] → Bloqueado (sin acción)
+    │
+    └─→ [7 días sin pagar]
+        ├─→ [Dinero ≥ 200€] → Paga 200€ → ALQUILANDO (timer reset)
+        └─→ [Dinero < 200€] → Va automáticamente → EN_LA_CALLE
+        </div>
+
+        <h2>🔧 Funciones Implementadas</h2>
+
+        <h3>Cobrar_Alquiler()</h3>
+        <div class="case">
+            <h4>Descripción</h4>
+            <p>Intenta cobrar 200€. Si dinero < 200€, va automáticamente a la calle.</p>
+            <h4>Lógica</h4>
+            <div class="code">
+if Dinero >= 200:
+    Dinero -= 200
+    Ultima_Fecha_Alquiler = Minute_Actual
+else:
+    Ir_A_La_Calle()
+            </div>
+        </div>
+
+        <h3>Ir_A_La_Calle()</h3>
+        <div class="case">
+            <h4>Descripción</h4>
+            <p>Marca al jugador como sin alojamiento. Se ejecuta automática o voluntariamente.</p>
+            <h4>Efectos</h4>
+            <ul>
+                <li>En_La_Calle = true</li>
+                <li>Ultima_Fecha_Alquiler = -1 (anula timer)</li>
+                <li>Necesidades básicas caen a máximo 20</li>
+            </ul>
+        </div>
+
+        <h3>Volver_A_Alquiler()</h3>
+        <div class="case">
+            <h4>Descripción</h4>
+            <p>Intenta volver a alquiler. Requiere 200€ líquidos.</p>
+            <h4>Lógica</h4>
+            <div class="code">
+if Dinero >= 200:
+    En_La_Calle = false
+    Dinero -= 200
+    Ultima_Fecha_Alquiler = Minute_Actual
+else:
+    # No hace nada, se queda en la calle
+            </div>
+        </div>
+
+        <div class="page-break"></div>
+
+        <h2>📊 Casos de Uso</h2>
+
+        <h3>Caso 1: Nueva partida</h3>
+        <div class="case">
+            <h4>Estado Inicial</h4>
+            <ul>
+                <li>Dinero: 1000€</li>
+                <li>En_La_Calle: false</li>
+                <li>Ultima_Fecha_Alquiler: minuto_actual</li>
+            </ul>
+            <h4>Qué ocurre</h4>
+            <p>Después de <span class="highlight">7 días reales</span>, se cobra 200€.</p>
+            <p>Resultado: Dinero = 800€, Ultima_Fecha = minuto_del_cobro</p>
+        </div>
+
+        <h3>Caso 2: Dinero insuficiente</h3>
+        <div class="case">
+            <h4>Escenario</h4>
+            <p>Tienes 150€ cuando llega la hora de pagar el alquiler.</p>
+            <h4>Qué ocurre</h4>
+            <p><span class="checkmark">✓ NO se cobran 200€</span></p>
+            <p><span class="checkmark">✓ Se conservan los 150€</span></p>
+            <p><span class="checkmark">✓ Automáticamente vas a la calle</span></p>
+            <p><span class="checkmark">✓ Necesidades caen a máximo 20</span></p>
+        </div>
+
+        <h3>Caso 3: Volver del la calle</h3>
+        <div class="case">
+            <h4>Escenario</h4>
+            <p>Estás en la calle con 250€. Pulsas el botón "En la calle".</p>
+            <h4>Qué ocurre</h4>
+            <p><span class="checkmark">✓ Se cobran 200€ inmediatamente</span></p>
+            <p><span class="checkmark">✓ Te quedan 50€</span></p>
+            <p><span class="checkmark">✓ Vuelves a alquiler (En_La_Calle = false)</span></p>
+            <p><span class="checkmark">✓ Nuevo timer: próximo cobro en 7 días</span></p>
+        </div>
+
+        <h3>Caso 4: Intenta volver sin dinero</h3>
+        <div class="case">
+            <h4>Escenario</h4>
+            <p>Estás en la calle con 150€. Pulsas el botón "En la calle".</p>
+            <h4>Qué ocurre</h4>
+            <p><span class="warning">Nada. Te quedas en la calle silenciosamente.</span></p>
+            <p>Tienes que conseguir 50€ más antes de poder volver.</p>
+        </div>
+
+        <h2>🛡️ Protecciones Implementadas</h2>
+        <table>
+            <tr>
+                <th>Riesgo</th>
+                <th>Protección</th>
+            </tr>
+            <tr>
+                <td>Dinero negativo</td>
+                <td>Si no hay dinero, vas a la calle sin perder dinero</td>
+            </tr>
+            <tr>
+                <td>Explotar el fin de semana</td>
+                <td>Volver a alquiler cuesta 200€ inmediatos (no hay gracia)</td>
+            </tr>
+            <tr>
+                <td>Irse por accidente</td>
+                <td>Se pide confirmación al intentar ir a la calle</td>
+            </tr>
+            <tr>
+                <td>Desincronización de reloj</td>
+                <td>Timer usa minutos absolutos, no depende del día semana</td>
+            </tr>
+        </table>
+
+        <h2>💾 Persistencia (Save/Load)</h2>
+        <div class="section">
+            <h3>Al guardar:</h3>
+            <p>Se persisten <code>En_La_Calle</code> y <code>Ultima_Fecha_Alquiler</code></p>
+            <h3>Al cargar:</h3>
+            <p>Se recuperan ambas variables. <span class="checkmark">Fallback para saves viejos:</span> asume "en alquiler" con 7 días de gracia.</p>
+        </div>
+
+        <h2>📈 Impacto en Necesidades Básicas</h2>
+        <div class="section">
+            <p>Cuando <code>En_La_Calle = true</code> O <code>Dinero < 0</code>:</p>
+            <ul>
+                <li><strong>Límite máximo de necesidades: 20</strong></li>
+                <li>Las barras de salud caen rápidamente</li>
+                <li>Efecto psicológico: presión financiera</li>
+            </ul>
+        </div>
+
+        <h2>🐛 Notas Técnicas</h2>
+        <ul>
+            <li><strong>Ejecución:</strong> Se verifica cada minuto en <code>Actividades.Actualizar_Horario()</code></li>
+            <li><strong>Timer absoluto:</strong> Usa <code>Minute</code> (minutos Unix), no depende del calendario gregoriano</li>
+            <li><strong>Atomicidad:</strong> El cobro y la transición a calle son atómicos (no hay estado intermedio)</li>
+            <li><strong>UI:</strong> Botón en parte superior izquierda (z_index=10, visible siempre)</li>
+        </ul>
+
+        <h2>✅ Checklist de Testing</h2>
+        <ul>
+            <li><input type="checkbox" checked> Primera vez cobra después de 7 días</li>
+            <li><input type="checkbox" checked> Dinero insuficiente → va a la calle automáticamente</li>
+            <li><input type="checkbox" checked> Ir a la calle voluntario pide confirmación</li>
+            <li><input type="checkbox" checked> Volver cuesta 200€ inmediatos</li>
+            <li><input type="checkbox" checked> Sin dinero no puedes volver</li>
+            <li><input type="checkbox" checked> Necesidades caen a 20 en la calle</li>
+            <li><input type="checkbox" checked> Save/load preserva estado correctamente</li>
+            <li><input type="checkbox" checked> Botón visible en pantalla principal</li>
+        </ul>
+
+    </div>
+</body>
+</html>

@@ -347,3 +347,41 @@ Vista similar al calendario semanal pero simplificada: muestra verde si la celda
 
 ### Typo en guardado
 6. **`Guardar_Variables_Estaticas.gd`**: la clave `"First_TIme_Minute_Minute"` (I mayúscula) es consistente entre save y load por lo que funciona, pero es un typo que podría causar confusión en el futuro.
+
+---
+
+## Estructura de Funcionalidades
+
+A partir de este punto, las funcionalidades implementadas se documentan en la carpeta `Funcionalidades/` con la siguiente estructura:
+
+```
+Funcionalidades/
+├── Nombre_Funcionalidad/
+│   ├── Tests/
+│   │   └── test_funcionalidad.gd    (Tests automatizados)
+│   └── Documentacion/
+│       ├── FUNCIONALIDAD.md         (Para IA - referencia rápida)
+│       └── FUNCIONALIDAD.html       (Para humano - visualización PDF)
+```
+
+### Funcionalidades Implementadas
+
+#### 1. Cobrar_Alquiler
+**Ubicación:** `Funcionalidades/Cobrar_Alquiler/`
+- **Tests:** `Tests/test_alquiler.gd` - 6 casos de prueba cubriendo todos los escenarios
+- **Documentación:** `Documentacion/ALQUILER.html` - Guía completa visual (abre en navegador)
+
+**Descripción:** Sistema timer-based de alquiler semanal (200€ cada 7 días). El jugador puede elegir ir a la calle voluntariamente o automáticamente si no tiene dinero. Necesidades básicas caen a máximo 20 cuando está en la calle.
+
+**Variables afectadas:**
+- `Variables_Dinamicas.En_La_Calle` (bool)
+- `Variables_Dinamicas.Ultima_Fecha_Alquiler` (int)
+- `Variables_Dinamicas.Dinero` (int)
+- `Variables_Dinamicas.Necesidades_Basicas` (Array)
+
+**Funciones principales:**
+- `Actividades.Cobrar_Alquiler()` - Intenta cobrar 200€ o va a la calle
+- `Actividades.Ir_A_La_Calle()` - Marca como sin alojamiento, capa necesidades a 20
+- `Actividades.Volver_A_Alquiler()` - Requiere 200€, inicia nuevo timer
+- `Script_Principal._on_alquiler_button_pressed()` - UI: botón de estado alquiler/calle
+- `Gestionar_Visibilidad.Visibilizar_Lo_Basico()` - Asegura que el botón sea siempre visible

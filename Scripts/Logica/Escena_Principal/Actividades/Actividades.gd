@@ -90,10 +90,12 @@ func Crear_Actividad(i, j, actividad):
 
 
 func Cobrar_Alquiler():
-	Variables_Dinamicas.Dinero -= Variables_Estaticas.ALQUILER_SEMANAL
-	Variables_Dinamicas.Ultima_Fecha_Alquiler = Variables_Dinamicas.Minute
-
-	if Variables_Dinamicas.Dinero < 0:
+	# Solo cobrar si tienes dinero suficiente
+	if Variables_Dinamicas.Dinero >= Variables_Estaticas.ALQUILER_SEMANAL:
+		Variables_Dinamicas.Dinero -= Variables_Estaticas.ALQUILER_SEMANAL
+		Variables_Dinamicas.Ultima_Fecha_Alquiler = Variables_Dinamicas.Minute
+	else:
+		# No tienes dinero suficiente, te vas a la calle automáticamente
 		Ir_A_La_Calle()
 
 
