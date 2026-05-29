@@ -20,6 +20,12 @@ var Ultima_Fecha_Alquiler=-1
 #Variable relacionada con el trabajo
 var Trabajo=false
 
+# Sistema de Objetos/Muebles
+# Objetos_Poseidos: Dictionary {clave_objeto: bool} indicando qué objetos del catálogo posee el jugador.
+var Objetos_Poseidos: Dictionary = {}
+# Objeto_Seleccionado: Dictionary {nombre_actividad: clave_objeto} indicando qué objeto está usando el jugador para cada actividad.
+var Objeto_Seleccionado: Dictionary = {}
+
 var Minute_Day=0
 var Minute_Minute=0
 var Minute=0

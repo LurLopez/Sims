@@ -1,0 +1,2 @@
+class_name Objeto_Dormir
+extends Objeto

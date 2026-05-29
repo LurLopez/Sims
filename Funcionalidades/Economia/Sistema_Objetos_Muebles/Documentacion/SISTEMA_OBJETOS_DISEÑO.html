@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Objetos/Muebles — Especificación de Diseño</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+            padding: 40px 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+            font-size: 2em;
+        }
+        
+        h2 {
+            color: #34495e;
+            margin-top: 35px;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #ecf0f1;
+            font-size: 1.5em;
+        }
+        
+        h3 {
+            color: #7f8c8d;
+            margin-top: 25px;
+            margin-bottom: 12px;
+            font-size: 1.2em;
+        }
+        
+        p {
+            margin-bottom: 15px;
+            text-align: justify;
+        }
+        
+        ul, ol {
+            margin-left: 30px;
+            margin-bottom: 15px;
+        }
+        
+        li {
+            margin-bottom: 8px;
+        }
+        
+        strong {
+            color: #2c3e50;
+        }
+        
+        code, pre {
+            background-color: #f8f9fa;
+            border-left: 4px solid #3498db;
+            padding: 12px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+        
+        pre {
+            padding: 15px;
+        }
+        
+        code {
+            padding: 2px 6px;
+            display: block;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background-color: #fafafa;
+        }
+        
+        th {
+            background-color: #3498db;
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+        
+        td {
+            border: 1px solid #ecf0f1;
+            padding: 10px 12px;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #f5f5f5;
+        }
+        
+        .highlight-box {
+            background-color: #e8f4f8;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        
+        .warning-box {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        
+        .file-tree {
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            overflow-x: auto;
+        }
+        
+        .file-tree pre {
+            border: none;
+            background-color: transparent;
+            margin: 0;
+            padding: 0;
+        }
+        
+        @media print {
+            body {
+                background-color: white;
+                padding: 0;
+            }
+            .container {
+                box-shadow: none;
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 Sistema de Objetos/Muebles — Especificación de Diseño</h1>
+        
+        <h2>1. Descripción General</h2>
+        <p>Sistema de compra, venta y uso de muebles que afectan a las necesidades básicas del personaje mediante multiplicadores de probabilidad.</p>
+        
+        <p>El jugador puede:</p>
+        <ul>
+            <li><strong>Comprar</strong> muebles con dinero</li>
+            <li><strong>Vender</strong> muebles (excepto el básico obligatorio)</li>
+            <li><strong>Seleccionar</strong> cuál usar (afecta a los cálculos de necesidades básicas)</li>
+            <li><strong>Poseer múltiples</strong> del mismo tipo pero solo usar uno</li>
+        </ul>
+        
+        <h2>2. Estructura de Clases</h2>
+        
+        <h3>Clase Base: <code>Objeto.gd</code></h3>
+        <pre><code>class_name Objeto extends Resource
+
+@export var nombre: String              # ej: "Cama Premium"
+@export var precio: float               # ej: 500.0
+@export var multiplicador: float        # ej: 1.05 (+5%)
+@export var afecta_a: String            # ej: "Dormir"
+@export var es_basico: bool             # true = no se puede vender si es el único</code></pre>
+        
+        <h3>Subclases Especializadas (herencia vacía de momento)</h3>
+        <ul>
+            <li><code>Objeto_Dormir.gd</code> → extiende <code>Objeto</code></li>
+            <li><code>Objeto_Comer.gd</code> → extiende <code>Objeto</code></li>
+            <li><code>Objeto_Higiene.gd</code> → extiende <code>Objeto</code></li>
+            <li>Etc. (estructura lista para comportamientos futuros)</li>
+        </ul>
+        
+        <h2>3. Almacenamiento</h2>
+        
+        <h3><code>Variables_Estaticas</code> — Catálogo (inmutable, se reconstruye cada inicio)</h3>
+        <pre><code>Catalogo_Objetos = {
+    "cama_basica": Objeto_Dormir(...),
+    "cama_premium": Objeto_Dormir(...),
+    "cama_lujo": Objeto_Dormir(...),
+    "plato_basico": Objeto_Comer(...),
+    # ... más objetos
+}</code></pre>
+        
+        <p>Inicializado en <code>Variables_Estaticas._ready()</code> mediante <code>_Inicializar_Catalogo_Objetos()</code>.</p>
+        
+        <h3><code>Variables_Dinamicas</code> — Estado del Jugador</h3>
+        <pre><code># Objetos que posee el jugador
+Objetos_Poseidos = {
+    "cama_basica": true,      # Empieza con esto
+    "cama_premium": false,
+    "cama_lujo": false,
+    # ... etc
+}
+
+# Objeto seleccionado por categoría (afecta a cálculos)
+Objeto_Seleccionado = {
+    "Dormir": "cama_basica",      # String con clave del catálogo
+    "Comer": "plato_basico",
+    "Higiene": "espejo_basico",
+    # ... etc
+}</code></pre>
+        
+        <h2>4. Flujo de Compra</h2>
+        <ol>
+            <li>Jugador abre menú de tienda (UI futura)</li>
+            <li>Selecciona un objeto disponible</li>
+            <li>Si tiene dinero suficiente:
+                <ul>
+                    <li><code>Actividades.Comprar_Objeto(clave: String)</code></li>
+                    <li>Resta dinero: <code>Variables_Dinamicas.Dinero -= precio</code></li>
+                    <li>Marca como poseído: <code>Objetos_Poseidos[clave] = true</code></li>
+                    <li>Opcionalmente selecciona: <code>Objeto_Seleccionado[categoría] = clave</code></li>
+                    <li>Guarda partida</li>
+                </ul>
+            </li>
+        </ol>
+        
+        <h2>5. Flujo de Venta</h2>
+        
+        <div class="warning-box">
+            <strong>⚠️ Restricción crítica:</strong> Siempre debe haber al menos un objeto de cada categoría seleccionado.
+        </div>
+        
+        <ol>
+            <li>Jugador selecciona objeto para vender</li>
+            <li>Validación:
+                <ul>
+                    <li>¿Es el único de su categoría? → <strong>No se puede vender</strong></li>
+                    <li>¿Es el objeto actualmente seleccionado? → <strong>Cambiar a otro primero</strong></li>
+                </ul>
+            </li>
+            <li>Si es válido:
+                <ul>
+                    <li><code>Actividades.Vender_Objeto(clave: String)</code></li>
+                    <li>Suma dinero (ej: 50% del precio): <code>Variables_Dinamicas.Dinero += precio * 0.5</code></li>
+                    <li>Marca como no poseído: <code>Objetos_Poseidos[clave] = false</code></li>
+                    <li>Guarda partida</li>
+                </ul>
+            </li>
+        </ol>
+        
+        <h2>6. Flujo de Selección</h2>
+        <p>Cambiar el objeto en uso (sin comprar/vender):</p>
+        
+        <ol>
+            <li>Jugador selecciona nuevo objeto de su categoría</li>
+            <li>Validación:
+                <ul>
+                    <li>¿Lo posee? → Sí → continúa</li>
+                    <li>¿Es diferente al actual? → Sí → continúa</li>
+                </ul>
+            </li>
+            <li>Si es válido:
+                <ul>
+                    <li><code>Actividades.Seleccionar_Objeto(categoría: String, clave: String)</code></li>
+                    <li>Actualiza: <code>Objeto_Seleccionado[categoría] = clave</code></li>
+                    <li>Guarda partida</li>
+                </ul>
+            </li>
+        </ol>
+        
+        <h2>7. Aplicación del Multiplicador</h2>
+        <p>En <code>Actividades_Necesidades_Basicas.gd</code>, al ejecutar una actividad:</p>
+        <pre><code>func Ejecutar_Actividad_Necesidades_Basicas_Array(efectos: Array):
+    var multiplicador = _Obtener_Multiplicador(actividad_actual.nombre)
+    # (resto de lógica existente * multiplicador)
+
+func _Obtener_Multiplicador(nombre_actividad: String) -> float:
+    match nombre_actividad:
+        "Dormir", "Comer", "Higiene":
+            var objeto_clave = Variables_Dinamicas.Objeto_Seleccionado[nombre_actividad]
+            return Variables_Estaticas.Catalogo_Objetos[objeto_clave].multiplicador
+        _:
+            return 1.0</code></pre>
+
+        <div class="highlight-box">
+            <strong>Ventajas de esta implementación:</strong>
+            <ul>
+                <li>Código limpio y centralizado con <code>match</code></li>
+                <li>Fácil de expandir cuando se añadan nuevas categorías</li>
+                <li>El jugador siempre tiene un objeto seleccionado (nunca es null)</li>
+                <li>Acceso directo al dictionary sin validaciones innecesarias</li>
+            </ul>
+        </div>
+        
+        <h2>8. Catálogo de Objetos Implementados</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Categoría</th>
+                    <th>Precio</th>
+                    <th>Multiplicador</th>
+                    <th>Básico</th>
+                    <th>Descripción</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Cama_Basica</strong></td>
+                    <td>Dormir</td>
+                    <td>0€</td>
+                    <td>1.0</td>
+                    <td>✓</td>
+                    <td>Cama de inicio. No se puede vender si es única.</td>
+                </tr>
+                <tr>
+                    <td><strong>Cama_Premium</strong></td>
+                    <td>Dormir</td>
+                    <td>200€</td>
+                    <td>1.05 (+5%)</td>
+                    <td>✗</td>
+                    <td>Descanso 5% más rápido.</td>
+                </tr>
+                <tr>
+                    <td><strong>Cama_Lujo</strong></td>
+                    <td>Dormir</td>
+                    <td>800€</td>
+                    <td>1.10 (+10%)</td>
+                    <td>✗</td>
+                    <td>Descanso 10% más rápido.</td>
+                </tr>
+                <tr>
+                    <td><strong>Mesa_Basica</strong></td>
+                    <td>Comer</td>
+                    <td>0€</td>
+                    <td>1.0</td>
+                    <td>✓</td>
+                    <td>Mesa de inicio. No se puede vender si es única.</td>
+                </tr>
+                <tr>
+                    <td><strong>Mesa_Premium</strong></td>
+                    <td>Comer</td>
+                    <td>200€</td>
+                    <td>1.05 (+5%)</td>
+                    <td>✗</td>
+                    <td>Saciar hambre 5% más rápido.</td>
+                </tr>
+                <tr>
+                    <td><strong>Ducha_Basica</strong></td>
+                    <td>Duchar</td>
+                    <td>0€</td>
+                    <td>1.0</td>
+                    <td>✓</td>
+                    <td>Ducha de inicio. No se puede vender si es única.</td>
+                </tr>
+                <tr>
+                    <td><strong>Ducha_Premium</strong></td>
+                    <td>Duchar</td>
+                    <td>200€</td>
+                    <td>1.05 (+5%)</td>
+                    <td>✗</td>
+                    <td>Higiene 5% más rápida.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>9. Objetos Iniciales</h2>
+        <p>El jugador <strong>empieza con los siguientes objetos seleccionados:</strong></p>
+        <ul>
+            <li><code>Cama_Basica</code> (Dormir)</li>
+            <li><code>Mesa_Basica</code> (Comer)</li>
+            <li><code>Ducha_Basica</code> (Duchar)</li>
+        </ul>
+
+        <p>Estos objetos <strong>no se pueden vender</strong> si son el único de su categoría, asegurando que el jugador siempre tiene al menos un objeto de cada tipo.</p>
+        
+        <h2>9. Expansión Futura</h2>
+        <p>El sistema está diseñado para:</p>
+        <ul>
+            <li>Añadir más objetos sin cambiar la lógica (solo expandir catálogo)</li>
+            <li>Crear subclases con comportamientos especiales (ej: <code>Objeto_Dormir</code> con efecto sleep)</li>
+            <li>Añadir nuevas categorías (Ocio, Trabajo, etc.)</li>
+        </ul>
+
+        <h3>Mejora Planeada: Objetos que Reducen Efectos Negativos</h3>
+        <div class="warning-box">
+            <strong>⏳ Estado: No implementado, pero planeado.</strong>
+        </div>
+
+        <p>Actualmente, los multiplicadores solo <strong>aceleran efectos positivos</strong> (ej: cama premium acelera descanso). Se planea expandir para permitir objetos que <strong>reduzcan</strong> efectos negativos:</p>
+
+        <p><strong>Ejemplo:</strong> Ropa de calidad (multiplicador 0.95 en Higiene):</p>
+        <ul>
+            <li><strong>Normal:</strong> cada ~20 minutos hay 1/20 prob. de perder higiene</li>
+            <li><strong>Con ropa:</strong> 1/(20 × 0.95) = 1/19 prob. (caída más lenta)</li>
+        </ul>
+
+        <p><strong>Cambio necesario en <code>Actividades_Necesidades_Basicas.gd</code>:</strong></p>
+        <pre><code>if multiplicador != 1.0:
+    if por_cuanto > 0:  # Efectos positivos: acelera
+        valor_maximo = max(1, floor(valor_maximo / multiplicador))
+    else:  # Efectos negativos: desacelera
+        valor_maximo = floor(valor_maximo * multiplicador)</code></pre>
+
+        <p><strong>Nuevos objetos necesarios:</strong></p>
+        <ul>
+            <li><code>Objeto_Higiene.gd</code> — ropa, jabón premium, etc. (multiplicador &lt; 1.0)</li>
+            <li>Expandir catálogo con objetos tipo <code>Ropa_Premium</code> con <code>multiplicador = 0.95</code></li>
+        </ul>
+        
+        <h2>10. Guardado/Carga</h2>
+        
+        <h3><code>Guardar_Variables_Dinamicas.gd</code></h3>
+        <ul>
+            <li>Guarda <code>Objetos_Poseidos</code> (Dictionary bool)</li>
+            <li>Guarda <code>Objeto_Seleccionado</code> (Dictionary string)</li>
+        </ul>
+        
+        <h3><code>Guardar_Variables_Estaticas.gd</code></h3>
+        <ul>
+            <li><code>Catalogo_Objetos</code> <strong>no se guarda</strong> (se reconstruye cada inicio)</li>
+        </ul>
+        
+        <h2>11. Resumen de Cambios en el Código</h2>
+        
+        <h3>Nuevos archivos:</h3>
+        <div class="file-tree">
+            <pre>Scripts/Logica/Escena_Principal/Economia/
+├── Herencia/
+│   ├── Objeto.gd
+│   ├── Objeto_Dormir.gd
+│   ├── Objeto_Comer.gd
+│   ├── Objeto_Higiene.gd
+│   └── ...
+└── Catalogo_Objetos.gd (opcional, si se extrae)</pre>
+        </div>
+        
+        <h3>Modificaciones existentes:</h3>
+        <ul>
+            <li><code>Variables_Estaticas.gd</code> — añadir <code>Catalogo_Objetos</code> y <code>_Inicializar_Catalogo_Objetos()</code></li>
+            <li><code>Variables_Dinamicas.gd</code> — añadir <code>Objetos_Poseidos</code> y <code>Objeto_Seleccionado</code></li>
+            <li><code>Actividades.gd</code> — añadir <code>Comprar_Objeto()</code>, <code>Vender_Objeto()</code>, <code>Seleccionar_Objeto()</code></li>
+            <li><code>Actividades_Necesidades_Basicas.gd</code> — modificar para aplicar multiplicadores</li>
+            <li><code>Guardar_Variables_Dinamicas.gd</code> — serializar nuevas variables</li>
+            <li><code>Guardar_Variables_Estaticas.gd</code> — deserializar catálogo</li>
+        </ul>
+        
+        <h2>12. Cómo Expandir el Catálogo</h2>
+
+        <h3>Añadir un nuevo objeto (ejemplo: Cama Súper Premium)</h3>
+        <pre><code># En Variables_Estaticas._Inicializar_Catalogo_Objetos()
+
+var cama_super = Objeto_Dormir.new()
+cama_super.nombre = "Cama_Super_Premium"
+cama_super.precio = 1500.0
+cama_super.multiplicador = 1.15  # +15%
+cama_super.afecta_a = "Dormir"
+cama_super.es_basico = false
+Catalogo_Objetos["Cama_Super_Premium"] = cama_super</code></pre>
+
+        <h3>Crear una nueva categoría (ejemplo: Ropa para reducir caída de higiene)</h3>
+        <ol>
+            <li>Crear archivo <code>Scripts/Logica/Escena_Principal/Economia/Herencia/Objeto_Higiene.gd</code>:
+                <pre><code>class_name Objeto_Higiene
+extends Objeto</code></pre>
+            </li>
+            <li>Añadir objetos en el catálogo:
+                <pre><code>var ropa_premium = Objeto_Higiene.new()
+ropa_premium.nombre = "Ropa_Premium"
+ropa_premium.precio = 150.0
+ropa_premium.multiplicador = 0.95  # Reduce caída en 5%
+ropa_premium.afecta_a = "Duchar"
+ropa_premium.es_basico = false
+Catalogo_Objetos["Ropa_Premium"] = ropa_premium</code></pre>
+            </li>
+            <li>Actualizar lógica de multiplicadores en <code>Actividades_Necesidades_Basicas.gd</code> para soportar multiplicadores &lt; 1.0 (ver sección "Mejora Planeada")</li>
+        </ol>
+
+        <h3>Consideraciones al expandir</h3>
+        <ul>
+            <li><strong>Balance económico:</strong> Objetos más caros deben tener mejores multiplicadores</li>
+            <li><strong>Precio de reventa:</strong> Automáticamente 50% (no es configurable por objeto)</li>
+            <li><strong>Restricción de venta:</strong> No se puede vender si es único o está seleccionado</li>
+            <li><strong>Recomendación de nombres:</strong> Usar PascalCase con guiones bajos (ej: <code>Cama_Super_Premium</code>)</li>
+        </ul>
+
+        <div class="highlight-box">
+            <strong>✅ Sistema completo e implementado.</strong> Documentación en HTML (visual) y MD (técnica) en <code>Funcionalidades/Economia/Sistema_Objetos_Muebles/Documentacion/</code>
+        </div>
+    </div>
+</body>
+</html>

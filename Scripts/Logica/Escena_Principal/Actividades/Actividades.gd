@@ -3,7 +3,7 @@ extends Node
 func Ejecutar_Actividad(actividad: Actividad, es_aleatoria: bool = false):
 	# Necesidades básicas SIEMPRE se aplican (incluso en actividades aleatorias),
 	# así el personaje no se muere si el jugador no entra durante tiempo.
-	Actividades_Necesidades_Basicas.Ejecutar_Actividad_Necesidades_Basicas_Array(actividad.efectos_necesidades_basicas)
+	Actividades_Necesidades_Basicas.Ejecutar_Actividad_Necesidades_Basicas_Array(actividad.efectos_necesidades_basicas, actividad.nombre)
 	# Progreso y descubrimiento SOLO si la actividad fue programada por el jugador.
 	# Una actividad aleatoria mantiene vivo al personaje pero no le hace avanzar
 	# habilidades; el jugador debe estar presente para crecer.
@@ -144,3 +144,58 @@ func Actualizar_Horario(minutos_a_procesar: int):
 			if minutos_desde_alquiler >= 7 * 1440:
 				Cobrar_Alquiler()
 	Funciones_Globales.Guardar_Matriz()
+
+
+# ---------------- Sistema de Objetos/Muebles ----------------
+
+func Comprar_Objeto(clave: String) -> bool:
+	if not Variables_Estaticas.Catalogo_Objetos.has(clave):
+		return false
+	if Variables_Dinamicas.Objetos_Poseidos.get(clave, false):
+		return false
+	var objeto: Objeto = Variables_Estaticas.Catalogo_Objetos[clave]
+	if Variables_Dinamicas.Dinero < objeto.precio:
+		return false
+	Variables_Dinamicas.Dinero -= objeto.precio
+	Variables_Dinamicas.Objetos_Poseidos[clave] = true
+	Guardar_Variables_Dinamicas.save_game()
+	return true
+
+
+func Vender_Objeto(clave: String) -> bool:
+	if not Variables_Dinamicas.Objetos_Poseidos.get(clave, false):
+		return false
+	var objeto: Objeto = Variables_Estaticas.Catalogo_Objetos[clave]
+	# Restricción 1: si es el único objeto que posee de su categoría, no se puede vender.
+	if _Es_Unico_De_Categoria(objeto.afecta_a, clave):
+		return false
+	# Restricción 2: si es el objeto seleccionado, hay que cambiarlo antes.
+	if Variables_Dinamicas.Objeto_Seleccionado.get(objeto.afecta_a, "") == clave:
+		return false
+	Variables_Dinamicas.Dinero += objeto.precio * 0.5
+	Variables_Dinamicas.Objetos_Poseidos[clave] = false
+	Guardar_Variables_Dinamicas.save_game()
+	return true
+
+
+func Seleccionar_Objeto(categoria: String, clave: String) -> bool:
+	if not Variables_Dinamicas.Objetos_Poseidos.get(clave, false):
+		return false
+	var objeto: Objeto = Variables_Estaticas.Catalogo_Objetos[clave]
+	if objeto.afecta_a != categoria:
+		return false
+	Variables_Dinamicas.Objeto_Seleccionado[categoria] = clave
+	Guardar_Variables_Dinamicas.save_game()
+	return true
+
+
+func _Es_Unico_De_Categoria(categoria: String, clave: String) -> bool:
+	for c in Variables_Dinamicas.Objetos_Poseidos.keys():
+		if c == clave:
+			continue
+		if not Variables_Dinamicas.Objetos_Poseidos[c]:
+			continue
+		var obj: Objeto = Variables_Estaticas.Catalogo_Objetos.get(c, null)
+		if obj != null and obj.afecta_a == categoria:
+			return false
+	return true

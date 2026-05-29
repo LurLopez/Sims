@@ -1,0 +1,2 @@
+class_name Objeto_Comer
+extends Objeto

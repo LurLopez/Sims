@@ -11,6 +11,7 @@ var Personalidad = ""
 var Habilidades = []
 var Actividades = []
 var Catalogo_Actividades: Dictionary = {}
+var Catalogo_Objetos: Dictionary = {}
 var First_Time_Minute_Day = 0
 var First_Time_Minute_Minute = 0
 # Fecha local (año/mes/día) al crear el personaje. Se usan para calcular cuántos
@@ -21,6 +22,7 @@ var First_Time_Day_Of_Month = 0
 
 func _ready():
 	_Inicializar_Catalogo()
+	_Inicializar_Catalogo_Objetos()
 
 func _Inicializar_Catalogo():
 	var dormir = Actividad_Temporal.new()
@@ -80,3 +82,63 @@ func _Inicializar_Catalogo():
 		Catalogo_Actividades["Comer"],
 		Catalogo_Actividades["Ver_La_Television"],
 	]
+
+func _Inicializar_Catalogo_Objetos():
+	# Camas (afectan a Dormir)
+	var cama_basica = Objeto_Dormir.new()
+	cama_basica.nombre = "Cama_Basica"
+	cama_basica.precio = 0.0
+	cama_basica.multiplicador = 1.0
+	cama_basica.afecta_a = "Dormir"
+	cama_basica.es_basico = true
+	Catalogo_Objetos["Cama_Basica"] = cama_basica
+
+	var cama_premium = Objeto_Dormir.new()
+	cama_premium.nombre = "Cama_Premium"
+	cama_premium.precio = 200.0
+	cama_premium.multiplicador = 1.05
+	cama_premium.afecta_a = "Dormir"
+	cama_premium.es_basico = false
+	Catalogo_Objetos["Cama_Premium"] = cama_premium
+
+	var cama_lujo = Objeto_Dormir.new()
+	cama_lujo.nombre = "Cama_Lujo"
+	cama_lujo.precio = 800.0
+	cama_lujo.multiplicador = 1.10
+	cama_lujo.afecta_a = "Dormir"
+	cama_lujo.es_basico = false
+	Catalogo_Objetos["Cama_Lujo"] = cama_lujo
+
+	# Mesas (afectan a Comer)
+	var mesa_basica = Objeto_Comer.new()
+	mesa_basica.nombre = "Mesa_Basica"
+	mesa_basica.precio = 0.0
+	mesa_basica.multiplicador = 1.0
+	mesa_basica.afecta_a = "Comer"
+	mesa_basica.es_basico = true
+	Catalogo_Objetos["Mesa_Basica"] = mesa_basica
+
+	var mesa_premium = Objeto_Comer.new()
+	mesa_premium.nombre = "Mesa_Premium"
+	mesa_premium.precio = 200.0
+	mesa_premium.multiplicador = 1.05
+	mesa_premium.afecta_a = "Comer"
+	mesa_premium.es_basico = false
+	Catalogo_Objetos["Mesa_Premium"] = mesa_premium
+
+	# Duchas (afectan a Duchar)
+	var ducha_basica = Objeto_Duchar.new()
+	ducha_basica.nombre = "Ducha_Basica"
+	ducha_basica.precio = 0.0
+	ducha_basica.multiplicador = 1.0
+	ducha_basica.afecta_a = "Duchar"
+	ducha_basica.es_basico = true
+	Catalogo_Objetos["Ducha_Basica"] = ducha_basica
+
+	var ducha_premium = Objeto_Duchar.new()
+	ducha_premium.nombre = "Ducha_Premium"
+	ducha_premium.precio = 200.0
+	ducha_premium.multiplicador = 1.05
+	ducha_premium.afecta_a = "Duchar"
+	ducha_premium.es_basico = false
+	Catalogo_Objetos["Ducha_Premium"] = ducha_premium

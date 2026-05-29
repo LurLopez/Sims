@@ -10,6 +10,7 @@ func First_Time_Function():
 		Crear_First_Time_Minute()
 		Variables_Dinamicas.Dinero=1000
 		Crear_Alquiler()
+		Crear_Objetos_Iniciales()
 
 #Creará una matriz de 1339 filas y 574 columnas, llena de "". Las filas representaran los minutos de un día y
 #las columnas los dias, que seran de 7 dias por 82 años 
@@ -44,6 +45,20 @@ func Crear_Alquiler():
 	# El personaje empieza con casa. El primer alquiler se cobrará 7 días después.
 	Variables_Dinamicas.En_La_Calle = false
 	Variables_Dinamicas.Ultima_Fecha_Alquiler = Variables_Dinamicas.Minute_Day * 1440 + Variables_Dinamicas.Minute_Minute
+
+func Crear_Objetos_Iniciales():
+	# El jugador empieza con los objetos básicos de cada categoría seleccionados.
+	# Estos no se pueden vender si son el único de su categoría (es_basico = true).
+	Variables_Dinamicas.Objetos_Poseidos = {
+		"Cama_Basica": true,
+		"Mesa_Basica": true,
+		"Ducha_Basica": true
+	}
+	Variables_Dinamicas.Objeto_Seleccionado = {
+		"Dormir": "Cama_Basica",
+		"Comer": "Mesa_Basica",
+		"Duchar": "Ducha_Basica"
+	}
 
 func Crear_Progreso():
 	for i in range(0,3):

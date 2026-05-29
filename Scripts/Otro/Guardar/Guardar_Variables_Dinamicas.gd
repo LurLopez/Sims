@@ -32,6 +32,12 @@ func load_game():
 		else:
 			Variables_Dinamicas.En_La_Calle = false
 			Variables_Dinamicas.Ultima_Fecha_Alquiler = Variables_Dinamicas.Minute_Day * 1440 + Variables_Dinamicas.Minute_Minute
+		# Sistema de Objetos — fallback para saves antiguos: solo posee los básicos seleccionados.
+		if game_data.has("Objetos_Poseidos"):
+			Variables_Dinamicas.Objetos_Poseidos = game_data["Objetos_Poseidos"]
+			Variables_Dinamicas.Objeto_Seleccionado = game_data["Objeto_Seleccionado"]
+		else:
+			_Inicializar_Objetos_Por_Defecto()
 		save_file = null
 
 func game_data_func():
@@ -45,9 +51,24 @@ func game_data_func():
 		"Minute_Minute": Variables_Dinamicas.Minute_Minute,
 		"Habilidades_Mostradas": Variables_Dinamicas.Habilidades_Mostradas,
 		"En_La_Calle": Variables_Dinamicas.En_La_Calle,
-		"Ultima_Fecha_Alquiler": Variables_Dinamicas.Ultima_Fecha_Alquiler
+		"Ultima_Fecha_Alquiler": Variables_Dinamicas.Ultima_Fecha_Alquiler,
+		"Objetos_Poseidos": Variables_Dinamicas.Objetos_Poseidos,
+		"Objeto_Seleccionado": Variables_Dinamicas.Objeto_Seleccionado
 	}
 	return game_data
+
+
+func _Inicializar_Objetos_Por_Defecto():
+	Variables_Dinamicas.Objetos_Poseidos = {
+		"Cama_Basica": true,
+		"Mesa_Basica": true,
+		"Ducha_Basica": true
+	}
+	Variables_Dinamicas.Objeto_Seleccionado = {
+		"Dormir": "Cama_Basica",
+		"Comer": "Mesa_Basica",
+		"Duchar": "Ducha_Basica"
+	}
 
 func _Matriz_A_Strings() -> Array:
 	var resultado = []
