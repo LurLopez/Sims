@@ -1,4 +1,4 @@
-[gd_scene load_steps=30 format=3 uid="uid://1rnm0dk8tc50"]
+[gd_scene load_steps=33 format=3 uid="uid://1rnm0dk8tc50"]
 
 [ext_resource type="Script" uid="uid://c5mbdpn1a1kg3" path="res://Scripts/Globales/Script_Principal.gd" id="1_fcut6"]
 [ext_resource type="Texture2D" uid="uid://xv1rubod4qfa" path="res://Imagenes/Juego/Icono_Habilidades.png" id="4_i2k83"]
@@ -166,6 +166,42 @@ bg_color = Color(0.04, 0.1, 0.18, 0.06)
 border_width_top = 1
 border_width_bottom = 1
 border_color = Color(0.04, 0.1, 0.18, 0.15)
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_Card_Selected"]
+bg_color = Color(0.9, 1, 0.92, 0.95)
+border_width_left = 5
+border_width_top = 5
+border_width_right = 5
+border_width_bottom = 5
+border_color = Color(0.18, 0.7, 0.25, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_Image_Placeholder"]
+bg_color = Color(0.85, 0.88, 0.92, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.6, 0.65, 0.72, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_Card_Normal"]
+bg_color = Color(1, 1, 1, 0.95)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.7, 0.7, 0.72, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
 
 [node name="Node2D" type="Node2D"]
 script = ExtResource("1_fcut6")
@@ -1413,6 +1449,768 @@ theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
 theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
 text = "En alquiler"
 
+[node name="Tienda" type="Control" parent="."]
+visible = false
+z_index = 5
+layout_mode = 3
+anchors_preset = 0
+
+[node name="Flecha_Atras" type="Button" parent="Tienda"]
+z_index = 10
+layout_mode = 0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = 130.0
+offset_bottom = 60.0
+theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
+theme_override_font_sizes/font_size = 22
+theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
+text = "← Volver"
+
+[node name="Titulo" type="Label" parent="Tienda"]
+layout_mode = 0
+offset_left = 200.0
+offset_top = 70.0
+offset_right = 520.0
+offset_bottom = 130.0
+theme_override_colors/font_color = Color(0.98, 0.92, 0.35, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 10
+theme_override_font_sizes/font_size = 42
+text = "TIENDA"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Categorias" type="Control" parent="Tienda"]
+layout_mode = 3
+anchors_preset = 0
+
+[node name="Tab_Dormir" type="Button" parent="Tienda/Categorias"]
+layout_mode = 0
+offset_left = 30.0
+offset_top = 150.0
+offset_right = 230.0
+offset_bottom = 240.0
+theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
+theme_override_font_sizes/font_size = 22
+theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
+text = "🛏️
+DORMIR"
+
+[node name="Tab_Comer" type="Button" parent="Tienda/Categorias"]
+layout_mode = 0
+offset_left = 260.0
+offset_top = 150.0
+offset_right = 460.0
+offset_bottom = 240.0
+theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
+theme_override_font_sizes/font_size = 22
+theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
+text = "🍽️
+COMER"
+
+[node name="Tab_Duchar" type="Button" parent="Tienda/Categorias"]
+layout_mode = 0
+offset_left = 490.0
+offset_top = 150.0
+offset_right = 690.0
+offset_bottom = 240.0
+theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
+theme_override_font_sizes/font_size = 22
+theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
+text = "🚿
+DUCHAR"
+
+[node name="Objetos_Dormir" type="Control" parent="Tienda"]
+layout_mode = 3
+anchors_preset = 0
+
+[node name="Cama_Basica" type="Panel" parent="Tienda/Objetos_Dormir"]
+layout_mode = 0
+offset_left = 15.0
+offset_top = 270.0
+offset_right = 345.0
+offset_bottom = 970.0
+theme_override_styles/panel = SubResource("StyleBox_Card_Selected")
+
+[node name="Imagen_Placeholder" type="Panel" parent="Tienda/Objetos_Dormir/Cama_Basica"]
+layout_mode = 0
+offset_left = 15.0
+offset_top = 15.0
+offset_right = 315.0
+offset_bottom = 345.0
+theme_override_styles/panel = SubResource("StyleBox_Image_Placeholder")
+
+[node name="Imagen_Emoji" type="Label" parent="Tienda/Objetos_Dormir/Cama_Basica/Imagen_Placeholder"]
+layout_mode = 0
+offset_right = 300.0
+offset_bottom = 330.0
+theme_override_font_sizes/font_size = 150
+text = "🛏️"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Nombre" type="Label" parent="Tienda/Objetos_Dormir/Cama_Basica"]
+layout_mode = 0
+offset_left = 15.0
+offset_top = 360.0
+offset_right = 315.0
+offset_bottom = 410.0
+theme_override_colors/font_color = Color(0.04, 0.1, 0.18, 1)
+theme_override_font_sizes/font_size = 26
+text = "Cama Básica"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Precio" type="Label" parent="Tienda/Objetos_Dormir/Cama_Basica"]
+layout_mode = 0
+offset_left = 15.0
+offset_top = 415.0
+offset_right = 315.0
+offset_bottom = 455.0
+theme_override_colors/font_color = Color(0.55, 0.35, 0.05, 1)
+theme_override_font_sizes/font_size = 22
+text = "0€"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Multiplicador" type="Label" parent="Tienda/Objetos_Dormir/Cama_Basica"]
+layout_mode = 0
+offset_left = 15.0
+offset_top = 460.0
+offset_right = 315.0
+offset_bottom = 495.0
+theme_override_colors/font_color = Color(0.25, 0.45, 0.65, 1)
+theme_override_font_sizes/font_size = 20
+text = "× 1.00 Descanso"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="En_Uso" type="Label" parent="Tienda/Objetos_Dormir/Cama_Basica"]
+layout_mode = 0
+offset_left = 15.0
+offset_top = 510.0
+offset_right = 315.0
+offset_bottom = 565.0
+theme_override_colors/font_color = Color(0.18, 0.55, 0.22, 1)
+theme_override_font_sizes/font_size = 22
+text = "✓ En uso"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Comprar" type="Button" parent="Tienda/Objetos_Dormir/Cama_Basica"]
+visible = false
+layout_mode = 0
+offset_left = 15.0
+offset_top = 510.0
+offset_right = 315.0
+offset_bottom = 565.0
+theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
+theme_override_font_sizes/font_size = 22
+theme_override_styles/hover = SubResource("StyleBox_Green_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Green_Normal")
+text = "Comprar"
+
+[node name="Vender" type="Button" parent="Tienda/Objetos_Dormir/Cama_Basica"]
+visible = false
+layout_mode = 0
+offset_left = 15.0
+offset_top = 575.0
+offset_right = 315.0
+offset_bottom = 630.0
+theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
+theme_override_font_sizes/font_size = 22
+theme_override_styles/hover = SubResource("StyleBox_Red_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Red_Normal")
+text = "Vender"
+
+[node name="Elegir" type="Button" parent="Tienda/Objetos_Dormir/Cama_Basica"]
+visible = false
+layout_mode = 0
+offset_left = 15.0
+offset_top = 640.0
+offset_right = 315.0
+offset_bottom = 695.0
+theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
+theme_override_font_sizes/font_size = 22
+theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
+text = "Elegir"
+
+[node name="Cama_Premium" type="Panel" parent="Tienda/Objetos_Dormir"]
+layout_mode = 0
+offset_left = 375.0
+offset_top = 270.0
+offset_right = 705.0
+offset_bottom = 970.0
+theme_override_styles/panel = SubResource("StyleBox_Card_Normal")
+
+[node name="Imagen_Placeholder" type="Panel" parent="Tienda/Objetos_Dormir/Cama_Premium"]
+layout_mode = 0
+offset_left = 15.0
+offset_top = 15.0
+offset_right = 315.0
+offset_bottom = 345.0
+theme_override_styles/panel = SubResource("StyleBox_Image_Placeholder")
+
+[node name="Imagen_Emoji" type="Label" parent="Tienda/Objetos_Dormir/Cama_Premium/Imagen_Placeholder"]
+layout_mode = 0
+offset_right = 300.0
+offset_bottom = 330.0
+theme_override_font_sizes/font_size = 150
+text = "🛌"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Nombre" type="Label" parent="Tienda/Objetos_Dormir/Cama_Premium"]
+layout_mode = 0
+offset_left = 15.0
+offset_top = 360.0
+offset_right = 315.0
+offset_bottom = 410.0
+theme_override_colors/font_color = Color(0.04, 0.1, 0.18, 1)
+theme_override_font_sizes/font_size = 26
+text = "Cama Premium"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Precio" type="Label" parent="Tienda/Objetos_Dormir/Cama_Premium"]
+layout_mode = 0
+offset_left = 15.0
+offset_top = 415.0
+offset_right = 315.0
+offset_bottom = 455.0
+theme_override_colors/font_color = Color(0.55, 0.35, 0.05, 1)
+theme_override_font_sizes/font_size = 22
+text = "200€"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Multiplicador" type="Label" parent="Tienda/Objetos_Dormir/Cama_Premium"]
+layout_mode = 0
+offset_left = 15.0
+offset_top = 460.0
+offset_right = 315.0
+offset_bottom = 495.0
+theme_override_colors/font_color = Color(0.25, 0.45, 0.65, 1)
+theme_override_font_sizes/font_size = 20
+text = "× 1.05 Descanso (+5%)"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="En_Uso" type="Label" parent="Tienda/Objetos_Dormir/Cama_Premium"]
+visible = false
+layout_mode = 0
+offset_left = 15.0
+offset_top = 510.0
+offset_right = 315.0
+offset_bottom = 565.0
+theme_override_colors/font_color = Color(0.18, 0.55, 0.22, 1)
+theme_override_font_sizes/font_size = 22
+text = "✓ En uso"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Comprar" type="Button" parent="Tienda/Objetos_Dormir/Cama_Premium"]
+layout_mode = 0
+offset_left = 15.0
+offset_top = 510.0
+offset_right = 315.0
+offset_bottom = 565.0
+theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
+theme_override_font_sizes/font_size = 22
+theme_override_styles/hover = SubResource("StyleBox_Green_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Green_Normal")
+text = "Comprar"
+
+[node name="Vender" type="Button" parent="Tienda/Objetos_Dormir/Cama_Premium"]
+visible = false
+layout_mode = 0
+offset_left = 15.0
+offset_top = 575.0
+offset_right = 315.0
+offset_bottom = 630.0
+theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
+theme_override_font_sizes/font_size = 22
+theme_override_styles/hover = SubResource("StyleBox_Red_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Red_Normal")
+text = "Vender"
+
+[node name="Elegir" type="Button" parent="Tienda/Objetos_Dormir/Cama_Premium"]
+visible = false
+layout_mode = 0
+offset_left = 15.0
+offset_top = 640.0
+offset_right = 315.0
+offset_bottom = 695.0
+theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
+theme_override_font_sizes/font_size = 22
+theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
+text = "Elegir"
+
+[node name="Objetos_Comer" type="Control" parent="Tienda"]
+visible = false
+layout_mode = 3
+anchors_preset = 0
+
+[node name="Mesa_Basica" type="Panel" parent="Tienda/Objetos_Comer"]
+layout_mode = 0
+offset_left = 15.0
+offset_top = 270.0
+offset_right = 345.0
+offset_bottom = 970.0
+theme_override_styles/panel = SubResource("StyleBox_Card_Selected")
+
+[node name="Imagen_Placeholder" type="Panel" parent="Tienda/Objetos_Comer/Mesa_Basica"]
+layout_mode = 0
+offset_left = 15.0
+offset_top = 15.0
+offset_right = 315.0
+offset_bottom = 345.0
+theme_override_styles/panel = SubResource("StyleBox_Image_Placeholder")
+
+[node name="Imagen_Emoji" type="Label" parent="Tienda/Objetos_Comer/Mesa_Basica/Imagen_Placeholder"]
+layout_mode = 0
+offset_right = 300.0
+offset_bottom = 330.0
+theme_override_font_sizes/font_size = 150
+text = "🍽️"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Nombre" type="Label" parent="Tienda/Objetos_Comer/Mesa_Basica"]
+layout_mode = 0
+offset_left = 15.0
+offset_top = 360.0
+offset_right = 315.0
+offset_bottom = 410.0
+theme_override_colors/font_color = Color(0.04, 0.1, 0.18, 1)
+theme_override_font_sizes/font_size = 26
+text = "Mesa Básica"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Precio" type="Label" parent="Tienda/Objetos_Comer/Mesa_Basica"]
+layout_mode = 0
+offset_left = 15.0
+offset_top = 415.0
+offset_right = 315.0
+offset_bottom = 455.0
+theme_override_colors/font_color = Color(0.55, 0.35, 0.05, 1)
+theme_override_font_sizes/font_size = 22
+text = "0€"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Multiplicador" type="Label" parent="Tienda/Objetos_Comer/Mesa_Basica"]
+layout_mode = 0
+offset_left = 15.0
+offset_top = 460.0
+offset_right = 315.0
+offset_bottom = 495.0
+theme_override_colors/font_color = Color(0.25, 0.45, 0.65, 1)
+theme_override_font_sizes/font_size = 20
+text = "× 1.00 Hambre"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="En_Uso" type="Label" parent="Tienda/Objetos_Comer/Mesa_Basica"]
+layout_mode = 0
+offset_left = 15.0
+offset_top = 510.0
+offset_right = 315.0
+offset_bottom = 565.0
+theme_override_colors/font_color = Color(0.18, 0.55, 0.22, 1)
+theme_override_font_sizes/font_size = 22
+text = "✓ En uso"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Comprar" type="Button" parent="Tienda/Objetos_Comer/Mesa_Basica"]
+visible = false
+layout_mode = 0
+offset_left = 15.0
+offset_top = 510.0
+offset_right = 315.0
+offset_bottom = 565.0
+theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
+theme_override_font_sizes/font_size = 22
+theme_override_styles/hover = SubResource("StyleBox_Green_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Green_Normal")
+text = "Comprar"
+
+[node name="Vender" type="Button" parent="Tienda/Objetos_Comer/Mesa_Basica"]
+visible = false
+layout_mode = 0
+offset_left = 15.0
+offset_top = 575.0
+offset_right = 315.0
+offset_bottom = 630.0
+theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
+theme_override_font_sizes/font_size = 22
+theme_override_styles/hover = SubResource("StyleBox_Red_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Red_Normal")
+text = "Vender"
+
+[node name="Elegir" type="Button" parent="Tienda/Objetos_Comer/Mesa_Basica"]
+visible = false
+layout_mode = 0
+offset_left = 15.0
+offset_top = 640.0
+offset_right = 315.0
+offset_bottom = 695.0
+theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
+theme_override_font_sizes/font_size = 22
+theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
+text = "Elegir"
+
+[node name="Mesa_Premium" type="Panel" parent="Tienda/Objetos_Comer"]
+layout_mode = 0
+offset_left = 375.0
+offset_top = 270.0
+offset_right = 705.0
+offset_bottom = 970.0
+theme_override_styles/panel = SubResource("StyleBox_Card_Normal")
+
+[node name="Imagen_Placeholder" type="Panel" parent="Tienda/Objetos_Comer/Mesa_Premium"]
+layout_mode = 0
+offset_left = 15.0
+offset_top = 15.0
+offset_right = 315.0
+offset_bottom = 345.0
+theme_override_styles/panel = SubResource("StyleBox_Image_Placeholder")
+
+[node name="Imagen_Emoji" type="Label" parent="Tienda/Objetos_Comer/Mesa_Premium/Imagen_Placeholder"]
+layout_mode = 0
+offset_right = 300.0
+offset_bottom = 330.0
+theme_override_font_sizes/font_size = 150
+text = "🍱"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Nombre" type="Label" parent="Tienda/Objetos_Comer/Mesa_Premium"]
+layout_mode = 0
+offset_left = 15.0
+offset_top = 360.0
+offset_right = 315.0
+offset_bottom = 410.0
+theme_override_colors/font_color = Color(0.04, 0.1, 0.18, 1)
+theme_override_font_sizes/font_size = 26
+text = "Mesa Premium"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Precio" type="Label" parent="Tienda/Objetos_Comer/Mesa_Premium"]
+layout_mode = 0
+offset_left = 15.0
+offset_top = 415.0
+offset_right = 315.0
+offset_bottom = 455.0
+theme_override_colors/font_color = Color(0.55, 0.35, 0.05, 1)
+theme_override_font_sizes/font_size = 22
+text = "200€"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Multiplicador" type="Label" parent="Tienda/Objetos_Comer/Mesa_Premium"]
+layout_mode = 0
+offset_left = 15.0
+offset_top = 460.0
+offset_right = 315.0
+offset_bottom = 495.0
+theme_override_colors/font_color = Color(0.25, 0.45, 0.65, 1)
+theme_override_font_sizes/font_size = 20
+text = "× 1.05 Hambre (+5%)"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="En_Uso" type="Label" parent="Tienda/Objetos_Comer/Mesa_Premium"]
+visible = false
+layout_mode = 0
+offset_left = 15.0
+offset_top = 510.0
+offset_right = 315.0
+offset_bottom = 565.0
+theme_override_colors/font_color = Color(0.18, 0.55, 0.22, 1)
+theme_override_font_sizes/font_size = 22
+text = "✓ En uso"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Comprar" type="Button" parent="Tienda/Objetos_Comer/Mesa_Premium"]
+layout_mode = 0
+offset_left = 15.0
+offset_top = 510.0
+offset_right = 315.0
+offset_bottom = 565.0
+theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
+theme_override_font_sizes/font_size = 22
+theme_override_styles/hover = SubResource("StyleBox_Green_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Green_Normal")
+text = "Comprar"
+
+[node name="Vender" type="Button" parent="Tienda/Objetos_Comer/Mesa_Premium"]
+visible = false
+layout_mode = 0
+offset_left = 15.0
+offset_top = 575.0
+offset_right = 315.0
+offset_bottom = 630.0
+theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
+theme_override_font_sizes/font_size = 22
+theme_override_styles/hover = SubResource("StyleBox_Red_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Red_Normal")
+text = "Vender"
+
+[node name="Elegir" type="Button" parent="Tienda/Objetos_Comer/Mesa_Premium"]
+visible = false
+layout_mode = 0
+offset_left = 15.0
+offset_top = 640.0
+offset_right = 315.0
+offset_bottom = 695.0
+theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
+theme_override_font_sizes/font_size = 22
+theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
+text = "Elegir"
+
+[node name="Objetos_Duchar" type="Control" parent="Tienda"]
+visible = false
+layout_mode = 3
+anchors_preset = 0
+
+[node name="Ducha_Basica" type="Panel" parent="Tienda/Objetos_Duchar"]
+layout_mode = 0
+offset_left = 15.0
+offset_top = 270.0
+offset_right = 345.0
+offset_bottom = 970.0
+theme_override_styles/panel = SubResource("StyleBox_Card_Selected")
+
+[node name="Imagen_Placeholder" type="Panel" parent="Tienda/Objetos_Duchar/Ducha_Basica"]
+layout_mode = 0
+offset_left = 15.0
+offset_top = 15.0
+offset_right = 315.0
+offset_bottom = 345.0
+theme_override_styles/panel = SubResource("StyleBox_Image_Placeholder")
+
+[node name="Imagen_Emoji" type="Label" parent="Tienda/Objetos_Duchar/Ducha_Basica/Imagen_Placeholder"]
+layout_mode = 0
+offset_right = 300.0
+offset_bottom = 330.0
+theme_override_font_sizes/font_size = 150
+text = "🚿"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Nombre" type="Label" parent="Tienda/Objetos_Duchar/Ducha_Basica"]
+layout_mode = 0
+offset_left = 15.0
+offset_top = 360.0
+offset_right = 315.0
+offset_bottom = 410.0
+theme_override_colors/font_color = Color(0.04, 0.1, 0.18, 1)
+theme_override_font_sizes/font_size = 26
+text = "Ducha Básica"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Precio" type="Label" parent="Tienda/Objetos_Duchar/Ducha_Basica"]
+layout_mode = 0
+offset_left = 15.0
+offset_top = 415.0
+offset_right = 315.0
+offset_bottom = 455.0
+theme_override_colors/font_color = Color(0.55, 0.35, 0.05, 1)
+theme_override_font_sizes/font_size = 22
+text = "0€"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Multiplicador" type="Label" parent="Tienda/Objetos_Duchar/Ducha_Basica"]
+layout_mode = 0
+offset_left = 15.0
+offset_top = 460.0
+offset_right = 315.0
+offset_bottom = 495.0
+theme_override_colors/font_color = Color(0.25, 0.45, 0.65, 1)
+theme_override_font_sizes/font_size = 20
+text = "× 1.00 Higiene"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="En_Uso" type="Label" parent="Tienda/Objetos_Duchar/Ducha_Basica"]
+layout_mode = 0
+offset_left = 15.0
+offset_top = 510.0
+offset_right = 315.0
+offset_bottom = 565.0
+theme_override_colors/font_color = Color(0.18, 0.55, 0.22, 1)
+theme_override_font_sizes/font_size = 22
+text = "✓ En uso"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Comprar" type="Button" parent="Tienda/Objetos_Duchar/Ducha_Basica"]
+visible = false
+layout_mode = 0
+offset_left = 15.0
+offset_top = 510.0
+offset_right = 315.0
+offset_bottom = 565.0
+theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
+theme_override_font_sizes/font_size = 22
+theme_override_styles/hover = SubResource("StyleBox_Green_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Green_Normal")
+text = "Comprar"
+
+[node name="Vender" type="Button" parent="Tienda/Objetos_Duchar/Ducha_Basica"]
+visible = false
+layout_mode = 0
+offset_left = 15.0
+offset_top = 575.0
+offset_right = 315.0
+offset_bottom = 630.0
+theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
+theme_override_font_sizes/font_size = 22
+theme_override_styles/hover = SubResource("StyleBox_Red_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Red_Normal")
+text = "Vender"
+
+[node name="Elegir" type="Button" parent="Tienda/Objetos_Duchar/Ducha_Basica"]
+visible = false
+layout_mode = 0
+offset_left = 15.0
+offset_top = 640.0
+offset_right = 315.0
+offset_bottom = 695.0
+theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
+theme_override_font_sizes/font_size = 22
+theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
+text = "Elegir"
+
+[node name="Ducha_Premium" type="Panel" parent="Tienda/Objetos_Duchar"]
+layout_mode = 0
+offset_left = 375.0
+offset_top = 270.0
+offset_right = 705.0
+offset_bottom = 970.0
+theme_override_styles/panel = SubResource("StyleBox_Card_Normal")
+
+[node name="Imagen_Placeholder" type="Panel" parent="Tienda/Objetos_Duchar/Ducha_Premium"]
+layout_mode = 0
+offset_left = 15.0
+offset_top = 15.0
+offset_right = 315.0
+offset_bottom = 345.0
+theme_override_styles/panel = SubResource("StyleBox_Image_Placeholder")
+
+[node name="Imagen_Emoji" type="Label" parent="Tienda/Objetos_Duchar/Ducha_Premium/Imagen_Placeholder"]
+layout_mode = 0
+offset_right = 300.0
+offset_bottom = 330.0
+theme_override_font_sizes/font_size = 150
+text = "🛁"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Nombre" type="Label" parent="Tienda/Objetos_Duchar/Ducha_Premium"]
+layout_mode = 0
+offset_left = 15.0
+offset_top = 360.0
+offset_right = 315.0
+offset_bottom = 410.0
+theme_override_colors/font_color = Color(0.04, 0.1, 0.18, 1)
+theme_override_font_sizes/font_size = 26
+text = "Ducha Premium"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Precio" type="Label" parent="Tienda/Objetos_Duchar/Ducha_Premium"]
+layout_mode = 0
+offset_left = 15.0
+offset_top = 415.0
+offset_right = 315.0
+offset_bottom = 455.0
+theme_override_colors/font_color = Color(0.55, 0.35, 0.05, 1)
+theme_override_font_sizes/font_size = 22
+text = "200€"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Multiplicador" type="Label" parent="Tienda/Objetos_Duchar/Ducha_Premium"]
+layout_mode = 0
+offset_left = 15.0
+offset_top = 460.0
+offset_right = 315.0
+offset_bottom = 495.0
+theme_override_colors/font_color = Color(0.25, 0.45, 0.65, 1)
+theme_override_font_sizes/font_size = 20
+text = "× 1.05 Higiene (+5%)"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="En_Uso" type="Label" parent="Tienda/Objetos_Duchar/Ducha_Premium"]
+visible = false
+layout_mode = 0
+offset_left = 15.0
+offset_top = 510.0
+offset_right = 315.0
+offset_bottom = 565.0
+theme_override_colors/font_color = Color(0.18, 0.55, 0.22, 1)
+theme_override_font_sizes/font_size = 22
+text = "✓ En uso"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Comprar" type="Button" parent="Tienda/Objetos_Duchar/Ducha_Premium"]
+layout_mode = 0
+offset_left = 15.0
+offset_top = 510.0
+offset_right = 315.0
+offset_bottom = 565.0
+theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
+theme_override_font_sizes/font_size = 22
+theme_override_styles/hover = SubResource("StyleBox_Green_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Green_Normal")
+text = "Comprar"
+
+[node name="Vender" type="Button" parent="Tienda/Objetos_Duchar/Ducha_Premium"]
+visible = false
+layout_mode = 0
+offset_left = 15.0
+offset_top = 575.0
+offset_right = 315.0
+offset_bottom = 630.0
+theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
+theme_override_font_sizes/font_size = 22
+theme_override_styles/hover = SubResource("StyleBox_Red_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Red_Normal")
+text = "Vender"
+
+[node name="Elegir" type="Button" parent="Tienda/Objetos_Duchar/Ducha_Premium"]
+visible = false
+layout_mode = 0
+offset_left = 15.0
+offset_top = 640.0
+offset_right = 315.0
+offset_bottom = 695.0
+theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
+theme_override_font_sizes/font_size = 22
+theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
+text = "Elegir"
+
 [connection signal="pressed" from="Barra_Abajo/Boton_Habilidades" to="." method="_on_boton_habilidades_pressed"]
 [connection signal="pressed" from="Barra_Abajo/Boton_Progreso" to="." method="_on_boton_progreso_pressed"]
 [connection signal="pressed" from="Barra_Abajo/Boton_Actividades" to="." method="_on_boton_actividades_pressed"]
@@ -1453,3 +2251,25 @@ text = "En alquiler"
 [connection signal="pressed" from="Actividades/Seleccionar_Horario/Crear_Actividad" to="." method="_on_crear_actividad_pressed"]
 [connection signal="pressed" from="Tienda_Button" to="." method="_on_tienda_button_pressed"]
 [connection signal="pressed" from="Alquiler_Button" to="." method="_on_alquiler_button_pressed"]
+[connection signal="pressed" from="Tienda/Flecha_Atras" to="." method="_on_tienda_flecha_atras_pressed"]
+[connection signal="pressed" from="Tienda/Categorias/Tab_Dormir" to="." method="_on_tab_dormir_pressed"]
+[connection signal="pressed" from="Tienda/Categorias/Tab_Comer" to="." method="_on_tab_comer_pressed"]
+[connection signal="pressed" from="Tienda/Categorias/Tab_Duchar" to="." method="_on_tab_duchar_pressed"]
+[connection signal="pressed" from="Tienda/Objetos_Dormir/Cama_Basica/Comprar" to="." method="_on_comprar_cama_basica_pressed"]
+[connection signal="pressed" from="Tienda/Objetos_Dormir/Cama_Basica/Vender" to="." method="_on_vender_cama_basica_pressed"]
+[connection signal="pressed" from="Tienda/Objetos_Dormir/Cama_Basica/Elegir" to="." method="_on_elegir_cama_basica_pressed"]
+[connection signal="pressed" from="Tienda/Objetos_Dormir/Cama_Premium/Comprar" to="." method="_on_comprar_cama_premium_pressed"]
+[connection signal="pressed" from="Tienda/Objetos_Dormir/Cama_Premium/Vender" to="." method="_on_vender_cama_premium_pressed"]
+[connection signal="pressed" from="Tienda/Objetos_Dormir/Cama_Premium/Elegir" to="." method="_on_elegir_cama_premium_pressed"]
+[connection signal="pressed" from="Tienda/Objetos_Comer/Mesa_Basica/Comprar" to="." method="_on_comprar_mesa_basica_pressed"]
+[connection signal="pressed" from="Tienda/Objetos_Comer/Mesa_Basica/Vender" to="." method="_on_vender_mesa_basica_pressed"]
+[connection signal="pressed" from="Tienda/Objetos_Comer/Mesa_Basica/Elegir" to="." method="_on_elegir_mesa_basica_pressed"]
+[connection signal="pressed" from="Tienda/Objetos_Comer/Mesa_Premium/Comprar" to="." method="_on_comprar_mesa_premium_pressed"]
+[connection signal="pressed" from="Tienda/Objetos_Comer/Mesa_Premium/Vender" to="." method="_on_vender_mesa_premium_pressed"]
+[connection signal="pressed" from="Tienda/Objetos_Comer/Mesa_Premium/Elegir" to="." method="_on_elegir_mesa_premium_pressed"]
+[connection signal="pressed" from="Tienda/Objetos_Duchar/Ducha_Basica/Comprar" to="." method="_on_comprar_ducha_basica_pressed"]
+[connection signal="pressed" from="Tienda/Objetos_Duchar/Ducha_Basica/Vender" to="." method="_on_vender_ducha_basica_pressed"]
+[connection signal="pressed" from="Tienda/Objetos_Duchar/Ducha_Basica/Elegir" to="." method="_on_elegir_ducha_basica_pressed"]
+[connection signal="pressed" from="Tienda/Objetos_Duchar/Ducha_Premium/Comprar" to="." method="_on_comprar_ducha_premium_pressed"]
+[connection signal="pressed" from="Tienda/Objetos_Duchar/Ducha_Premium/Vender" to="." method="_on_vender_ducha_premium_pressed"]
+[connection signal="pressed" from="Tienda/Objetos_Duchar/Ducha_Premium/Elegir" to="." method="_on_elegir_ducha_premium_pressed"]

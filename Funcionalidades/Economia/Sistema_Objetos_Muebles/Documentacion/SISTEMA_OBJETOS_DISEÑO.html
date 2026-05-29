@@ -425,7 +425,135 @@ func _Obtener_Multiplicador(nombre_actividad: String) -> float:
             <li>Expandir catálogo con objetos tipo <code>Ropa_Premium</code> con <code>multiplicador = 0.95</code></li>
         </ul>
         
-        <h2>10. Guardado/Carga</h2>
+        <h2>10. UI de la Tienda (Implementada)</h2>
+
+        <div class="highlight-box">
+            <strong>✅ Estado: Implementada en <code>Escena principal.tscn</code>.</strong>
+        </div>
+
+        <h3>Estructura de Nodos</h3>
+        <p>El nodo <code>Tienda</code> se añade como hijo del nodo raíz de la escena principal, con <code>visible=false</code> por defecto y <code>z_index=5</code>:</p>
+
+        <div class="file-tree">
+<pre>Tienda (Control)
+├── Flecha_Atras (Button)         ← arriba-izq, vuelve al menú
+├── Titulo (Label)                ← "TIENDA"
+├── Categorias (Control)
+│   ├── Tab_Dormir (Button)       ← 🛏️
+│   ├── Tab_Comer (Button)        ← 🍽️
+│   └── Tab_Duchar (Button)       ← 🚿
+├── Objetos_Dormir (Control)
+│   ├── Cama_Basica (Panel)
+│   │   ├── Imagen_Placeholder (Panel) → Imagen_Emoji (Label)
+│   │   ├── Nombre, Precio, Multiplicador (Labels)
+│   │   ├── En_Uso (Label, "✓ En uso")
+│   │   ├── Comprar (Button verde)
+│   │   ├── Vender (Button rojo)
+│   │   └── Elegir (Button azul)
+│   └── Cama_Premium (Panel)      ← misma estructura
+├── Objetos_Comer (Control)
+│   ├── Mesa_Basica
+│   └── Mesa_Premium
+└── Objetos_Duchar (Control)
+    ├── Ducha_Basica
+    └── Ducha_Premium</pre>
+        </div>
+
+        <h3>Estados Visuales del Panel</h3>
+        <p>Los <code>StyleBox</code> se construyen en código (<code>Script_Principal._Inicializar_Tienda_Estilos()</code>) y se aplican con <code>add_theme_stylebox_override("panel", estilo)</code>:</p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Estado</th>
+                    <th>StyleBox</th>
+                    <th>Borde</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>No poseído</td>
+                    <td><code>_tienda_estilo_normal</code></td>
+                    <td>Gris (3px)</td>
+                </tr>
+                <tr>
+                    <td>Poseído, no seleccionado</td>
+                    <td><code>_tienda_estilo_owned</code></td>
+                    <td>Azul (4px)</td>
+                </tr>
+                <tr>
+                    <td>Seleccionado (en uso)</td>
+                    <td><code>_tienda_estilo_selected</code></td>
+                    <td>Verde (5px)</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>Reglas de Visibilidad de Botones</h3>
+        <p>Calculadas por carta en <code>_Actualizar_Card_Tienda(categoria, clave)</code>:</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>Botón</th>
+                    <th>Visible cuando</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>Comprar</code></td>
+                    <td>NO poseído</td>
+                </tr>
+                <tr>
+                    <td><code>Vender</code></td>
+                    <td>Poseído <strong>y</strong> NO seleccionado <strong>y</strong> existe otro poseído de la misma categoría</td>
+                </tr>
+                <tr>
+                    <td><code>Elegir</code></td>
+                    <td>Poseído <strong>y</strong> NO seleccionado</td>
+                </tr>
+                <tr>
+                    <td><code>En_Uso</code></td>
+                    <td>Seleccionado</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>Funciones de Visibilidad (<code>Gestionar_Visibilidad.gd</code>)</h3>
+        <pre><code>func Visibilizar_Tienda(raiz):
+    Recursivo_Desvisibilizar(raiz)
+    raiz.visible = true
+    raiz.get_node("Fondo").visible = true
+    raiz.get_node("Moneda").visible = true
+    raiz.get_node("Dinero_Label").visible = true
+    raiz.get_node("Alquiler_Button").visible = true
+    Recursivo_Visibilizar(raiz.get_node("Tienda"))
+    Mostrar_Categoria_Tienda(raiz, "Dormir")
+
+func Mostrar_Categoria_Tienda(raiz, categoria):
+    raiz.get_node("Tienda/Objetos_Dormir").visible = false
+    raiz.get_node("Tienda/Objetos_Comer").visible = false
+    raiz.get_node("Tienda/Objetos_Duchar").visible = false
+    raiz.get_node("Tienda/Objetos_" + categoria).visible = true</code></pre>
+
+        <p>Al entrar en la tienda solo permanecen visibles <code>Fondo</code>, <code>Moneda</code>, <code>Dinero_Label</code> y <code>Alquiler_Button</code>. El resto de la UI (Barra_Abajo, Tienda_Button, etc.) se oculta. La flecha de volver ocupa la misma posición que <code>Tienda_Button</code>.</p>
+
+        <h3>Handlers en <code>Script_Principal.gd</code></h3>
+        <ul>
+            <li><code>_on_tienda_button_pressed</code> — abre la tienda y refresca UI</li>
+            <li><code>_on_tienda_flecha_atras_pressed</code> — <code>Quitar_Todo</code> (vuelve al menú principal)</li>
+            <li><code>_on_tab_&lt;dormir|comer|duchar&gt;_pressed</code> — switcher de categorías</li>
+            <li>18 handlers <code>_on_&lt;comprar|vender|elegir&gt;_&lt;objeto&gt;_pressed</code> que delegan a 3 helpers (<code>_Tienda_Comprar/Vender/Elegir</code>) que llaman al backend, refrescan UI y actualizan el label de dinero</li>
+        </ul>
+
+        <h3>Limitaciones Actuales</h3>
+        <div class="warning-box">
+            <ul>
+                <li>Solo se muestran 2 objetos por categoría (Básico + Premium). <code>Cama_Lujo</code> existe en el catálogo pero <strong>no tiene tarjeta en la UI</strong>. Para añadirla habría que ampliar el layout (scroll horizontal o reducir tamaño de tarjeta).</li>
+                <li>Las imágenes son emojis placeholder (🛏️, 🛌, 🍽️, 🍱, 🚿, 🛁). Sustituir por <code>TextureRect</code> con sprites reales cuando estén disponibles.</li>
+            </ul>
+        </div>
+
+        <h2>11. Guardado/Carga</h2>
         
         <h3><code>Guardar_Variables_Dinamicas.gd</code></h3>
         <ul>
@@ -438,31 +566,36 @@ func _Obtener_Multiplicador(nombre_actividad: String) -> float:
             <li><code>Catalogo_Objetos</code> <strong>no se guarda</strong> (se reconstruye cada inicio)</li>
         </ul>
         
-        <h2>11. Resumen de Cambios en el Código</h2>
-        
+        <h2>12. Resumen de Cambios en el Código</h2>
+
         <h3>Nuevos archivos:</h3>
         <div class="file-tree">
             <pre>Scripts/Logica/Escena_Principal/Economia/
-├── Herencia/
-│   ├── Objeto.gd
-│   ├── Objeto_Dormir.gd
-│   ├── Objeto_Comer.gd
-│   ├── Objeto_Higiene.gd
-│   └── ...
-└── Catalogo_Objetos.gd (opcional, si se extrae)</pre>
+└── Herencia/
+    ├── Objeto.gd
+    ├── Objeto_Dormir.gd
+    ├── Objeto_Comer.gd
+    └── Objeto_Duchar.gd</pre>
         </div>
-        
-        <h3>Modificaciones existentes:</h3>
+
+        <h3>Modificaciones existentes (backend):</h3>
         <ul>
             <li><code>Variables_Estaticas.gd</code> — añadir <code>Catalogo_Objetos</code> y <code>_Inicializar_Catalogo_Objetos()</code></li>
             <li><code>Variables_Dinamicas.gd</code> — añadir <code>Objetos_Poseidos</code> y <code>Objeto_Seleccionado</code></li>
             <li><code>Actividades.gd</code> — añadir <code>Comprar_Objeto()</code>, <code>Vender_Objeto()</code>, <code>Seleccionar_Objeto()</code></li>
             <li><code>Actividades_Necesidades_Basicas.gd</code> — modificar para aplicar multiplicadores</li>
             <li><code>Guardar_Variables_Dinamicas.gd</code> — serializar nuevas variables</li>
-            <li><code>Guardar_Variables_Estaticas.gd</code> — deserializar catálogo</li>
+            <li><code>First_Time.gd</code> — inicializar <code>Objetos_Poseidos</code> y <code>Objeto_Seleccionado</code></li>
         </ul>
-        
-        <h2>12. Cómo Expandir el Catálogo</h2>
+
+        <h3>Modificaciones existentes (UI):</h3>
+        <ul>
+            <li><code>Escenas/Escena_Principal/Escena principal.tscn</code> — añadir el Control <code>Tienda</code> completo (flecha atrás, título, 3 tabs, 6 tarjetas con sus botones) + 4 SubResources <code>StyleBox</code> + 22 conexiones de señal</li>
+            <li><code>Scripts/GUI/Escena_Principal/Gestionar_Visibilidad.gd</code> — añadir <code>Visibilizar_Tienda()</code> y <code>Mostrar_Categoria_Tienda()</code></li>
+            <li><code>Scripts/Globales/Script_Principal.gd</code> — añadir tabla <code>_TIENDA_CARDS</code>, <code>_Inicializar_Tienda_Estilos()</code>, <code>_Actualizar_Tienda_UI()</code>, <code>_Actualizar_Card_Tienda()</code>, 5 handlers de navegación y 18 handlers de acciones</li>
+        </ul>
+
+        <h2>13. Cómo Expandir el Catálogo</h2>
 
         <h3>Añadir un nuevo objeto (ejemplo: Cama Súper Premium)</h3>
         <pre><code># En Variables_Estaticas._Inicializar_Catalogo_Objetos()

@@ -581,3 +581,157 @@ func _Confirmar_Ir_A_La_Calle():
 	Actividades.Ir_A_La_Calle()
 	Actualizar_Texto_Alquiler()
 	Guardar_Variables_Dinamicas.save_game()
+
+
+# ---------------- Tienda ----------------
+
+const _TIENDA_CARDS = [
+	{"categoria": "Dormir", "clave": "Cama_Basica"},
+	{"categoria": "Dormir", "clave": "Cama_Premium"},
+	{"categoria": "Comer", "clave": "Mesa_Basica"},
+	{"categoria": "Comer", "clave": "Mesa_Premium"},
+	{"categoria": "Duchar", "clave": "Ducha_Basica"},
+	{"categoria": "Duchar", "clave": "Ducha_Premium"},
+]
+
+var _tienda_estilo_normal: StyleBoxFlat = null
+var _tienda_estilo_owned: StyleBoxFlat = null
+var _tienda_estilo_selected: StyleBoxFlat = null
+
+
+func _Inicializar_Tienda_Estilos():
+	if _tienda_estilo_normal != null:
+		return
+	_tienda_estilo_normal = StyleBoxFlat.new()
+	_tienda_estilo_normal.bg_color = Color(1, 1, 1, 0.95)
+	_tienda_estilo_normal.border_color = Color(0.7, 0.7, 0.72, 1)
+	_tienda_estilo_normal.border_width_left = 3
+	_tienda_estilo_normal.border_width_top = 3
+	_tienda_estilo_normal.border_width_right = 3
+	_tienda_estilo_normal.border_width_bottom = 3
+	_tienda_estilo_normal.corner_radius_top_left = 16
+	_tienda_estilo_normal.corner_radius_top_right = 16
+	_tienda_estilo_normal.corner_radius_bottom_left = 16
+	_tienda_estilo_normal.corner_radius_bottom_right = 16
+
+	_tienda_estilo_owned = StyleBoxFlat.new()
+	_tienda_estilo_owned.bg_color = Color(0.93, 0.97, 1, 0.95)
+	_tienda_estilo_owned.border_color = Color(0.15, 0.55, 0.85, 1)
+	_tienda_estilo_owned.border_width_left = 4
+	_tienda_estilo_owned.border_width_top = 4
+	_tienda_estilo_owned.border_width_right = 4
+	_tienda_estilo_owned.border_width_bottom = 4
+	_tienda_estilo_owned.corner_radius_top_left = 16
+	_tienda_estilo_owned.corner_radius_top_right = 16
+	_tienda_estilo_owned.corner_radius_bottom_left = 16
+	_tienda_estilo_owned.corner_radius_bottom_right = 16
+
+	_tienda_estilo_selected = StyleBoxFlat.new()
+	_tienda_estilo_selected.bg_color = Color(0.9, 1, 0.92, 0.95)
+	_tienda_estilo_selected.border_color = Color(0.18, 0.7, 0.25, 1)
+	_tienda_estilo_selected.border_width_left = 5
+	_tienda_estilo_selected.border_width_top = 5
+	_tienda_estilo_selected.border_width_right = 5
+	_tienda_estilo_selected.border_width_bottom = 5
+	_tienda_estilo_selected.corner_radius_top_left = 16
+	_tienda_estilo_selected.corner_radius_top_right = 16
+	_tienda_estilo_selected.corner_radius_bottom_left = 16
+	_tienda_estilo_selected.corner_radius_bottom_right = 16
+
+
+func _Actualizar_Tienda_UI():
+	_Inicializar_Tienda_Estilos()
+	for entry in _TIENDA_CARDS:
+		_Actualizar_Card_Tienda(entry["categoria"], entry["clave"])
+
+
+func _Actualizar_Card_Tienda(categoria: String, clave: String):
+	var card = get_node_or_null("Tienda/Objetos_" + categoria + "/" + clave)
+	if card == null:
+		return
+	var poseido: bool = Variables_Dinamicas.Objetos_Poseidos.get(clave, false)
+	var seleccionado: bool = Variables_Dinamicas.Objeto_Seleccionado.get(categoria, "") == clave
+
+	var hay_otro_poseido_en_categoria := false
+	for c in Variables_Dinamicas.Objetos_Poseidos.keys():
+		if c == clave:
+			continue
+		if not Variables_Dinamicas.Objetos_Poseidos[c]:
+			continue
+		var obj = Variables_Estaticas.Catalogo_Objetos.get(c, null)
+		if obj != null and obj.afecta_a == categoria:
+			hay_otro_poseido_en_categoria = true
+			break
+
+	var estilo
+	if seleccionado:
+		estilo = _tienda_estilo_selected
+	elif poseido:
+		estilo = _tienda_estilo_owned
+	else:
+		estilo = _tienda_estilo_normal
+	card.add_theme_stylebox_override("panel", estilo)
+
+	card.get_node("Comprar").visible = not poseido
+	card.get_node("Vender").visible = poseido and not seleccionado and hay_otro_poseido_en_categoria
+	card.get_node("Elegir").visible = poseido and not seleccionado
+	card.get_node("En_Uso").visible = seleccionado
+
+
+func _on_tienda_button_pressed():
+	Detener_Blink()
+	Gestionar_Visibilidad.Visibilizar_Tienda(self)
+	_Actualizar_Tienda_UI()
+
+
+func _on_tienda_flecha_atras_pressed():
+	Gestionar_Visibilidad.Quitar_Todo(self)
+
+
+func _on_tab_dormir_pressed():
+	Gestionar_Visibilidad.Mostrar_Categoria_Tienda(self, "Dormir")
+
+
+func _on_tab_comer_pressed():
+	Gestionar_Visibilidad.Mostrar_Categoria_Tienda(self, "Comer")
+
+
+func _on_tab_duchar_pressed():
+	Gestionar_Visibilidad.Mostrar_Categoria_Tienda(self, "Duchar")
+
+
+func _Tienda_Comprar(clave: String):
+	if Actividades.Comprar_Objeto(clave):
+		_Actualizar_Tienda_UI()
+		Actualizar_Dinero()
+
+
+func _Tienda_Vender(clave: String):
+	if Actividades.Vender_Objeto(clave):
+		_Actualizar_Tienda_UI()
+		Actualizar_Dinero()
+
+
+func _Tienda_Elegir(categoria: String, clave: String):
+	if Actividades.Seleccionar_Objeto(categoria, clave):
+		_Actualizar_Tienda_UI()
+
+
+func _on_comprar_cama_basica_pressed(): _Tienda_Comprar("Cama_Basica")
+func _on_vender_cama_basica_pressed(): _Tienda_Vender("Cama_Basica")
+func _on_elegir_cama_basica_pressed(): _Tienda_Elegir("Dormir", "Cama_Basica")
+func _on_comprar_cama_premium_pressed(): _Tienda_Comprar("Cama_Premium")
+func _on_vender_cama_premium_pressed(): _Tienda_Vender("Cama_Premium")
+func _on_elegir_cama_premium_pressed(): _Tienda_Elegir("Dormir", "Cama_Premium")
+func _on_comprar_mesa_basica_pressed(): _Tienda_Comprar("Mesa_Basica")
+func _on_vender_mesa_basica_pressed(): _Tienda_Vender("Mesa_Basica")
+func _on_elegir_mesa_basica_pressed(): _Tienda_Elegir("Comer", "Mesa_Basica")
+func _on_comprar_mesa_premium_pressed(): _Tienda_Comprar("Mesa_Premium")
+func _on_vender_mesa_premium_pressed(): _Tienda_Vender("Mesa_Premium")
+func _on_elegir_mesa_premium_pressed(): _Tienda_Elegir("Comer", "Mesa_Premium")
+func _on_comprar_ducha_basica_pressed(): _Tienda_Comprar("Ducha_Basica")
+func _on_vender_ducha_basica_pressed(): _Tienda_Vender("Ducha_Basica")
+func _on_elegir_ducha_basica_pressed(): _Tienda_Elegir("Duchar", "Ducha_Basica")
+func _on_comprar_ducha_premium_pressed(): _Tienda_Comprar("Ducha_Premium")
+func _on_vender_ducha_premium_pressed(): _Tienda_Vender("Ducha_Premium")
+func _on_elegir_ducha_premium_pressed(): _Tienda_Elegir("Duchar", "Ducha_Premium")

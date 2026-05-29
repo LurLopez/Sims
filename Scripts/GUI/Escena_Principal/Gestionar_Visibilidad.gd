@@ -87,6 +87,24 @@ func Visibilizar_Seleccionar_Horario(raiz):
 func Actividad_Terminada(raiz):
 	Quitar_Todo(raiz)
 	raiz_path=""
+
+
+func Visibilizar_Tienda(raiz):
+	Recursivo_Desvisibilizar(raiz)
+	raiz.visible = true
+	raiz.get_node("Fondo").visible = true
+	raiz.get_node("Moneda").visible = true
+	raiz.get_node("Dinero_Label").visible = true
+	raiz.get_node("Alquiler_Button").visible = true
+	Recursivo_Visibilizar(raiz.get_node("Tienda"))
+	Mostrar_Categoria_Tienda(raiz, "Dormir")
+
+
+func Mostrar_Categoria_Tienda(raiz, categoria):
+	raiz.get_node("Tienda/Objetos_Dormir").visible = false
+	raiz.get_node("Tienda/Objetos_Comer").visible = false
+	raiz.get_node("Tienda/Objetos_Duchar").visible = false
+	raiz.get_node("Tienda/Objetos_" + categoria).visible = true
 	
 
 

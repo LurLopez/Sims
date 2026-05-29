@@ -211,8 +211,83 @@ Catalogo_Objetos["Cama_Super_Premium"] = cama_super
 
 3. Actualizar lógica de multiplicadores en `Actividades_Necesidades_Basicas.gd` para soportar multiplicadores < 1.0 en efectos negativos (ver sección "Expansión Futura")
 
+## UI de la Tienda
+
+### Estructura de Nodos
+
+Añadida bajo el nodo raíz de `Escena_Principal.tscn`:
+
+```
+Tienda (Control, visible=false por defecto, z_index=5)
+├── Flecha_Atras (Button)         ← arriba-izq, vuelve al menú
+├── Titulo (Label)                ← "TIENDA"
+├── Categorias (Control)
+│   ├── Tab_Dormir (Button)       ← 🛏️
+│   ├── Tab_Comer (Button)        ← 🍽️
+│   └── Tab_Duchar (Button)       ← 🚿
+├── Objetos_Dormir (Control)
+│   ├── Cama_Basica (Panel)
+│   └── Cama_Premium (Panel)
+├── Objetos_Comer (Control)
+│   ├── Mesa_Basica (Panel)
+│   └── Mesa_Premium (Panel)
+└── Objetos_Duchar (Control)
+    ├── Ducha_Basica (Panel)
+    └── Ducha_Premium (Panel)
+```
+
+Cada `Panel` de objeto contiene:
+- `Imagen_Placeholder` (Panel) → `Imagen_Emoji` (Label con emoji grande, sustituible por TextureRect cuando haya sprites)
+- `Nombre`, `Precio`, `Multiplicador` (Labels)
+- `En_Uso` (Label, "✓ En uso") — visible solo si seleccionado
+- `Comprar`, `Vender`, `Elegir` (Buttons superpuestos en el mismo slot)
+
+### Estados Visuales del Panel
+
+Construidos en código (`Script_Principal._Inicializar_Tienda_Estilos()`):
+
+| Estado | StyleBox | Borde |
+|---|---|---|
+| No poseído | `_tienda_estilo_normal` | Gris (3px) |
+| Poseído, no seleccionado | `_tienda_estilo_owned` | Azul (4px) |
+| Seleccionado (en uso) | `_tienda_estilo_selected` | Verde (5px) |
+
+### Reglas de Visibilidad de Botones
+
+Calculadas en `_Actualizar_Card_Tienda(categoria, clave)`:
+
+| Botón | Visible cuando |
+|---|---|
+| `Comprar` | NO poseído |
+| `Vender` | Poseído **y** NO seleccionado **y** existe otro poseído de misma categoría |
+| `Elegir` | Poseído **y** NO seleccionado |
+| `En_Uso` | Seleccionado |
+
+### Funciones de Visibilidad (`Gestionar_Visibilidad.gd`)
+
+```gdscript
+Visibilizar_Tienda(raiz)
+    # Oculta todo, deja visibles solo Fondo, Moneda, Dinero_Label, Alquiler_Button
+    # Muestra el Control Tienda y abre la categoría Dormir
+
+Mostrar_Categoria_Tienda(raiz, categoria)
+    # Oculta Objetos_Dormir/Comer/Duchar y muestra solo la categoría indicada
+```
+
+### Handlers en `Script_Principal.gd`
+
+- `_on_tienda_button_pressed` — abre la tienda, refresca UI
+- `_on_tienda_flecha_atras_pressed` — `Quitar_Todo` (vuelve al menú)
+- `_on_tab_<dormir|comer|duchar>_pressed` — switcher de categorías
+- 18 handlers `_on_<comprar|vender|elegir>_<objeto>_pressed` → delegan a 3 helpers (`_Tienda_Comprar/Vender/Elegir`) que llaman a `Actividades.Comprar_Objeto/Vender_Objeto/Seleccionar_Objeto`, refrescan UI y `Actualizar_Dinero()`
+
+### Limitaciones Actuales de la UI
+
+- Solo se muestran 2 objetos por categoría (Básico + Premium). `Cama_Lujo` existe en el catálogo pero **no tiene tarjeta en la UI**. Para añadirla habría que ampliar el layout (scroll horizontal o reducir tamaño de tarjeta).
+- Las imágenes son emojis placeholder (`🛏️`, `🛌`, `🍽️`, `🍱`, `🚿`, `🛁`). Sustituir por `TextureRect` con sprites reales cuando estén disponibles.
+
 ## Estado Actual
 
-- **Implementado:** 7 objetos, 3 categorías (Dormir, Comer, Duchar)
-- **Pendiente:** UI de tienda (mock en proyecto)
-- **Planeado:** Efectos negativos, más categorías (Ocio, Trabajo)
+- **Implementado:** 7 objetos en catálogo, 3 categorías (Dormir, Comer, Duchar), backend completo (compra/venta/selección), aplicación de multiplicador, guardado/carga, UI de tienda funcional con tabs y estados visuales.
+- **Pendiente en UI:** Tarjeta para `Cama_Lujo`, sprites reales en lugar de emojis.
+- **Planeado:** Efectos negativos (multiplicador < 1.0), más categorías (Ocio, Trabajo).

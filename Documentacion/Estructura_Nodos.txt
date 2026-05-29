@@ -143,5 +143,43 @@ Escena_Principal.tscn
     │   │   │
     │   │   ├── Crear_Actividad (Button)
     │   │   └── Cancelar (Button)
+    │
+    ├── Tienda_Button (Button)           ← visible siempre, abre la tienda
+    ├── Alquiler_Button (Button)         ← visible siempre, estado alquiler/calle
+    │
+    └── Tienda (Control)                 ← visible=false por defecto
+        ├── Flecha_Atras (Button)        ← arriba-izq, vuelve al menú principal
+        ├── Titulo (Label)               ← "TIENDA"
+        │
+        ├── Categorias (Control)
+        │   ├── Tab_Dormir (Button)      ← 🛏️
+        │   ├── Tab_Comer (Button)       ← 🍽️
+        │   └── Tab_Duchar (Button)      ← 🚿
+        │
+        ├── Objetos_Dormir (Control)
+        │   ├── Cama_Basica (Panel)
+        │   │   ├── Imagen_Placeholder (Panel)
+        │   │   │   └── Imagen_Emoji (Label)
+        │   │   ├── Nombre (Label)
+        │   │   ├── Precio (Label)
+        │   │   ├── Multiplicador (Label)
+        │   │   ├── En_Uso (Label)       ← visible si está seleccionado
+        │   │   ├── Comprar (Button)     ← visible si NO poseído
+        │   │   ├── Vender (Button)      ← visible si poseído y hay otra opción
+        │   │   └── Elegir (Button)      ← visible si poseído pero no seleccionado
+        │   └── Cama_Premium (Panel)     ← misma estructura
+        │
+        ├── Objetos_Comer (Control)      ← visible=false (oculto inicial)
+        │   ├── Mesa_Basica (Panel)
+        │   └── Mesa_Premium (Panel)
+        │
+        └── Objetos_Duchar (Control)     ← visible=false (oculto inicial)
+            ├── Ducha_Basica (Panel)
+            └── Ducha_Premium (Panel)
 
 NOTA: MiniCalendarioPreview se añade dinámicamente en Seleccionar_Horario durante runtime
+
+ESTADOS VISUALES DE LOS PANELES DE OBJETO:
+- StyleBox_Card_Normal    → borde gris (no poseído)
+- StyleBox_Card_Owned     → borde azul (poseído, no seleccionado)
+- StyleBox_Card_Selected  → borde verde (poseído y en uso)
