@@ -22,6 +22,9 @@ func load_game():
 		Variables_Estaticas.First_Time=game_data["First_Time"]
 		Variables_Estaticas.First_Time_Minute=game_data["First_Time_Minute"]
 		Variables_Estaticas.Habilidades=game_data["Habilidades"]
+		# Fallback para saves antiguos con 6 habilidades: añadir Sangre_Fria (índice 6) aleatoriamente.
+		while Variables_Estaticas.Habilidades.size() < 7:
+			Variables_Estaticas.Habilidades.append(Funciones_Globales.Generar_Numero_Aleatorio_Entero(1,100))
 		Variables_Estaticas.Personalidad=game_data["Personalidad"]
 		Variables_Estaticas.First_Time_Minute_Day=game_data["First_Time_Minute_Day"]
 		Variables_Estaticas.First_Time_Minute_Minute=game_data["First_TIme_Minute_Minute"]

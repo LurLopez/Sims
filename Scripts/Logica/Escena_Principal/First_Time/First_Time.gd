@@ -33,12 +33,14 @@ func Crear_Personalidad():
 		Variables_Estaticas.Personalidad="Deportista"
 
 func Crear_Habilidades():
-	for i in range(0,6):
+	# 7 habilidades innatas: 0=Deporte, 1=Inteligencia, 2=Destreza, 3=Memoria,
+	# 4=Liderazgo, 5=Paciencia, 6=Sangre_Fria (afecta a exámenes de carreras).
+	for i in range(0,7):
 
 		Variables_Estaticas.Habilidades.append(Funciones_Globales.Generar_Numero_Aleatorio_Entero(1,100))
 
 func Crear_Habilidades_Mostradas():
-	for i in range(0,6):
+	for i in range(0,7):
 		Variables_Dinamicas.Habilidades_Mostradas.append(0)
 
 func Crear_Alquiler():

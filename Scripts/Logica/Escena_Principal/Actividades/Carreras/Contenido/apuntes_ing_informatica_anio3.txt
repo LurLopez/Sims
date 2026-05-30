@@ -1,0 +1,80 @@
+INGENIERÍA INFORMÁTICA - AÑO 3: PROGRAMACIÓN ORIENTADA A OBJETOS (POO)
+
+1. CLASES Y OBJETOS
+
+Una CLASE es una plantilla que define propiedades (atributos) y comportamientos (métodos) que tendrán los objetos creados a partir de ella.
+
+Un OBJETO (o instancia) es una entidad concreta creada a partir de una clase.
+
+    class Coche {
+        var marca: String
+        var velocidad: int
+
+        function acelerar() {
+            velocidad = velocidad + 10
+        }
+    }
+
+    var miCoche = Coche.new()  // miCoche es un objeto
+    miCoche.marca = "Toyota"
+    miCoche.acelerar()
+
+2. PILARES DE LA POO
+
+HERENCIA: una clase (hija) hereda propiedades y métodos de otra (padre). Permite reutilizar código y crear jerarquías.
+
+    class Vehiculo {
+        var velocidad: int
+    }
+
+    class Coche extends Vehiculo {
+        var numeroPuertas: int
+    }
+
+Coche hereda "velocidad" de Vehiculo.
+
+ENCAPSULAMIENTO: ocultar los detalles internos de una clase y exponer solo lo necesario. Se hace con modificadores de visibilidad:
+- public: accesible desde cualquier parte.
+- private: solo accesible dentro de la clase.
+- protected: accesible en la clase y sus hijas.
+
+POLIMORFISMO: capacidad de un objeto de adoptar múltiples formas o comportamientos. Una misma llamada a un método puede ejecutar código diferente según el tipo real del objeto.
+
+ABSTRACCIÓN: enfocarse en las características esenciales de un objeto, ignorando los detalles innecesarios.
+
+3. CONSTRUCTOR Y DESTRUCTOR
+
+CONSTRUCTOR: método especial que se ejecuta automáticamente al crear un objeto. Sirve para inicializar atributos.
+
+    class Persona {
+        var nombre: String
+        function _init(n: String) {
+            nombre = n
+        }
+    }
+
+DESTRUCTOR: método que se ejecuta al destruir el objeto. Sirve para liberar recursos.
+
+4. CLASES ABSTRACTAS E INTERFACES
+
+CLASE ABSTRACTA: no se puede instanciar directamente. Sirve como base para otras clases.
+
+INTERFAZ: un contrato que define qué métodos debe implementar una clase. No tiene implementación, solo declaraciones.
+
+5. MÉTODOS ESTÁTICOS
+
+Un método estático pertenece a la clase, no a sus instancias. Se llama directamente desde la clase sin crear un objeto.
+
+    class Matematicas {
+        static function sumar(a, b) {
+            return a + b
+        }
+    }
+
+    Matematicas.sumar(3, 5)  // Llamada directa a la clase
+
+6. CONSEJOS DE EXAMEN
+- Distingue: una clase es la plantilla, un objeto es la instancia concreta.
+- Herencia: piensa en "es un" (un Coche ES UN Vehículo).
+- private = solo dentro de la clase; public = en todas partes.
+- Las clases abstractas NO se pueden instanciar; las interfaces tampoco.

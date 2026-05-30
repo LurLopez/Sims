@@ -1,0 +1,345 @@
+{
+  "Anio_1": [
+    {
+      "pregunta": "¿Qué hace el siguiente bucle? while(x < 10) { x = x + 1 }",
+      "opciones": [
+        "Incrementa x hasta que sea 10",
+        "Decrementa x hasta que sea 0",
+        "Imprime x diez veces",
+        "Genera un bucle infinito"
+      ],
+      "respuesta_correcta": 0
+    },
+    {
+      "pregunta": "¿Cuál es la salida de: if(5 > 3) print('A') else print('B')?",
+      "opciones": ["B", "A", "A y B", "Nada"],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Cuántas veces se ejecuta? for(i=0; i<5; i++) { print(i) }",
+      "opciones": ["4", "5", "6", "Infinitas"],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Qué tipo de dato almacena verdadero o falso?",
+      "opciones": ["int", "string", "boolean", "float"],
+      "respuesta_correcta": 2
+    },
+    {
+      "pregunta": "¿Cuál es el operador de comparación de igualdad en la mayoría de lenguajes?",
+      "opciones": ["=", "==", "===", "!="],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Qué es una variable?",
+      "opciones": [
+        "Un valor fijo",
+        "Un espacio de memoria con un nombre que guarda un valor",
+        "Una función",
+        "Un tipo de bucle"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Qué hace el operador % (módulo)?",
+      "opciones": [
+        "Multiplica dos números",
+        "Calcula el porcentaje",
+        "Devuelve el resto de una división",
+        "Eleva un número a otro"
+      ],
+      "respuesta_correcta": 2
+    },
+    {
+      "pregunta": "¿Cuál es el resultado de 10 / 3 en aritmética entera?",
+      "opciones": ["3", "3.33", "4", "Error"],
+      "respuesta_correcta": 0
+    },
+    {
+      "pregunta": "¿Qué estructura permite ejecutar código solo si una condición es verdadera?",
+      "opciones": ["for", "while", "if", "switch"],
+      "respuesta_correcta": 2
+    },
+    {
+      "pregunta": "¿Qué es un algoritmo?",
+      "opciones": [
+        "Un lenguaje de programación",
+        "Una secuencia ordenada de pasos para resolver un problema",
+        "Un tipo de variable",
+        "Un compilador"
+      ],
+      "respuesta_correcta": 1
+    }
+  ],
+  "Anio_2": [
+    {
+      "pregunta": "¿Qué es un array?",
+      "opciones": [
+        "Una variable única",
+        "Una colección ordenada de elementos del mismo tipo",
+        "Una función matemática",
+        "Un tipo de bucle"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Cuál es el índice del primer elemento de un array en la mayoría de lenguajes?",
+      "opciones": ["1", "0", "-1", "Depende del lenguaje"],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Qué es una función?",
+      "opciones": [
+        "Una variable global",
+        "Un bloque de código reutilizable que realiza una tarea",
+        "Un tipo de dato",
+        "Un operador"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Qué es el scope (ámbito) de una variable?",
+      "opciones": [
+        "Su tipo de dato",
+        "Su valor inicial",
+        "La parte del código donde es accesible",
+        "Su nombre"
+      ],
+      "respuesta_correcta": 2
+    },
+    {
+      "pregunta": "¿Qué es la recursividad?",
+      "opciones": [
+        "Una función que se llama a sí misma",
+        "Un bucle infinito",
+        "Una variable global",
+        "Un tipo de array"
+      ],
+      "respuesta_correcta": 0
+    },
+    {
+      "pregunta": "¿Cuántos elementos tiene un array de tamaño 10?",
+      "opciones": ["9", "10", "11", "Depende"],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Qué hace 'return' en una función?",
+      "opciones": [
+        "Imprime un valor",
+        "Devuelve un valor y termina la función",
+        "Crea una nueva variable",
+        "Reinicia la función"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Qué es un parámetro de una función?",
+      "opciones": [
+        "Una variable definida fuera de la función",
+        "El valor que devuelve la función",
+        "Una variable que recibe la función para trabajar con ella",
+        "El nombre de la función"
+      ],
+      "respuesta_correcta": 2
+    },
+    {
+      "pregunta": "¿Qué estructura de datos sigue el principio LIFO (Last In, First Out)?",
+      "opciones": ["Cola (Queue)", "Pila (Stack)", "Array", "Lista enlazada"],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Qué estructura de datos sigue el principio FIFO (First In, First Out)?",
+      "opciones": ["Cola (Queue)", "Pila (Stack)", "Array", "Diccionario"],
+      "respuesta_correcta": 0
+    }
+  ],
+  "Anio_3": [
+    {
+      "pregunta": "¿Qué es una clase en POO?",
+      "opciones": [
+        "Una función",
+        "Una plantilla que define propiedades y comportamientos de objetos",
+        "Una variable",
+        "Un tipo de bucle"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Qué es un objeto en POO?",
+      "opciones": [
+        "Una variable global",
+        "Una instancia de una clase",
+        "Una función estática",
+        "Un parámetro"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Qué es la herencia en POO?",
+      "opciones": [
+        "Pasar datos entre funciones",
+        "Un mecanismo donde una clase obtiene propiedades de otra",
+        "Una variable global",
+        "Un tipo de bucle"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Qué es el encapsulamiento?",
+      "opciones": [
+        "Crear muchas variables",
+        "Ocultar los detalles internos de una clase y exponer solo lo necesario",
+        "Hacer todo público",
+        "Usar bucles anidados"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Qué es el polimorfismo?",
+      "opciones": [
+        "Capacidad de un objeto de tomar múltiples formas o comportamientos",
+        "Tener muchas variables",
+        "Repetir código varias veces",
+        "Crear muchos bucles"
+      ],
+      "respuesta_correcta": 0
+    },
+    {
+      "pregunta": "¿Qué es un constructor?",
+      "opciones": [
+        "Un método especial que se llama al crear un objeto",
+        "Una variable de la clase",
+        "Un método que destruye el objeto",
+        "Un tipo de bucle"
+      ],
+      "respuesta_correcta": 0
+    },
+    {
+      "pregunta": "¿Qué significa que un método sea 'estático'?",
+      "opciones": [
+        "Se ejecuta automáticamente",
+        "Pertenece a la clase, no a instancias concretas",
+        "Solo se puede llamar una vez",
+        "Es privado"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Qué es una interfaz?",
+      "opciones": [
+        "Una clase concreta",
+        "Un contrato que define qué métodos debe implementar una clase",
+        "Una variable global",
+        "Un constructor"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Qué es una clase abstracta?",
+      "opciones": [
+        "Una clase que no se puede instanciar directamente",
+        "Una clase con muchas variables",
+        "Una clase sin métodos",
+        "Una clase final"
+      ],
+      "respuesta_correcta": 0
+    },
+    {
+      "pregunta": "¿Qué visibilidad permite acceder al miembro solo dentro de la clase?",
+      "opciones": ["public", "protected", "private", "static"],
+      "respuesta_correcta": 2
+    }
+  ],
+  "Anio_4": [
+    {
+      "pregunta": "¿Qué es un patrón de diseño?",
+      "opciones": [
+        "Un lenguaje de programación",
+        "Una solución reutilizable a un problema común de diseño",
+        "Un compilador",
+        "Un tipo de variable"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Qué patrón asegura que solo exista una instancia de una clase?",
+      "opciones": ["Factory", "Observer", "Singleton", "Strategy"],
+      "respuesta_correcta": 2
+    },
+    {
+      "pregunta": "¿Qué patrón notifica cambios a múltiples objetos suscriptores?",
+      "opciones": ["Singleton", "Observer", "Factory", "Decorator"],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Qué principio dice que una clase debe tener una sola responsabilidad?",
+      "opciones": [
+        "Open/Closed",
+        "Single Responsibility",
+        "Liskov Substitution",
+        "Dependency Inversion"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Qué significa DRY en buenas prácticas?",
+      "opciones": [
+        "Do Run Yourself",
+        "Don't Repeat Yourself",
+        "Data Read Yearly",
+        "Define Run Yield"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Qué es el control de versiones?",
+      "opciones": [
+        "Un sistema que registra cambios en el código a lo largo del tiempo",
+        "Un compilador",
+        "Un tipo de bucle",
+        "Una herramienta de depuración"
+      ],
+      "respuesta_correcta": 0
+    },
+    {
+      "pregunta": "¿Qué es testing unitario?",
+      "opciones": [
+        "Probar el sistema completo",
+        "Probar pequeñas unidades de código aisladamente",
+        "Probar la interfaz gráfica",
+        "Probar la base de datos"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Qué es la complejidad O(n)?",
+      "opciones": [
+        "Constante",
+        "Lineal: crece proporcional al tamaño de la entrada",
+        "Cuadrática",
+        "Exponencial"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Qué algoritmo de búsqueda es más eficiente sobre arrays ordenados?",
+      "opciones": [
+        "Búsqueda lineal",
+        "Búsqueda binaria",
+        "Búsqueda aleatoria",
+        "Búsqueda secuencial"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Qué es la refactorización?",
+      "opciones": [
+        "Reescribir el código desde cero",
+        "Mejorar la estructura del código sin cambiar su comportamiento externo",
+        "Borrar funciones",
+        "Cambiar de lenguaje"
+      ],
+      "respuesta_correcta": 1
+    }
+  ]
+}

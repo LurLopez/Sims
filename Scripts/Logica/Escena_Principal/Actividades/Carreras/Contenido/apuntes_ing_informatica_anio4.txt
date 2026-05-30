@@ -1,0 +1,80 @@
+INGENIERÍA INFORMÁTICA - AÑO 4: PATRONES, DISEÑO Y BUENAS PRÁCTICAS
+
+1. PATRONES DE DISEÑO
+
+Un PATRÓN DE DISEÑO es una solución reutilizable y comprobada a un problema común que aparece en el diseño de software. No son códigos listos, sino plantillas conceptuales.
+
+SINGLETON: garantiza que una clase tenga una única instancia y proporciona un punto de acceso global a ella. Útil para configuraciones, conexiones a bases de datos, etc.
+
+OBSERVER: define una dependencia uno-a-muchos. Cuando un objeto cambia de estado, notifica automáticamente a todos sus suscriptores. Usado en eventos, GUIs.
+
+FACTORY: crea objetos sin especificar la clase exacta en el código cliente. Centraliza la creación de instancias.
+
+STRATEGY: define una familia de algoritmos intercambiables. El cliente elige cuál usar en tiempo de ejecución.
+
+DECORATOR: añade comportamiento a un objeto dinámicamente sin modificar su clase original.
+
+2. PRINCIPIOS SOLID
+
+S - Single Responsibility: una clase debe tener una sola razón para cambiar (una sola responsabilidad).
+
+O - Open/Closed: las clases deben estar abiertas a extensión pero cerradas a modificación.
+
+L - Liskov Substitution: las clases hijas deben poder sustituir a las padres sin alterar el comportamiento del programa.
+
+I - Interface Segregation: muchas interfaces específicas son mejores que una sola general.
+
+D - Dependency Inversion: depender de abstracciones, no de implementaciones concretas.
+
+3. BUENAS PRÁCTICAS
+
+DRY (Don't Repeat Yourself): no repitas código. Si encuentras lógica duplicada, extráela a una función o método.
+
+KISS (Keep It Simple, Stupid): mantén el código simple. Evita complejidad innecesaria.
+
+YAGNI (You Aren't Gonna Need It): no implementes funcionalidad que no necesites ahora mismo.
+
+CÓDIGO LIMPIO:
+- Nombres descriptivos para variables y funciones.
+- Funciones pequeñas que hagan una sola cosa.
+- Comentarios solo cuando aporten valor (el código debería explicarse solo).
+
+4. TESTING
+
+TESTING UNITARIO: prueba pequeñas unidades de código (funciones, métodos) aisladamente.
+
+TESTING DE INTEGRACIÓN: prueba cómo interactúan varios componentes entre sí.
+
+TESTING DE SISTEMA: prueba el sistema completo desde la perspectiva del usuario.
+
+5. COMPLEJIDAD ALGORÍTMICA (Big O)
+
+Mide cómo crece el tiempo/espacio que necesita un algoritmo según el tamaño de la entrada:
+
+- O(1): constante - no depende del tamaño.
+- O(log n): logarítmica - muy eficiente (búsqueda binaria).
+- O(n): lineal - proporcional al tamaño (búsqueda lineal).
+- O(n log n): casi lineal (mergesort, quicksort).
+- O(n²): cuadrática - lenta para grandes datos (bubble sort).
+- O(2^n): exponencial - inviable para grandes datos.
+
+ALGORITMO DE BÚSQUEDA BINARIA: O(log n). Solo funciona en arrays ordenados. Divide repetidamente el rango de búsqueda por la mitad.
+
+6. CONTROL DE VERSIONES (Git)
+
+Git es un sistema que registra los cambios en el código a lo largo del tiempo. Conceptos clave:
+- commit: guardar un snapshot de cambios.
+- branch: rama independiente de desarrollo.
+- merge: fusionar cambios de una rama a otra.
+- pull/push: descargar/subir cambios al repositorio remoto.
+
+7. REFACTORIZACIÓN
+
+Refactorizar es mejorar la estructura interna del código sin cambiar su comportamiento externo. Objetivos: mayor legibilidad, mantenibilidad y simplicidad.
+
+8. CONSEJOS DE EXAMEN
+- Singleton: una instancia única, no varias.
+- DRY: no repetir, extraer en funciones reutilizables.
+- O(n) es lineal; O(n²) crece mucho más rápido.
+- Búsqueda binaria SOLO funciona si el array está ordenado.
+- Refactorizar NO cambia el comportamiento externo del código.

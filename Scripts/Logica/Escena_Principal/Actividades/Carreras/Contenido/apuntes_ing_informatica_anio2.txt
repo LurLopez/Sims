@@ -1,0 +1,58 @@
+INGENIERÍA INFORMÁTICA - AÑO 2: ESTRUCTURAS DE DATOS Y FUNCIONES
+
+1. ARRAYS
+Un array es una colección ordenada de elementos del mismo tipo, almacenados en posiciones consecutivas de memoria. Cada elemento se accede por su índice.
+
+    array numeros = [10, 20, 30, 40, 50]
+    print(numeros[0])  // Imprime 10
+    print(numeros[4])  // Imprime 50
+
+IMPORTANTE: en la mayoría de lenguajes, los arrays empiezan en el índice 0. Un array de tamaño 10 tiene índices del 0 al 9.
+
+2. FUNCIONES
+Una función es un bloque de código reutilizable que realiza una tarea específica. Recibe parámetros y puede devolver un valor.
+
+    function sumar(a, b) {
+        return a + b
+    }
+    var resultado = sumar(3, 5)  // resultado = 8
+
+- Parámetros: las variables que recibe la función para trabajar.
+- return: devuelve un valor y termina la ejecución de la función.
+
+3. SCOPE (Ámbito)
+El scope define en qué parte del código una variable es accesible:
+- Variables locales: solo accesibles dentro de la función donde se declaran.
+- Variables globales: accesibles desde cualquier parte del programa.
+
+Buena práctica: minimizar el uso de variables globales para evitar conflictos.
+
+4. RECURSIVIDAD
+Una función recursiva es aquella que se llama a sí misma. Ejemplo del factorial:
+
+    function factorial(n) {
+        if (n <= 1) return 1
+        return n * factorial(n - 1)
+    }
+
+Toda recursión necesita un caso base (cuándo parar) para no caer en un bucle infinito.
+
+5. ESTRUCTURAS DE DATOS BÁSICAS
+
+PILA (Stack) - LIFO (Last In, First Out): el último elemento en entrar es el primero en salir.
+Operaciones: push (añadir arriba), pop (sacar arriba).
+Ejemplo: pila de platos.
+
+COLA (Queue) - FIFO (First In, First Out): el primer elemento en entrar es el primero en salir.
+Operaciones: enqueue (añadir al final), dequeue (sacar del principio).
+Ejemplo: fila del supermercado.
+
+LISTA ENLAZADA: cada elemento (nodo) contiene un valor y un puntero al siguiente nodo.
+
+DICCIONARIO (o Mapa): asocia claves con valores. Ejemplo: {"nombre": "Ana", "edad": 25}.
+
+6. CONSEJOS DE EXAMEN
+- Cuando trabajes con índices de array, recuerda que empiezan en 0.
+- En recursividad, identifica primero el caso base.
+- Distingue LIFO (pila) de FIFO (cola).
+- Las funciones que no usan "return" devuelven null o nada por defecto.

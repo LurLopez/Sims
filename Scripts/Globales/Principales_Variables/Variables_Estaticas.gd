@@ -73,6 +73,16 @@ func _Inicializar_Catalogo():
 	comida_rapida.dias_laborales = [0, 1, 2, 3, 4]
 	Catalogo_Actividades["Trabajar_En_Comida_Rapida"] = comida_rapida
 
+	# Actividad especial: estudiar la carrera universitaria activa. Suma progreso
+	# probabilísticamente a Carrera_Actual.progreso_actual (no al Progreso académico general).
+	var estudiar_carrera = Actividad_Carrera.new()
+	estudiar_carrera.nombre = "Estudiar_Carrera"
+	estudiar_carrera.efectos_necesidades_basicas = [-1, -2, -1, -2, -1]
+	estudiar_carrera.efectos_progreso = [0, 0, 0]
+	estudiar_carrera.carrera_nombre = ""
+	estudiar_carrera.año_referencia = 0
+	Catalogo_Actividades["Estudiar_Carrera"] = estudiar_carrera
+
 	Actividades = [
 		Catalogo_Actividades["Estudiar"],
 		Catalogo_Actividades["Salir_A_Correr"],

@@ -24,7 +24,10 @@ func load_game():
 		if game_data.has("Habilidades_Mostradas"):
 			Variables_Dinamicas.Habilidades_Mostradas = game_data["Habilidades_Mostradas"]
 		else:
-			Variables_Dinamicas.Habilidades_Mostradas = [0, 0, 0, 0, 0, 0]
+			Variables_Dinamicas.Habilidades_Mostradas = [0, 0, 0, 0, 0, 0, 0]
+		# Fallback para saves antiguos con 6 entradas: añadir entrada para Sangre_Fria.
+		while Variables_Dinamicas.Habilidades_Mostradas.size() < 7:
+			Variables_Dinamicas.Habilidades_Mostradas.append(0)
 		# Alquiler — fallback para saves antiguos: empiezas con casa y 7 días de gracia.
 		if game_data.has("En_La_Calle"):
 			Variables_Dinamicas.En_La_Calle = game_data["En_La_Calle"]
@@ -38,6 +41,24 @@ func load_game():
 			Variables_Dinamicas.Objeto_Seleccionado = game_data["Objeto_Seleccionado"]
 		else:
 			_Inicializar_Objetos_Por_Defecto()
+		# Sistema de Carreras — fallback para saves antiguos: ninguna carrera activa.
+		if game_data.has("Carrera_Actual_Data"):
+			Variables_Dinamicas.Carrera_Actual = _Dict_A_Carrera(game_data["Carrera_Actual_Data"])
+		else:
+			Variables_Dinamicas.Carrera_Actual = null
+		if game_data.has("Carreras_Completadas_Data"):
+			var lista = []
+			for d in game_data["Carreras_Completadas_Data"]:
+				var c = _Dict_A_Carrera(d)
+				if c != null:
+					lista.append(c)
+			Variables_Dinamicas.Carreras_Completadas = lista
+		else:
+			Variables_Dinamicas.Carreras_Completadas = []
+		if game_data.has("Inicio_Semana_Carrera"):
+			Variables_Dinamicas.Inicio_Semana_Carrera = game_data["Inicio_Semana_Carrera"]
+		else:
+			Variables_Dinamicas.Inicio_Semana_Carrera = -1
 		save_file = null
 
 func game_data_func():
@@ -53,9 +74,76 @@ func game_data_func():
 		"En_La_Calle": Variables_Dinamicas.En_La_Calle,
 		"Ultima_Fecha_Alquiler": Variables_Dinamicas.Ultima_Fecha_Alquiler,
 		"Objetos_Poseidos": Variables_Dinamicas.Objetos_Poseidos,
-		"Objeto_Seleccionado": Variables_Dinamicas.Objeto_Seleccionado
+		"Objeto_Seleccionado": Variables_Dinamicas.Objeto_Seleccionado,
+		"Carrera_Actual_Data": _Carrera_A_Dict(Variables_Dinamicas.Carrera_Actual),
+		"Carreras_Completadas_Data": _Carreras_Completadas_A_Array(),
+		"Inicio_Semana_Carrera": Variables_Dinamicas.Inicio_Semana_Carrera
 	}
 	return game_data
+
+
+func _Carrera_A_Dict(carrera) -> Dictionary:
+	if carrera == null:
+		return {}
+	var script = carrera.get_script()
+	var script_path = script.resource_path if script != null else ""
+	return {
+		"script_path": script_path,
+		"nombre": carrera.nombre,
+		"años_totales": carrera.años_totales,
+		"costo_matricula_anual": carrera.costo_matricula_anual,
+		"año_actual": carrera.año_actual,
+		"progreso_actual": carrera.progreso_actual,
+		"historial_notas": carrera.historial_notas,
+		"num_intentos": carrera.num_intentos,
+		"dinero_matricula_gastado": carrera.dinero_matricula_gastado,
+		"examen_realizado_esta_semana": carrera.examen_realizado_esta_semana,
+		"nota_real_ultima": carrera.nota_real_ultima,
+		"libros_desbloqueados": carrera.libros_desbloqueados,
+		"completada": carrera.completada,
+		"hora_examen_dia": carrera.hora_examen_dia,
+		"hora_examen_inicio": carrera.hora_examen_inicio,
+		"fin_de_semana_procesado": carrera.fin_de_semana_procesado,
+		"ultima_nota_final": carrera.ultima_nota_final,
+		"ultimo_resultado_aprobado": carrera.ultimo_resultado_aprobado
+	}
+
+
+func _Dict_A_Carrera(dict: Dictionary):
+	if dict.is_empty():
+		return null
+	var script_path = dict.get("script_path", "")
+	if script_path == "":
+		return null
+	var script_resource = load(script_path)
+	if script_resource == null:
+		return null
+	var carrera = script_resource.new()
+	carrera.nombre = dict.get("nombre", carrera.nombre)
+	carrera.años_totales = dict.get("años_totales", carrera.años_totales)
+	carrera.costo_matricula_anual = dict.get("costo_matricula_anual", carrera.costo_matricula_anual)
+	carrera.año_actual = dict.get("año_actual", carrera.año_actual)
+	carrera.progreso_actual = dict.get("progreso_actual", carrera.progreso_actual)
+	carrera.historial_notas = dict.get("historial_notas", carrera.historial_notas)
+	carrera.num_intentos = dict.get("num_intentos", carrera.num_intentos)
+	carrera.dinero_matricula_gastado = dict.get("dinero_matricula_gastado", carrera.dinero_matricula_gastado)
+	carrera.examen_realizado_esta_semana = dict.get("examen_realizado_esta_semana", carrera.examen_realizado_esta_semana)
+	carrera.nota_real_ultima = dict.get("nota_real_ultima", carrera.nota_real_ultima)
+	carrera.libros_desbloqueados = dict.get("libros_desbloqueados", carrera.libros_desbloqueados)
+	carrera.completada = dict.get("completada", carrera.completada)
+	carrera.hora_examen_dia = dict.get("hora_examen_dia", carrera.hora_examen_dia)
+	carrera.hora_examen_inicio = dict.get("hora_examen_inicio", carrera.hora_examen_inicio)
+	carrera.fin_de_semana_procesado = dict.get("fin_de_semana_procesado", carrera.fin_de_semana_procesado)
+	carrera.ultima_nota_final = dict.get("ultima_nota_final", carrera.ultima_nota_final)
+	carrera.ultimo_resultado_aprobado = dict.get("ultimo_resultado_aprobado", carrera.ultimo_resultado_aprobado)
+	return carrera
+
+
+func _Carreras_Completadas_A_Array() -> Array:
+	var resultado = []
+	for c in Variables_Dinamicas.Carreras_Completadas:
+		resultado.append(_Carrera_A_Dict(c))
+	return resultado
 
 
 func _Inicializar_Objetos_Por_Defecto():

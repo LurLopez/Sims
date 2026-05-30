@@ -29,3 +29,12 @@ var Objeto_Seleccionado: Dictionary = {}
 var Minute_Day=0
 var Minute_Minute=0
 var Minute=0
+
+# Sistema de Carreras Universitarias
+# Carrera_Actual: instancia de Carrera (o null si el personaje no está estudiando ninguna).
+var Carrera_Actual: Carrera = null
+# Carreras_Completadas: Array de Carrera (histórico de carreras terminadas).
+var Carreras_Completadas: Array = []
+# Minuto absoluto del inicio de la semana actual de carrera. Se usa para detectar
+# el fin de semana y procesar el examen (cada 7*1440 minutos desde matriculación).
+var Inicio_Semana_Carrera: int = -1

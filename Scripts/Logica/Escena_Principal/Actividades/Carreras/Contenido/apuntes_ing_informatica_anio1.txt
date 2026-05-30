@@ -1,0 +1,55 @@
+INGENIERÍA INFORMÁTICA - AÑO 1: FUNDAMENTOS DE PROGRAMACIÓN
+
+1. VARIABLES
+Una variable es un espacio de memoria con un nombre, donde guardamos un valor que puede cambiar durante la ejecución del programa. Los tipos básicos de variable son:
+- int (entero): números enteros como 1, 5, 100
+- float (decimal): números con decimales como 3.14
+- boolean (booleano): verdadero o falso (true/false)
+- string (cadena): texto entre comillas como "Hola"
+
+2. OPERADORES
+- Aritméticos: + (suma), - (resta), * (multiplicación), / (división), % (módulo o resto)
+- Comparación: == (igual), != (distinto), < (menor), > (mayor), <= (menor o igual), >= (mayor o igual)
+- Lógicos: && (and), || (or), ! (not)
+
+Importante: en la mayoría de lenguajes "=" es asignación (asignar valor) y "==" es comparación.
+
+3. ESTRUCTURAS CONDICIONALES (if-else)
+Permiten ejecutar código solo si se cumple una condición:
+
+    if (edad >= 18) {
+        print("Mayor de edad")
+    } else {
+        print("Menor de edad")
+    }
+
+Si la condición es verdadera, se ejecuta el primer bloque. Si es falsa, el bloque del else.
+
+4. BUCLES
+Los bucles permiten repetir código varias veces.
+
+WHILE: Se ejecuta MIENTRAS la condición sea verdadera:
+
+    while (x < 10) {
+        x = x + 1
+    }
+
+FOR: Tiene tres partes (inicialización, condición, incremento):
+
+    for (i = 0; i < 5; i++) {
+        print(i)
+    }
+
+Esto imprime 0, 1, 2, 3, 4. Se ejecuta 5 veces.
+
+5. CONCEPTOS BÁSICOS
+- Algoritmo: secuencia ordenada de pasos para resolver un problema.
+- Programa: implementación de uno o más algoritmos en un lenguaje de programación.
+- Sintaxis: las reglas que define cómo se debe escribir el código en un lenguaje.
+- Semántica: lo que significa el código (qué hace).
+
+6. CONSEJOS DE EXAMEN
+- Lee bien las preguntas antes de responder.
+- En código, fíjate en los operadores: "<" es distinto de "<=".
+- En bucles, calcula manualmente cuántas iteraciones ocurren.
+- División entera (con int) descarta los decimales: 10/3 = 3.

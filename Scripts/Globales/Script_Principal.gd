@@ -31,6 +31,7 @@ func _ready():
 	Inicializar_Otros_Scripts()
 	$Alquiler_Button.pressed.connect(Callable(self, "_on_alquiler_button_pressed"))
 	Actualizar_Texto_Alquiler()
+	_Inicializar_Botones_Carrera()
 	if (Variables_Estaticas.First_Time):
 		first_time_logica.First_Time_Function()
 		mirar_semana=1
@@ -71,6 +72,7 @@ func Actualizar_Dinero():
 	$Dinero_Label.offset_right = offset_right_dinamico
 	$Dinero_Label.offset_left = offset_right_dinamico - _DINERO_ANCHO_LABEL
 	Actualizar_Texto_Alquiler()
+	_Actualizar_Botones_Carrera()
 
 # Calcula cuántos minutos LOCALES han pasado desde el último tick procesado.
 # Se basa en la hora del dispositivo (no en Unix delta), así DST y cambios de zona
@@ -735,3 +737,175 @@ func _on_elegir_ducha_basica_pressed(): _Tienda_Elegir("Duchar", "Ducha_Basica")
 func _on_comprar_ducha_premium_pressed(): _Tienda_Comprar("Ducha_Premium")
 func _on_vender_ducha_premium_pressed(): _Tienda_Vender("Ducha_Premium")
 func _on_elegir_ducha_premium_pressed(): _Tienda_Elegir("Duchar", "Ducha_Premium")
+
+
+# ---------------- Sistema de Carreras Universitarias ----------------
+
+var carrera_button: Button = null
+var examen_button: Button = null
+var libros_button: Button = null
+const _MODAL_EXAMEN_SCRIPT = preload("res://Scripts/Logica/Escena_Principal/Actividades/Carreras/UI/Modal_Examen.gd")
+const _MODAL_SELECCIONAR_EXAMEN_SCRIPT = preload("res://Scripts/Logica/Escena_Principal/Actividades/Carreras/UI/Modal_Seleccionar_Examen.gd")
+const _LECTOR_LIBROS_SCRIPT = preload("res://Scripts/Logica/Escena_Principal/Actividades/Carreras/UI/Lector_Libros.gd")
+
+func _Inicializar_Botones_Carrera():
+	# Botón matricularse / estado de carrera (debajo de Alquiler_Button)
+	carrera_button = _Crear_Boton_Posicionado("Carrera_Button", "Matricularse", 10, 70, 190, 120)
+	carrera_button.pressed.connect(Callable(self, "_on_carrera_button_pressed"))
+	add_child(carrera_button)
+
+	# Botón examen (solo visible mientras cursa una carrera)
+	examen_button = _Crear_Boton_Posicionado("Examen_Button", "Examen", 200, 70, 380, 120)
+	examen_button.pressed.connect(Callable(self, "_on_examen_button_pressed"))
+	examen_button.visible = false
+	add_child(examen_button)
+
+	# Botón apuntes (visible si tiene al menos un libro desbloqueado)
+	libros_button = _Crear_Boton_Posicionado("Libros_Button", "Apuntes", 390, 70, 570, 120)
+	libros_button.pressed.connect(Callable(self, "_on_libros_button_pressed"))
+	libros_button.visible = false
+	add_child(libros_button)
+
+	_Actualizar_Botones_Carrera()
+
+func _Crear_Boton_Posicionado(nombre: String, texto: String, left: int, top: int, right: int, bottom: int) -> Button:
+	var b = Button.new()
+	b.name = nombre
+	b.text = texto
+	b.z_index = 10
+	b.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	b.offset_left = left
+	b.offset_top = top
+	b.offset_right = right
+	b.offset_bottom = bottom
+	return b
+
+func _Actualizar_Botones_Carrera():
+	if carrera_button == null:
+		return
+	var carrera = Variables_Dinamicas.Carrera_Actual
+	if carrera == null:
+		carrera_button.text = "Matricularse (500€)"
+		carrera_button.disabled = Variables_Dinamicas.Dinero < 500
+		examen_button.visible = false
+		libros_button.visible = Variables_Dinamicas.Carreras_Completadas.size() > 0
+	else:
+		carrera_button.text = "Año %d/%d · %d%%" % [carrera.año_actual, carrera.años_totales, int(carrera.progreso_actual)]
+		carrera_button.disabled = true
+		examen_button.visible = true
+
+		# Verificar si estamos en el horario del examen
+		var en_horario_examen = _Verificar_Horario_Examen(carrera)
+		examen_button.disabled = carrera.examen_realizado_esta_semana or not en_horario_examen
+
+		if carrera.fin_de_semana_procesado:
+			# Ya se procesó el examen: mostrar la nota final
+			var estado = "✓ APROBADO" if carrera.ultimo_resultado_aprobado else "✗ SUSPENDIDO"
+			examen_button.text = "%s %.0f/100" % [estado, carrera.ultima_nota_final]
+			examen_button.disabled = true
+		elif carrera.examen_realizado_esta_semana:
+			examen_button.text = "Examen ✓ (%d)" % carrera.nota_real_ultima
+		elif not en_horario_examen:
+			var hora_examen = carrera.hora_examen_inicio / 60
+			var dias = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sab", "Dom"]
+			examen_button.text = "Examen (%s %02d:00)" % [dias[carrera.hora_examen_dia], hora_examen]
+		else:
+			examen_button.text = "Examen ✓ AHORA"
+
+		libros_button.visible = carrera.libros_desbloqueados.size() > 0
+
+func _Verificar_Horario_Examen(carrera: Carrera) -> bool:
+	if carrera.hora_examen_dia < 0:
+		return false
+
+	# Día de la semana actual (0=lunes, 6=domingo)
+	var dia_semana_actual = Variables_Dinamicas.Minute_Day % 7
+	var minuto_del_dia = Variables_Dinamicas.Minute_Minute
+
+	var hora_inicio = carrera.hora_examen_inicio
+	var hora_fin = hora_inicio + 60
+
+	if dia_semana_actual != carrera.hora_examen_dia:
+		return false
+
+	return minuto_del_dia >= hora_inicio and minuto_del_dia < hora_fin
+
+func _on_carrera_button_pressed():
+	if Variables_Dinamicas.Carrera_Actual != null:
+		return
+	# Verificar que tiene dinero ANTES de abrir el modal
+	if Variables_Dinamicas.Dinero < 500:
+		print("No tienes suficiente dinero para matricularte (necesitas 500€)")
+		return
+	# NO restar dinero aún, solo crear la carrera
+	var carrera = Carrera_Ingenieria_Informatica.new()
+	# Abrir modal para que el jugador elija cuándo hacer el examen
+	var modal_seleccionar = _MODAL_SELECCIONAR_EXAMEN_SCRIPT.new()
+	add_child(modal_seleccionar)
+	modal_seleccionar.examen_programado.connect(_on_examen_programado.bind(carrera))
+	modal_seleccionar.tree_exited.connect(_on_modal_examen_cerrado.bind(carrera))
+	modal_seleccionar.popup_centered()
+
+func _on_examen_button_pressed():
+	var carrera = Variables_Dinamicas.Carrera_Actual
+	if carrera == null or carrera.examen_realizado_esta_semana:
+		return
+	var modal = _MODAL_EXAMEN_SCRIPT.new()
+	add_child(modal)
+	modal.Configurar(carrera)
+	modal.examen_enviado.connect(_on_examen_enviado)
+	modal.popup_centered()
+
+func _on_examen_programado(dia: int, hora_minutos: int, carrera: Carrera):
+	print("_on_examen_programado llamado con dia=%d, hora_minutos=%d" % [dia, hora_minutos])
+
+	# Aquí es donde se CONFIRMA la matriculación
+	# Restar los 500€ y asignar la carrera
+	if Variables_Dinamicas.Dinero < 500:
+		print("Error: No hay suficiente dinero")
+		return
+
+	Variables_Dinamicas.Dinero -= 500.0
+	carrera.hora_examen_dia = dia
+	carrera.hora_examen_inicio = hora_minutos
+	carrera.dinero_matricula_gastado = 500.0
+	Variables_Dinamicas.Carrera_Actual = carrera
+	Variables_Dinamicas.Inicio_Semana_Carrera = Variables_Dinamicas.Minute
+
+	print("Carrera asignada: dia=%d, hora=%d" % [carrera.hora_examen_dia, carrera.hora_examen_inicio])
+
+	# Desbloquear primer libro
+	if carrera.libros_desbloqueados.size() == 0:
+		carrera.libros_desbloqueados.append("Anio_1")
+
+	Guardar_Variables_Dinamicas.save_game()
+	_Actualizar_Botones_Carrera()
+	Actualizar_Dinero()
+
+	# Mostrar confirmación
+	var dias_nombres = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
+	var hora = hora_minutos / 60
+	print("✓ Matriculado. Examen programado para %s a las %02d:00" % [dias_nombres[dia], hora])
+
+func _on_modal_examen_cerrado(carrera: Carrera):
+	# Si se cierra el modal sin confirmar, la carrera no se crea
+	# (carrera sigue siendo una instancia local que se destruirá)
+	pass
+
+func _on_examen_enviado(_nota_real: int):
+	Guardar_Variables_Dinamicas.save_game()
+	_Actualizar_Botones_Carrera()
+
+func _on_libros_button_pressed():
+	var carrera = Variables_Dinamicas.Carrera_Actual
+	if carrera == null:
+		# Fallback: usar el último libro de la última carrera completada
+		if Variables_Dinamicas.Carreras_Completadas.size() == 0:
+			return
+		carrera = Variables_Dinamicas.Carreras_Completadas[-1]
+	if carrera.libros_desbloqueados.size() == 0:
+		return
+	var modal = _LECTOR_LIBROS_SCRIPT.new()
+	add_child(modal)
+	modal.Configurar(carrera)
+	modal.popup_centered()

@@ -10,6 +10,14 @@ func Ejecutar_Actividad(actividad: Actividad, es_aleatoria: bool = false):
 	if not es_aleatoria:
 		Actividades_Habilidades.Ejecutar_Actividad_Progreso_Array(actividad.efectos_progreso)
 		Actividades_Habilidades.Ejecutar_Actividad_Mostrar_Habilidad_Array(actividad.efectos_progreso)
+	# Progreso de carrera activa:
+	# - Si es una Actividad_Carrera específica → siempre suma (la actividad existe para eso).
+	# - Si es la actividad "Estudiar" genérica y hay carrera activa → también suma
+	#   (mientras estudias, también avanzas la carrera; UX-friendly hasta que existan
+	#   actividades de carrera programables explícitamente).
+	if not es_aleatoria and Variables_Dinamicas.Carrera_Actual != null:
+		if actividad is Actividad_Carrera or actividad.nombre == "Estudiar":
+			get_node("/root/Sistema_Examenes").Incrementar_Progreso_Carrera(Variables_Dinamicas.Carrera_Actual)
 	# Pago de salario al cruzar el último minuto del día laboral
 	if actividad is Actividad_Fija_Trabajo and Variables_Dinamicas.Minute_Minute == actividad.hora_final - 1:
 		var horas_trabajadas = (actividad.hora_final - actividad.hora_inicio) / 60.0
@@ -143,7 +151,46 @@ func Actualizar_Horario(minutos_a_procesar: int):
 			var minutos_desde_alquiler = Variables_Dinamicas.Minute - Variables_Dinamicas.Ultima_Fecha_Alquiler
 			if minutos_desde_alquiler >= 7 * 1440:
 				Cobrar_Alquiler()
+
+		# Fin del examen: cuando termina la hora del examen programado
+		if Variables_Dinamicas.Carrera_Actual != null:
+			var c = Variables_Dinamicas.Carrera_Actual
+			if c.hora_examen_dia >= 0 and not c.completada:
+				var dia_semana_actual = Variables_Dinamicas.Minute_Day % 7
+				var minuto_del_dia = Variables_Dinamicas.Minute_Minute
+				var hora_fin_examen = c.hora_examen_inicio + 60
+				if dia_semana_actual == c.hora_examen_dia and minuto_del_dia >= hora_fin_examen and not c.fin_de_semana_procesado:
+					Procesar_Fin_De_Semana_Carrera()
+					c.fin_de_semana_procesado = true
 	Funciones_Globales.Guardar_Matriz()
+
+
+func Procesar_Fin_De_Semana_Carrera():
+	var carrera = Variables_Dinamicas.Carrera_Actual
+	if carrera == null:
+		return
+	var resultado = get_node("/root/Sistema_Examenes").Procesar_Fin_De_Semana(carrera)
+	if resultado["carrera_completada"]:
+		Variables_Dinamicas.Carreras_Completadas.append(carrera)
+		Variables_Dinamicas.Carrera_Actual = null
+		Variables_Dinamicas.Inicio_Semana_Carrera = -1
+	else:
+		# Si aprobado, cobrar matrícula del nuevo año. Si no tiene dinero, abandona la carrera.
+		if resultado["aprobado"]:
+			if Variables_Dinamicas.Dinero >= carrera.costo_matricula_anual:
+				Variables_Dinamicas.Dinero -= carrera.costo_matricula_anual
+				carrera.dinero_matricula_gastado += carrera.costo_matricula_anual
+			else:
+				# Sin dinero para la nueva matrícula → expulsado de la carrera.
+				Variables_Dinamicas.Carrera_Actual = null
+				Variables_Dinamicas.Inicio_Semana_Carrera = -1
+				return
+		# Preparar para la siguiente semana: reset el flag y la hora del examen
+		Variables_Dinamicas.Inicio_Semana_Carrera = Variables_Dinamicas.Minute
+		carrera.fin_de_semana_procesado = false
+		carrera.examen_realizado_esta_semana = false
+		carrera.nota_real_ultima = 0
+		carrera.hora_examen_dia = -1
 
 
 # ---------------- Sistema de Objetos/Muebles ----------------
