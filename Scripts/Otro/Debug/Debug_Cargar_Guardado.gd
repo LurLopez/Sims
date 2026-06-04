@@ -10,7 +10,7 @@ func _process(_delta):
 			print("\n========== VARIABLES ESTÁTICAS ==========")
 			print("First_Time: %s" % Variables_Estaticas.First_Time)
 			print("Personalidad: %s" % Variables_Estaticas.Personalidad)
-			print("Habilidades [Deporte, Inteligencia, Destreza, Memoria, Liderazgo, Paciencia]: %s" % str(Variables_Estaticas.Habilidades))
+			print("Habilidades [Deporte, Inteligencia, Destreza, Memoria, Liderazgo, Paciencia, Sangre_Fria]: %s" % str(Variables_Estaticas.Habilidades))
 			print("First_Time_Minute (Unix): %d" % Variables_Estaticas.First_Time_Minute)
 			print("Fecha inicio (día/mes/año): %d/%d/%d" % [Variables_Estaticas.First_Time_Day_Of_Month, Variables_Estaticas.First_Time_Month, Variables_Estaticas.First_Time_Year])
 			print("First_Time_Minute_Day: %d" % Variables_Estaticas.First_Time_Minute_Day)

@@ -1,0 +1,7 @@
+- Ajustar los examenes
+- Recompensas por terminar la carrera +
+- crear nuevas carreras/trabajos
+- Cambiar el GUI
+- Apuntes para el examen/perfil
+- Funcionalidad morir
+- guardar partida manualmente

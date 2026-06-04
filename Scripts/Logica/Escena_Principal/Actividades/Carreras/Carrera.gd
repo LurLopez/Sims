@@ -15,9 +15,15 @@ extends Resource
 @export var libros_desbloqueados: Array = []
 @export var completada: bool = false
 
-# Horario del examen (elegido al matricularse)
+# Horario del examen (elegido al matricularse o prematricularse)
 @export var hora_examen_dia: int = -1  # 0-6 (Lunes a Domingo), -1 = sin definir
 @export var hora_examen_inicio: int = 0  # minutos desde medianoche (ej: 15*60 = 900 para las 3 PM)
+
+# Estado de matriculación
+# prematriculado: fecha elegida pero flexible (no se ha cobrado aún); se convierte a matriculado el Lunes 00:00
+# matriculado: 500€ cobrados, fecha bloqueada; el examen se ejecutará automáticamente
+@export var prematriculado: bool = false
+@export var matriculado: bool = false
 
 # Control para procesar fin de semana solo una vez
 @export var fin_de_semana_procesado: bool = false

@@ -126,7 +126,37 @@ func Volver_A_Alquiler():
 		pass
 
 
-func Actualizar_Horario(minutos_a_procesar: int):
+var _ultima_prob_muerte_minuto: float = 0.0
+
+func Comprobar_Muerte() -> bool:
+	if Variables_Dinamicas.Minute_Day >= 573 and Variables_Dinamicas.Minute_Minute >= 1439:
+		_ultima_prob_muerte_minuto = 1.0
+		Variables_Dinamicas.Prob_Supervivencia_Acumulada = 0.0
+		return true
+	var edad = 18 + int(Variables_Dinamicas.Minute_Day / 7.0)
+	var media_nec = 0.0
+	for n in Variables_Dinamicas.Necesidades_Basicas:
+		media_nec += n
+	media_nec /= Variables_Dinamicas.Necesidades_Basicas.size()
+	var factor_edad = pow(2.0, (edad - 18) / 10.0)
+	var factor_nec = pow(35.0, media_nec / 100.0)
+	var max_valor = max(1, int(1_875_000.0 * factor_nec / factor_edad))
+	_ultima_prob_muerte_minuto = 1.0 / float(max_valor)
+	Variables_Dinamicas.Prob_Supervivencia_Acumulada *= (1.0 - _ultima_prob_muerte_minuto)
+	return randi() % max_valor == 0
+
+
+func _Guardar_Log_Muerte() -> void:
+	var edad = 18 + int(Variables_Dinamicas.Minute_Day / 7.0)
+	var prob_acum = (1.0 - Variables_Dinamicas.Prob_Supervivencia_Acumulada) * 100.0
+	var prob_min = _ultima_prob_muerte_minuto * 100.0
+	var uno_en = 0
+	if _ultima_prob_muerte_minuto > 0.0:
+		uno_en = int(1.0 / _ultima_prob_muerte_minuto)
+	print("[Muerte] Edad: %d | P.minuto: %.8f%% (1 en %d) | P.acumulada: %.4f%%" % [edad, prob_min, uno_en, prob_acum])
+
+
+func Actualizar_Horario(minutos_a_procesar: int) -> bool:
 	for i in range(minutos_a_procesar):
 		var celda = Variables_Dinamicas.Matriz_Jugador[Variables_Dinamicas.Minute_Minute][Variables_Dinamicas.Minute_Day]
 		if celda == null or (celda is String and celda == ""):
@@ -152,45 +182,56 @@ func Actualizar_Horario(minutos_a_procesar: int):
 			if minutos_desde_alquiler >= 7 * 1440:
 				Cobrar_Alquiler()
 
-		# Fin del examen: cuando termina la hora del examen programado
+		# Sistema de carreras: conversión prematrícula → matrícula el Lunes 00:00
+		# y disparo del examen automático al terminar la hora programada.
 		if Variables_Dinamicas.Carrera_Actual != null:
 			var c = Variables_Dinamicas.Carrera_Actual
-			if c.hora_examen_dia >= 0 and not c.completada:
-				var dia_semana_actual = Variables_Dinamicas.Minute_Day % 7
-				var minuto_del_dia = Variables_Dinamicas.Minute_Minute
+			var dia_semana_actual = Variables_Dinamicas.Minute_Day % 7
+			var minuto_del_dia = Variables_Dinamicas.Minute_Minute
+
+			# Lunes 00:00: convertir prematrícula en matrícula
+			if dia_semana_actual == 0 and minuto_del_dia == 0 and c.prematriculado:
+				if Variables_Dinamicas.Dinero >= c.costo_matricula_anual:
+					Variables_Dinamicas.Dinero -= c.costo_matricula_anual
+					c.dinero_matricula_gastado += c.costo_matricula_anual
+					c.matriculado = true
+					c.prematriculado = false
+				else:
+					# Sin dinero: cancelar prematrícula silenciosamente
+					c.prematriculado = false
+					c.hora_examen_dia = -1
+
+			# Fin del examen: cuando termina la hora del examen programado
+			# Solo dispara si hay matrícula confirmada (500€ pagados)
+			if c.hora_examen_dia >= 0 and not c.completada and c.matriculado:
 				var hora_fin_examen = c.hora_examen_inicio + 60
 				if dia_semana_actual == c.hora_examen_dia and minuto_del_dia >= hora_fin_examen and not c.fin_de_semana_procesado:
 					Procesar_Fin_De_Semana_Carrera()
-					c.fin_de_semana_procesado = true
+
+		if Comprobar_Muerte():
+			Variables_Dinamicas.Muerto = true
+			Variables_Dinamicas.Edad_Muerte = 18 + int(Variables_Dinamicas.Minute_Day / 7.0)
+			_Guardar_Log_Muerte()
+			Funciones_Globales.Guardar_Matriz()
+			return true
+
+	_Guardar_Log_Muerte()
 	Funciones_Globales.Guardar_Matriz()
+	return false
 
 
 func Procesar_Fin_De_Semana_Carrera():
 	var carrera = Variables_Dinamicas.Carrera_Actual
 	if carrera == null:
 		return
-	var resultado = get_node("/root/Sistema_Examenes").Procesar_Fin_De_Semana(carrera)
-	if resultado["carrera_completada"]:
-		Variables_Dinamicas.Carreras_Completadas.append(carrera)
-		Variables_Dinamicas.Carrera_Actual = null
-		Variables_Dinamicas.Inicio_Semana_Carrera = -1
-	else:
-		# Si aprobado, cobrar matrícula del nuevo año. Si no tiene dinero, abandona la carrera.
-		if resultado["aprobado"]:
-			if Variables_Dinamicas.Dinero >= carrera.costo_matricula_anual:
-				Variables_Dinamicas.Dinero -= carrera.costo_matricula_anual
-				carrera.dinero_matricula_gastado += carrera.costo_matricula_anual
-			else:
-				# Sin dinero para la nueva matrícula → expulsado de la carrera.
-				Variables_Dinamicas.Carrera_Actual = null
-				Variables_Dinamicas.Inicio_Semana_Carrera = -1
-				return
-		# Preparar para la siguiente semana: reset el flag y la hora del examen
-		Variables_Dinamicas.Inicio_Semana_Carrera = Variables_Dinamicas.Minute
-		carrera.fin_de_semana_procesado = false
-		carrera.examen_realizado_esta_semana = false
-		carrera.nota_real_ultima = 0
-		carrera.hora_examen_dia = -1
+	get_node("/root/Sistema_Examenes").Procesar_Fin_De_Semana(carrera)
+	# Marcar como pendiente de ver resultado.
+	# El jugador debe pulsar "Ver Resultado" para continuar.
+	# La hora del examen y el estado completada NO se tocan aquí:
+	# se limpian en Script_Principal cuando el jugador confirma haber visto el resultado.
+	carrera.fin_de_semana_procesado = true
+	carrera.matriculado = false
+	carrera.prematriculado = false
 
 
 # ---------------- Sistema de Objetos/Muebles ----------------

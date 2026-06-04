@@ -1,7 +1,7 @@
 extends Node
 
 const UMBRAL_APROBACION: int = 50
-const SIGMA_DESVIACION: float = 50.0
+const SIGMA_DESVIACION: float = 15.0
 const PESO_PROGRESO: float = 0.60
 const PESO_HABILIDADES: float = 0.20
 const PESO_NECESIDADES: float = 0.20
@@ -33,17 +33,17 @@ func Distribucion_Normal(media: float, sigma: float = SIGMA_DESVIACION) -> float
 	var resultado = media + (z * sigma)
 	return clamp(resultado, 0.0, 100.0)
 
-func Calcular_Nota_Final(carrera: Carrera) -> float:
+func Calcular_Nota_Examen_Personaje(carrera: Carrera) -> float:
 	var progreso = carrera.progreso_actual
 	var hab_acad = Calcular_Habilidades_Academicas()
 	var nec = Calcular_Necesidades_Examen()
+	var valor_esperado = (progreso * PESO_PROGRESO) + (hab_acad * PESO_HABILIDADES) + (nec * PESO_NECESIDADES)
+	return Distribucion_Normal(valor_esperado)
+
+func Calcular_Nota_Final(carrera: Carrera) -> float:
+	var nota_personaje = Calcular_Nota_Examen_Personaje(carrera)
 	var bonus_jugador = carrera.nota_real_ultima * PESO_NOTA_REAL
-
-	# Calcular valor esperado incluyendo TODO
-	var valor_esperado = (progreso * PESO_PROGRESO) + (hab_acad * PESO_HABILIDADES) + (nec * PESO_NECESIDADES) + bonus_jugador
-
-	# Aplicar variancia DESPUÉS de sumar todo (puede cambiar aprobado a suspendido)
-	var nota_final = Distribucion_Normal(valor_esperado)
+	var nota_final = nota_personaje + bonus_jugador
 	return clamp(nota_final, 0.0, 100.0)
 
 func Procesar_Fin_De_Semana(carrera: Carrera) -> Dictionary:

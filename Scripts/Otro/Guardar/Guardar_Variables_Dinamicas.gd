@@ -59,6 +59,13 @@ func load_game():
 			Variables_Dinamicas.Inicio_Semana_Carrera = game_data["Inicio_Semana_Carrera"]
 		else:
 			Variables_Dinamicas.Inicio_Semana_Carrera = -1
+		if game_data.has("Muerto"):
+			Variables_Dinamicas.Muerto = game_data["Muerto"]
+			Variables_Dinamicas.Edad_Muerte = game_data["Edad_Muerte"]
+		else:
+			Variables_Dinamicas.Muerto = false
+			Variables_Dinamicas.Edad_Muerte = 0
+		Variables_Dinamicas.Prob_Supervivencia_Acumulada = game_data.get("Prob_Supervivencia_Acumulada", 1.0)
 		save_file = null
 
 func game_data_func():
@@ -77,7 +84,10 @@ func game_data_func():
 		"Objeto_Seleccionado": Variables_Dinamicas.Objeto_Seleccionado,
 		"Carrera_Actual_Data": _Carrera_A_Dict(Variables_Dinamicas.Carrera_Actual),
 		"Carreras_Completadas_Data": _Carreras_Completadas_A_Array(),
-		"Inicio_Semana_Carrera": Variables_Dinamicas.Inicio_Semana_Carrera
+		"Inicio_Semana_Carrera": Variables_Dinamicas.Inicio_Semana_Carrera,
+		"Muerto": Variables_Dinamicas.Muerto,
+		"Edad_Muerte": Variables_Dinamicas.Edad_Muerte,
+		"Prob_Supervivencia_Acumulada": Variables_Dinamicas.Prob_Supervivencia_Acumulada
 	}
 	return game_data
 
@@ -103,6 +113,8 @@ func _Carrera_A_Dict(carrera) -> Dictionary:
 		"completada": carrera.completada,
 		"hora_examen_dia": carrera.hora_examen_dia,
 		"hora_examen_inicio": carrera.hora_examen_inicio,
+		"prematriculado": carrera.prematriculado,
+		"matriculado": carrera.matriculado,
 		"fin_de_semana_procesado": carrera.fin_de_semana_procesado,
 		"ultima_nota_final": carrera.ultima_nota_final,
 		"ultimo_resultado_aprobado": carrera.ultimo_resultado_aprobado
@@ -133,6 +145,8 @@ func _Dict_A_Carrera(dict: Dictionary):
 	carrera.completada = dict.get("completada", carrera.completada)
 	carrera.hora_examen_dia = dict.get("hora_examen_dia", carrera.hora_examen_dia)
 	carrera.hora_examen_inicio = dict.get("hora_examen_inicio", carrera.hora_examen_inicio)
+	carrera.prematriculado = dict.get("prematriculado", false)
+	carrera.matriculado = dict.get("matriculado", false)
 	carrera.fin_de_semana_procesado = dict.get("fin_de_semana_procesado", carrera.fin_de_semana_procesado)
 	carrera.ultima_nota_final = dict.get("ultima_nota_final", carrera.ultima_nota_final)
 	carrera.ultimo_resultado_aprobado = dict.get("ultimo_resultado_aprobado", carrera.ultimo_resultado_aprobado)

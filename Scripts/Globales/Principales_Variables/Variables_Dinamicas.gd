@@ -38,3 +38,10 @@ var Carreras_Completadas: Array = []
 # Minuto absoluto del inicio de la semana actual de carrera. Se usa para detectar
 # el fin de semana y procesar el examen (cada 7*1440 minutos desde matriculación).
 var Inicio_Semana_Carrera: int = -1
+
+# Estado de muerte del personaje
+var Muerto: bool = false
+var Edad_Muerte: int = 0
+# Probabilidad de supervivencia acumulada desde el inicio de la partida (producto de (1 - p_minuto)).
+# Solo se usa para el log de debug; no afecta a la jugabilidad.
+var Prob_Supervivencia_Acumulada: float = 1.0

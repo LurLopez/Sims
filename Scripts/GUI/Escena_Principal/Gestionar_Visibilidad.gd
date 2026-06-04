@@ -43,10 +43,8 @@ func Visibilizar_Lo_Basico(raiz):
 	# Botones de carrera (dinámicamente creados)
 	if raiz.carrera_button != null:
 		raiz.carrera_button.visible = true
-	if raiz.examen_button != null:
-		raiz.examen_button.visible = raiz.examen_button.visible  # mantener su visibilidad actual
 	if raiz.libros_button != null:
-		raiz.libros_button.visible = raiz.libros_button.visible  # mantener su visibilidad actual
+		raiz.libros_button.visible = raiz.libros_button.visible
 
 
 

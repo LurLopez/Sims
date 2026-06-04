@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Sistema de Muerte — SIMS</title>
+<style>
+  body { font-family: 'Segoe UI', Arial, sans-serif; max-width: 960px; margin: 40px auto; padding: 0 24px; background: #f5f5f5; color: #222; }
+  h1 { color: #c0392b; border-bottom: 3px solid #c0392b; padding-bottom: 8px; }
+  h2 { color: #2c3e50; border-bottom: 1px solid #bdc3c7; padding-bottom: 6px; margin-top: 40px; }
+  h3 { color: #34495e; margin-top: 28px; }
+  pre { background: #1e1e1e; color: #d4d4d4; padding: 16px; border-radius: 6px; overflow-x: auto; font-size: 13px; line-height: 1.5; }
+  code { background: #e8e8e8; padding: 2px 5px; border-radius: 3px; font-family: monospace; font-size: 13px; }
+  table { border-collapse: collapse; width: 100%; margin: 16px 0; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+  th { background: #2c3e50; color: #fff; padding: 10px 14px; text-align: left; font-size: 14px; }
+  td { padding: 9px 14px; border-bottom: 1px solid #ecf0f1; font-size: 14px; }
+  tr:nth-child(even) td { background: #f9f9f9; }
+  tr:hover td { background: #eaf4fb; }
+  .formula-box { background: #fff; border-left: 4px solid #c0392b; padding: 16px 20px; margin: 16px 0; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+  .info-box { background: #eaf4fb; border-left: 4px solid #2980b9; padding: 14px 18px; margin: 16px 0; border-radius: 0 4px 4px 0; }
+  .warn-box { background: #fef9e7; border-left: 4px solid #f39c12; padding: 14px 18px; margin: 16px 0; border-radius: 0 4px 4px 0; }
+  .good { color: #27ae60; font-weight: bold; }
+  .bad  { color: #c0392b; font-weight: bold; }
+  .mid  { color: #f39c12; font-weight: bold; }
+  .tag { display: inline-block; background: #2c3e50; color: #fff; padding: 2px 8px; border-radius: 3px; font-size: 12px; margin-right: 4px; }
+  .tag-red { background: #c0392b; }
+  .tag-green { background: #27ae60; }
+  .tag-blue { background: #2980b9; }
+  .section-desc { color: #555; margin: -8px 0 16px 0; font-size: 15px; }
+  ul li { margin: 6px 0; }
+  .highlight-row td { background: #fef9e7 !important; font-weight: bold; }
+</style>
+</head>
+<body>
+
+<h1>Sistema de Muerte</h1>
+<p class="section-desc">Documentación técnica y de diseño del sistema de probabilidad de muerte por minuto en SIMS.</p>
+
+<!-- ═══════════════════════════════════════════════ -->
+<h2>1. Descripción General</h2>
+
+<p>Cada minuto de juego el personaje tiene una pequeña probabilidad de morir. Esta probabilidad depende de dos factores:</p>
+<ul>
+  <li><strong>Edad</strong> — factor dominante. El riesgo se dobla cada 10 años de vida (crecimiento exponencial).</li>
+  <li><strong>Media de necesidades básicas</strong> — factor modulador. Buenas necesidades pueden reducir el riesgo hasta 35×. Malas necesidades prácticamente no dan protección.</li>
+</ul>
+
+<div class="info-box">
+  La relación entre necesidades y esperanza de vida es <strong>casi perfectamente lineal</strong>:<br>
+  <code>esperanza_vida ≈ 50 + media_necesidades / 2</code><br><br>
+  Con media=100 → 100 años · Con media=50 → 75 años · Con media=1 → 51 años
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<h2>2. Fórmula</h2>
+
+<div class="formula-box">
+<pre>func Comprobar_Muerte() -> bool:
+    # Límite duro: muerte garantizada al último minuto de la matriz (99 años)
+    if Minute_Day >= 573 and Minute_Minute >= 1439:
+        return true
+
+    var edad = 18 + int(Minute_Day / 7.0)
+
+    var media_nec = sum(Necesidades_Basicas) / 5.0      # 0–100
+
+    var factor_edad = pow(2.0, (edad - 18) / 10.0)     # se dobla cada 10 años
+    var factor_nec  = pow(35.0, media_nec / 100.0)     # rango [1.0, 35.0]
+
+    # max_valor alto = más seguro; max_valor bajo = más peligroso
+    var max_valor = max(1, int(1_875_000.0 * factor_nec / factor_edad))
+
+    return randi() % max_valor == 0  # 1 en max_valor posibilidades de morir</pre>
+</div>
+
+<h3>Parámetros clave</h3>
+<table>
+  <tr><th>Parámetro</th><th>Valor</th><th>Significado</th></tr>
+  <tr><td>BASE</td><td>1.875.000</td><td>Escala global de peligrosidad</td></tr>
+  <tr><td>Base factor_edad</td><td>2.0</td><td>El riesgo se dobla cada 10 años de vida</td></tr>
+  <tr><td>Base factor_nec</td><td>35.0</td><td>Necesidades al 100% dan 35× más protección que al 0%</td></tr>
+  <tr class="highlight-row"><td>Límite duro</td><td>Minute_Day ≥ 573 y Minute_Minute ≥ 1439</td><td>Muerte garantizada a los 99 años sin importar necesidades</td></tr>
+</table>
+
+<h3>Cómo crece el riesgo con la edad (media=50)</h3>
+<table>
+  <tr><th>Edad</th><th>factor_edad</th><th>max_valor</th><th>P(morir/minuto)</th><th>P(morir/año)</th></tr>
+  <tr><td>20</td><td>1.07</td><td>7.210.000</td><td>0.0000139%</td><td class="good">0.07%</td></tr>
+  <tr><td>30</td><td>2.15</td><td>3.605.000</td><td>0.0000277%</td><td class="good">0.28%</td></tr>
+  <tr><td>40</td><td>4.29</td><td>1.802.000</td><td>0.0000555%</td><td class="good">0.55%</td></tr>
+  <tr><td>50</td><td>8.57</td><td>901.000</td><td>0.000111%</td><td class="mid">1.11%</td></tr>
+  <tr><td>60</td><td>17.15</td><td>450.500</td><td>0.000222%</td><td class="mid">2.20%</td></tr>
+  <tr><td>70</td><td>34.30</td><td>225.200</td><td>0.000444%</td><td class="mid">4.30%</td></tr>
+  <tr><td>75</td><td>48.50</td><td>159.300</td><td>0.000628%</td><td class="mid">6.00%</td></tr>
+  <tr><td>80</td><td>68.60</td><td>112.600</td><td>0.000888%</td><td class="bad">8.60%</td></tr>
+  <tr><td>85</td><td>97.00</td><td>79.600</td><td>0.001257%</td><td class="bad">12.0%</td></tr>
+  <tr><td>90</td><td>137.20</td><td>56.300</td><td>0.001776%</td><td class="bad">16.5%</td></tr>
+</table>
+
+<!-- ═══════════════════════════════════════════════ -->
+<h2>3. Esperanza de vida por nivel de necesidades</h2>
+
+<p>La <strong>esperanza de vida</strong> es la edad a la que exactamente el 50% de las partidas ya han terminado (mediana estadística). La relación con las necesidades es casi perfectamente lineal.</p>
+
+<table>
+  <tr><th>Media necesidades</th><th>Esperanza de vida</th><th>Descripción del estado</th></tr>
+  <tr><td>1–10</td><td class="bad">~50–55 años</td><td>Necesidades críticas permanentes — situación extrema</td></tr>
+  <tr><td>20</td><td class="bad">~60 años</td><td>Vagabundo / en la calle (máximo ~30 con actividades aleatorias)</td></tr>
+  <tr><td>30</td><td class="bad">~65 años</td><td>Necesidades muy bajas pero no en la calle</td></tr>
+  <tr><td>40</td><td class="mid">~70 años</td><td>Necesidades descuidadas</td></tr>
+  <tr class="highlight-row"><td>50</td><td class="mid">~75 años</td><td>Necesidades medias — jugador sin optimizar</td></tr>
+  <tr><td>60</td><td class="mid">~80 años</td><td>Necesidades moderadamente bien gestionadas</td></tr>
+  <tr><td>70</td><td class="good">~85 años</td><td>Buen cuidado de necesidades</td></tr>
+  <tr><td>80</td><td class="good">~90 años</td><td>Muy buen cuidado — jugador activo</td></tr>
+  <tr><td>90</td><td class="good">~95 años</td><td>Necesidades casi siempre al máximo</td></tr>
+  <tr><td>100</td><td class="good">~100 años</td><td>Necesidades siempre al máximo — juego perfecto</td></tr>
+</table>
+
+<!-- ═══════════════════════════════════════════════ -->
+<h2>4. Probabilidad de supervivencia acumulada</h2>
+
+<p>Probabilidad de llegar <strong>vivo</strong> a una edad dada según el nivel de necesidades mantenido durante toda la partida.</p>
+
+<table>
+  <tr><th>Edad</th><th>media=20 (vagabundo)</th><th>media=50 (normal)</th><th>media=80 (cuidado)</th></tr>
+  <tr><td>40</td><td class="good">87.3%</td><td class="good">95.5%</td><td class="good">98.4%</td></tr>
+  <tr><td>50</td><td class="mid">73.3%</td><td class="good">90.2%</td><td class="good">96.5%</td></tr>
+  <tr class="highlight-row"><td>60</td><td class="mid">51.7%</td><td class="good">80.2%</td><td class="good">92.7%</td></tr>
+  <tr><td>65</td><td class="bad">38.7%</td><td class="mid">72.9%</td><td class="good">89.7%</td></tr>
+  <tr><td>70</td><td class="bad">25.8%</td><td class="mid">63.6%</td><td class="good">85.6%</td></tr>
+  <tr class="highlight-row"><td>75</td><td class="bad">14.5%</td><td class="mid">52.5%</td><td class="good">80.1%</td></tr>
+  <tr><td>80</td><td class="bad">6.4%</td><td class="bad">39.9%</td><td class="mid">72.9%</td></tr>
+  <tr><td>85</td><td class="bad">2.0%</td><td class="bad">27.2%</td><td class="mid">63.8%</td></tr>
+  <tr class="highlight-row"><td>90</td><td class="bad">0.4%</td><td class="bad">15.9%</td><td class="mid">53.0%</td></tr>
+  <tr><td>95</td><td class="bad">0.04%</td><td class="bad">7.2%</td><td class="bad">40.4%</td></tr>
+  <tr><td>99</td><td class="bad">0.003%</td><td class="bad">3.1%</td><td class="bad">30.3%</td></tr>
+</table>
+
+<div class="info-box">
+  <strong>Lectura:</strong> Un jugador con media=50 tiene un 53% de probabilidad de llegar vivo a los 80 años, y solo un 2% de llegar a los 99. Con media=80, ese 2% sube a 16%.
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<h2>5. Probabilidad instantánea (1 en X por minuto)</h2>
+
+<table>
+  <tr><th>Edad</th><th>media=20</th><th>media=50</th><th>media=80</th></tr>
+  <tr><td>20</td><td>1 en 3.223.000</td><td>1 en 9.656.000</td><td>1 en 28.045.000</td></tr>
+  <tr><td>30</td><td>1 en 1.611.000</td><td>1 en 4.828.000</td><td>1 en 14.022.000</td></tr>
+  <tr><td>40</td><td>1 en 806.000</td><td>1 en 2.414.000</td><td>1 en 7.011.000</td></tr>
+  <tr><td>50</td><td>1 en 403.000</td><td>1 en 1.207.000</td><td>1 en 3.506.000</td></tr>
+  <tr><td>60</td><td>1 en 201.000</td><td>1 en 604.000</td><td>1 en 1.753.000</td></tr>
+  <tr><td>70</td><td>1 en 101.000</td><td>1 en 302.000</td><td>1 en 876.000</td></tr>
+  <tr><td>75</td><td>1 en 71.000</td><td>1 en 213.000</td><td>1 en 620.000</td></tr>
+  <tr><td>80</td><td>1 en 50.000</td><td>1 en 151.000</td><td>1 en 438.000</td></tr>
+  <tr><td>85</td><td>1 en 36.000</td><td>1 en 107.000</td><td>1 en 310.000</td></tr>
+  <tr><td>90</td><td>1 en 25.000</td><td>1 en 76.000</td><td>1 en 220.000</td></tr>
+  <tr><td>95</td><td>1 en 18.000</td><td>1 en 53.000</td><td>1 en 155.000</td></tr>
+</table>
+
+<!-- ═══════════════════════════════════════════════ -->
+<h2>6. Casuísticas del juego</h2>
+
+<table>
+  <tr><th>Situación</th><th>Media estimada</th><th>Esperanza de vida</th><th>Notas</th></tr>
+  <tr>
+    <td><span class="tag tag-red">Calle</span> Vagabundo</td>
+    <td>20–30</td>
+    <td class="bad">60–65 años</td>
+    <td>Las necesidades se capan a 20. Las actividades aleatorias las suben hasta ~30.</td>
+  </tr>
+  <tr>
+    <td><span class="tag">Normal</span> Sin optimizar</td>
+    <td>~50</td>
+    <td class="mid">~75 años</td>
+    <td>Necesidades fluctuando de forma natural sin cuidado activo.</td>
+  </tr>
+  <tr>
+    <td><span class="tag tag-blue">Activo</span> Cuidando necesidades</td>
+    <td>70–80</td>
+    <td class="good">85–90 años</td>
+    <td>El jugador programa actividades de forma regular.</td>
+  </tr>
+  <tr>
+    <td><span class="tag tag-green">Óptimo</span> Juego perfecto</td>
+    <td>90–100</td>
+    <td class="good">95–100 años</td>
+    <td>Necesidades siempre al máximo. Difícil de mantener durante toda la partida.</td>
+  </tr>
+</table>
+
+<!-- ═══════════════════════════════════════════════ -->
+<h2>7. Variables en Variables_Dinamicas</h2>
+
+<table>
+  <tr><th>Variable</th><th>Tipo</th><th>Valor inicial</th><th>Descripción</th></tr>
+  <tr>
+    <td><code>Muerto</code></td><td>bool</td><td>false</td>
+    <td>Flag de muerte. Si es true al arrancar la escena principal, redirige al menú sin procesar ningún minuto.</td>
+  </tr>
+  <tr>
+    <td><code>Edad_Muerte</code></td><td>int</td><td>0</td>
+    <td>Edad en años en el momento de morir. Se muestra en la pantalla de game over.</td>
+  </tr>
+  <tr>
+    <td><code>Prob_Supervivencia_Acumulada</code></td><td>float</td><td>1.0</td>
+    <td>Producto de (1 − p_minuto) para cada minuto procesado. Solo se usa en el log de debug. Se persiste en el save para que sea correcto entre sesiones.</td>
+  </tr>
+</table>
+
+<!-- ═══════════════════════════════════════════════ -->
+<h2>8. Flujo de game over</h2>
+
+<ol>
+  <li><code>Actividades.Actualizar_Horario()</code> llama <code>Comprobar_Muerte()</code> al final de cada tick de minuto.</li>
+  <li>Si devuelve <code>true</code>: pone <code>Muerto=true</code> y <code>Edad_Muerte</code>, y <code>Actualizar_Horario()</code> retorna <code>true</code> inmediatamente (corta el loop).</li>
+  <li><code>Script_Principal._process()</code> detecta el retorno, llama <code>Guardar_Variables_Dinamicas.save_game()</code> y hace <code>change_scene_to_file("res://Escenas/Menu/Menu.tscn")</code>.</li>
+  <li>Si al cargar la escena principal <code>Muerto==true</code> (save de partida muerta): redirige al menú via <code>call_deferred</code> sin procesar ningún minuto.</li>
+  <li><code>Menu._ready()</code> detecta <code>Muerto==true</code> y llama <code>_Mostrar_Game_Over()</code>.</li>
+  <li>La pantalla muestra: edad de muerte, progreso final (Deporte / Académico / Manualidades), dinero, y carreras completadas o en progreso si las hay.</li>
+</ol>
+
+<div class="warn-box">
+  <strong>Pendiente:</strong> La pantalla de game over no tiene botón de "Nueva partida" todavía. Está previsto para una versión futura. De momento el jugador solo puede ver sus estadísticas.
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<h2>9. Log de debug</h2>
+
+<p>Cada vez que se procesa un batch de minutos, el output de Godot imprime:</p>
+
+<pre>[Muerte] Edad: 71 | P.minuto: 0.00050175% (1 en 199301) | P.acumulada: 49.9409%</pre>
+
+<ul>
+  <li><strong>P.minuto</strong>: probabilidad de morir exactamente en ese minuto (<code>1 / max_valor × 100</code>).</li>
+  <li><strong>P.acumulada</strong>: probabilidad de haber muerto en algún minuto anterior desde el inicio de la partida (<code>1 − Prob_Supervivencia_Acumulada</code>).</li>
+</ul>
+
+<!-- ═══════════════════════════════════════════════ -->
+<h2>10. Archivos modificados</h2>
+
+<table>
+  <tr><th>Archivo</th><th>Cambio</th></tr>
+  <tr>
+    <td><code>Scripts/Logica/.../Actividades/Actividades.gd</code></td>
+    <td>Nueva función <code>Comprobar_Muerte()</code> y <code>_Guardar_Log_Muerte()</code>. <code>Actualizar_Horario()</code> ahora retorna <code>bool</code>.</td>
+  </tr>
+  <tr>
+    <td><code>Scripts/Globales/Script_Principal.gd</code></td>
+    <td>Detecta retorno de muerte en <code>_process()</code>. Redirige al menú si <code>Muerto==true</code> en <code>_ready()</code>.</td>
+  </tr>
+  <tr>
+    <td><code>Scripts/Globales/Menu.gd</code></td>
+    <td>Nueva función <code>_Mostrar_Game_Over()</code> con pantalla de estadísticas construida en código (CanvasLayer + ScrollContainer + VBox).</td>
+  </tr>
+  <tr>
+    <td><code>Scripts/Globales/Principales_Variables/Variables_Dinamicas.gd</code></td>
+    <td>Tres nuevas variables: <code>Muerto</code>, <code>Edad_Muerte</code>, <code>Prob_Supervivencia_Acumulada</code>.</td>
+  </tr>
+  <tr>
+    <td><code>Scripts/Otro/Guardar/Guardar_Variables_Dinamicas.gd</code></td>
+    <td>Guarda y carga las tres nuevas variables. Fallback para saves antiguos.</td>
+  </tr>
+</table>
+
+<br>
+<p style="color:#888; font-size:13px; text-align:center;">SIMS — Sistema de Muerte · Documentación interna</p>
+
+</body>
+</html>
