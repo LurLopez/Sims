@@ -208,6 +208,14 @@ func Actualizar_Horario(minutos_a_procesar: int) -> bool:
 				if dia_semana_actual == c.hora_examen_dia and minuto_del_dia >= hora_fin_examen and not c.fin_de_semana_procesado:
 					Procesar_Fin_De_Semana_Carrera()
 
+		# TEMPORAL: Para testing, crear un mensaje cada minuto
+		var _msg_test = Mensaje.new()
+		_msg_test.titulo = "Mensaje de prueba - Minuto %d" % Variables_Dinamicas.Minute
+		_msg_test.descripcion = "Este es un mensaje automático para testing"
+		_msg_test.leido = false
+		_msg_test.minuto = Variables_Dinamicas.Minute
+		Variables_Dinamicas.Mensajes.append(_msg_test)
+
 		if Comprobar_Muerte():
 			Variables_Dinamicas.Muerto = true
 			Variables_Dinamicas.Edad_Muerte = 18 + int(Variables_Dinamicas.Minute_Day / 7.0)

@@ -66,6 +66,10 @@ func load_game():
 			Variables_Dinamicas.Muerto = false
 			Variables_Dinamicas.Edad_Muerte = 0
 		Variables_Dinamicas.Prob_Supervivencia_Acumulada = game_data.get("Prob_Supervivencia_Acumulada", 1.0)
+		if game_data.has("Mensajes"):
+			Variables_Dinamicas.Mensajes = _Array_A_Mensajes(game_data["Mensajes"])
+		else:
+			Variables_Dinamicas.Mensajes = []
 		save_file = null
 
 func game_data_func():
@@ -87,7 +91,8 @@ func game_data_func():
 		"Inicio_Semana_Carrera": Variables_Dinamicas.Inicio_Semana_Carrera,
 		"Muerto": Variables_Dinamicas.Muerto,
 		"Edad_Muerte": Variables_Dinamicas.Edad_Muerte,
-		"Prob_Supervivencia_Acumulada": Variables_Dinamicas.Prob_Supervivencia_Acumulada
+		"Prob_Supervivencia_Acumulada": Variables_Dinamicas.Prob_Supervivencia_Acumulada,
+		"Mensajes": _Mensajes_A_Array()
 	}
 	return game_data
 
@@ -182,6 +187,28 @@ func _Matriz_A_Strings() -> Array:
 			else:
 				nueva_fila.append(celda)
 		resultado.append(nueva_fila)
+	return resultado
+
+func _Mensajes_A_Array() -> Array:
+	var resultado = []
+	for m in Variables_Dinamicas.Mensajes:
+		resultado.append({
+			"titulo": m.titulo,
+			"descripcion": m.descripcion,
+			"leido": m.leido,
+			"minuto": m.minuto
+		})
+	return resultado
+
+func _Array_A_Mensajes(lista: Array) -> Array:
+	var resultado = []
+	for d in lista:
+		var m = Mensaje.new()
+		m.titulo = d.get("titulo", "")
+		m.descripcion = d.get("descripcion", "")
+		m.leido = d.get("leido", false)
+		m.minuto = d.get("minuto", 0)
+		resultado.append(m)
 	return resultado
 
 func _Strings_A_Matriz(matriz_guardada: Array) -> Array:

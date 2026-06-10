@@ -207,6 +207,15 @@ func Desvisibilizar_Objeto(ObjectoList):
 		node.disabled = true     #cuando le des al boton no hace nada
 
 
+func Convertir_Minuto_A_Fecha_Hora(minuto: int) -> String:
+	var dia_absoluto = minuto / 1440
+	var minuto_del_dia = minuto % 1440
+	var hora = minuto_del_dia / 60
+	var min_final = minuto_del_dia % 60
+	var dias_semana = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
+	var dia_nombre = dias_semana[dia_absoluto % 7]
+	return "%s, %d:%02d" % [dia_nombre, hora, min_final]
+
 #Para la interfaz:
 func Mostrar_Habilidades():
 	pass

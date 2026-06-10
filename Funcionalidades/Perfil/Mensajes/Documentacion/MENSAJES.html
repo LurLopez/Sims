@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Mensajes/Notificaciones - Documentación</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+            color: #333;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 3px solid #9b59b6;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #34495e;
+            margin-top: 30px;
+            padding-top: 15px;
+            border-top: 1px solid #ecf0f1;
+        }
+        h3 {
+            color: #7f8c8d;
+        }
+        .section {
+            margin: 20px 0;
+            padding: 15px;
+            background: #ecf0f1;
+            border-left: 4px solid #9b59b6;
+            border-radius: 4px;
+        }
+        .highlight {
+            background: #fff3cd;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+        .critical {
+            background: #fadbd8;
+            border-left-color: #e74c3c;
+            color: #c0392b;
+            font-weight: bold;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: white;
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        th {
+            background: #9b59b6;
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+        td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #ecf0f1;
+        }
+        tr:last-child td {
+            border-bottom: none;
+        }
+        .case {
+            background: #d5f4e6;
+            margin: 20px 0;
+            padding: 15px;
+            border-left: 4px solid #27ae60;
+            border-radius: 4px;
+        }
+        .case h4 {
+            margin: 0 0 10px 0;
+            color: #27ae60;
+        }
+        .code {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+            margin: 10px 0;
+            font-size: 0.9em;
+            line-height: 1.4;
+        }
+        .diagram {
+            background: #ecf0f1;
+            padding: 15px;
+            border-left: 4px solid #3498db;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            margin: 15px 0;
+            overflow-x: auto;
+        }
+        .checkmark {
+            color: #27ae60;
+            font-weight: bold;
+        }
+        .warning {
+            background: #fadbd8;
+            border-left-color: #e74c3c;
+        }
+        .tree {
+            background: #ecf0f1;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            margin: 15px 0;
+            overflow-x: auto;
+        }
+        .page-break {
+            page-break-after: always;
+            margin: 30px 0;
+        }
+        .flow {
+            background: #d5f4e6;
+            border-left: 4px solid #27ae60;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 15px 0;
+            color: #222;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📬 Sistema de Mensajes / Notificaciones</h1>
+        <p><strong>Versión:</strong> 1.0 | <strong>Fecha:</strong> 2026-06-10</p>
+
+        <h2>📋 Descripción General</h2>
+        <div class="section">
+            <p>Sistema de notificaciones <strong>dentro del juego</strong> (no push) que almacena mensajes de eventos. Accesible desde un botón "Perfil" en la barra inferior.</p>
+            <p><strong>Objetivo:</strong> Informar al jugador de eventos importantes sin interrumpir (trabajos cancelados, cambios de estado, etc.)</p>
+        </div>
+
+        <div class="section critical">
+            <h3>⚠️ CRÍTICO: Timestamp de evento vs. ejecución</h3>
+            <p>Si cierras el juego <strong>lunes 12:00</strong> y lo abres <strong>martes 12:00</strong>:</p>
+            <ul>
+                <li>El sistema procesa <strong>lunes 12:00 → martes 12:00</strong> (matriz)</li>
+                <li>Un evento que ocurrió <strong>lunes 18:00</strong> en la matriz</li>
+                <li>Debe guardar minuto = <span class="highlight">minuto_del_lunes_18:00</span></li>
+                <li><strong>NO</strong> minuto = minuto_actual (martes 12:00)</li>
+                <li>Así la GUI muestra la hora <strong>correcta del evento</strong></li>
+            </ul>
+        </div>
+
+        <h2>🏗️ Estructura: Clase Mensaje</h2>
+        <p><strong>Ubicación:</strong> <code>Scripts/Logica/Mensajes/Mensaje.gd</code></p>
+        <p><strong>Tipo:</strong> Resource (serializable a .tres)</p>
+
+        <table>
+            <tr>
+                <th>Propiedad</th>
+                <th>Tipo</th>
+                <th>Significado</th>
+            </tr>
+            <tr>
+                <td><code>titulo</code></td>
+                <td>String</td>
+                <td>Título corto ("Despedido de trabajo")</td>
+            </tr>
+            <tr>
+                <td><code>descripcion</code></td>
+                <td>String</td>
+                <td>Detalles ("Te han despedido por falta de higiene")</td>
+            </tr>
+            <tr>
+                <td><code>leido</code></td>
+                <td>bool</td>
+                <td>false = nuevo | true = ya lo abrió</td>
+            </tr>
+            <tr>
+                <td><code>minuto</code></td>
+                <td>int</td>
+                <td><strong>Minuto Unix del evento EN LA MATRIZ</strong> (crítico)</td>
+            </tr>
+        </table>
+
+        <div class="code">
+class_name Mensaje extends Resource
+
+@export var titulo: String = ""
+@export var descripcion: String = ""
+@export var leido: bool = false
+@export var minuto: int = 0
+        </div>
+
+        <h2>💾 Variables Dinámicas</h2>
+        <div class="section">
+            <p>En <code>Variables_Dinamicas.gd</code>:</p>
+            <div class="code">
+@export var Mensajes: Array[Mensaje] = []
+            </div>
+            <ul>
+                <li>Se inicializa vacío en nueva partida</li>
+                <li>Se guarda/carga automáticamente (binario)</li>
+                <li><strong>Sin límite</strong> de mensajes</li>
+                <li><strong>Sin filtros ni categorías</strong> (todos juntos)</li>
+            </ul>
+        </div>
+
+        <h2>🔄 Flujo de Eventos</h2>
+
+        <h3>0. TESTING: Un mensaje cada minuto</h3>
+        <div class="flow" style="background: #ffffcc; border-left-color: #f39c12;">
+            <p><strong>De momento, para testing:</strong> En <code>Actividades.Actualizar_Horario()</code>, crear un mensaje cada minuto.</p>
+            <div class="code">
+# TEMPORAL: Para testing
+var mensaje = Mensaje.new()
+mensaje.titulo = "Mensaje de prueba - Minuto %d" % Variables_Dinamicas.Minute
+mensaje.descripcion = "Este es un mensaje automático para testing"
+mensaje.leido = false
+mensaje.minuto = Variables_Dinamicas.Minute
+
+Variables_Dinamicas.Mensajes.append(mensaje)
+            </div>
+            <p><strong>Luego se cambiará:</strong> A crear mensajes solo en eventos reales (despidos, cambios de estado, etc.)</p>
+        </div>
+
+        <h3>1. Evento ocurre en la matriz (Futuro)</h3>
+        <div class="flow">
+            <p><strong>Lugar:</strong> En cualquier función de <code>Actividades.gd</code>, <code>Trabajo.gd</code>, etc.</p>
+            <p><em>Ejemplo: cuando se implemente despido de trabajo.</em></p>
+            <div class="code">
+var mensaje = Mensaje.new()
+mensaje.titulo = "Trabajo cancelado"
+mensaje.descripcion = "Despedido por bajo rendimiento"
+mensaje.leido = false
+mensaje.minuto = Variables_Dinamicas.Minute
+
+Variables_Dinamicas.Mensajes.append(mensaje)
+            </div>
+        </div>
+
+        <h3>2. Jugador abre botón "Perfil"</h3>
+        <div class="flow">
+            <p><strong>En la GUI:</strong> Se llama <code>Gestionar_Visibilidad.Visibilizar_Mensajes(raiz)</code></p>
+            <p>Se renderiza una lista con todos los mensajes (título + "[NO LEÍDO]" si procede)</p>
+        </div>
+
+        <h3>3. Jugador abre un mensaje</h3>
+        <div class="flow">
+            <p>Se muestra:</p>
+            <ul>
+                <li>Título completo</li>
+                <li>Descripción</li>
+                <li>Fecha/hora del evento (convertida desde <code>minuto</code>)</li>
+            </ul>
+            <p>Se marca como <code>leido = true</code> y se guarda.</p>
+        </div>
+
+        <h2>🎨 UI: Botón Perfil y Pantalla de Mensajes (Estilo Gmail)</h2>
+
+        <h3>Ubicación del botón</h3>
+        <div class="section">
+            <p>Barra inferior (<code>Barra_Abajo</code>), <strong>en la posición actual del botón Tienda</strong>.</p>
+            <ul>
+                <li><strong>Botón Perfil:</strong> Donde está Tienda ahora (izquierda)</li>
+                <li><strong>Botón Tienda:</strong> Se mueve ligéramente a la derecha (lado a lado sin solaparse)</li>
+                <li><strong>Z-index:</strong> 10 (siempre visible)</li>
+                <li><strong>Posición en árbol:</strong> Al final de la jerarquía (se dibuja último, encima)</li>
+                <li><strong>Visible en:</strong> <code>Gestionar_Visibilidad.Visibilizar_Lo_Basico()</code></li>
+            </ul>
+        </div>
+
+        <h3>Jerarquía de nodos</h3>
+        <div class="tree">
+Escena_Principal
+├── [otros nodos]
+├── Pantalla_Mensajes (Panel)
+│   ├── Titulo_Label ("Mensajes")
+│   ├── Lista_Mensajes (ScrollContainer → VBoxContainer)
+│   │   └── [Items estilo Gmail - dinámicos]
+│   ├── Contenido_Mensaje (Panel, oculto por defecto)
+│   │   ├── Titulo_Mensaje_Label
+│   │   ├── Descripcion_Mensaje_Label
+│   │   ├── Hora_Mensaje_Label
+│   │   └── Boton_Volver
+│   └── Boton_Cerrar
+├── Barra_Abajo
+│   ├── Boton_Perfil (NUEVO, z_index=10) ← Posición actual de Tienda
+│   ├── Boton_Tienda (se mueve a la derecha)
+│   └── [otros botones]
+        </div>
+
+        <h3>Visualización de Lista (Estilo Gmail)</h3>
+        <div class="section">
+            <p><strong>Cada mensaje en la lista:</strong></p>
+            <table>
+                <tr>
+                    <th>Estado</th>
+                    <th>Color de fondo</th>
+                    <th>Contenido</th>
+                </tr>
+                <tr>
+                    <td><strong>No leído</strong></td>
+                    <td style="background: white; color: #333;">Blanco (puro)</td>
+                    <td>Fecha | <strong>Título</strong></td>
+                </tr>
+                <tr>
+                    <td><strong>Leído</strong></td>
+                    <td style="background: #f5f5f5; color: #333;">Gris claro (#f5f5f5)</td>
+                    <td>Fecha | Título (texto normal)</td>
+                </tr>
+            </table>
+
+            <p><strong>Orden:</strong> Más recientes primero (ordenado por fecha descendente)</p>
+
+            <p><strong>Ejemplo visual:</strong></p>
+            <div style="background: white; border: 1px solid #ddd; border-radius: 4px; padding: 10px; margin: 10px 0;">
+                <div style="background: white; padding: 8px; border-bottom: 1px solid #eee;">
+                    <strong>Lunes, 16:40</strong> | Mensaje de prueba - Minuto 1000
+                </div>
+                <div style="background: #f5f5f5; padding: 8px; border-bottom: 1px solid #eee;">
+                    Lunes, 16:39 | Mensaje de prueba - Minuto 999
+                </div>
+                <div style="background: #f5f5f5; padding: 8px;">
+                    Lunes, 16:38 | Mensaje de prueba - Minuto 998
+                </div>
+            </div>
+        </div>
+
+        <h2>🔧 Integración en Visibilidad</h2>
+
+        <h3>En Gestionar_Visibilidad.gd</h3>
+        <div class="code">
+func Visibilizar_Lo_Basico(raiz):
+    raiz.visible = true
+    Recursivo_Visibilizar(raiz.get_node("Barra_Abajo"))
+    raiz.get_node("Fondo").visible = true
+    raiz.get_node("Moneda").visible = true
+    raiz.get_node("Dinero_Label").visible = true
+    raiz.get_node("Tienda_Button").visible = true
+    raiz.get_node("Alquiler_Button").visible = true
+    raiz.get_node("Boton_Perfil").visible = true  # ← NUEVO
+
+func Visibilizar_Mensajes(raiz):
+    Quitar_Todo(raiz)
+    Visibilizar_Lo_Basico(raiz)
+    raiz.get_node("Pantalla_Mensajes").visible = true
+        </div>
+
+        <h2>⏰ Conversión de minuto → Fecha/Hora</h2>
+
+        <div class="section">
+            <p>En <code>Funciones_Globales.gd</code>, crear función:</p>
+            <div class="code">
+func Convertir_Minuto_A_Fecha_Hora(minuto: int) -> String:
+    var dia_absoluto = minuto / 1440
+    var minuto_del_dia = minuto % 1440
+    var hora = minuto_del_dia / 60
+    var min_final = minuto_del_dia % 60
+
+    var dias_semana = ["Lunes", "Martes", "Miércoles",
+                       "Jueves", "Viernes", "Sábado", "Domingo"]
+    var dia_nombre = dias_semana[dia_absoluto % 7]
+
+    return "%s, %d:%02d" % [dia_nombre, hora, min_final]
+            </div>
+            <p><strong>Ejemplo:</strong></p>
+            <ul>
+                <li>Minuto 1000 → "Lunes, 16:40"</li>
+                <li>Minuto 5000 → "Lunes, 9:40" (siguiente semana, misma hora aprox.)</li>
+            </ul>
+        </div>
+
+        <div class="page-break"></div>
+
+        <h2>📊 Casos de Uso</h2>
+
+        <h3>Caso 1: TESTING — Un mensaje cada minuto</h3>
+        <div class="case">
+            <h4>Implementación actual</h4>
+            <p>De momento, para probar que el sistema funciona correctamente:</p>
+            <ul>
+                <li>Cada minuto se crea un mensaje automático</li>
+                <li>Si cierras y abres el juego, los mensajes se cargan correctamente</li>
+                <li>Los colores blanco/gris funcionan según leído/no leído</li>
+            </ul>
+            <h4>Mensaje ejemplo</h4>
+            <p><strong>Título:</strong> "Mensaje de prueba - Minuto 5000"</p>
+            <p><strong>Descripción:</strong> "Este es un mensaje automático para testing"</p>
+            <p><strong>Minuto:</strong> 5000 (se preserva al guardar/cargar)</p>
+            <h4>Luego se cambiará a</h4>
+            <p>Crear mensajes solo en eventos reales: despidos, cambios de estado en la calle, logros, etc.</p>
+        </div>
+
+        <h3>Caso 2: Despido de trabajo (Futuro)</h3>
+        <div class="case">
+            <h4>Evento</h4>
+            <p>Se cancela un trabajo fijo porque el jugador ya no cumple requisitos (ej: Higiene < 30).</p>
+            <h4>Mensaje creado</h4>
+            <p><strong>Título:</strong> "Trabajo cancelado"</p>
+            <p><strong>Descripción:</strong> "Te han despedido por falta de higiene (Higiene < 30)"</p>
+            <p><strong>Minuto:</strong> El minuto exacto en que ocurrió (matriz)</p>
+        </div>
+
+        <h3>Caso 3: Automáticamente a la calle (Futuro)</h3>
+        <div class="case">
+            <h4>Evento</h4>
+            <p>El alquiler se cobra pero no hay dinero → automáticamente vas a la calle.</p>
+            <h4>Mensaje creado</h4>
+            <p><strong>Título:</strong> "Sin alojamiento"</p>
+            <p><strong>Descripción:</strong> "No tenías 200€ para pagar alquiler. Ahora estás en la calle."</p>
+            <p><strong>Minuto:</strong> Minuto del evento</p>
+        </div>
+
+        <h3>Caso 4: Evento offline (Crítico)</h3>
+        <div class="case warning">
+            <h4>Escenario</h4>
+            <ul>
+                <li><strong>Lunes 12:00:</strong> Cierras el juego</li>
+                <li><strong>Entre lunes y martes:</strong> Ocurren 3 eventos en la matriz:
+                    <ul>
+                        <li>Lunes 18:00 → Despido</li>
+                        <li>Martes 08:00 → Necesidad de comida baja</li>
+                        <li>Martes 10:00 → Recibiste un bonus (?)</li>
+                    </ul>
+                </li>
+                <li><strong>Martes 12:00:</strong> Abres el juego</li>
+            </ul>
+            <h4>Qué debería ocurrir</h4>
+            <ul>
+                <li><span class="checkmark">✓</span> Sistema procesa lunes 12:00 → martes 12:00</li>
+                <li><span class="checkmark">✓</span> Crea 3 mensajes con minutos originales:
+                    <ul>
+                        <li>Mensaje 1: minuto = minuto_lunes_18:00</li>
+                        <li>Mensaje 2: minuto = minuto_martes_08:00</li>
+                        <li>Mensaje 3: minuto = minuto_martes_10:00</li>
+                    </ul>
+                </li>
+                <li><span class="checkmark">✓</span> GUI muestra:
+                    <ul>
+                        <li>"Lunes, 18:00 - Despido"</li>
+                        <li>"Martes, 08:00 - ..."</li>
+                        <li>"Martes, 10:00 - ..."</li>
+                    </ul>
+                </li>
+            </ul>
+            <h4>Qué NO debería ocurrir</h4>
+            <ul>
+                <li><span style="color: #e74c3c;">✗</span> Los 3 mensajes con minuto = martes 12:00 (ejecución actual)</li>
+                <li>Causaría: "¿Por qué me despidieron a las 12:00 si era lunes a las 18:00?"</li>
+            </ul>
+        </div>
+
+        <h2>💾 Persistencia (Save/Load)</h2>
+
+        <h3>Al guardar</h3>
+        <div class="section">
+            <p>En <code>Guardar_Variables_Dinamicas.save_game()</code>:</p>
+            <div class="code">
+var file = FileAccess.open(path, FileAccess.WRITE)
+# ... otras variables ...
+file.store_var(Variables_Dinamicas.Mensajes)  # Array[Mensaje]
+            </div>
+            <p><strong>Nota:</strong> Como <code>Mensaje</code> es un <code>Resource</code>, Godot lo serializa automáticamente.</p>
+        </div>
+
+        <h3>Al cargar</h3>
+        <div class="section">
+            <p>En <code>Guardar_Variables_Dinamicas.load_game()</code>:</p>
+            <div class="code">
+if file.file_exists(path):
+    var file = FileAccess.open(path, FileAccess.READ)
+    # ... otras variables ...
+    Variables_Dinamicas.Mensajes = file.get_var()
+else:
+    Variables_Dinamicas.Mensajes = []
+            </div>
+        </div>
+
+        <h2>🔍 Detalles Técnicos</h2>
+
+        <table>
+            <tr>
+                <th>Aspecto</th>
+                <th>Detalle</th>
+            </tr>
+            <tr>
+                <td>Clase base</td>
+                <td>Resource (Serializable)</td>
+            </tr>
+            <tr>
+                <td>Límite mensajes</td>
+                <td>Ninguno (array dinámico)</td>
+            </tr>
+            <tr>
+                <td>Orden</td>
+                <td>Cronológico por creación (FIFO)</td>
+            </tr>
+            <tr>
+                <td>Filtros</td>
+                <td>Ninguno por ahora</td>
+            </tr>
+            <tr>
+                <td>Categorías</td>
+                <td>Ninguna (todo bajo "Mensajes")</td>
+            </tr>
+            <tr>
+                <td>Notificaciones push</td>
+                <td>No (solo in-game)</td>
+            </tr>
+            <tr>
+                <td>Ejecución</td>
+                <td>Durante <code>Actividades.Actualizar_Horario()</code></td>
+            </tr>
+            <tr>
+                <td>Timestamp</td>
+                <td>Minuto Unix absoluto (del evento)</td>
+            </tr>
+        </table>
+
+        <h2>✅ Checklist de Implementación</h2>
+        <ul>
+            <li><input type="checkbox"> Crear <code>Scripts/Logica/Mensajes/Mensaje.gd</code></li>
+            <li><input type="checkbox"> Añadir <code>Mensajes</code> a <code>Variables_Dinamicas</code></li>
+            <li><input type="checkbox"> Crear nodos UI en escena principal</li>
+            <li><input type="checkbox"> Mover botón Tienda a la derecha, crear botón "Perfil" en su lugar</li>
+            <li><input type="checkbox"> Implementar <code>Visibilizar_Mensajes()</code></li>
+            <li><input type="checkbox"> Renderizar lista de mensajes (estilo Gmail: blanco/gris, fecha + título, ordenado)</li>
+            <li><input type="checkbox"> Marcar como leído al abrir</li>
+            <li><input type="checkbox"> Crear <code>Convertir_Minuto_A_Fecha_Hora()</code></li>
+            <li><input type="checkbox"> Actualizar save/load para <code>Mensajes</code></li>
+            <li><input type="checkbox"> <strong>[TESTING]</strong> Crear un mensaje cada minuto en <code>Actividades.Actualizar_Horario()</code></li>
+            <li><input type="checkbox"> Tests (test_mensajes.gd)</li>
+            <li><input type="checkbox"> [FUTURO] Integrar creación de mensajes en eventos reales (despidos, cambios de estado, etc.)</li>
+        </ul>
+
+        <h2>🎯 Próximas Mejoras (Futuro)</h2>
+        <ul>
+            <li><strong>Badge:</strong> Mostrar "3" en el botón Perfil si hay mensajes no leídos</li>
+            <li><strong>Categorías:</strong> Filtrar por tipo (Trabajo, Eventos, Logros)</li>
+            <li><strong>Archivado:</strong> Opción para archivar/eliminar mensajes antiguos</li>
+            <li><strong>Notificaciones push:</strong> Integración con notificaciones del móvil (futuro distante)</li>
+        </ul>
+
+    </div>
+</body>
+</html>

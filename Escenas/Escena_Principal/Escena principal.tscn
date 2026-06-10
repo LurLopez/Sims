@@ -1429,11 +1429,21 @@ theme_override_styles/hover = SubResource("StyleBox_Green_Hover")
 theme_override_styles/normal = SubResource("StyleBox_Green_Normal")
 text = "CREAR ACTIVIDAD"
 
-[node name="Tienda_Button" type="Button" parent="."]
+[node name="Boton_Perfil" type="Button" parent="."]
 z_index = 10
 offset_left = 10.0
 offset_top = 10.0
-offset_right = 130.0
+offset_right = 110.0
+offset_bottom = 60.0
+theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
+text = "👤 Perfil"
+
+[node name="Tienda_Button" type="Button" parent="."]
+z_index = 10
+offset_left = 115.0
+offset_top = 10.0
+offset_right = 225.0
 offset_bottom = 60.0
 theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
 theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
@@ -1441,9 +1451,9 @@ text = "🏪 Tienda"
 
 [node name="Alquiler_Button" type="Button" parent="."]
 z_index = 10
-offset_left = 200.0
+offset_left = 230.0
 offset_top = 10.0
-offset_right = 320.0
+offset_right = 360.0
 offset_bottom = 60.0
 theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
 theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
@@ -2211,6 +2221,99 @@ theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
 theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
 text = "Elegir"
 
+[node name="Pantalla_Mensajes" type="Control" parent="."]
+visible = false
+z_index = 5
+layout_mode = 3
+anchors_preset = 0
+offset_right = 720.0
+offset_bottom = 1280.0
+
+[node name="Fondo_Mensajes" type="ColorRect" parent="Pantalla_Mensajes"]
+layout_mode = 0
+offset_right = 720.0
+offset_bottom = 1280.0
+color = Color(0.08, 0.1, 0.15, 0.97)
+
+[node name="Titulo" type="Label" parent="Pantalla_Mensajes"]
+layout_mode = 0
+offset_top = 75.0
+offset_right = 720.0
+offset_bottom = 130.0
+theme_override_colors/font_color = Color(0.98, 0.92, 0.35, 1)
+theme_override_font_sizes/font_size = 36
+text = "MENSAJES"
+horizontal_alignment = 1
+
+[node name="Boton_Cerrar" type="Button" parent="Pantalla_Mensajes"]
+z_index = 10
+layout_mode = 0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = 150.0
+offset_bottom = 60.0
+theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
+text = "← Volver"
+
+[node name="Lista_Mensajes" type="ScrollContainer" parent="Pantalla_Mensajes"]
+layout_mode = 0
+offset_top = 135.0
+offset_right = 720.0
+offset_bottom = 1050.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Pantalla_Mensajes/Lista_Mensajes"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 2
+
+[node name="Contenido_Mensaje" type="ColorRect" parent="Pantalla_Mensajes"]
+visible = false
+layout_mode = 0
+offset_top = 130.0
+offset_right = 720.0
+offset_bottom = 1280.0
+color = Color(0.08, 0.1, 0.15, 0.97)
+
+[node name="Boton_Volver" type="Button" parent="Pantalla_Mensajes/Contenido_Mensaje"]
+layout_mode = 0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = 150.0
+offset_bottom = 60.0
+theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
+text = "← Volver"
+
+[node name="Hora_Mensaje_Label" type="Label" parent="Pantalla_Mensajes/Contenido_Mensaje"]
+layout_mode = 0
+offset_left = 20.0
+offset_top = 70.0
+offset_right = 700.0
+offset_bottom = 110.0
+theme_override_colors/font_color = Color(0.6, 0.65, 0.75, 1)
+theme_override_font_sizes/font_size = 22
+
+[node name="Titulo_Mensaje_Label" type="Label" parent="Pantalla_Mensajes/Contenido_Mensaje"]
+layout_mode = 0
+offset_left = 20.0
+offset_top = 115.0
+offset_right = 700.0
+offset_bottom = 185.0
+theme_override_colors/font_color = Color(0.98, 0.98, 1, 1)
+theme_override_font_sizes/font_size = 30
+autowrap_mode = 3
+
+[node name="Descripcion_Mensaje_Label" type="Label" parent="Pantalla_Mensajes/Contenido_Mensaje"]
+layout_mode = 0
+offset_left = 20.0
+offset_top = 195.0
+offset_right = 700.0
+offset_bottom = 650.0
+theme_override_colors/font_color = Color(0.8, 0.83, 0.88, 1)
+theme_override_font_sizes/font_size = 24
+autowrap_mode = 3
+
 [connection signal="pressed" from="Barra_Abajo/Boton_Habilidades" to="." method="_on_boton_habilidades_pressed"]
 [connection signal="pressed" from="Barra_Abajo/Boton_Progreso" to="." method="_on_boton_progreso_pressed"]
 [connection signal="pressed" from="Barra_Abajo/Boton_Actividades" to="." method="_on_boton_actividades_pressed"]
@@ -2249,6 +2352,7 @@ text = "Elegir"
 [connection signal="pressed" from="Actividades/Seleccionar_Horario/Final/Final_Hbox/Minuto_Vbox/Boton_Abajo" to="." method="Final_Minuto_Abajo"]
 [connection signal="pressed" from="Actividades/Seleccionar_Horario/Cancelar" to="." method="_on_cancelar_pressed"]
 [connection signal="pressed" from="Actividades/Seleccionar_Horario/Crear_Actividad" to="." method="_on_crear_actividad_pressed"]
+[connection signal="pressed" from="Boton_Perfil" to="." method="_on_perfil_button_pressed"]
 [connection signal="pressed" from="Tienda_Button" to="." method="_on_tienda_button_pressed"]
 [connection signal="pressed" from="Alquiler_Button" to="." method="_on_alquiler_button_pressed"]
 [connection signal="pressed" from="Tienda/Flecha_Atras" to="." method="_on_tienda_flecha_atras_pressed"]
@@ -2273,3 +2377,5 @@ text = "Elegir"
 [connection signal="pressed" from="Tienda/Objetos_Duchar/Ducha_Premium/Comprar" to="." method="_on_comprar_ducha_premium_pressed"]
 [connection signal="pressed" from="Tienda/Objetos_Duchar/Ducha_Premium/Vender" to="." method="_on_vender_ducha_premium_pressed"]
 [connection signal="pressed" from="Tienda/Objetos_Duchar/Ducha_Premium/Elegir" to="." method="_on_elegir_ducha_premium_pressed"]
+[connection signal="pressed" from="Pantalla_Mensajes/Boton_Cerrar" to="." method="_on_mensajes_boton_cerrar_pressed"]
+[connection signal="pressed" from="Pantalla_Mensajes/Contenido_Mensaje/Boton_Volver" to="." method="_on_mensajes_boton_volver_pressed"]

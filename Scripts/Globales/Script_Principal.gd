@@ -686,6 +686,64 @@ func _Actualizar_Card_Tienda(categoria: String, clave: String):
 	card.get_node("En_Uso").visible = seleccionado
 
 
+func _on_perfil_button_pressed():
+	Detener_Blink()
+	Gestionar_Visibilidad.Visibilizar_Mensajes(self)
+	_Renderizar_Lista_Mensajes()
+
+func _Renderizar_Lista_Mensajes():
+	var vbox = $Pantalla_Mensajes/Lista_Mensajes/VBoxContainer
+	for child in vbox.get_children():
+		child.queue_free()
+
+	var mensajes_ordenados = Variables_Dinamicas.Mensajes.duplicate()
+	mensajes_ordenados.sort_custom(func(a, b): return a.minuto > b.minuto)
+
+	var style_leido = StyleBoxFlat.new()
+	style_leido.bg_color = Color(0.18, 0.2, 0.25, 1)
+	var style_no_leido = StyleBoxFlat.new()
+	style_no_leido.bg_color = Color(0.28, 0.32, 0.4, 1)
+	style_no_leido.border_width_left = 3
+	style_no_leido.border_color = Color(0.98, 0.92, 0.35, 1)
+
+	for i in range(mensajes_ordenados.size()):
+		var mensaje = mensajes_ordenados[i]
+		var indice_original = Variables_Dinamicas.Mensajes.find(mensaje)
+
+		var btn = Button.new()
+		var fecha_hora = Funciones_Globales.Convertir_Minuto_A_Fecha_Hora(mensaje.minuto)
+		var indicador = "" if mensaje.leido else "● "
+		btn.text = indicador + fecha_hora + "  —  " + mensaje.titulo
+		btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		btn.custom_minimum_size = Vector2(710, 65)
+		btn.add_theme_font_size_override("font_size", 22)
+		if mensaje.leido:
+			btn.add_theme_stylebox_override("normal", style_leido)
+			btn.add_theme_stylebox_override("hover", style_leido)
+		else:
+			btn.add_theme_stylebox_override("normal", style_no_leido)
+			btn.add_theme_stylebox_override("hover", style_no_leido)
+		btn.pressed.connect(_Mostrar_Mensaje.bind(indice_original))
+		vbox.add_child(btn)
+
+func _Mostrar_Mensaje(indice: int):
+	var mensaje = Variables_Dinamicas.Mensajes[indice]
+	var contenido = $Pantalla_Mensajes/Contenido_Mensaje
+	contenido.get_node("Titulo_Mensaje_Label").text = mensaje.titulo
+	contenido.get_node("Descripcion_Mensaje_Label").text = mensaje.descripcion
+	contenido.get_node("Hora_Mensaje_Label").text = Funciones_Globales.Convertir_Minuto_A_Fecha_Hora(mensaje.minuto)
+	contenido.visible = true
+	if not mensaje.leido:
+		mensaje.leido = true
+		Guardar_Variables_Dinamicas.save_game()
+
+func _on_mensajes_boton_volver_pressed():
+	$Pantalla_Mensajes/Contenido_Mensaje.visible = false
+	_Renderizar_Lista_Mensajes()
+
+func _on_mensajes_boton_cerrar_pressed():
+	Gestionar_Visibilidad.Quitar_Todo(self)
+
 func _on_tienda_button_pressed():
 	Detener_Blink()
 	Gestionar_Visibilidad.Visibilizar_Tienda(self)

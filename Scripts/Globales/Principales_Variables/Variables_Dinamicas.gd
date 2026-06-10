@@ -39,6 +39,9 @@ var Carreras_Completadas: Array = []
 # el fin de semana y procesar el examen (cada 7*1440 minutos desde matriculación).
 var Inicio_Semana_Carrera: int = -1
 
+# Sistema de Mensajes/Notificaciones
+var Mensajes: Array = []
+
 # Estado de muerte del personaje
 var Muerto: bool = false
 var Edad_Muerte: int = 0
