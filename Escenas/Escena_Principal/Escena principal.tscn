@@ -1,4 +1,4 @@
-[gd_scene load_steps=33 format=3 uid="uid://1rnm0dk8tc50"]
+[gd_scene load_steps=35 format=3 uid="uid://1rnm0dk8tc50"]
 
 [ext_resource type="Script" uid="uid://c5mbdpn1a1kg3" path="res://Scripts/Globales/Script_Principal.gd" id="1_fcut6"]
 [ext_resource type="Texture2D" uid="uid://xv1rubod4qfa" path="res://Imagenes/Juego/Icono_Habilidades.png" id="4_i2k83"]
@@ -11,6 +11,11 @@
 [ext_resource type="Texture2D" uid="uid://b3peknp6wp5q3" path="res://Imagenes/Juego/Flecha_Atras.png" id="10_gm38p"]
 [ext_resource type="FontFile" uid="uid://cv7qxhihm0bbj" path="res://Fuentes/Call of Ops Duty.otf" id="10_m1ee0"]
 [ext_resource type="Theme" uid="uid://cl8a4xknfugec" path="res://Imagenes/Juego/Horario/Rojo.tres" id="11_gahox"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_Top_Bar"]
+bg_color = Color(0.05, 0.07, 0.12, 0.94)
+border_width_bottom = 2
+border_color = Color(0.18, 0.28, 0.5, 0.7)
 
 [sub_resource type="StyleBoxFlat" id="StyleBox_Button_Hover"]
 bg_color = Color(0.15, 0.65, 0.85, 1)
@@ -35,6 +40,18 @@ corner_radius_top_left = 12
 corner_radius_top_right = 12
 corner_radius_bottom_right = 12
 corner_radius_bottom_left = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_Stats_BG"]
+bg_color = Color(0.06, 0.08, 0.14, 0.88)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.2, 0.28, 0.48, 0.45)
+corner_radius_top_left = 22
+corner_radius_top_right = 22
+corner_radius_bottom_right = 22
+corner_radius_bottom_left = 22
 
 [sub_resource type="LabelSettings" id="LabelSettings_fi1h3"]
 font_size = 40
@@ -206,6 +223,12 @@ corner_radius_bottom_left = 16
 [node name="Node2D" type="Node2D"]
 script = ExtResource("1_fcut6")
 
+[node name="Top_Bar_Panel" type="Panel" parent="."]
+z_index = 8
+offset_right = 720.0
+offset_bottom = 75.0
+theme_override_styles/panel = SubResource("StyleBox_Top_Bar")
+
 [node name="Barra_Abajo" type="HBoxContainer" parent="."]
 custom_minimum_size = Vector2(150, 150)
 offset_top = 1050.0
@@ -260,6 +283,26 @@ texture = ExtResource("7_ry1og")
 visible = false
 layout_mode = 3
 anchors_preset = 0
+
+[node name="Panel_BG" type="Panel" parent="Progreso"]
+layout_mode = 0
+offset_left = 15.0
+offset_top = 125.0
+offset_right = 705.0
+offset_bottom = 870.0
+theme_override_styles/panel = SubResource("StyleBox_Stats_BG")
+
+[node name="Titulo" type="Label" parent="Progreso"]
+layout_mode = 0
+offset_top = 140.0
+offset_right = 720.0
+offset_bottom = 210.0
+theme_override_colors/font_color = Color(0.85, 0.9, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.6)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 34
+text = "📈  PROGRESO"
+horizontal_alignment = 1
 
 [node name="Progreso_Barra" type="VBoxContainer" parent="Progreso"]
 layout_mode = 0
@@ -372,6 +415,26 @@ layout_mode = 3
 anchors_preset = 0
 offset_right = 40.0
 offset_bottom = 40.0
+
+[node name="Panel_BG" type="Panel" parent="Necesidades_Basicas"]
+layout_mode = 0
+offset_left = 15.0
+offset_top = 125.0
+offset_right = 705.0
+offset_bottom = 870.0
+theme_override_styles/panel = SubResource("StyleBox_Stats_BG")
+
+[node name="Titulo" type="Label" parent="Necesidades_Basicas"]
+layout_mode = 0
+offset_top = 140.0
+offset_right = 720.0
+offset_bottom = 210.0
+theme_override_colors/font_color = Color(0.85, 0.9, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.6)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 34
+text = "❤️  NECESIDADES"
+horizontal_alignment = 1
 
 [node name="Necesidades_Basicas_Barra" type="VBoxContainer" parent="Necesidades_Basicas"]
 layout_mode = 0
@@ -490,7 +553,7 @@ theme_override_fonts/font = ExtResource("10_m1ee0")
 theme_override_font_sizes/font_size = 45
 theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
 theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
-text = "NOMINA"
+text = "💰  NÓMINA"
 
 [node name="CARPINTERO" type="Button" parent="Trabajo/Actividades_Trabajo_Opciones2"]
 layout_mode = 2
@@ -500,7 +563,7 @@ theme_override_fonts/font = ExtResource("10_m1ee0")
 theme_override_font_sizes/font_size = 45
 theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
 theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
-text = "TEMPORAL"
+text = "⏰  TEMPORAL"
 
 [node name="Actividades_Trabajo_Temporal_Opciones" type="VBoxContainer" parent="Trabajo"]
 visible = false
@@ -520,7 +583,7 @@ theme_override_fonts/font = ExtResource("10_m1ee0")
 theme_override_font_sizes/font_size = 45
 theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
 theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
-text = "MARATHON"
+text = "🏆  MARATHON"
 
 [node name="Actividades_Trabajo_Nomina_Opciones" type="VBoxContainer" parent="Trabajo"]
 visible = false
@@ -540,7 +603,7 @@ theme_override_fonts/font = ExtResource("10_m1ee0")
 theme_override_font_sizes/font_size = 45
 theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
 theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
-text = "COMIDA_RAPIDA"
+text = "🍔  COMIDA RAPIDA"
 
 [node name="CARPINTERO" type="Button" parent="Trabajo/Actividades_Trabajo_Nomina_Opciones"]
 layout_mode = 2
@@ -550,7 +613,7 @@ theme_override_fonts/font = ExtResource("10_m1ee0")
 theme_override_font_sizes/font_size = 45
 theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
 theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
-text = "CARPINTERO"
+text = "🪚  CARPINTERO"
 
 [node name="CIENTIFICO" type="Button" parent="Trabajo/Actividades_Trabajo_Nomina_Opciones"]
 layout_mode = 2
@@ -560,7 +623,7 @@ theme_override_fonts/font = ExtResource("10_m1ee0")
 theme_override_font_sizes/font_size = 45
 theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
 theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
-text = "CIENTIFICO"
+text = "🔬  CIENTÍFICO"
 
 [node name="Habilidades" type="Control" parent="."]
 visible = false
@@ -568,6 +631,26 @@ layout_mode = 3
 anchors_preset = 0
 offset_right = 40.0
 offset_bottom = 40.0
+
+[node name="Panel_BG" type="Panel" parent="Habilidades"]
+layout_mode = 0
+offset_left = 15.0
+offset_top = 125.0
+offset_right = 705.0
+offset_bottom = 870.0
+theme_override_styles/panel = SubResource("StyleBox_Stats_BG")
+
+[node name="Titulo" type="Label" parent="Habilidades"]
+layout_mode = 0
+offset_top = 140.0
+offset_right = 720.0
+offset_bottom = 210.0
+theme_override_colors/font_color = Color(0.85, 0.9, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.6)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 34
+text = "⭐  HABILIDADES"
+horizontal_alignment = 1
 
 [node name="Habilidades_Barra" type="VBoxContainer" parent="Habilidades"]
 layout_mode = 0
@@ -726,7 +809,7 @@ theme_override_fonts/font = ExtResource("10_m1ee0")
 theme_override_font_sizes/font_size = 45
 theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
 theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
-text = "ACTIVIDADES TEMPORALES"
+text = "⏰  TEMPORALES"
 
 [node name="Fijas" type="Button" parent="Actividades/Elegir_Actividad/Tipos_De_Actividades"]
 visible = false
@@ -737,7 +820,7 @@ theme_override_fonts/font = ExtResource("10_m1ee0")
 theme_override_font_sizes/font_size = 45
 theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
 theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
-text = "ACTIVIDADES FIJAS"
+text = "📋  FIJAS"
 
 [node name="Temporales_Opciones" type="VBoxContainer" parent="Actividades/Elegir_Actividad/Tipos_De_Actividades"]
 custom_minimum_size = Vector2(0, 50)
@@ -752,7 +835,7 @@ theme_override_fonts/font = ExtResource("10_m1ee0")
 theme_override_font_sizes/font_size = 45
 theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
 theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
-text = "NECESIDADES_BASICAS"
+text = "❤️  NECESIDADES"
 
 [node name="Progreso" type="Button" parent="Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones"]
 layout_mode = 2
@@ -762,7 +845,7 @@ theme_override_fonts/font = ExtResource("10_m1ee0")
 theme_override_font_sizes/font_size = 45
 theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
 theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
-text = "PROGRESO"
+text = "📈  PROGRESO"
 
 [node name="Progreso_Opciones" type="VBoxContainer" parent="Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones"]
 visible = false
@@ -778,7 +861,7 @@ theme_override_fonts/font = ExtResource("10_m1ee0")
 theme_override_font_sizes/font_size = 45
 theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
 theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
-text = "SALIR A CORRER"
+text = "🏃  SALIR A CORRER"
 
 [node name="Estudiar" type="Button" parent="Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones/Progreso_Opciones"]
 layout_mode = 2
@@ -788,7 +871,7 @@ theme_override_fonts/font = ExtResource("10_m1ee0")
 theme_override_font_sizes/font_size = 45
 theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
 theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
-text = "ESTUDIAR"
+text = "📚  ESTUDIAR"
 
 [node name="Manualidades" type="Button" parent="Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones/Progreso_Opciones"]
 layout_mode = 2
@@ -798,7 +881,7 @@ theme_override_fonts/font = ExtResource("10_m1ee0")
 theme_override_font_sizes/font_size = 45
 theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
 theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
-text = "PRACTICAR MANUALIDADES"
+text = "🔨  MANUALIDADES"
 
 [node name="Necesidades_Basicas_Opciones" type="VBoxContainer" parent="Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones"]
 visible = false
@@ -814,7 +897,7 @@ theme_override_fonts/font = ExtResource("10_m1ee0")
 theme_override_font_sizes/font_size = 45
 theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
 theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
-text = "DUCHAR"
+text = "🚿  DUCHAR"
 
 [node name="Dormir" type="Button" parent="Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones/Necesidades_Basicas_Opciones"]
 layout_mode = 2
@@ -824,7 +907,7 @@ theme_override_fonts/font = ExtResource("10_m1ee0")
 theme_override_font_sizes/font_size = 45
 theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
 theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
-text = "DORMIR"
+text = "😴  DORMIR"
 
 [node name="Comer" type="Button" parent="Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones/Necesidades_Basicas_Opciones"]
 layout_mode = 2
@@ -834,7 +917,7 @@ theme_override_fonts/font = ExtResource("10_m1ee0")
 theme_override_font_sizes/font_size = 45
 theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
 theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
-text = "COMER"
+text = "🍽️  COMER"
 
 [node name="Ver_La_Television" type="Button" parent="Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones/Necesidades_Basicas_Opciones"]
 layout_mode = 2
@@ -844,7 +927,7 @@ theme_override_fonts/font = ExtResource("10_m1ee0")
 theme_override_font_sizes/font_size = 45
 theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
 theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
-text = "VER LA TELEVISION"
+text = "📺  VER LA TV"
 
 [node name="Fijas_Opciones" type="VBoxContainer" parent="Actividades/Elegir_Actividad/Tipos_De_Actividades"]
 visible = false
@@ -860,7 +943,7 @@ theme_override_fonts/font = ExtResource("10_m1ee0")
 theme_override_font_sizes/font_size = 45
 theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
 theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
-text = "TRABAJO"
+text = "💼  TRABAJO"
 
 [node name="Trabajo_Opciones" type="VBoxContainer" parent="Actividades/Elegir_Actividad/Tipos_De_Actividades/Fijas_Opciones"]
 visible = false
@@ -876,7 +959,7 @@ theme_override_fonts/font = ExtResource("10_m1ee0")
 theme_override_font_sizes/font_size = 45
 theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
 theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
-text = "COMIDA RAPIDA"
+text = "🍔  COMIDA RAPIDA"
 
 [node name="Horario_Semanal" type="Control" parent="Actividades"]
 layout_mode = 3
@@ -1457,7 +1540,7 @@ offset_right = 360.0
 offset_bottom = 60.0
 theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
 theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
-text = "En alquiler"
+text = "🏠 Alquiler"
 
 [node name="Tienda" type="Control" parent="."]
 visible = false
@@ -2233,16 +2316,24 @@ offset_bottom = 1280.0
 layout_mode = 0
 offset_right = 720.0
 offset_bottom = 1280.0
-color = Color(0.08, 0.1, 0.15, 0.97)
+color = Color(0.07, 0.09, 0.14, 0.98)
+
+[node name="Header_Bar" type="Panel" parent="Pantalla_Mensajes"]
+layout_mode = 0
+offset_right = 720.0
+offset_bottom = 132.0
+theme_override_styles/panel = SubResource("StyleBox_Top_Bar")
 
 [node name="Titulo" type="Label" parent="Pantalla_Mensajes"]
 layout_mode = 0
-offset_top = 75.0
+offset_top = 72.0
 offset_right = 720.0
-offset_bottom = 130.0
+offset_bottom = 128.0
 theme_override_colors/font_color = Color(0.98, 0.92, 0.35, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.5)
+theme_override_constants/outline_size = 3
 theme_override_font_sizes/font_size = 36
-text = "MENSAJES"
+text = "✉️  MENSAJES"
 horizontal_alignment = 1
 
 [node name="Boton_Cerrar" type="Button" parent="Pantalla_Mensajes"]
@@ -2258,7 +2349,7 @@ text = "← Volver"
 
 [node name="Lista_Mensajes" type="ScrollContainer" parent="Pantalla_Mensajes"]
 layout_mode = 0
-offset_top = 135.0
+offset_top = 140.0
 offset_right = 720.0
 offset_bottom = 1050.0
 
@@ -2273,44 +2364,54 @@ layout_mode = 0
 offset_top = 130.0
 offset_right = 720.0
 offset_bottom = 1280.0
-color = Color(0.08, 0.1, 0.15, 0.97)
+color = Color(0.07, 0.09, 0.14, 0.98)
+
+[node name="Mensaje_Card" type="Panel" parent="Pantalla_Mensajes/Contenido_Mensaje"]
+layout_mode = 0
+offset_left = 15.0
+offset_top = 75.0
+offset_right = 705.0
+offset_bottom = 680.0
+theme_override_styles/panel = SubResource("StyleBox_Stats_BG")
 
 [node name="Boton_Volver" type="Button" parent="Pantalla_Mensajes/Contenido_Mensaje"]
 layout_mode = 0
 offset_left = 10.0
 offset_top = 10.0
-offset_right = 150.0
-offset_bottom = 60.0
+offset_right = 165.0
+offset_bottom = 62.0
 theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
 theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
 text = "← Volver"
 
 [node name="Hora_Mensaje_Label" type="Label" parent="Pantalla_Mensajes/Contenido_Mensaje"]
 layout_mode = 0
-offset_left = 20.0
-offset_top = 70.0
-offset_right = 700.0
-offset_bottom = 110.0
-theme_override_colors/font_color = Color(0.6, 0.65, 0.75, 1)
-theme_override_font_sizes/font_size = 22
+offset_left = 30.0
+offset_top = 88.0
+offset_right = 695.0
+offset_bottom = 128.0
+theme_override_colors/font_color = Color(0.55, 0.62, 0.78, 1)
+theme_override_font_sizes/font_size = 20
 
 [node name="Titulo_Mensaje_Label" type="Label" parent="Pantalla_Mensajes/Contenido_Mensaje"]
 layout_mode = 0
-offset_left = 20.0
-offset_top = 115.0
-offset_right = 700.0
-offset_bottom = 185.0
+offset_left = 30.0
+offset_top = 135.0
+offset_right = 695.0
+offset_bottom = 215.0
 theme_override_colors/font_color = Color(0.98, 0.98, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.3)
+theme_override_constants/outline_size = 2
 theme_override_font_sizes/font_size = 30
 autowrap_mode = 3
 
 [node name="Descripcion_Mensaje_Label" type="Label" parent="Pantalla_Mensajes/Contenido_Mensaje"]
 layout_mode = 0
-offset_left = 20.0
-offset_top = 195.0
-offset_right = 700.0
-offset_bottom = 650.0
-theme_override_colors/font_color = Color(0.8, 0.83, 0.88, 1)
+offset_left = 30.0
+offset_top = 225.0
+offset_right = 695.0
+offset_bottom = 665.0
+theme_override_colors/font_color = Color(0.78, 0.82, 0.9, 1)
 theme_override_font_sizes/font_size = 24
 autowrap_mode = 3
 
