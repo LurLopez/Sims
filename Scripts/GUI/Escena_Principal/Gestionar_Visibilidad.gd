@@ -41,6 +41,7 @@ func Visibilizar_Lo_Basico(raiz):
 	raiz.get_node("Tienda_Button").visible=true
 	raiz.get_node("Alquiler_Button").visible=true
 	raiz.get_node("Boton_Perfil").visible=true
+	raiz.get_node("Calendario_Button").visible=true
 	# Botones de carrera (dinámicamente creados)
 	if raiz.carrera_button != null:
 		raiz.carrera_button.visible = true
@@ -115,12 +116,15 @@ func Mostrar_Categoria_Tienda(raiz, categoria):
 
 
 
-func Visibilizar_Mensajes(raiz):
+func Visibilizar_Perfil(raiz):
 	Quitar_Todo(raiz)
 	Visibilizar_Lo_Basico(raiz)
 	var pantalla = raiz.get_node("Pantalla_Mensajes")
 	Recursivo_Visibilizar(pantalla)
 	pantalla.get_node("Contenido_Mensaje").visible = false
+	pantalla.get_node("Panel_Info").visible = false
+	pantalla.get_node("Lista_Mensajes").visible = false
+	pantalla.get_node("Panel_Apuntes").visible = false
 
 
 func devolver_boton_ocupar_actividad(raiz):

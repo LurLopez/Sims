@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perfil - Documentación</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; line-height: 1.6; max-width: 900px; margin: 0 auto; padding: 20px; background: #f5f5f5; color: #333; }
+        .container { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { color: #2c3e50; border-bottom: 3px solid #9b59b6; padding-bottom: 10px; }
+        h2 { color: #34495e; margin-top: 30px; padding-top: 15px; border-top: 1px solid #ecf0f1; }
+        h3 { color: #7f8c8d; }
+        .section { margin: 20px 0; padding: 15px; background: #ecf0f1; border-left: 4px solid #9b59b6; border-radius: 4px; }
+        .critical { background: #fadbd8; border-left-color: #e74c3c; color: #c0392b; font-weight: bold; }
+        .info { background: #d6eaf8; border-left-color: #2980b9; }
+        .success { background: #d5f4e6; border-left-color: #27ae60; }
+        .warning { background: #fef9e7; border-left-color: #f39c12; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; background: white; border-radius: 4px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        th { background: #9b59b6; color: white; padding: 12px; text-align: left; }
+        td { padding: 10px 12px; border-bottom: 1px solid #ecf0f1; }
+        tr:last-child td { border-bottom: none; }
+        code { background: #f8f9fa; padding: 2px 6px; border-radius: 3px; font-family: monospace; font-size: 0.9em; }
+        pre { background: #2c3e50; color: #ecf0f1; padding: 15px; border-radius: 6px; overflow-x: auto; }
+        pre code { background: none; color: inherit; padding: 0; }
+        .flow-step { display: flex; align-items: flex-start; margin: 10px 0; }
+        .step-number { background: #9b59b6; color: white; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 12px; flex-shrink: 0; font-size: 14px; }
+        .step-content { flex: 1; }
+        .checklist { list-style: none; padding: 0; }
+        .checklist li { margin: 8px 0; }
+        .checklist li::before { content: "✅ "; }
+        .tab-demo { display: flex; gap: 0; margin: 15px 0; border-radius: 6px; overflow: hidden; border: 1px solid #9b59b6; }
+        .tab { padding: 10px 20px; background: #f8f4fc; color: #9b59b6; font-weight: bold; border-right: 1px solid #9b59b6; }
+        .tab.active { background: #9b59b6; color: white; }
+        .tab:last-child { border-right: none; }
+        .node-tree { font-family: monospace; background: #2c3e50; color: #ecf0f1; padding: 15px; border-radius: 6px; font-size: 14px; line-height: 1.8; }
+        .node-tree .highlight { color: #f39c12; }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <h1>👤 Perfil</h1>
+
+    <div class="section info">
+        <strong>Descripción:</strong> Pantalla de perfil accesible desde el botón "👤 Perfil" en la barra superior. Organizada en tres pestañas: <strong>Info</strong> (datos del personaje), <strong>Mensajes</strong> y <strong>Apuntes</strong>. Siempre se abre en la pestaña Info.
+    </div>
+
+    <h2>Pestañas disponibles</h2>
+
+    <div class="tab-demo">
+        <div class="tab active">ℹ️ Info</div>
+        <div class="tab">✉️ Mensajes</div>
+        <div class="tab">📚 Apuntes</div>
+    </div>
+
+    <table>
+        <tr><th>Pestaña</th><th>Contenido</th><th>Función de renderizado</th></tr>
+        <tr><td><strong>Info</strong></td><td>Edad, personalidad, dinero, progreso, habilidades innatas</td><td><code>_Renderizar_Info()</code></td></tr>
+        <tr><td><strong>Mensajes</strong></td><td>Lista de mensajes del juego, ordenados por fecha</td><td><code>_Renderizar_Lista_Mensajes()</code></td></tr>
+        <tr><td><strong>Apuntes</strong></td><td>Libros desbloqueados en carreras, leíbles inline</td><td><code>_Renderizar_Apuntes()</code></td></tr>
+    </table>
+
+    <h2>Jerarquía de nodos</h2>
+
+    <div class="node-tree">
+Pantalla_Mensajes (Control, 720×1280)<br>
+├── Fondo_Mensajes<br>
+├── Header_Bar (y:0–132)<br>
+├── Titulo ("👤 PERFIL")<br>
+├── Boton_Cerrar ("← Volver")<br>
+├── <span class="highlight">Tab_Bar (HBoxContainer, y:132–205)</span><br>
+│   ├── Tab_Info → _on_perfil_tab_info_pressed<br>
+│   ├── Tab_Mensajes → _on_perfil_tab_mensajes_pressed<br>
+│   └── Tab_Apuntes → _on_perfil_tab_apuntes_pressed<br>
+├── <span class="highlight">Panel_Info (y:210–1280)</span><br>
+│   └── Scroll_Info / VBox_Info<br>
+├── Lista_Mensajes (y:210–1050)<br>
+├── Contenido_Mensaje (y:210–1280)<br>
+└── <span class="highlight">Panel_Apuntes (y:210–1280)</span><br>
+    ├── Tabs_Libros<br>
+    ├── Texto_Apuntes<br>
+    └── Sin_Apuntes_Label
+    </div>
+
+    <h2>Flujo de ejecución</h2>
+
+    <div class="flow-step">
+        <div class="step-number">1</div>
+        <div class="step-content"><strong>Pulsar "👤 Perfil"</strong> → <code>_on_perfil_button_pressed()</code> llama <code>Visibilizar_Perfil</code> y abre Tab Info.</div>
+    </div>
+    <div class="flow-step">
+        <div class="step-number">2</div>
+        <div class="step-content"><strong>Visibilizar_Perfil</strong> hace todo visible con <code>Recursivo_Visibilizar</code> y luego oculta los 4 paneles de contenido (Panel_Info, Lista_Mensajes, Panel_Apuntes, Contenido_Mensaje).</div>
+    </div>
+    <div class="flow-step">
+        <div class="step-number">3</div>
+        <div class="step-content"><strong>Tab activa</strong> → función de pestaña pone su panel a <code>visible=true</code> y llama su función de renderizado.</div>
+    </div>
+    <div class="flow-step">
+        <div class="step-number">4</div>
+        <div class="step-content"><strong>Cerrar</strong> → <code>_on_mensajes_boton_cerrar_pressed()</code> llama <code>Quitar_Todo</code> y vuelve a la pantalla principal.</div>
+    </div>
+
+    <div class="section critical">
+        CRÍTICO: <code>Visibilizar_Perfil</code> oculta los 4 paneles de contenido tras hacer todo visible. Si se añade un nuevo panel de contenido, debe añadirse también aquí.
+    </div>
+
+    <h2>Tab Info — datos mostrados</h2>
+
+    <table>
+        <tr><th>Sección</th><th>Campo</th><th>Fuente</th></tr>
+        <tr><td rowspan="3">PERSONAJE</td><td>Edad</td><td><code>18 + (Minute_Day - First_Time_Minute_Day) / 7</code></td></tr>
+        <tr><td>Personalidad</td><td><code>Variables_Estaticas.Personalidad</code> (guiones → espacios)</td></tr>
+        <tr><td>Dinero</td><td><code>Variables_Dinamicas.Dinero</code></td></tr>
+        <tr><td rowspan="3">PROGRESO</td><td>Deporte</td><td><code>Variables_Dinamicas.Progreso[0]</code></td></tr>
+        <tr><td>Académico</td><td><code>Variables_Dinamicas.Progreso[1]</code></td></tr>
+        <tr><td>Manualidades</td><td><code>Variables_Dinamicas.Progreso[2]</code></td></tr>
+        <tr><td rowspan="6">HABILIDADES</td><td>Deporte</td><td><code>Variables_Estaticas.Habilidades[0]</code></td></tr>
+        <tr><td>Inteligencia</td><td><code>Variables_Estaticas.Habilidades[1]</code></td></tr>
+        <tr><td>Destreza manual</td><td><code>Variables_Estaticas.Habilidades[2]</code></td></tr>
+        <tr><td>Memoria</td><td><code>Variables_Estaticas.Habilidades[3]</code></td></tr>
+        <tr><td>Liderazgo</td><td><code>Variables_Estaticas.Habilidades[4]</code></td></tr>
+        <tr><td>Paciencia</td><td><code>Variables_Estaticas.Habilidades[5]</code></td></tr>
+    </table>
+
+    <h2>Casos de uso</h2>
+
+    <table>
+        <tr><th>Escenario</th><th>Resultado esperado</th></tr>
+        <tr><td>Pulsar "👤 Perfil"</td><td>Abre en Tab Info con datos actualizados</td></tr>
+        <tr><td>Cambiar a Tab Mensajes</td><td>Lista de mensajes visible, ordenada por fecha descendente</td></tr>
+        <tr><td>Cambiar a Tab Apuntes</td><td>Libros disponibles o mensaje informativo</td></tr>
+        <tr><td>Abrir un mensaje y volver</td><td>Vuelve a Tab Mensajes (no a Info)</td></tr>
+        <tr><td>Pulsar "← Volver"</td><td>Cierra el perfil, vuelve a la pantalla principal</td></tr>
+    </table>
+
+    <h2>Checklist de implementación</h2>
+    <ul class="checklist">
+        <li>Nodo <code>Tab_Bar</code> con <code>Tab_Info</code>, <code>Tab_Mensajes</code>, <code>Tab_Apuntes</code></li>
+        <li>Nodo <code>Panel_Info</code> con <code>Scroll_Info/VBox_Info</code></li>
+        <li><code>Lista_Mensajes</code> y <code>Contenido_Mensaje</code> desplazados a y:210</li>
+        <li>Título cambiado a "👤 PERFIL"</li>
+        <li><code>Gestionar_Visibilidad.Visibilizar_Perfil()</code> implementado</li>
+        <li><code>_on_perfil_button_pressed()</code> abre Tab Info por defecto</li>
+        <li>Tres funciones de cambio de pestaña implementadas</li>
+        <li><code>_Renderizar_Info()</code> con helpers <code>_Info_Seccion</code> y <code>_Info_Fila</code></li>
+        <li>Signals de Tab_Bar conectados en la escena</li>
+        <li>Límite <code>min(nombres_hab.size(), Habilidades.size())</code> en el loop de habilidades</li>
+    </ul>
+
+</div>
+</body>
+</html>

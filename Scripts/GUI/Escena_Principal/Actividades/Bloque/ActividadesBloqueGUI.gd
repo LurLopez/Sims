@@ -254,12 +254,12 @@ func comprobar_color_boton_seleccionado(boton,raiz):
 		azul_seleccionado(raiz)
 
 func verde_seleccionado(raiz):
-	devolver_boton_ocupar_actividad(raiz).visible=true
+	devolver_boton_ocupar_actividad(raiz).visible = not raiz.calendario_solo_lectura
 	devolver_boton_eliminar_actividad(raiz).visible=false
 
 func rojo_seleccionado(raiz):
 	devolver_boton_eliminar_actividad(raiz).visible=true
-	devolver_boton_ocupar_actividad(raiz).visible=false 
+	devolver_boton_ocupar_actividad(raiz).visible=false
 
 func azul_seleccionado(raiz):
 	devolver_boton_ocupar_actividad(raiz).visible=false

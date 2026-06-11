@@ -385,3 +385,54 @@ Funcionalidades/
 - `Actividades.Volver_A_Alquiler()` - Requiere 200€, inicia nuevo timer
 - `Script_Principal._on_alquiler_button_pressed()` - UI: botón de estado alquiler/calle
 - `Gestionar_Visibilidad.Visibilizar_Lo_Basico()` - Asegura que el botón sea siempre visible
+
+#### 2. Ver_Calendario
+**Ubicación:** `Funcionalidades/Ver_Calendario/`
+- **Tests:** `Tests/test_ver_calendario.gd` - 8 casos de prueba cubriendo flag, navegación y visibilidad de botones
+- **Documentación:** `Documentacion/VER_CALENDARIO.html` - Guía completa visual (abre en navegador)
+
+**Descripción:** Botón "📅 Horario" en la barra superior izquierda que abre el calendario semanal en modo solo lectura. El jugador puede navegar entre semanas y eliminar actividades futuras, pero no puede crear nuevas.
+
+**Variables afectadas:**
+- `Script_Principal.mirar_semana` (int) — semana mostrada, inicializada a semana actual
+- `Script_Principal.calendario_solo_lectura` (bool) — bloquea OCUPAR_ACTIVIDAD cuando es true
+
+**Funciones principales:**
+- `Script_Principal._on_calendario_boton_pressed()` - Abre el calendario en modo solo lectura
+- `ActividadesBloqueGUI.verde_seleccionado(raiz)` - Respeta el flag para OCUPAR_ACTIVIDAD
+- `ActividadesBloqueGUI.rojo_seleccionado(raiz)` - Siempre muestra ELIMINAR independientemente del flag
+- `Gestionar_Visibilidad.Visibilizar_Lo_Basico()` - Incluye Calendario_Button en la barra superior
+
+#### 3. Informacion (pantalla de perfil con pestañas)
+**Ubicación:** `Funcionalidades/Perfil/Informacion/`
+- **Tests:** `Tests/test_perfil.gd` - 8 casos cubriendo cálculo de edad, personalidad y límite de habilidades
+- **Documentación:** `Documentacion/PERFIL.html`
+
+**Descripción:** Pantalla de perfil reorganizada en tres pestañas (Info, Mensajes, Apuntes). Se abre siempre en Tab Info con datos calculados en tiempo real (edad, personalidad, progreso, habilidades).
+
+**Variables afectadas (solo lectura):**
+- `Variables_Dinamicas.Minute_Day`, `Variables_Estaticas.First_Time_Minute_Day` (cálculo de edad)
+- `Variables_Estaticas.Personalidad`, `Variables_Dinamicas.Dinero`
+- `Variables_Dinamicas.Progreso`, `Variables_Estaticas.Habilidades`
+
+**Funciones principales:**
+- `Script_Principal._on_perfil_button_pressed()` - Abre el perfil en Tab Info
+- `Script_Principal._on_perfil_tab_info/mensajes/apuntes_pressed()` - Cambio de pestaña
+- `Script_Principal._Renderizar_Info()` - Rellena Panel_Info dinámicamente
+- `Gestionar_Visibilidad.Visibilizar_Perfil(raiz)` - Muestra la pantalla ocultando los 4 paneles de contenido
+
+#### 4. Inventario (Tab Apuntes)
+**Ubicación:** `Funcionalidades/Perfil/Inventario/`
+- **Tests:** `Tests/test_inventario.gd` - 8 casos cubriendo recopilación de libros, formato y edge cases
+- **Documentación:** `Documentacion/INVENTARIO.html`
+
+**Descripción:** Pestaña "Apuntes" dentro del Perfil. Muestra los libros desbloqueados al avanzar en carreras (formato "Anio_N"). El jugador puede leer el contenido de cada libro. Sin libros, muestra mensaje informativo.
+
+**Variables afectadas (solo lectura):**
+- `Variables_Dinamicas.Carrera_Actual` (Carrera|null)
+- `Variables_Dinamicas.Carreras_Completadas` (Array[Carrera])
+- `carrera.libros_desbloqueados` (Array[String])
+
+**Funciones principales:**
+- `Script_Principal._Renderizar_Apuntes()` - Recopila libros y crea botones en Tabs_Libros
+- `Script_Principal._Mostrar_Apunte(carrera, año)` - Lee archivo .txt y lo vuelca en Texto_Apuntes

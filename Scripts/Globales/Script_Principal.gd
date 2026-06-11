@@ -6,6 +6,7 @@ extends Node
 
 
 var mirar_semana
+var calendario_solo_lectura: bool = false
 
 var actividad_seleccionada
 
@@ -350,6 +351,7 @@ func _on_crear_actividad_pressed():
 
 
 func _on_cancelar_pressed():
+	calendario_solo_lectura = false
 	Detener_Blink()
 	Gestionar_Visibilidad.Recursivo_Desvisibilizar($Actividades/Seleccionar_Horario)
 	Iniciar_Bloques_Actividad()
@@ -489,10 +491,14 @@ func Iniciar_Bloques_Actividad():
 
 
 func _on_calendario_boton_pressed() -> void:
-	pass # Replace with function body.
+	calendario_solo_lectura = true
+	mirar_semana = Variables_Dinamicas.Minute_Day / 7
+	Gestionar_Visibilidad.Quitar_Todo(self)
+	Iniciar_Bloques_Actividad()
 
 
 func _on_temporales_pressed() -> void:
+	calendario_solo_lectura = false
 	Iniciar_Bloques_Actividad()
 
 
@@ -688,8 +694,95 @@ func _Actualizar_Card_Tienda(categoria: String, clave: String):
 
 func _on_perfil_button_pressed():
 	Detener_Blink()
-	Gestionar_Visibilidad.Visibilizar_Mensajes(self)
+	Gestionar_Visibilidad.Visibilizar_Perfil(self)
+	_on_perfil_tab_info_pressed()
+
+# ---------------- Pestañas del perfil ----------------
+
+func _on_perfil_tab_info_pressed():
+	$Pantalla_Mensajes/Panel_Info.visible = true
+	$Pantalla_Mensajes/Lista_Mensajes.visible = false
+	$Pantalla_Mensajes/Panel_Apuntes.visible = false
+	$Pantalla_Mensajes/Contenido_Mensaje.visible = false
+	_Renderizar_Info()
+
+func _on_perfil_tab_mensajes_pressed():
+	$Pantalla_Mensajes/Panel_Info.visible = false
+	$Pantalla_Mensajes/Lista_Mensajes.visible = true
+	$Pantalla_Mensajes/Panel_Apuntes.visible = false
+	$Pantalla_Mensajes/Contenido_Mensaje.visible = false
 	_Renderizar_Lista_Mensajes()
+
+func _on_perfil_tab_apuntes_pressed():
+	$Pantalla_Mensajes/Panel_Info.visible = false
+	$Pantalla_Mensajes/Lista_Mensajes.visible = false
+	$Pantalla_Mensajes/Panel_Apuntes.visible = true
+	$Pantalla_Mensajes/Contenido_Mensaje.visible = false
+	_Renderizar_Apuntes()
+
+# ---------------- Tab Info ----------------
+
+func _Renderizar_Info():
+	var vbox = $Pantalla_Mensajes/Panel_Info/Scroll_Info/VBox_Info
+	for child in vbox.get_children():
+		child.queue_free()
+
+	var edad = 18 + (Variables_Dinamicas.Minute_Day - Variables_Estaticas.First_Time_Minute_Day) / 7
+	var personalidad = Variables_Estaticas.Personalidad.replace("_", " ")
+
+	_Info_Seccion(vbox, "PERSONAJE")
+	_Info_Fila(vbox, "Edad", str(edad) + " años")
+	_Info_Fila(vbox, "Personalidad", personalidad)
+	_Info_Fila(vbox, "Dinero", str(int(Variables_Dinamicas.Dinero)) + " €")
+
+	_Info_Seccion(vbox, "PROGRESO")
+	_Info_Fila(vbox, "Deporte", str(Variables_Dinamicas.Progreso[0]) + " / 100")
+	_Info_Fila(vbox, "Académico", str(Variables_Dinamicas.Progreso[1]) + " / 100")
+	_Info_Fila(vbox, "Manualidades", str(Variables_Dinamicas.Progreso[2]) + " / 100")
+
+	_Info_Seccion(vbox, "HABILIDADES INNATAS")
+	var nombres_hab = ["Deporte", "Inteligencia", "Destreza manual", "Memoria", "Liderazgo", "Paciencia"]
+	for i in range(min(nombres_hab.size(), Variables_Estaticas.Habilidades.size())):
+		_Info_Fila(vbox, nombres_hab[i], str(Variables_Estaticas.Habilidades[i]) + " / 100")
+
+func _Info_Seccion(vbox: VBoxContainer, titulo: String):
+	var label = Label.new()
+	label.text = titulo
+	label.custom_minimum_size = Vector2(0, 50)
+	label.add_theme_font_size_override("font_size", 20)
+	label.add_theme_color_override("font_color", Color(0.98, 0.92, 0.35, 1))
+	label.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
+	vbox.add_child(label)
+
+func _Info_Fila(vbox: VBoxContainer, clave: String, valor: String):
+	var hbox = HBoxContainer.new()
+	hbox.custom_minimum_size = Vector2(0, 55)
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(0.18, 0.2, 0.25, 1)
+	style.corner_radius_top_left = 6
+	style.corner_radius_top_right = 6
+	style.corner_radius_bottom_left = 6
+	style.corner_radius_bottom_right = 6
+	hbox.add_theme_stylebox_override("panel", style)
+
+	var lbl_clave = Label.new()
+	lbl_clave.text = "  " + clave
+	lbl_clave.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	lbl_clave.add_theme_font_size_override("font_size", 24)
+	lbl_clave.add_theme_color_override("font_color", Color(0.78, 0.82, 0.9, 1))
+	lbl_clave.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+
+	var lbl_valor = Label.new()
+	lbl_valor.text = valor + "  "
+	lbl_valor.add_theme_font_size_override("font_size", 24)
+	lbl_valor.add_theme_color_override("font_color", Color(0.98, 0.98, 1, 1))
+	lbl_valor.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+
+	hbox.add_child(lbl_clave)
+	hbox.add_child(lbl_valor)
+	vbox.add_child(hbox)
+
+# ---------------- Tab Mensajes ----------------
 
 func _Renderizar_Lista_Mensajes():
 	var vbox = $Pantalla_Mensajes/Lista_Mensajes/VBoxContainer
@@ -709,7 +802,6 @@ func _Renderizar_Lista_Mensajes():
 	for i in range(mensajes_ordenados.size()):
 		var mensaje = mensajes_ordenados[i]
 		var indice_original = Variables_Dinamicas.Mensajes.find(mensaje)
-
 		var btn = Button.new()
 		var fecha_hora = Funciones_Globales.Convertir_Minuto_A_Fecha_Hora(mensaje.minuto)
 		var indicador = "" if mensaje.leido else "● "
@@ -739,10 +831,57 @@ func _Mostrar_Mensaje(indice: int):
 
 func _on_mensajes_boton_volver_pressed():
 	$Pantalla_Mensajes/Contenido_Mensaje.visible = false
-	_Renderizar_Lista_Mensajes()
+	_on_perfil_tab_mensajes_pressed()
 
 func _on_mensajes_boton_cerrar_pressed():
 	Gestionar_Visibilidad.Quitar_Todo(self)
+
+# ---------------- Tab Apuntes ----------------
+
+func _Renderizar_Apuntes():
+	var panel = $Pantalla_Mensajes/Panel_Apuntes
+	var tabs = panel.get_node("Tabs_Libros")
+	var texto = panel.get_node("Texto_Apuntes")
+	var sin_apuntes = panel.get_node("Sin_Apuntes_Label")
+
+	for hijo in tabs.get_children():
+		hijo.queue_free()
+
+	var libros = []
+	var carrera_actual = Variables_Dinamicas.Carrera_Actual
+	if carrera_actual != null:
+		for libro in carrera_actual.libros_desbloqueados:
+			libros.append({"carrera": carrera_actual, "libro": libro})
+	for c in Variables_Dinamicas.Carreras_Completadas:
+		for libro in c.libros_desbloqueados:
+			libros.append({"carrera": c, "libro": libro})
+
+	if libros.is_empty():
+		sin_apuntes.visible = true
+		texto.visible = false
+		return
+
+	sin_apuntes.visible = false
+	texto.visible = true
+
+	for item in libros:
+		var año = int(String(item.libro).replace("Anio_", ""))
+		var btn = Button.new()
+		btn.text = item.carrera.nombre + " – Año " + str(año)
+		btn.add_theme_font_size_override("font_size", 20)
+		btn.pressed.connect(_Mostrar_Apunte.bind(item.carrera, año))
+		tabs.add_child(btn)
+
+	var primero = libros[0]
+	_Mostrar_Apunte(primero.carrera, int(String(primero.libro).replace("Anio_", "")))
+
+func _Mostrar_Apunte(carrera, año: int):
+	var texto = $Pantalla_Mensajes/Panel_Apuntes/Texto_Apuntes
+	var ruta = "res://Scripts/Logica/Escena_Principal/Actividades/Carreras/Contenido/apuntes_ing_informatica_anio%d.txt" % año
+	if FileAccess.file_exists(ruta):
+		texto.text = FileAccess.get_file_as_string(ruta)
+	else:
+		texto.text = "Apuntes no disponibles para Año %d." % año
 
 func _on_tienda_button_pressed():
 	Detener_Blink()
