@@ -4,4 +4,4 @@
 - Cambiar el GUI
 - Apuntes para el examen/perfil
 - Funcionalidad morir
-- guardar partida manualmente
+- guardar partida manualmente.
