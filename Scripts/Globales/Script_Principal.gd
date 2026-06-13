@@ -516,6 +516,15 @@ func _on_comida_rapida_pressed() -> void:
 	Actividad_Terminada()
 
 
+func _on_carpintero_pressed() -> void:
+	var requisito = Variables_Estaticas.Catalogo_Actividades["Trabajar_De_Carpintero"].requisito_progreso[2]
+	if Variables_Dinamicas.Progreso[2] < requisito:
+		OS.alert("Necesitas al menos %d de progreso en Manualidades para trabajar de carpintero. Actualmente tienes %d." % [requisito, Variables_Dinamicas.Progreso[2]], "Requisito no cumplido")
+		return
+	Trabajo.Trabajar_De_Carpintero()
+	Guardar_Variables_Dinamicas.save_game()
+	Actividad_Terminada()
+
 
 func Pulsar_Flecha_Atras() -> void:
 	Gestionar_Visibilidad.Pulsar_Flecha_Atras(self)
