@@ -73,6 +73,16 @@ func _Inicializar_Catalogo():
 	comida_rapida.dias_laborales = [0, 1, 2, 3, 4]
 	Catalogo_Actividades["Trabajar_En_Comida_Rapida"] = comida_rapida
 
+	var carpintero = Actividad_Fija_Trabajo.new()
+	carpintero.nombre = "Trabajar_De_Carpintero"
+	carpintero.efectos_necesidades_basicas = [-1, -1, -2, -3, -2]
+	carpintero.hora_inicio = 420
+	carpintero.hora_final = 900
+	carpintero.salario = 15.0
+	carpintero.requisito_progreso = [0, 0, 40]
+	carpintero.dias_laborales = [0, 1, 2, 3, 4]
+	Catalogo_Actividades["Trabajar_De_Carpintero"] = carpintero
+
 	# Actividad especial: estudiar la carrera universitaria activa. Suma progreso
 	# probabilísticamente a Carrera_Actual.progreso_actual (no al Progreso académico general).
 	var estudiar_carrera = Actividad_Carrera.new()
