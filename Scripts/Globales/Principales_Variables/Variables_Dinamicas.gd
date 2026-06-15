@@ -42,6 +42,15 @@ var Inicio_Semana_Carrera: int = -1
 # Sistema de Mensajes/Notificaciones
 var Mensajes: Array = []
 
+# Sistema de Inversiones en Bolsa
+var Esta_Invirtiendo: bool = false
+var Dinero_Invertido: float = 0.0
+var Valor_Inversion: float = 0.0
+# Snapshot de salud mental (Necesidades_Basicas[1]) en el momento de invertir.
+# Solo importa el valor al inicio, no cambia mientras la inversión sigue activa.
+var Salud_Mental_Al_Invertir: int = 50
+var Progreso_Inversion: int = 1
+
 # Estado de muerte del personaje
 var Muerto: bool = false
 var Edad_Muerte: int = 0

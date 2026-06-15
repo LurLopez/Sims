@@ -33,6 +33,7 @@ func _ready():
 	$Alquiler_Button.pressed.connect(Callable(self, "_on_alquiler_button_pressed"))
 	Actualizar_Texto_Alquiler()
 	_Inicializar_Botones_Carrera()
+	_Inicializar_Boton_Inversion()
 	if (Variables_Estaticas.First_Time):
 		first_time_logica.First_Time_Function()
 		mirar_semana=1
@@ -80,6 +81,7 @@ func Actualizar_Dinero():
 	$Dinero_Label.offset_left = offset_right_dinamico - _DINERO_ANCHO_LABEL
 	Actualizar_Texto_Alquiler()
 	_Actualizar_Botones_Carrera()
+	_Actualizar_Boton_Inversion()
 
 # Calcula cuántos minutos LOCALES han pasado desde el último tick procesado.
 # Se basa en la hora del dispositivo (no en Unix delta), así DST y cambios de zona
@@ -636,8 +638,21 @@ func Actividad_Terminada_Ver_La_Television() -> void:
 	Crear_Actividad("Ver_La_Television")
 
 
+var _dialog_prioridad: AcceptDialog = null
+
+func _Mostrar_Error_Prioridad() -> void:
+	if _dialog_prioridad == null:
+		_dialog_prioridad = AcceptDialog.new()
+		_dialog_prioridad.title = "Actividad bloqueada"
+		add_child(_dialog_prioridad)
+	_dialog_prioridad.dialog_text = "No puedes colocar esta actividad aquí:\nhay trabajo o examen programado en ese horario."
+	_dialog_prioridad.popup_centered(Vector2i(500, 200))
+
 func Crear_Actividad(actividad):
-	actividades_reloj_gui.horario.Crear_Actividad(mirar_semana,actividad)
+	var ok = actividades_reloj_gui.horario.Crear_Actividad(mirar_semana, actividad)
+	if not ok:
+		_Mostrar_Error_Prioridad()
+		return
 	Actividad_Terminada()
 
 func Actividad_Terminada():
@@ -825,6 +840,7 @@ func _Renderizar_Info():
 	_Info_Fila(vbox, "Deporte", str(Variables_Dinamicas.Progreso[0]) + " / 100")
 	_Info_Fila(vbox, "Académico", str(Variables_Dinamicas.Progreso[1]) + " / 100")
 	_Info_Fila(vbox, "Manualidades", str(Variables_Dinamicas.Progreso[2]) + " / 100")
+	_Info_Fila(vbox, "Inversiones", str(Variables_Dinamicas.Progreso_Inversion) + " / 100")
 
 	_Info_Seccion(vbox, "HABILIDADES INNATAS")
 	var nombres_hab = ["Deporte", "Inteligencia", "Destreza manual", "Memoria", "Liderazgo", "Paciencia"]
@@ -1263,3 +1279,140 @@ func _on_libros_button_pressed():
 	add_child(modal)
 	modal.Configurar(carrera)
 	modal.popup_centered()
+
+
+# ---------------- Sistema de Inversiones en Bolsa ----------------
+
+var inversion_button: Button = null
+var _ventana_invertir: Window = null
+var _label_invertir: Label = null
+var _input_cantidad_invertir: LineEdit = null
+var _dialog_retirar: ConfirmationDialog = null
+
+func _Inicializar_Boton_Inversion():
+	inversion_button = _Crear_Boton_Posicionado("Inversion_Button", "Bolsa", 495, 10, 718, 60)
+	inversion_button.pressed.connect(_on_inversion_button_pressed)
+	add_child(inversion_button)
+	_Actualizar_Boton_Inversion()
+
+func _Actualizar_Boton_Inversion():
+	if inversion_button == null:
+		return
+	if Variables_Dinamicas.Esta_Invirtiendo:
+		var valor = Variables_Dinamicas.Valor_Inversion
+		var invertido = Variables_Dinamicas.Dinero_Invertido
+		var pct = (valor - invertido) / invertido * 100.0 if invertido > 0 else 0.0
+		var signo = "+" if pct >= 0 else ""
+		inversion_button.text = "Bolsa\n%.0f€ (%s%.1f%%)" % [valor, signo, pct]
+	else:
+		inversion_button.text = "Invertir\nen Bolsa"
+
+func _on_inversion_button_pressed():
+	if Variables_Dinamicas.Esta_Invirtiendo:
+		_Mostrar_Confirmacion_Retirar()
+	else:
+		_Mostrar_Ventana_Invertir()
+
+func _Mostrar_Ventana_Invertir():
+	if _ventana_invertir == null:
+		_Crear_Ventana_Invertir()
+	_label_invertir.text = "Tienes %d€. ¿Cuánto quieres invertir en bolsa?\n(Nota: la salud mental actual quedará registrada)" % int(Variables_Dinamicas.Dinero)
+	_input_cantidad_invertir.text = ""
+	_ventana_invertir.popup_centered()
+
+func _Crear_Ventana_Invertir():
+	_ventana_invertir = Window.new()
+	_ventana_invertir.title = "Invertir en Bolsa"
+	_ventana_invertir.exclusive = true
+	_ventana_invertir.size = Vector2i(520, 260)
+	_ventana_invertir.close_requested.connect(func(): _ventana_invertir.visible = false)
+
+	var panel = Panel.new()
+	panel.set_anchors_preset(Control.PRESET_FULL_RECT)
+
+	var vbox = VBoxContainer.new()
+	vbox.set_anchors_preset(Control.PRESET_FULL_RECT)
+	vbox.add_theme_constant_override("separation", 12)
+	vbox.offset_left = 15
+	vbox.offset_right = -15
+	vbox.offset_top = 15
+	vbox.offset_bottom = -15
+
+	_label_invertir = Label.new()
+	_label_invertir.add_theme_font_size_override("font_size", 21)
+	_label_invertir.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	vbox.add_child(_label_invertir)
+
+	_input_cantidad_invertir = LineEdit.new()
+	_input_cantidad_invertir.custom_minimum_size = Vector2(0, 55)
+	_input_cantidad_invertir.placeholder_text = "Cantidad en €"
+	_input_cantidad_invertir.add_theme_font_size_override("font_size", 22)
+	vbox.add_child(_input_cantidad_invertir)
+
+	var hbox = HBoxContainer.new()
+	hbox.add_theme_constant_override("separation", 15)
+
+	var btn_ok = Button.new()
+	btn_ok.text = "Invertir"
+	btn_ok.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	btn_ok.custom_minimum_size = Vector2(0, 55)
+	btn_ok.add_theme_font_size_override("font_size", 22)
+	btn_ok.pressed.connect(_Confirmar_Invertir)
+
+	var btn_cancel = Button.new()
+	btn_cancel.text = "Cancelar"
+	btn_cancel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	btn_cancel.custom_minimum_size = Vector2(0, 55)
+	btn_cancel.add_theme_font_size_override("font_size", 22)
+	btn_cancel.pressed.connect(func(): _ventana_invertir.visible = false)
+
+	hbox.add_child(btn_ok)
+	hbox.add_child(btn_cancel)
+	vbox.add_child(hbox)
+
+	panel.add_child(vbox)
+	_ventana_invertir.add_child(panel)
+	add_child(_ventana_invertir)
+
+func _Confirmar_Invertir():
+	var texto = _input_cantidad_invertir.text.strip_edges()
+	if not texto.is_valid_float() and not texto.is_valid_int():
+		return
+	var cantidad = float(texto)
+	if cantidad <= 0 or cantidad > Variables_Dinamicas.Dinero:
+		return
+	Variables_Dinamicas.Dinero -= cantidad
+	Variables_Dinamicas.Dinero_Invertido = cantidad
+	Variables_Dinamicas.Valor_Inversion = cantidad
+	Variables_Dinamicas.Esta_Invirtiendo = true
+	Variables_Dinamicas.Salud_Mental_Al_Invertir = int(Variables_Dinamicas.Necesidades_Basicas[1])
+	_ventana_invertir.visible = false
+	Guardar_Variables_Dinamicas.save_game()
+	_Actualizar_Boton_Inversion()
+	Actualizar_Dinero()
+
+func _Mostrar_Confirmacion_Retirar():
+	if _dialog_retirar == null:
+		_dialog_retirar = ConfirmationDialog.new()
+		_dialog_retirar.title = "Retirar inversión"
+		_dialog_retirar.ok_button_text = "Retirar"
+		_dialog_retirar.get_cancel_button().text = "Mantener"
+		_dialog_retirar.confirmed.connect(_Confirmar_Retirar)
+		add_child(_dialog_retirar)
+	var valor = Variables_Dinamicas.Valor_Inversion
+	var invertido = Variables_Dinamicas.Dinero_Invertido
+	var pct = (valor - invertido) / invertido * 100.0 if invertido > 0 else 0.0
+	var signo = "+" if pct >= 0 else ""
+	_dialog_retirar.dialog_text = (
+		"Inversión actual: %.0f€ (%s%.1f%% respecto a lo invertido).\n¿Quieres retirar el dinero?" % [valor, signo, pct]
+	)
+	_dialog_retirar.popup_centered(Vector2i(520, 220))
+
+func _Confirmar_Retirar():
+	Variables_Dinamicas.Dinero += Variables_Dinamicas.Valor_Inversion
+	Variables_Dinamicas.Esta_Invirtiendo = false
+	Variables_Dinamicas.Valor_Inversion = 0.0
+	Variables_Dinamicas.Dinero_Invertido = 0.0
+	Guardar_Variables_Dinamicas.save_game()
+	_Actualizar_Boton_Inversion()
+	Actualizar_Dinero()

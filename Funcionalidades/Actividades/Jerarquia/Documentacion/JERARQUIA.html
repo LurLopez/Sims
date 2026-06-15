@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jerarquía de Actividades - Documentación</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; line-height: 1.6; max-width: 900px; margin: 0 auto; padding: 20px; background: #f5f5f5; color: #333; }
+        .container { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { color: #2c3e50; border-bottom: 3px solid #2980b9; padding-bottom: 10px; }
+        h2 { color: #34495e; margin-top: 30px; padding-top: 15px; border-top: 1px solid #ecf0f1; }
+        h3 { color: #7f8c8d; }
+        .section { margin: 20px 0; padding: 15px; background: #ecf0f1; border-left: 4px solid #2980b9; border-radius: 4px; }
+        .critical { background: #fadbd8; border-left-color: #e74c3c; color: #c0392b; font-weight: bold; }
+        .info { background: #d6eaf8; border-left-color: #2980b9; }
+        .success { background: #d5f4e6; border-left-color: #27ae60; }
+        .warning { background: #fef9e7; border-left-color: #f39c12; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; background: white; border-radius: 4px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        th { background: #2980b9; color: white; padding: 12px; text-align: left; }
+        td { padding: 10px 12px; border-bottom: 1px solid #ecf0f1; }
+        tr:last-child td { border-bottom: none; }
+        code { background: #f8f9fa; padding: 2px 6px; border-radius: 3px; font-family: monospace; font-size: 0.9em; }
+        pre { background: #2c3e50; color: #ecf0f1; padding: 15px; border-radius: 6px; overflow-x: auto; }
+        pre code { background: none; color: inherit; padding: 0; }
+        .flow-step { display: flex; align-items: flex-start; margin: 10px 0; }
+        .step-number { background: #2980b9; color: white; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 12px; flex-shrink: 0; font-size: 14px; }
+        .step-content { flex: 1; padding-top: 2px; }
+        .checklist { list-style: none; padding-left: 0; }
+        .checklist li { margin: 8px 0; }
+        .checklist li::before { content: "✅ "; }
+        .badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-weight: bold; font-size: 0.85em; color: white; margin-right: 6px; }
+        .badge-p1 { background: #7f8c8d; }
+        .badge-p2 { background: #e67e22; }
+        .badge-p3 { background: #e74c3c; }
+        .priority-box { display: flex; gap: 16px; margin: 20px 0; flex-wrap: wrap; }
+        .pbox { flex: 1; min-width: 200px; border-radius: 8px; padding: 16px; text-align: center; }
+        .pbox-1 { background: #ecf0f1; border: 2px solid #7f8c8d; }
+        .pbox-2 { background: #fef5ec; border: 2px solid #e67e22; }
+        .pbox-3 { background: #fdedec; border: 2px solid #e74c3c; }
+        .pbox .num { font-size: 2em; font-weight: bold; }
+        .pbox-1 .num { color: #7f8c8d; }
+        .pbox-2 .num { color: #e67e22; }
+        .pbox-3 .num { color: #e74c3c; }
+        .matrix-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 16px 0; }
+        .matrix-cell { padding: 8px; border-radius: 4px; text-align: center; font-size: 0.85em; font-weight: bold; }
+        .cell-empty { background: #ecf0f1; color: #7f8c8d; }
+        .cell-p1 { background: #d5f4e6; color: #27ae60; }
+        .cell-p2 { background: #fdebd0; color: #e67e22; }
+        .cell-p3 { background: #fadbd8; color: #e74c3c; }
+        .arrow { text-align: center; font-size: 1.4em; margin: 4px 0; color: #7f8c8d; }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <h1>Jerarquía de Actividades</h1>
+
+    <div class="section info">
+        Sistema de prioridades que controla qué puede coexistir o reemplazarse en la matriz del jugador.
+        Tres niveles: <strong>Examen (3) &gt; Trabajo (2) &gt; Actividades normales (1)</strong>.
+        Garantiza que compromisos importantes nunca sean borrados accidentalmente.
+    </div>
+
+    <h2>Los tres niveles</h2>
+
+    <div class="priority-box">
+        <div class="pbox pbox-3">
+            <div class="num">3</div>
+            <strong>Examen universitario</strong><br>
+            <small>Verificación dinámica vía <code>Carrera_Actual</code>.<br>No ocupa celda en la matriz.</small>
+        </div>
+        <div class="pbox pbox-2">
+            <div class="num">2</div>
+            <strong>Trabajo</strong><br>
+            <small><code>Actividad_Fija_Trabajo</code><br>Comida Rápida, Carpintero, Científico…</small>
+        </div>
+        <div class="pbox pbox-1">
+            <div class="num">1</div>
+            <strong>Actividades normales</strong><br>
+            <small><code>Actividad_Temporal</code> / <code>Actividad_Carrera</code><br>Dormir, Comer, Estudiar…</small>
+        </div>
+    </div>
+
+    <h2>Tabla de prioridades</h2>
+
+    <table>
+        <tr><th>Nivel</th><th>Tipo GDScript</th><th>Método</th><th>Ejemplos</th></tr>
+        <tr><td><span class="badge badge-p3">P3</span> Examen</td><td>Dinámica (carrera)</td><td>—</td><td>Hora examen universitario</td></tr>
+        <tr><td><span class="badge badge-p2">P2</span> Trabajo</td><td><code>Actividad_Fija</code></td><td><code>Obtener_Prioridad() → 2</code></td><td>Trabajar_En_Comida_Rapida</td></tr>
+        <tr><td><span class="badge badge-p1">P1</span> Normal</td><td><code>Actividad</code> (base)</td><td><code>Obtener_Prioridad() → 1</code></td><td>Dormir, Comer, Estudiar…</td></tr>
+        <tr><td>P0</td><td>String vacío / Aleatoria</td><td>—</td><td><code>""</code>, <code>"Actividad_Aleatoria"</code></td></tr>
+    </table>
+
+    <h2>Flujo de ejecución</h2>
+
+    <div class="flow-step">
+        <div class="step-number">1</div>
+        <div class="step-content">
+            <strong>El jugador elige una actividad y un horario en el reloj.</strong><br>
+            <code>Script_Principal.Crear_Actividad("Salir_A_Correr")</code>
+        </div>
+    </div>
+    <div class="flow-step">
+        <div class="step-number">2</div>
+        <div class="step-content">
+            <strong>Se calcula el rango de celdas.</strong><br>
+            <code>Actividades._Calcular_Rango(...)</code> devuelve un <code>Array</code> de pares <code>[i, j]</code>.
+        </div>
+    </div>
+    <div class="flow-step">
+        <div class="step-number">3</div>
+        <div class="step-content">
+            <strong>Pre-scan (solo para P1).</strong><br>
+            Se recorre todo el rango buscando celdas con prioridad &gt; 1. Si se encuentra alguna, se devuelve <code>false</code> sin escribir nada. <em>No hay escrituras parciales.</em>
+        </div>
+    </div>
+    <div class="flow-step">
+        <div class="step-number">4</div>
+        <div class="step-content">
+            <strong>Escritura celda a celda.</strong><br>
+            <code>Crear_Actividad(i, j, actividad)</code>: consulta <code>_Prioridad_Celda</code>, escribe solo si la prioridad existente ≤ la nueva.
+        </div>
+    </div>
+    <div class="flow-step">
+        <div class="step-number">5</div>
+        <div class="step-content">
+            <strong>Resultado en la GUI.</strong><br>
+            Si <code>ok == true</code> → <code>Actividad_Terminada()</code> cierra el reloj.<br>
+            Si <code>ok == false</code> → <code>_Mostrar_Error_Prioridad()</code> muestra <code>AcceptDialog</code>; el reloj permanece abierto.
+        </div>
+    </div>
+
+    <h2>Detección del examen (P3)</h2>
+
+    <div class="section critical">
+        ⚠️ El examen <strong>no ocupa ninguna celda</strong> de la matriz. Su prioridad se evalúa en tiempo real comparando <code>i&nbsp;%&nbsp;7</code> con <code>carrera.hora_examen_dia</code> y <code>j</code> con el rango <code>[hora_examen_inicio, hora_examen_inicio&nbsp;+&nbsp;60)</code>.
+    </div>
+
+    <pre><code>func _Prioridad_Celda(celda, i: int, j: int) -> int:
+    var carrera = Variables_Dinamicas.Carrera_Actual
+    if carrera != null and carrera.hora_examen_dia >= 0 and (carrera.matriculado or carrera.prematriculado):
+        if i % 7 == carrera.hora_examen_dia and j >= carrera.hora_examen_inicio and j < carrera.hora_examen_inicio + 60:
+            return 3   # CRÍTICO: no importa lo que haya en la celda
+    if celda is Actividad:
+        return celda.Obtener_Prioridad()
+    return 0</code></pre>
+
+    <h2>Reglas de sobreescritura</h2>
+
+    <table>
+        <tr><th>Intento</th><th>Celda existente</th><th>¿Permitido?</th><th>Resultado</th></tr>
+        <tr><td>P1 → P2 (Trabajo)</td><td><code>Actividad_Fija_Trabajo</code></td><td>❌ No</td><td>Toda la operación bloqueada + error en GUI</td></tr>
+        <tr><td>P1 → P3 (Examen)</td><td>Slot de examen</td><td>❌ No</td><td>Toda la operación bloqueada + error en GUI</td></tr>
+        <tr><td>P2 → P1 (Normal)</td><td><code>Actividad_Temporal</code></td><td>✅ Sí</td><td>Trabajo sobreescribe la actividad</td></tr>
+        <tr><td>P2 → P3 (Examen)</td><td>Slot de examen</td><td>↩ Skip</td><td>Solo esa celda se salta; el resto del horario de trabajo se escribe</td></tr>
+        <tr><td>P1 → P1</td><td><code>Actividad_Temporal</code></td><td>✅ Sí</td><td>Se sobreescribe</td></tr>
+        <tr><td><code>""</code> → cualquiera</td><td>Cualquiera</td><td>✅ Sí</td><td>Borrado siempre libre</td></tr>
+    </table>
+
+    <h2>Casos de uso</h2>
+
+    <table>
+        <tr><th>Escenario</th><th>Resultado esperado</th></tr>
+        <tr>
+            <td>Jugador intenta programar "Salir_A_Correr" de 8:00 a 10:00 donde hay trabajo (8:00–16:00)</td>
+            <td>AcceptDialog: "hay trabajo o examen programado en ese horario". El reloj sigue abierto.</td>
+        </tr>
+        <tr>
+            <td>Jugador intenta programar "Estudiar" durante la hora del examen del miércoles</td>
+            <td>Misma respuesta bloqueada. Ni una celda se escribe.</td>
+        </tr>
+        <tr>
+            <td>Jugador activa "Trabajar en Comida Rápida" y tiene examen el jueves 15:00</td>
+            <td>Todos los jueves de trabajo se rellenan excepto las celdas 900–959 (15:00–15:59).</td>
+        </tr>
+        <tr>
+            <td>Jugador borra un bloque de trabajo desde el calendario semanal</td>
+            <td>La celda se limpia a <code>""</code> sin restricción.</td>
+        </tr>
+        <tr>
+            <td>No hay carrera activa</td>
+            <td>No existe P3; el sistema funciona solo con P1 y P2.</td>
+        </tr>
+    </table>
+
+    <h2>Notas técnicas críticas</h2>
+
+    <div class="section critical">
+        <strong>Sin escritura parcial para P1:</strong> el pre-scan recorre todo el rango antes de escribir. Si hay conflicto en la última celda, ninguna celda anterior se habrá modificado.
+    </div>
+
+    <div class="section warning">
+        <strong><code>Obtener_Prioridad()</code> en lugar de <code>var prioridad</code>:</strong> en GDScript 4, redeclarar una variable con el mismo nombre en una subclase puede no tener dispatch dinámico fiable cuando se accede mediante una referencia del tipo padre. Una función sí tiene dispatch virtual garantizado.
+    </div>
+
+    <div class="section info">
+        <strong>Trabajo no usa pre-scan:</strong> <code>Trabajo.Trabajar()</code> llama <code>Actividades.Crear_Actividad(i, j, actividad)</code> celda a celda. Las celdas de examen simplemente devuelven <code>false</code> y se saltan; el resto se escribe con normalidad.
+    </div>
+
+    <h2>Checklist de implementación</h2>
+
+    <ul class="checklist">
+        <li><code>Actividad.gd</code> — <code>Obtener_Prioridad() → 1</code></li>
+        <li><code>Actividad_Fija.gd</code> — override <code>Obtener_Prioridad() → 2</code></li>
+        <li><code>Actividades.gd</code> — <code>_Calcular_Rango</code>, <code>_Prioridad_Celda</code>, <code>Crear_Actividad → bool</code>, <code>Crear_Actividad_Especifica → bool</code></li>
+        <li><code>Trabajo.gd</code> — usar <code>Actividades.Crear_Actividad</code> en lugar de asignación directa a la matriz</li>
+        <li><code>SeleccionarHorarioReloj.gd</code> — propagar bool de retorno</li>
+        <li><code>Script_Principal.gd</code> — <code>_Mostrar_Error_Prioridad()</code> + <code>_dialog_prioridad</code>, no llamar <code>Actividad_Terminada()</code> si falla</li>
+    </ul>
+
+</div>
+</body>
+</html>

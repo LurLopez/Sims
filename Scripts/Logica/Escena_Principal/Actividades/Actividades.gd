@@ -58,7 +58,42 @@ func Crear_Actividad_Aleatoria_Mas_De_30() -> Actividad:
 		return Variables_Estaticas.Actividades[valor]
 
 
-func Crear_Actividad_Especifica(semana, dia_inicio, dia_final, hora_inicio, hora_final, minuto_inicio, minuto_final, actividad):
+func _Calcular_Rango(semana, dia_inicio, dia_final, hora_inicio, hora_final, minuto_inicio, minuto_final) -> Array:
+	var celdas = []
+	var i = semana * 7 + dia_inicio
+	var i_fin = semana * 7 + dia_final
+	var j = hora_inicio * 60 + minuto_inicio
+	var j_fin = hora_final * 60 + minuto_final
+	var seguir = true
+	while seguir:
+		if j_fin == 0:
+			if i + 1 >= i_fin:
+				if j >= 1439:
+					seguir = false
+			elif j >= 1440:
+				i += 1
+				j = 0
+		else:
+			if i >= i_fin:
+				if j + 1 >= j_fin:
+					seguir = false
+			elif j >= 1440:
+				i += 1
+				j = 0
+		celdas.append([i, j])
+		j += 1
+	return celdas
+
+func _Prioridad_Celda(celda, i: int, j: int) -> int:
+	var carrera = Variables_Dinamicas.Carrera_Actual
+	if carrera != null and carrera.hora_examen_dia >= 0 and (carrera.matriculado or carrera.prematriculado):
+		if i % 7 == carrera.hora_examen_dia and j >= carrera.hora_examen_inicio and j < carrera.hora_examen_inicio + 60:
+			return 3
+	if celda is Actividad:
+		return celda.Obtener_Prioridad()
+	return 0
+
+func Crear_Actividad_Especifica(semana, dia_inicio, dia_final, hora_inicio, hora_final, minuto_inicio, minuto_final, actividad) -> bool:
 	var actividad_obj
 	if actividad is String:
 		if actividad == "":
@@ -68,33 +103,33 @@ func Crear_Actividad_Especifica(semana, dia_inicio, dia_final, hora_inicio, hora
 	else:
 		actividad_obj = actividad
 
-	var i_inicio = semana * 7 + dia_inicio
-	var i_final = semana * 7 + dia_final
-	var j_inicio = hora_inicio * 60 + minuto_inicio
-	var j_final = hora_final * 60 + minuto_final
-	var seguir = true
-	while seguir:
-		if j_final == 0:
-			if i_inicio + 1 >= i_final:
-				if j_inicio >= 1439:
-					seguir = false
-			elif j_inicio >= 1440:
-				i_inicio += 1
-				j_inicio = 0
-		else:
-			if i_inicio >= i_final:
-				if j_inicio + 1 >= j_final:
-					seguir = false
-			elif j_inicio >= 1440:
-				i_inicio += 1
-				j_inicio = 0
-		Crear_Actividad(i_inicio, j_inicio, actividad_obj)
-		j_inicio += 1
+	var celdas = _Calcular_Rango(semana, dia_inicio, dia_final, hora_inicio, hora_final, minuto_inicio, minuto_final)
+
+	# Actividades de baja prioridad (P1): bloquear toda la operación si alguna celda tiene mayor prioridad
+	if actividad_obj is Actividad and actividad_obj.Obtener_Prioridad() == 1:
+		for par in celdas:
+			var celda_actual = Variables_Dinamicas.Matriz_Jugador[par[1]][par[0]]
+			if _Prioridad_Celda(celda_actual, par[0], par[1]) > 1:
+				return false
+
+	for par in celdas:
+		Crear_Actividad(par[0], par[1], actividad_obj)
+
 	Guardar_Variables_Estaticas.save_game()
 	Guardar_Variables_Dinamicas.save_game()
+	return true
 
-func Crear_Actividad(i, j, actividad):
+func Crear_Actividad(i, j, actividad) -> bool:
+	# Borrar ("") siempre permitido
+	if actividad is String:
+		Variables_Dinamicas.Matriz_Jugador[j][i] = actividad
+		return true
+	# Bloquear si la celda existente tiene mayor prioridad
+	var celda_actual = Variables_Dinamicas.Matriz_Jugador[j][i]
+	if _Prioridad_Celda(celda_actual, i, j) > actividad.Obtener_Prioridad():
+		return false
 	Variables_Dinamicas.Matriz_Jugador[j][i] = actividad
+	return true
 
 
 func Cobrar_Alquiler():
@@ -174,6 +209,10 @@ func Actualizar_Horario(minutos_a_procesar: int) -> bool:
 			Variables_Dinamicas.Minute_Minute = Variables_Dinamicas.Minute_Minute + 1
 
 		Variables_Dinamicas.Minute = Variables_Dinamicas.Minute + 1
+
+		# Tick de inversión: fluctúa el valor cada ~480 min (8 horas de juego).
+		if Variables_Dinamicas.Esta_Invirtiendo:
+			_Tick_Inversion()
 
 		# Cobrar alquiler timer-based (7 días = 7*1440 minutos desde Ultima_Fecha_Alquiler).
 		# Solo se cobra si estás en alquiler (En_La_Calle == false).
@@ -295,3 +334,57 @@ func _Es_Unico_De_Categoria(categoria: String, clave: String) -> bool:
 		if obj != null and obj.afecta_a == categoria:
 			return false
 	return true
+
+
+# ---------------- Sistema de Inversiones ----------------
+# Evento de mercado: ocurre con probabilidad 1/480 por minuto (~1 vez cada 8 horas).
+# Dirección determinada por Progreso_Inversion y Salud_Mental_Al_Invertir (snapshot).
+# Auto-venta si Sangre_Fría < 30 y pérdida > 15%.
+
+func _Tick_Inversion():
+	if randi() % 480 != 0:
+		return
+	var progreso = Variables_Dinamicas.Progreso_Inversion
+	var mental = Variables_Dinamicas.Salud_Mental_Al_Invertir
+	# prob_subida: 0.15 en progreso=1, 0.50 en progreso=50, 0.85 en progreso=100.
+	# La salud mental ajusta hasta ±10 puntos porcentuales.
+	var tendencia = (progreso - 1.0) / 99.0
+	var factor_mental = (mental - 50.0) / 300.0
+	var prob_subida = clamp(0.15 + tendencia * 0.70 + factor_mental, 0.05, 0.95)
+	var cambio_pct = (randi() % 26 + 5) / 1000.0  # 0.5% a 3.0%
+	if randf() < prob_subida:
+		Variables_Dinamicas.Valor_Inversion += Variables_Dinamicas.Valor_Inversion * cambio_pct
+	else:
+		Variables_Dinamicas.Valor_Inversion -= Variables_Dinamicas.Valor_Inversion * cambio_pct
+		Variables_Dinamicas.Valor_Inversion = max(0.0, Variables_Dinamicas.Valor_Inversion)
+
+	# Auto-venta por pánico: Sangre_Fría muy baja + pérdida > 15%.
+	var sangre_fria = Variables_Estaticas.Habilidades[6]
+	if sangre_fria < 30 and Variables_Dinamicas.Dinero_Invertido > 0:
+		var pct_cambio = (Variables_Dinamicas.Valor_Inversion - Variables_Dinamicas.Dinero_Invertido) / Variables_Dinamicas.Dinero_Invertido
+		if pct_cambio < -0.15:
+			_Auto_Vender_Inversion()
+			return
+
+	# Mejora de progreso de inversión: 1/20 de probabilidad por evento de mercado.
+	if Variables_Dinamicas.Progreso_Inversion < 100:
+		if randi() % 20 == 0:
+			Variables_Dinamicas.Progreso_Inversion += 1
+
+
+func _Auto_Vender_Inversion():
+	var invertido = Variables_Dinamicas.Dinero_Invertido
+	var valor_actual = Variables_Dinamicas.Valor_Inversion
+	var pct_perdida = 0.0
+	if invertido > 0:
+		pct_perdida = (invertido - valor_actual) / invertido * 100.0
+	Variables_Dinamicas.Dinero += valor_actual
+	Variables_Dinamicas.Esta_Invirtiendo = false
+	Variables_Dinamicas.Valor_Inversion = 0.0
+	Variables_Dinamicas.Dinero_Invertido = 0.0
+	var msg = Mensaje.new()
+	msg.titulo = "Inversión retirada automáticamente"
+	msg.descripcion = "Tu sangre fría es baja. Al alcanzar un %.0f%% de pérdidas has entrado en pánico y has retirado la inversión (%.0f€ recuperados)." % [pct_perdida, valor_actual]
+	msg.leido = false
+	msg.minuto = Variables_Dinamicas.Minute
+	Variables_Dinamicas.Mensajes.append(msg)

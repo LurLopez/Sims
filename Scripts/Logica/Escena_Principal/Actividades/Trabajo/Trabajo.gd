@@ -17,7 +17,7 @@ func Trabajar(actividad: Actividad_Fija_Trabajo):
 		if dia_semana not in actividad.dias_laborales:
 			continue
 		for j in range(actividad.hora_inicio, actividad.hora_final):
-			Variables_Dinamicas.Matriz_Jugador[j][i] = actividad
+			Actividades.Crear_Actividad(i, j, actividad)
 	Variables_Dinamicas.Trabajo_Actual = actividad
 	Funciones_Globales.Guardar_Matriz_Dia(10)
 	Funciones_Globales.Guardar_Matriz()

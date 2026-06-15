@@ -65,6 +65,7 @@ func Crear_Objetos_Iniciales():
 func Crear_Progreso():
 	for i in range(0,3):
 		Variables_Dinamicas.Progreso.append(1)
+	Variables_Dinamicas.Progreso_Inversion = 1
 
 func Crear_Necesidades_Basicas():
 	for i in range(0,5):

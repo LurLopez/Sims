@@ -42,11 +42,13 @@ func Visibilizar_Lo_Basico(raiz):
 	raiz.get_node("Alquiler_Button").visible=true
 	raiz.get_node("Boton_Perfil").visible=true
 	raiz.get_node("Calendario_Button").visible=true
-	# Botones de carrera (dinámicamente creados)
+	# Botones de carrera e inversión (dinámicamente creados)
 	if raiz.carrera_button != null:
 		raiz.carrera_button.visible = true
 	if raiz.libros_button != null:
 		raiz.libros_button.visible = raiz.libros_button.visible
+	if raiz.inversion_button != null:
+		raiz.inversion_button.visible = true
 
 
 

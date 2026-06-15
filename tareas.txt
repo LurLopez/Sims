@@ -14,7 +14,7 @@
 - Arreglar trabajos rotos (Carpintero, Cientifico) y añadir mas trabajos con distintos salarios y requisitos de progreso
 - Añadir mas actividades (Socializar, Limpiar_Casa, Meditar, Pasear u otras)
 - Sistema de eventos aleatorios (enfermedades, bonus de dinero, accidentes) cada X dias
-
+- Funcionalidad de invertir
 # Progresion y meta
 - Sistema de logros con bonificaciones permanentes entre partidas (guardados en Variables_Estaticas)
 
@@ -27,3 +27,7 @@
 
 # UI
 - Cambiar y limpiar la GUI general
+
+
+
+- Problema: No aparece el examen en el calendario.

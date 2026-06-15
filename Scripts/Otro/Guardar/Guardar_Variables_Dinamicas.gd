@@ -75,6 +75,12 @@ func load_game():
 			Variables_Dinamicas.Trabajo_Actual = Variables_Estaticas.Catalogo_Actividades[trabajo_nombre]
 		else:
 			Variables_Dinamicas.Trabajo_Actual = null
+		# Sistema de Inversiones — fallback para saves antiguos: sin inversión activa.
+		Variables_Dinamicas.Esta_Invirtiendo = game_data.get("Esta_Invirtiendo", false)
+		Variables_Dinamicas.Dinero_Invertido = game_data.get("Dinero_Invertido", 0.0)
+		Variables_Dinamicas.Valor_Inversion = game_data.get("Valor_Inversion", 0.0)
+		Variables_Dinamicas.Salud_Mental_Al_Invertir = game_data.get("Salud_Mental_Al_Invertir", 50)
+		Variables_Dinamicas.Progreso_Inversion = game_data.get("Progreso_Inversion", 1)
 		save_file = null
 
 func game_data_func():
@@ -98,7 +104,12 @@ func game_data_func():
 		"Edad_Muerte": Variables_Dinamicas.Edad_Muerte,
 		"Prob_Supervivencia_Acumulada": Variables_Dinamicas.Prob_Supervivencia_Acumulada,
 		"Mensajes": _Mensajes_A_Array(),
-		"Trabajo_Actual": Variables_Dinamicas.Trabajo_Actual.nombre if Variables_Dinamicas.Trabajo_Actual != null else ""
+		"Trabajo_Actual": Variables_Dinamicas.Trabajo_Actual.nombre if Variables_Dinamicas.Trabajo_Actual != null else "",
+		"Esta_Invirtiendo": Variables_Dinamicas.Esta_Invirtiendo,
+		"Dinero_Invertido": Variables_Dinamicas.Dinero_Invertido,
+		"Valor_Inversion": Variables_Dinamicas.Valor_Inversion,
+		"Salud_Mental_Al_Invertir": Variables_Dinamicas.Salud_Mental_Al_Invertir,
+		"Progreso_Inversion": Variables_Dinamicas.Progreso_Inversion,
 	}
 	return game_data
 

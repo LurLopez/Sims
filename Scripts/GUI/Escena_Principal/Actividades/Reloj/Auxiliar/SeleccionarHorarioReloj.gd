@@ -153,8 +153,8 @@ func Final_Dia_Abajo() -> void:
 	else: Dia_Int-=1
 	dia_final_texto.text=Funciones_Globales.Devolver_Dia_Reducido(Dia_Int)
 
-func Crear_Actividad(mirar_semana,actividad_seleccionada):
-	Actividades.Crear_Actividad_Especifica(mirar_semana,dia_inicio_a_int(),dia_final_a_int(),hora_inicio_texto.text.to_int(),hora_final_texto.text.to_int(),minuto_inicio_texto.text.to_int(),minuto_final_texto.text.to_int(),actividad_seleccionada)
+func Crear_Actividad(mirar_semana,actividad_seleccionada) -> bool:
+	return Actividades.Crear_Actividad_Especifica(mirar_semana,dia_inicio_a_int(),dia_final_a_int(),hora_inicio_texto.text.to_int(),hora_final_texto.text.to_int(),minuto_inicio_texto.text.to_int(),minuto_final_texto.text.to_int(),actividad_seleccionada)
 
 func Actualizar_Todo_Contexto():
 	Actualizar_Contexto_Inicio()
