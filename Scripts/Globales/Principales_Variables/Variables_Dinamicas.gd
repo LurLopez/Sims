@@ -18,7 +18,7 @@ var En_La_Calle=false
 var Ultima_Fecha_Alquiler=-1
 
 #Variable relacionada con el trabajo
-var Trabajo=false
+var Trabajo_Actual: Actividad_Fija_Trabajo = null
 
 # Sistema de Objetos/Muebles
 # Objetos_Poseidos: Dictionary {clave_objeto: bool} indicando qué objetos del catálogo posee el jugador.

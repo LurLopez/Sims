@@ -83,6 +83,28 @@ func _Inicializar_Catalogo():
 	estudiar_carrera.año_referencia = 0
 	Catalogo_Actividades["Estudiar_Carrera"] = estudiar_carrera
 
+	var carpintero = Actividad_Fija_Trabajo.new()
+	carpintero.nombre = "Trabajar_De_Carpintero"
+	carpintero.efectos_necesidades_basicas = [-1, -1, -1, -2, -2]
+	carpintero.hora_inicio = 420
+	carpintero.hora_final = 900
+	carpintero.salario = 18.0
+	carpintero.requisito_progreso = [0, 0, 30]
+	carpintero.requisito_carrera = []
+	carpintero.dias_laborales = [0, 1, 2, 3, 4]
+	Catalogo_Actividades["Trabajar_De_Carpintero"] = carpintero
+
+	var cientifico = Actividad_Fija_Trabajo.new()
+	cientifico.nombre = "Trabajar_De_Cientifico"
+	cientifico.efectos_necesidades_basicas = [-1, -2, -1, -2, -1]
+	cientifico.hora_inicio = 540
+	cientifico.hora_final = 1020
+	cientifico.salario = 28.0
+	cientifico.requisito_progreso = [0, 65, 0]
+	cientifico.requisito_carrera = ["Ingenieria_Informatica"]
+	cientifico.dias_laborales = [0, 1, 2, 3, 4]
+	Catalogo_Actividades["Trabajar_De_Cientifico"] = cientifico
+
 	Actividades = [
 		Catalogo_Actividades["Estudiar"],
 		Catalogo_Actividades["Salir_A_Correr"],

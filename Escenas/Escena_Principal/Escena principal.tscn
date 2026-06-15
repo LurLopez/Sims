@@ -961,6 +961,26 @@ theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
 theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
 text = "🍔  COMIDA RAPIDA"
 
+[node name="Carpintero" type="Button" parent="Actividades/Elegir_Actividad/Tipos_De_Actividades/Fijas_Opciones/Trabajo_Opciones"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_fonts/font = ExtResource("10_m1ee0")
+theme_override_font_sizes/font_size = 45
+theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
+text = "🔨  CARPINTERO"
+
+[node name="Cientifico" type="Button" parent="Actividades/Elegir_Actividad/Tipos_De_Actividades/Fijas_Opciones/Trabajo_Opciones"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_fonts/font = ExtResource("10_m1ee0")
+theme_override_font_sizes/font_size = 45
+theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
+text = "🔬  CIENTIFICO"
+
 [node name="Horario_Semanal" type="Control" parent="Actividades"]
 layout_mode = 3
 anchors_preset = 0
@@ -2529,6 +2549,8 @@ autowrap_mode = 3
 [connection signal="pressed" from="Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones/Necesidades_Basicas_Opciones/Ver_La_Television" to="." method="Actividad_Terminada_Ver_La_Television"]
 [connection signal="pressed" from="Actividades/Elegir_Actividad/Tipos_De_Actividades/Fijas_Opciones/Trabajo" to="." method="Opciones_Actividades_Trabajo"]
 [connection signal="pressed" from="Actividades/Elegir_Actividad/Tipos_De_Actividades/Fijas_Opciones/Trabajo_Opciones/Comida_Rapida" to="." method="_on_comida_rapida_pressed"]
+[connection signal="pressed" from="Actividades/Elegir_Actividad/Tipos_De_Actividades/Fijas_Opciones/Trabajo_Opciones/Carpintero" to="." method="_on_carpintero_pressed"]
+[connection signal="pressed" from="Actividades/Elegir_Actividad/Tipos_De_Actividades/Fijas_Opciones/Trabajo_Opciones/Cientifico" to="." method="_on_cientifico_pressed"]
 [connection signal="pressed" from="Actividades/Horario_Semanal/OPCIONES_CALENDARIO/SIGUIENTE SEMANA" to="." method="_on_siguiente_semana_pressed"]
 [connection signal="pressed" from="Actividades/Horario_Semanal/OPCIONES_CALENDARIO/ANTERIOR SEMANA" to="." method="_on_anterior_semana_pressed"]
 [connection signal="pressed" from="Actividades/Horario_Semanal/OPCIONES_CALENDARIO/OCUPAR_ACTIVIDAD" to="." method="_on_ocupar_actividad_pressed"]

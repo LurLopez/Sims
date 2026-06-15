@@ -70,6 +70,11 @@ func load_game():
 			Variables_Dinamicas.Mensajes = _Array_A_Mensajes(game_data["Mensajes"])
 		else:
 			Variables_Dinamicas.Mensajes = []
+		var trabajo_nombre = game_data.get("Trabajo_Actual", "")
+		if trabajo_nombre != "" and Variables_Estaticas.Catalogo_Actividades.has(trabajo_nombre):
+			Variables_Dinamicas.Trabajo_Actual = Variables_Estaticas.Catalogo_Actividades[trabajo_nombre]
+		else:
+			Variables_Dinamicas.Trabajo_Actual = null
 		save_file = null
 
 func game_data_func():
@@ -92,7 +97,8 @@ func game_data_func():
 		"Muerto": Variables_Dinamicas.Muerto,
 		"Edad_Muerte": Variables_Dinamicas.Edad_Muerte,
 		"Prob_Supervivencia_Acumulada": Variables_Dinamicas.Prob_Supervivencia_Acumulada,
-		"Mensajes": _Mensajes_A_Array()
+		"Mensajes": _Mensajes_A_Array(),
+		"Trabajo_Actual": Variables_Dinamicas.Trabajo_Actual.nombre if Variables_Dinamicas.Trabajo_Actual != null else ""
 	}
 	return game_data
 

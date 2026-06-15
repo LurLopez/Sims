@@ -18,6 +18,7 @@ func Trabajar(actividad: Actividad_Fija_Trabajo):
 			continue
 		for j in range(actividad.hora_inicio, actividad.hora_final):
 			Variables_Dinamicas.Matriz_Jugador[j][i] = actividad
+	Variables_Dinamicas.Trabajo_Actual = actividad
 	Funciones_Globales.Guardar_Matriz_Dia(10)
 	Funciones_Globales.Guardar_Matriz()
 
@@ -37,6 +38,7 @@ func Dejar_Trabajo(actividad: Actividad_Fija_Trabajo):
 			# con la actividad (objeto), porque String == Object lanza error de tipo.
 			if celda is Actividad_Fija_Trabajo and celda == actividad:
 				Variables_Dinamicas.Matriz_Jugador[j][i] = ""
+	Variables_Dinamicas.Trabajo_Actual = null
 
 
 func _process(delta):

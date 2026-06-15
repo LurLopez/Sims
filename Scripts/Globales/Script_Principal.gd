@@ -511,10 +511,96 @@ func Opciones_Actividades_Trabajo() -> void:
 
 
 func _on_comida_rapida_pressed() -> void:
-	Trabajo.Trabajar_En_Comida_Rapida()
+	_Intentar_Tomar_Trabajo(Variables_Estaticas.Catalogo_Actividades["Trabajar_En_Comida_Rapida"])
+
+func _on_carpintero_pressed() -> void:
+	_Intentar_Tomar_Trabajo(Variables_Estaticas.Catalogo_Actividades["Trabajar_De_Carpintero"])
+
+func _on_cientifico_pressed() -> void:
+	_Intentar_Tomar_Trabajo(Variables_Estaticas.Catalogo_Actividades["Trabajar_De_Cientifico"])
+
+
+func _Intentar_Tomar_Trabajo(actividad: Actividad_Fija_Trabajo) -> void:
+	if not _Cumple_Requisitos_Trabajo(actividad):
+		return
+	var actual = Variables_Dinamicas.Trabajo_Actual
+	if actual != null and actual == actividad:
+		var nombre = actividad.nombre.replace("Trabajar_En_", "").replace("Trabajar_De_", "").replace("_", " ")
+		_Mostrar_Error_Requisito("Ya estás trabajando de %s." % nombre)
+		return
+	if actual != null:
+		_trabajo_pendiente = actividad
+		_Mostrar_Confirmacion_Cambiar_Trabajo(actual, actividad)
+	else:
+		_Tomar_Trabajo(actividad)
+
+func _Tomar_Trabajo(actividad: Actividad_Fija_Trabajo) -> void:
+	Trabajo.Trabajar(actividad)
 	Guardar_Variables_Dinamicas.save_game()
 	Actividad_Terminada()
 
+
+var _trabajo_pendiente: Actividad_Fija_Trabajo = null
+var _dialog_cambiar_trabajo: ConfirmationDialog = null
+
+func _Mostrar_Confirmacion_Cambiar_Trabajo(actual: Actividad_Fija_Trabajo, nuevo: Actividad_Fija_Trabajo) -> void:
+	if _dialog_cambiar_trabajo == null:
+		_dialog_cambiar_trabajo = ConfirmationDialog.new()
+		_dialog_cambiar_trabajo.title = "Cambiar de trabajo"
+		_dialog_cambiar_trabajo.ok_button_text = "Sí, cambiar"
+		_dialog_cambiar_trabajo.get_cancel_button().text = "Cancelar"
+		_dialog_cambiar_trabajo.confirmed.connect(_Confirmar_Cambiar_Trabajo)
+		_dialog_cambiar_trabajo.canceled.connect(_Cancelar_Cambiar_Trabajo)
+		add_child(_dialog_cambiar_trabajo)
+	var nombre_actual = actual.nombre.replace("Trabajar_En_", "").replace("Trabajar_De_", "").replace("_", " ")
+	var nombre_nuevo = nuevo.nombre.replace("Trabajar_En_", "").replace("Trabajar_De_", "").replace("_", " ")
+	_dialog_cambiar_trabajo.dialog_text = "Actualmente trabajas de %s.\n¿Quieres dejarlo y empezar a trabajar de %s?" % [nombre_actual, nombre_nuevo]
+	_dialog_cambiar_trabajo.popup_centered(Vector2i(520, 220))
+
+func _Confirmar_Cambiar_Trabajo() -> void:
+	if _trabajo_pendiente == null:
+		return
+	Trabajo.Dejar_Trabajo(Variables_Dinamicas.Trabajo_Actual)
+	_Tomar_Trabajo(_trabajo_pendiente)
+	_trabajo_pendiente = null
+
+func _Cancelar_Cambiar_Trabajo() -> void:
+	_trabajo_pendiente = null
+
+
+func _Cumple_Requisitos_Trabajo(actividad: Actividad_Fija_Trabajo) -> bool:
+	var errores: Array = []
+	var nombres_progreso = ["Deporte", "Académico", "Manualidades"]
+	for i in range(3):
+		if Variables_Dinamicas.Progreso[i] < actividad.requisito_progreso[i]:
+			errores.append("• %s ≥ %d (tienes %d)" % [
+				nombres_progreso[i],
+				actividad.requisito_progreso[i],
+				Variables_Dinamicas.Progreso[i]
+			])
+	for nombre_carrera in actividad.requisito_carrera:
+		var tiene = false
+		for carrera in Variables_Dinamicas.Carreras_Completadas:
+			if carrera.nombre == nombre_carrera:
+				tiene = true
+				break
+		if not tiene:
+			errores.append("• Carrera: %s" % nombre_carrera.replace("_", " "))
+	if errores.size() > 0:
+		_Mostrar_Error_Requisito("Requisitos no cumplidos:\n" + "\n".join(errores))
+		return false
+	return true
+
+
+var _dialog_requisito: AcceptDialog = null
+
+func _Mostrar_Error_Requisito(mensaje: String) -> void:
+	if _dialog_requisito == null:
+		_dialog_requisito = AcceptDialog.new()
+		_dialog_requisito.title = "Requisitos no cumplidos"
+		add_child(_dialog_requisito)
+	_dialog_requisito.dialog_text = mensaje
+	_dialog_requisito.popup_centered(Vector2i(500, 220))
 
 
 func Pulsar_Flecha_Atras() -> void:

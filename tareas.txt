@@ -1,7 +1,29 @@
-- Ajustar los examenes
-- Recompensas por terminar la carrera +
-- crear nuevas carreras/trabajos
-- Cambiar el GUI
-- Apuntes para el examen/perfil
+== HECHO ==
 - Funcionalidad morir
-- guardar partida manualmente.
+- Recompensas por terminar la carrera
+- Apuntes para el examen/perfil (Tab Apuntes en Perfil)
+- Mostrar habilidades innatas en el perfil
+- Tienda con objetos y ventajas
+- Funcionalidad ir a la calle si no pagas alquiler
+
+== PENDIENTE ==
+
+# Contenido
+- Ajustar los examenes
+- Crear nuevas carreras universitarias
+- Arreglar trabajos rotos (Carpintero, Cientifico) y añadir mas trabajos con distintos salarios y requisitos de progreso
+- Añadir mas actividades (Socializar, Limpiar_Casa, Meditar, Pasear u otras)
+- Sistema de eventos aleatorios (enfermedades, bonus de dinero, accidentes) cada X dias
+
+# Progresion y meta
+- Sistema de logros con bonificaciones permanentes entre partidas (guardados en Variables_Estaticas)
+
+# Configuracion
+- Modo rapido de partida: 1 dia real = 1 año en juego (variable Velocidad en Variables_Estaticas, afecta a _process)
+
+# Notificaciones
+- Notificaciones locales pre-programadas al asignar actividades (plugin Android)
+- Notificacion recordatorio cuando el jugador lleva X dias sin abrir el juego
+
+# UI
+- Cambiar y limpiar la GUI general

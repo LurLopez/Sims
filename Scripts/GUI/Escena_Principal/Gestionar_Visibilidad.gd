@@ -13,9 +13,9 @@ func Recursivo_Desvisibilizar(raiz):
 			Recursivo_Desvisibilizar(control)
 
 func Recursivo_Visibilizar(raiz):
-	if raiz is CanvasItem:
+	if raiz is CanvasItem:	
 		raiz.visible = true
-	for control in raiz.get_children():
+	for control in raiz.get_children():	
 		if control != null:
 			Recursivo_Visibilizar(control)
 
