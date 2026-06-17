@@ -5,16 +5,17 @@
 - Mostrar habilidades innatas en el perfil
 - Tienda con objetos y ventajas
 - Funcionalidad ir a la calle si no pagas alquiler
-
+- Arreglar trabajos rotos (Carpintero, Cientifico) y añadir mas trabajos con distintos salarios y requisitos de progreso
+- Funcionalidad de invertir (base)
 == PENDIENTE ==
 
 # Contenido
 - Ajustar los examenes
 - Crear nuevas carreras universitarias
-- Arreglar trabajos rotos (Carpintero, Cientifico) y añadir mas trabajos con distintos salarios y requisitos de progreso
+
 - Añadir mas actividades (Socializar, Limpiar_Casa, Meditar, Pasear u otras)
 - Sistema de eventos aleatorios (enfermedades, bonus de dinero, accidentes) cada X dias
-- Funcionalidad de invertir
+- Funcionalidad de invertir progreso
 # Progresion y meta
 - Sistema de logros con bonificaciones permanentes entre partidas (guardados en Variables_Estaticas)
 
