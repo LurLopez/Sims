@@ -1534,15 +1534,16 @@ text = "CREAR ACTIVIDAD"
 
 [node name="Boton_Perfil" type="Button" parent="."]
 z_index = 10
-offset_left = 10.0
+offset_left = 5.0
 offset_top = 10.0
-offset_right = 110.0
+offset_right = 183.0
 offset_bottom = 60.0
 theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
 theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
 text = "👤 Perfil"
 
 [node name="Tienda_Button" type="Button" parent="."]
+visible = false
 z_index = 10
 offset_left = 115.0
 offset_top = 10.0
@@ -1552,25 +1553,35 @@ theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
 theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
 text = "🏪 Tienda"
 
-[node name="Alquiler_Button" type="Button" parent="."]
+[node name="Economia_Button" type="Button" parent="."]
 z_index = 10
-offset_left = 230.0
+offset_left = 185.0
 offset_top = 10.0
-offset_right = 360.0
+offset_right = 363.0
 offset_bottom = 60.0
 theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
 theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
-text = "🏠 Alquiler"
+text = "💰 Economía"
 
 [node name="Calendario_Button" type="Button" parent="."]
 z_index = 10
 offset_left = 365.0
 offset_top = 10.0
-offset_right = 490.0
+offset_right = 543.0
 offset_bottom = 60.0
 theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
 theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
 text = "📅 Horario"
+
+[node name="Carrera_Button" type="Button" parent="."]
+z_index = 10
+offset_left = 545.0
+offset_top = 10.0
+offset_right = 715.0
+offset_bottom = 60.0
+theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
+text = "🎓 Carrera"
 
 [node name="Tienda" type="Control" parent="."]
 visible = false
@@ -2384,14 +2395,6 @@ offset_right = 720.0
 offset_bottom = 205.0
 theme_override_constants/separation = 0
 
-[node name="Tab_Info" type="Button" parent="Pantalla_Mensajes/Tab_Bar"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 22
-theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
-theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
-text = "Info"
-
 [node name="Tab_Mensajes" type="Button" parent="Pantalla_Mensajes/Tab_Bar"]
 layout_mode = 2
 size_flags_horizontal = 3
@@ -2399,6 +2402,14 @@ theme_override_font_sizes/font_size = 22
 theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
 theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
 text = "Mensajes"
+
+[node name="Tab_Info" type="Button" parent="Pantalla_Mensajes/Tab_Bar"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 22
+theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
+text = "Info"
 
 [node name="Tab_Apuntes" type="Button" parent="Pantalla_Mensajes/Tab_Bar"]
 layout_mode = 2
@@ -2571,8 +2582,9 @@ autowrap_mode = 3
 [connection signal="pressed" from="Actividades/Seleccionar_Horario/Crear_Actividad" to="." method="_on_crear_actividad_pressed"]
 [connection signal="pressed" from="Boton_Perfil" to="." method="_on_perfil_button_pressed"]
 [connection signal="pressed" from="Tienda_Button" to="." method="_on_tienda_button_pressed"]
-[connection signal="pressed" from="Alquiler_Button" to="." method="_on_alquiler_button_pressed"]
+[connection signal="pressed" from="Economia_Button" to="." method="_on_economia_button_pressed"]
 [connection signal="pressed" from="Calendario_Button" to="." method="_on_calendario_boton_pressed"]
+[connection signal="pressed" from="Carrera_Button" to="." method="_on_carrera_tab_pressed"]
 [connection signal="pressed" from="Tienda/Flecha_Atras" to="." method="_on_tienda_flecha_atras_pressed"]
 [connection signal="pressed" from="Tienda/Categorias/Tab_Dormir" to="." method="_on_tab_dormir_pressed"]
 [connection signal="pressed" from="Tienda/Categorias/Tab_Comer" to="." method="_on_tab_comer_pressed"]
@@ -2596,7 +2608,7 @@ autowrap_mode = 3
 [connection signal="pressed" from="Tienda/Objetos_Duchar/Ducha_Premium/Vender" to="." method="_on_vender_ducha_premium_pressed"]
 [connection signal="pressed" from="Tienda/Objetos_Duchar/Ducha_Premium/Elegir" to="." method="_on_elegir_ducha_premium_pressed"]
 [connection signal="pressed" from="Pantalla_Mensajes/Boton_Cerrar" to="." method="_on_mensajes_boton_cerrar_pressed"]
-[connection signal="pressed" from="Pantalla_Mensajes/Tab_Bar/Tab_Info" to="." method="_on_perfil_tab_info_pressed"]
 [connection signal="pressed" from="Pantalla_Mensajes/Tab_Bar/Tab_Mensajes" to="." method="_on_perfil_tab_mensajes_pressed"]
+[connection signal="pressed" from="Pantalla_Mensajes/Tab_Bar/Tab_Info" to="." method="_on_perfil_tab_info_pressed"]
 [connection signal="pressed" from="Pantalla_Mensajes/Tab_Bar/Tab_Apuntes" to="." method="_on_perfil_tab_apuntes_pressed"]
 [connection signal="pressed" from="Pantalla_Mensajes/Contenido_Mensaje/Boton_Volver" to="." method="_on_mensajes_boton_volver_pressed"]

@@ -78,20 +78,39 @@ func Agregar_Bloques(mirar_semana,raiz):
 					estilo_pulsado.border_color = Color(0, 0, 0, 0)
 					
 					
-					if(libre==""):
+					if libre == "":
 						estilo.bg_color = COLOR_LIBRE
 						estilo_pulsado.bg_color = COLOR_LIBRE_P
+						boton.set_meta("estado", "libre")
 					else:
 						estilo.bg_color = COLOR_OCUPADO
 						estilo_pulsado.bg_color = COLOR_OCUPADO_P
+						boton.set_meta("estado", "ocupado")
+					boton.set_meta("actividad", libre)
 					boton.add_theme_stylebox_override("normal",estilo)
 					boton.add_theme_stylebox_override("pressed", estilo_pulsado)
-					
-					
-					
+
+
+
 					boton.add_theme_stylebox_override("hover", estilo)
 					boton.add_theme_stylebox_override("hover_pressed", estilo_pulsado)
 					boton.toggle_mode = true
+
+					if not (libre is String) and libre.icono != null:
+						var tex_rect = TextureRect.new()
+						tex_rect.texture = libre.icono
+						tex_rect.stretch_mode = TextureRect.STRETCH_TILE
+						tex_rect.anchor_left = 0.0
+						tex_rect.anchor_top = 0.0
+						tex_rect.anchor_right = 1.0
+						tex_rect.anchor_bottom = 1.0
+						tex_rect.offset_left = 0
+						tex_rect.offset_top = 0
+						tex_rect.offset_right = 0
+						tex_rect.offset_bottom = 0
+						tex_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+						boton.clip_contents = true
+						boton.add_child(tex_rect)
 					
 					
 					if(libre!=matriz_bloques[j][i]):
@@ -147,9 +166,9 @@ func comprobar_derecha(boton,raiz):
 		boton=boton2
 		ver_dia=ultimo_dia_comprobar(boton,raiz)
 func fusinar_botones(boton1,boton2):
-	var stylebox1=boton1.get_theme_stylebox("normal", "Button")
-	var stylebox2=boton2.get_theme_stylebox("normal", "Button")
-	if (stylebox1.bg_color==stylebox2.bg_color):
+	var act1 = boton1.get_meta("actividad", null)
+	var act2 = boton2.get_meta("actividad", null)
+	if act1 == act2:
 		boton2.set_pressed(true)
 		boton2.set_toggle_mode(true)
 func obtener_primer_bloque_dia(dia,raiz):
@@ -228,14 +247,12 @@ func comprobar_seleccionado_dia(dia):
 		if child is Button:
 			if child.button_pressed:
 					presionado=true
-					var stylebox=child.get_theme_stylebox("normal", "Button")
-					var color=stylebox.bg_color
 					dia_final=calcular_dia(dia)
 					posicion_minuto_final=child.position.y+int(child.size.y)
 					if(dia_inicio==-1):
 						dia_inicio=calcular_dia(dia)
 						posicion_minuto_inicio=child.position.y
-					if(color!=COLOR_LIBRE):
+					if child.get_meta("estado", "") != "libre":
 						verde=false
 	return verde
 func calcular_dia(dia):

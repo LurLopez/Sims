@@ -28,18 +28,73 @@ var blink_timer: Timer = null
 var blink_estado: bool = false
 var mini_cal_preview = null
 var _dialog_ir_a_la_calle: ConfirmationDialog = null
+
+var _badge_perfil: Label = null
+var _badge_tab_mensajes: Label = null
+
+func _Crear_Badge(parent: Control) -> Label:
+	var lbl = Label.new()
+	lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	lbl.add_theme_font_size_override("font_size", 14)
+	lbl.add_theme_color_override("font_color", Color.WHITE)
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(0.85, 0.10, 0.10, 1.0)
+	style.corner_radius_top_left = 10
+	style.corner_radius_top_right = 10
+	style.corner_radius_bottom_left = 10
+	style.corner_radius_bottom_right = 10
+	style.content_margin_left = 5
+	style.content_margin_right = 5
+	style.content_margin_top = 2
+	style.content_margin_bottom = 2
+	lbl.add_theme_stylebox_override("normal", style)
+	lbl.z_index = 10
+	lbl.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+	lbl.offset_left = -30
+	lbl.offset_top = 2
+	lbl.offset_right = -2
+	lbl.offset_bottom = 22
+	lbl.visible = false
+	parent.add_child(lbl)
+	return lbl
+
+func _Contar_No_Leidos() -> int:
+	var count = 0
+	for m in Variables_Dinamicas.Mensajes:
+		if not m.leido:
+			count += 1
+	return count
+
+func _Actualizar_Badges():
+	var count = _Contar_No_Leidos()
+	var texto = str(min(count, 99))
+	if _badge_perfil != null:
+		_badge_perfil.text = texto
+		_badge_perfil.visible = count > 0
+	if _badge_tab_mensajes != null:
+		_badge_tab_mensajes.text = texto
+		_badge_tab_mensajes.visible = count > 0
+
 func _ready():
 	Inicializar_Otros_Scripts()
-	$Alquiler_Button.pressed.connect(Callable(self, "_on_alquiler_button_pressed"))
-	Actualizar_Texto_Alquiler()
-	_Inicializar_Botones_Carrera()
-	_Inicializar_Boton_Inversion()
+	_Crear_Pantalla_Carrera()
+	_Crear_Pantalla_Economia()
+	_badge_perfil = _Crear_Badge($Boton_Perfil)
+	_badge_tab_mensajes = _Crear_Badge($Pantalla_Mensajes/Tab_Bar/Tab_Mensajes)
+	# TEST: mensaje para verificar que el badge funciona — borrar cuando esté confirmado
+	var _msg_test = Mensaje.new()
+	_msg_test.titulo = "Test badge"
+	_msg_test.descripcion = "Si ves esto, el badge funciona."
+	_msg_test.leido = false
+	_msg_test.minuto = Variables_Dinamicas.Minute_Day * 1440 + Variables_Dinamicas.Minute_Minute
+	Variables_Dinamicas.Mensajes.append(_msg_test)
 	if (Variables_Estaticas.First_Time):
 		first_time_logica.First_Time_Function()
 		mirar_semana=1
 		Guardar_Variables_Estaticas.save_game()
 		Guardar_Variables_Dinamicas.save_game()
-		Actualizar_Texto_Alquiler()
 
 	else:
 		if Variables_Dinamicas.Muerto:
@@ -47,6 +102,7 @@ func _ready():
 			return
 		Gestionar_Visibilidad.Quitar_Todo(self)
 		mirar_semana=Variables_Dinamicas.Minute_Day/7
+	_Actualizar_Badges()
 	
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
@@ -63,6 +119,7 @@ func _process(delta):
 		necesidades_basicas_gui.Actualizar_Necesidades_Basicas(self)
 		if $Habilidades.visible:
 			Actualizar_Habilidades()
+		_Actualizar_Badges()
 
 
 const _DINERO_OFFSET_RIGHT_3_DIGITOS: int = 600
@@ -79,9 +136,8 @@ func Actualizar_Dinero():
 	var offset_right_dinamico = _DINERO_OFFSET_RIGHT_3_DIGITOS - extra_digitos * _DINERO_DESPLAZAMIENTO_POR_DIGITO_EXTRA
 	$Dinero_Label.offset_right = offset_right_dinamico
 	$Dinero_Label.offset_left = offset_right_dinamico - _DINERO_ANCHO_LABEL
-	Actualizar_Texto_Alquiler()
-	_Actualizar_Botones_Carrera()
-	_Actualizar_Boton_Inversion()
+	_Actualizar_Pantalla_Carrera_Si_Visible()
+	_Actualizar_Pantalla_Economia_Si_Visible()
 
 # Calcula cuántos minutos LOCALES han pasado desde el último tick procesado.
 # Se basa en la hora del dispositivo (no en Unix delta), así DST y cambios de zona
@@ -373,6 +429,9 @@ func _on_eliminar_actividad_pressed() -> void:
 	if celda_seleccionada is Actividad_Fija_Trabajo:
 		_Mostrar_Confirmacion_Dejar_Trabajo(celda_seleccionada)
 		return
+	if celda_seleccionada is Actividad_Examen:
+		_Mostrar_Error_No_Eliminar_Examen()
+		return
 
 	actividades_reloj_gui.Comprobar_Visibilidad(self,horario_bloque)
 	#$Seleccionar_Horario.visible=true     Si se quiere seleccionar la hora exacta que se quiere eliminar, solamante hay que activar estas 3 lineas de codigo
@@ -413,7 +472,18 @@ func _Confirmar_Dejar_Trabajo():
 
 func _Cancelar_Dejar_Trabajo():
 	_trabajo_a_dejar = null
-		
+
+
+var _dialog_no_eliminar_examen: AcceptDialog = null
+
+func _Mostrar_Error_No_Eliminar_Examen():
+	if _dialog_no_eliminar_examen == null:
+		_dialog_no_eliminar_examen = AcceptDialog.new()
+		_dialog_no_eliminar_examen.title = "Examen bloqueado"
+		_dialog_no_eliminar_examen.ok_button_text = "Entendido"
+		add_child(_dialog_no_eliminar_examen)
+	_dialog_no_eliminar_examen.dialog_text = "No puedes eliminar un examen programado."
+	_dialog_no_eliminar_examen.popup_centered(Vector2i(420, 160))
 
 
 ##INICIO
@@ -664,38 +734,10 @@ func Actividad_Terminada():
 		actividades_bloque_gui.bloque_columna.limpiar_horas_del_horario()
 
 
-func Actualizar_Texto_Alquiler():
-	if Variables_Dinamicas.En_La_Calle:
-		$Alquiler_Button.text = "En la calle"
-	else:
-		$Alquiler_Button.text = "En alquiler"
-
-
-func _on_alquiler_button_pressed():
-	if Variables_Dinamicas.En_La_Calle:
-		# Intenta volver a alquiler
-		if Variables_Dinamicas.Dinero >= Variables_Estaticas.ALQUILER_SEMANAL:
-			Actividades.Volver_A_Alquiler()
-			Actualizar_Texto_Alquiler()
-			Guardar_Variables_Dinamicas.save_game()
-		# Si no tiene dinero, no hace nada (se queda en la calle)
-	else:
-		# Intenta ir a la calle (requiere confirmación)
-		if _dialog_ir_a_la_calle == null:
-			_dialog_ir_a_la_calle = ConfirmationDialog.new()
-			_dialog_ir_a_la_calle.title = "Irte a la calle"
-			_dialog_ir_a_la_calle.ok_button_text = "Sí, irme"
-			_dialog_ir_a_la_calle.get_cancel_button().text = "Cancelar"
-			_dialog_ir_a_la_calle.confirmed.connect(Callable(self, "_Confirmar_Ir_A_La_Calle"))
-			add_child(_dialog_ir_a_la_calle)
-		_dialog_ir_a_la_calle.dialog_text = "¿Estás seguro de que quieres irte a la calle?\n\nTus necesidades básicas se verán afectadas drásticamente."
-		_dialog_ir_a_la_calle.popup_centered(Vector2i(500, 220))
-
-
 func _Confirmar_Ir_A_La_Calle():
 	Actividades.Ir_A_La_Calle()
-	Actualizar_Texto_Alquiler()
 	Guardar_Variables_Dinamicas.save_game()
+	_Actualizar_Pantalla_Economia()
 
 
 # ---------------- Tienda ----------------
@@ -796,7 +838,7 @@ func _Actualizar_Card_Tienda(categoria: String, clave: String):
 func _on_perfil_button_pressed():
 	Detener_Blink()
 	Gestionar_Visibilidad.Visibilizar_Perfil(self)
-	_on_perfil_tab_info_pressed()
+	_on_perfil_tab_mensajes_pressed()
 
 # ---------------- Pestañas del perfil ----------------
 
@@ -930,6 +972,7 @@ func _Mostrar_Mensaje(indice: int):
 	if not mensaje.leido:
 		mensaje.leido = true
 		Guardar_Variables_Dinamicas.save_game()
+		_Actualizar_Badges()
 
 func _on_mensajes_boton_volver_pressed():
 	$Pantalla_Mensajes/Contenido_Mensaje.visible = false
@@ -1045,11 +1088,7 @@ func _on_elegir_ducha_premium_pressed(): _Tienda_Elegir("Duchar", "Ducha_Premium
 
 
 # ---------------- Sistema de Carreras Universitarias ----------------
-# Un único botón (carrera_button) que cambia de texto y acción según el estado.
-# Botón secundario (libros_button) para leer apuntes, siempre que haya libros.
 
-var carrera_button: Button = null
-var libros_button: Button = null
 var _dialog_resultado_examen: AcceptDialog = null
 
 const _MODAL_EXAMEN_SCRIPT = preload("res://Scripts/Logica/Escena_Principal/Actividades/Carreras/UI/Modal_Examen.gd")
@@ -1057,96 +1096,6 @@ const _MODAL_SELECCIONAR_EXAMEN_SCRIPT = preload("res://Scripts/Logica/Escena_Pr
 const _LECTOR_LIBROS_SCRIPT = preload("res://Scripts/Logica/Escena_Principal/Actividades/Carreras/UI/Lector_Libros.gd")
 
 const _DIAS_NOMBRES = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sab", "Dom"]
-
-func _Inicializar_Botones_Carrera():
-	carrera_button = _Crear_Boton_Posicionado("Carrera_Button", "Matricularse", 10, 70, 290, 120)
-	carrera_button.pressed.connect(Callable(self, "_on_carrera_button_pressed"))
-	add_child(carrera_button)
-
-	libros_button = _Crear_Boton_Posicionado("Libros_Button", "Apuntes", 300, 70, 430, 120)
-	libros_button.pressed.connect(Callable(self, "_on_libros_button_pressed"))
-	libros_button.visible = false
-	add_child(libros_button)
-
-	_Actualizar_Botones_Carrera()
-
-func _Crear_Boton_Posicionado(nombre: String, texto: String, left: int, top: int, right: int, bottom: int) -> Button:
-	var b = Button.new()
-	b.name = nombre
-	b.text = texto
-	b.z_index = 10
-	b.set_anchors_preset(Control.PRESET_TOP_LEFT)
-	b.offset_left = left
-	b.offset_top = top
-	b.offset_right = right
-	b.offset_bottom = bottom
-	return b
-
-func _Actualizar_Botones_Carrera():
-	if carrera_button == null:
-		return
-	var carrera = Variables_Dinamicas.Carrera_Actual
-
-	# ─── Sin carrera activa ───────────────────────────────────────────────────
-	if carrera == null:
-		carrera_button.text = "Matricularse\nCarrera"
-		carrera_button.disabled = false
-		libros_button.visible = Variables_Dinamicas.Carreras_Completadas.size() > 0
-		return
-
-	# Botón de apuntes visible si hay libros
-	libros_button.visible = carrera.libros_desbloqueados.size() > 0 or Variables_Dinamicas.Carreras_Completadas.size() > 0
-
-	# ─── Carrera completada ───────────────────────────────────────────────────
-	if carrera.completada and not carrera.fin_de_semana_procesado:
-		carrera_button.text = "Carrera\nCompletada"
-		carrera_button.disabled = true
-		return
-
-	# ─── Resultado pendiente de ver ───────────────────────────────────────────
-	if carrera.fin_de_semana_procesado:
-		var estado = "APROBADO" if carrera.ultimo_resultado_aprobado else "SUSPENDIDO"
-		carrera_button.text = "Ver Resultado\n%s %.0f" % [estado, carrera.ultima_nota_final]
-		carrera_button.disabled = false
-		return
-
-	# ─── En ventana de examen (1 hora) ───────────────────────────────────────
-	if carrera.matriculado and _En_Ventana_Examen(carrera):
-		if carrera.examen_realizado_esta_semana:
-			carrera_button.text = "Examen hecho\nEsperando..."
-			carrera_button.disabled = true
-		else:
-			carrera_button.text = "Hacer Examen\nAHORA"
-			carrera_button.disabled = false
-		return
-
-	# ─── Esperando examen (matriculado, fuera de ventana) ────────────────────
-	if carrera.matriculado:
-		var hora = carrera.hora_examen_inicio / 60
-		carrera_button.text = "Examen: %s %02d:00\nAño %d/%d · %d%%" % [
-			_DIAS_NOMBRES[carrera.hora_examen_dia], hora,
-			carrera.año_actual, carrera.años_totales, int(carrera.progreso_actual)
-		]
-		carrera_button.disabled = true
-		return
-
-	# ─── Prematriculado (flexible, sin coste aún) ────────────────────────────
-	if carrera.prematriculado:
-		var hora = carrera.hora_examen_inicio / 60
-		carrera_button.text = "Prematrícula:\n%s %02d:00 (cambiar)" % [
-			_DIAS_NOMBRES[carrera.hora_examen_dia], hora
-		]
-		carrera_button.disabled = false
-		return
-
-	# ─── Sin examen programado: Matricularse (L-Ma) o Prematricularse (Mi-Do) ─
-	var dia_semana = Variables_Dinamicas.Minute_Day % 7
-	if dia_semana <= 1:  # Lunes=0, Martes=1
-		carrera_button.text = "Matricularse\n500€ (esta semana)"
-		carrera_button.disabled = Variables_Dinamicas.Dinero < 500
-	else:
-		carrera_button.text = "Prematricularse\n(próxima semana)"
-		carrera_button.disabled = false
 
 func _En_Ventana_Examen(carrera: Carrera) -> bool:
 	if carrera.hora_examen_dia < 0 or not carrera.matriculado:
@@ -1158,7 +1107,7 @@ func _En_Ventana_Examen(carrera: Carrera) -> bool:
 	var hora_inicio = carrera.hora_examen_inicio
 	return minuto_del_dia >= hora_inicio and minuto_del_dia < hora_inicio + 60
 
-func _on_carrera_button_pressed():
+func _on_carrera_accion_pressed():
 	var carrera = Variables_Dinamicas.Carrera_Actual
 
 	# Sin carrera: crear e iniciar ciclo
@@ -1166,7 +1115,7 @@ func _on_carrera_button_pressed():
 		carrera = Carrera_Ingenieria_Informatica.new()
 		Variables_Dinamicas.Carrera_Actual = carrera
 		Guardar_Variables_Dinamicas.save_game()
-		_Actualizar_Botones_Carrera()
+		_Actualizar_Pantalla_Carrera()
 		return
 
 	# Ver resultado
@@ -1206,13 +1155,14 @@ func _on_horario_elegido(dia: int, hora_minutos: int, carrera: Carrera, es_matri
 		carrera.dinero_matricula_gastado += carrera.costo_matricula_anual
 		carrera.matriculado = true
 		carrera.prematriculado = false
+		Actividades.Escribir_Examen_En_Matriz(carrera)
 	else:
 		# Prematriculación: gratis, flexible hasta el Lunes 00:00
 		carrera.prematriculado = true
 		carrera.matriculado = false
 
 	Guardar_Variables_Dinamicas.save_game()
-	_Actualizar_Botones_Carrera()
+	_Actualizar_Pantalla_Carrera()
 	Actualizar_Dinero()
 
 func _Abrir_Modal_Examen(carrera: Carrera):
@@ -1224,7 +1174,7 @@ func _Abrir_Modal_Examen(carrera: Carrera):
 
 func _on_examen_enviado(_nota_real: int):
 	Guardar_Variables_Dinamicas.save_game()
-	_Actualizar_Botones_Carrera()
+	_Actualizar_Pantalla_Carrera()
 
 func _Mostrar_Resultado_Examen(carrera: Carrera):
 	if _dialog_resultado_examen == null:
@@ -1265,7 +1215,7 @@ func _on_resultado_confirmado():
 		Variables_Dinamicas.Carreras_Completadas.append(carrera)
 		Variables_Dinamicas.Carrera_Actual = null
 	Guardar_Variables_Dinamicas.save_game()
-	_Actualizar_Botones_Carrera()
+	_Actualizar_Pantalla_Carrera()
 
 func _on_libros_button_pressed():
 	var carrera = Variables_Dinamicas.Carrera_Actual
@@ -1283,31 +1233,12 @@ func _on_libros_button_pressed():
 
 # ---------------- Sistema de Inversiones en Bolsa ----------------
 
-var inversion_button: Button = null
 var _ventana_invertir: Window = null
 var _label_invertir: Label = null
 var _input_cantidad_invertir: LineEdit = null
 var _dialog_retirar: ConfirmationDialog = null
 
-func _Inicializar_Boton_Inversion():
-	inversion_button = _Crear_Boton_Posicionado("Inversion_Button", "Bolsa", 495, 10, 718, 60)
-	inversion_button.pressed.connect(_on_inversion_button_pressed)
-	add_child(inversion_button)
-	_Actualizar_Boton_Inversion()
-
-func _Actualizar_Boton_Inversion():
-	if inversion_button == null:
-		return
-	if Variables_Dinamicas.Esta_Invirtiendo:
-		var valor = Variables_Dinamicas.Valor_Inversion
-		var invertido = Variables_Dinamicas.Dinero_Invertido
-		var pct = (valor - invertido) / invertido * 100.0 if invertido > 0 else 0.0
-		var signo = "+" if pct >= 0 else ""
-		inversion_button.text = "Bolsa\n%.0f€ (%s%.1f%%)" % [valor, signo, pct]
-	else:
-		inversion_button.text = "Invertir\nen Bolsa"
-
-func _on_inversion_button_pressed():
+func _on_economia_bolsa_pressed():
 	if Variables_Dinamicas.Esta_Invirtiendo:
 		_Mostrar_Confirmacion_Retirar()
 	else:
@@ -1388,7 +1319,7 @@ func _Confirmar_Invertir():
 	Variables_Dinamicas.Salud_Mental_Al_Invertir = int(Variables_Dinamicas.Necesidades_Basicas[1])
 	_ventana_invertir.visible = false
 	Guardar_Variables_Dinamicas.save_game()
-	_Actualizar_Boton_Inversion()
+	_Actualizar_Pantalla_Economia_Si_Visible()
 	Actualizar_Dinero()
 
 func _Mostrar_Confirmacion_Retirar():
@@ -1414,5 +1345,352 @@ func _Confirmar_Retirar():
 	Variables_Dinamicas.Valor_Inversion = 0.0
 	Variables_Dinamicas.Dinero_Invertido = 0.0
 	Guardar_Variables_Dinamicas.save_game()
-	_Actualizar_Boton_Inversion()
+	_Actualizar_Pantalla_Economia_Si_Visible()
 	Actualizar_Dinero()
+
+# ================================================================
+# Helpers de estilo compartidos
+# ================================================================
+
+func _Crear_Tarjeta_Boton(texto: String, color_acento: Color) -> Button:
+	var btn = Button.new()
+	btn.text = texto
+	btn.custom_minimum_size = Vector2(0, 80)
+	btn.add_theme_font_size_override("font_size", 22)
+	btn.add_theme_color_override("font_color", Color.WHITE)
+	btn.add_theme_color_override("font_hover_color", Color.WHITE)
+	btn.add_theme_color_override("font_pressed_color", Color.WHITE)
+	btn.add_theme_color_override("font_disabled_color", Color(0.5, 0.5, 0.5))
+	_Aplicar_Estilo_Tarjeta(btn, color_acento)
+	return btn
+
+func _Aplicar_Estilo_Tarjeta(btn: Button, color_acento: Color):
+	var c_oscuro = Color(color_acento.r * 0.22, color_acento.g * 0.22, color_acento.b * 0.22, 1.0)
+	var c_hover  = Color(color_acento.r * 0.38, color_acento.g * 0.38, color_acento.b * 0.38, 1.0)
+	for nombre in ["normal", "hover", "pressed", "focus", "disabled"]:
+		var s = StyleBoxFlat.new()
+		match nombre:
+			"normal":   s.bg_color = c_oscuro
+			"hover":    s.bg_color = c_hover
+			"pressed":  s.bg_color = color_acento
+			_:          s.bg_color = c_oscuro
+		s.border_color        = color_acento
+		s.border_width_left   = 5
+		s.border_width_right  = 0
+		s.border_width_top    = 0
+		s.border_width_bottom = 0
+		s.set_corner_radius_all(8)
+		s.content_margin_left   = 18
+		s.content_margin_right  = 18
+		s.content_margin_top    = 10
+		s.content_margin_bottom = 10
+		btn.add_theme_stylebox_override(nombre, s)
+
+func _Crear_Boton_Volver_Panel(parent: Control, callback: Callable):
+	var btn = Button.new()
+	btn.text = "← Volver"
+	btn.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
+	btn.offset_left   = 25
+	btn.offset_right  = -25
+	btn.offset_top    = -68
+	btn.offset_bottom = -14
+	btn.add_theme_font_size_override("font_size", 20)
+	btn.add_theme_color_override("font_color", Color(0.75, 0.80, 0.90))
+	var s = StyleBoxFlat.new()
+	s.bg_color = Color(0.12, 0.12, 0.16)
+	s.border_color = Color(0.30, 0.32, 0.42)
+	s.set_border_width_all(1)
+	s.set_corner_radius_all(8)
+	s.content_margin_left = 15
+	s.content_margin_right = 15
+	btn.add_theme_stylebox_override("normal", s)
+	btn.pressed.connect(callback)
+	parent.add_child(btn)
+
+func _Crear_Label_Titulo_Panel(texto: String, parent: Control, color: Color):
+	var lbl = Label.new()
+	lbl.text = texto
+	lbl.add_theme_font_size_override("font_size", 30)
+	lbl.add_theme_color_override("font_color", color)
+	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lbl.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	lbl.offset_top    = 68
+	lbl.offset_bottom = 112
+	parent.add_child(lbl)
+
+# ================================================================
+# Pantalla Carrera (tab)
+# ================================================================
+
+var _pantalla_carrera: Control = null
+var _carrera_status_label: Label = null
+var _carrera_action_btn: Button = null
+var _carrera_libros_btn: Button = null
+
+func _Crear_Pantalla_Carrera():
+	_pantalla_carrera = ColorRect.new()
+	_pantalla_carrera.name = "Pantalla_Carrera"
+	_pantalla_carrera.color = Color(0.06, 0.07, 0.12, 0.97)
+	_pantalla_carrera.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_pantalla_carrera.z_index = 5
+	_pantalla_carrera.visible = false
+
+	_Crear_Label_Titulo_Panel("CARRERA UNIVERSITARIA", _pantalla_carrera, Color(0.45, 0.80, 1.0))
+
+	var vbox = VBoxContainer.new()
+	vbox.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	vbox.add_theme_constant_override("separation", 14)
+	vbox.offset_left   = 25
+	vbox.offset_right  = -25
+	vbox.offset_top    = 122
+	vbox.offset_bottom = 450
+
+	_carrera_status_label = Label.new()
+	_carrera_status_label.add_theme_font_size_override("font_size", 20)
+	_carrera_status_label.add_theme_color_override("font_color", Color(0.78, 0.84, 0.92))
+	_carrera_status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_carrera_status_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	vbox.add_child(_carrera_status_label)
+
+	_carrera_action_btn = _Crear_Tarjeta_Boton("", Color(0.20, 0.55, 0.95))
+	_carrera_action_btn.pressed.connect(_on_carrera_accion_pressed)
+	vbox.add_child(_carrera_action_btn)
+
+	_carrera_libros_btn = _Crear_Tarjeta_Boton("Leer Apuntes", Color(0.55, 0.35, 0.08))
+	_carrera_libros_btn.pressed.connect(_on_libros_button_pressed)
+	vbox.add_child(_carrera_libros_btn)
+
+	_pantalla_carrera.add_child(vbox)
+	_Crear_Boton_Volver_Panel(_pantalla_carrera, func(): Gestionar_Visibilidad.Quitar_Todo(self))
+	add_child(_pantalla_carrera)
+
+func _on_carrera_tab_pressed():
+	Gestionar_Visibilidad.Quitar_Todo(self)
+	Gestionar_Visibilidad.Recursivo_Visibilizar(_pantalla_carrera)
+	_Actualizar_Pantalla_Carrera()
+
+func _Actualizar_Pantalla_Carrera():
+	if _carrera_action_btn == null:
+		return
+	var carrera = Variables_Dinamicas.Carrera_Actual
+
+	if carrera == null:
+		_carrera_status_label.text = "No tienes ninguna carrera activa."
+		_carrera_action_btn.text = "Matricularse en Ingeniería Informática"
+		_carrera_action_btn.disabled = false
+		_carrera_libros_btn.visible = Variables_Dinamicas.Carreras_Completadas.size() > 0
+		return
+
+	_carrera_libros_btn.visible = (
+		carrera.libros_desbloqueados.size() > 0 or
+		Variables_Dinamicas.Carreras_Completadas.size() > 0
+	)
+
+	if carrera.completada and not carrera.fin_de_semana_procesado:
+		_carrera_status_label.text = "Has completado la carrera."
+		_carrera_action_btn.text = "Carrera completada"
+		_carrera_action_btn.disabled = true
+		return
+
+	if carrera.fin_de_semana_procesado:
+		var estado = "APROBADO" if carrera.ultimo_resultado_aprobado else "SUSPENDIDO"
+		_carrera_status_label.text = "Hay un resultado pendiente de revisar."
+		_carrera_action_btn.text = "Ver resultado: %s (%.0f)" % [estado, carrera.ultima_nota_final]
+		_carrera_action_btn.disabled = false
+		return
+
+	if carrera.matriculado and _En_Ventana_Examen(carrera):
+		if carrera.examen_realizado_esta_semana:
+			_carrera_status_label.text = "Examen enviado. Esperando resultado del fin de semana..."
+			_carrera_action_btn.text = "Examen entregado"
+			_carrera_action_btn.disabled = true
+		else:
+			_carrera_status_label.text = "La ventana de examen está abierta ahora."
+			_carrera_action_btn.text = "Hacer Examen AHORA"
+			_carrera_action_btn.disabled = false
+		return
+
+	if carrera.matriculado:
+		var hora = carrera.hora_examen_inicio / 60
+		_carrera_status_label.text = "Año %d de %d · Progreso: %d%%\nExamen: %s a las %02d:00" % [
+			carrera.año_actual, carrera.años_totales,
+			int(carrera.progreso_actual),
+			_DIAS_NOMBRES[carrera.hora_examen_dia], hora
+		]
+		_carrera_action_btn.text = "Esperando el examen..."
+		_carrera_action_btn.disabled = true
+		return
+
+	if carrera.prematriculado:
+		var hora = carrera.hora_examen_inicio / 60
+		_carrera_status_label.text = "Prematrícula: %s %02d:00 (puedes cambiar el horario)" % [
+			_DIAS_NOMBRES[carrera.hora_examen_dia], hora
+		]
+		_carrera_action_btn.text = "Cambiar horario de examen"
+		_carrera_action_btn.disabled = false
+		return
+
+	var dia_semana = Variables_Dinamicas.Minute_Day % 7
+	if dia_semana <= 1:
+		_carrera_status_label.text = "Hoy es Lunes o Martes: puedes matricularte directamente."
+		_carrera_action_btn.text = "Matricularse (500€)"
+		_carrera_action_btn.disabled = Variables_Dinamicas.Dinero < 500
+	else:
+		_carrera_status_label.text = "Solo puedes prematricularte; la matrícula se formaliza el Lunes."
+		_carrera_action_btn.text = "Prematricularse (gratis)"
+		_carrera_action_btn.disabled = false
+
+func _Actualizar_Pantalla_Carrera_Si_Visible():
+	if _pantalla_carrera != null and _pantalla_carrera.is_visible_in_tree():
+		_Actualizar_Pantalla_Carrera()
+
+# ================================================================
+# Pantalla Economía (tab)
+# ================================================================
+
+var _pantalla_economia: Control = null
+var _economia_alquiler_btn: Button = null
+var _economia_bolsa_btn: Button = null
+var _dialog_volver_a_casa: ConfirmationDialog = null
+var _dialog_alquiler_info: AcceptDialog = null
+
+func _Crear_Pantalla_Economia():
+	_pantalla_economia = ColorRect.new()
+	_pantalla_economia.name = "Pantalla_Economia"
+	_pantalla_economia.color = Color(0.06, 0.07, 0.12, 0.97)
+	_pantalla_economia.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_pantalla_economia.z_index = 5
+	_pantalla_economia.visible = false
+
+	_Crear_Label_Titulo_Panel("ECONOMÍA", _pantalla_economia, Color(1.0, 0.82, 0.22))
+
+	var vbox = VBoxContainer.new()
+	vbox.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	vbox.add_theme_constant_override("separation", 14)
+	vbox.offset_left   = 25
+	vbox.offset_right  = -25
+	vbox.offset_top    = 122
+	vbox.offset_bottom = 500
+
+	_economia_alquiler_btn = _Crear_Tarjeta_Boton("", Color(0.15, 0.55, 0.25))
+	_economia_alquiler_btn.pressed.connect(_on_economia_alquiler_pressed)
+	vbox.add_child(_economia_alquiler_btn)
+
+	_economia_bolsa_btn = _Crear_Tarjeta_Boton("", Color(0.10, 0.40, 0.75))
+	_economia_bolsa_btn.pressed.connect(_on_economia_bolsa_pressed)
+	vbox.add_child(_economia_bolsa_btn)
+
+	var tienda_btn = _Crear_Tarjeta_Boton("Tienda de objetos", Color(0.60, 0.28, 0.05))
+	tienda_btn.pressed.connect(func():
+		Gestionar_Visibilidad.Quitar_Todo(self)
+		Gestionar_Visibilidad.Visibilizar_Tienda(self)
+	)
+	vbox.add_child(tienda_btn)
+
+	_pantalla_economia.add_child(vbox)
+	_Crear_Boton_Volver_Panel(_pantalla_economia, func(): Gestionar_Visibilidad.Quitar_Todo(self))
+	add_child(_pantalla_economia)
+	_Actualizar_Pantalla_Economia()
+
+func _on_economia_button_pressed():
+	Gestionar_Visibilidad.Quitar_Todo(self)
+	Gestionar_Visibilidad.Recursivo_Visibilizar(_pantalla_economia)
+	_Actualizar_Pantalla_Economia()
+
+func _on_economia_alquiler_pressed():
+	var dinero   = Variables_Dinamicas.Dinero
+	var alquiler = Variables_Estaticas.ALQUILER_SEMANAL
+
+	# En la calle + tiene dinero → ofrecer volver a casa
+	if Variables_Dinamicas.En_La_Calle and dinero >= alquiler:
+		if _dialog_volver_a_casa == null:
+			_dialog_volver_a_casa = ConfirmationDialog.new()
+			_dialog_volver_a_casa.title = "Volver a casa"
+			_dialog_volver_a_casa.ok_button_text = "Volver (%d€)" % alquiler
+			_dialog_volver_a_casa.get_cancel_button().text = "Cancelar"
+			_dialog_volver_a_casa.confirmed.connect(_Confirmar_Volver_A_Casa)
+			add_child(_dialog_volver_a_casa)
+		_dialog_volver_a_casa.dialog_text = (
+			"Tienes %.0f€. Paga %d€ de alquiler y vuelve a casa.\nTus necesidades básicas dejarán de estar limitadas." % [dinero, alquiler]
+		)
+		_dialog_volver_a_casa.popup_centered(Vector2i(500, 220))
+		return
+
+	# En la calle sin dinero → solo informar
+	if Variables_Dinamicas.En_La_Calle:
+		if _dialog_alquiler_info == null:
+			_dialog_alquiler_info = AcceptDialog.new()
+			_dialog_alquiler_info.title = "Alquiler"
+			add_child(_dialog_alquiler_info)
+		_dialog_alquiler_info.ok_button_text = "Entendido"
+		_dialog_alquiler_info.dialog_text = (
+			"Estás en la calle. Necesitas %d€ para volver a casa.\nTienes %.0f€." % [alquiler, dinero]
+		)
+		_dialog_alquiler_info.popup_centered(Vector2i(500, 200))
+		return
+
+	# No en la calle, no llega al alquiler → ofrecer ir voluntariamente
+	if dinero < alquiler:
+		if _dialog_ir_a_la_calle == null:
+			_dialog_ir_a_la_calle = ConfirmationDialog.new()
+			_dialog_ir_a_la_calle.title = "Alquiler"
+			_dialog_ir_a_la_calle.get_cancel_button().text = "Cancelar"
+			_dialog_ir_a_la_calle.confirmed.connect(_Confirmar_Ir_A_La_Calle)
+			add_child(_dialog_ir_a_la_calle)
+		_dialog_ir_a_la_calle.ok_button_text = "Ir a la calle"
+		_dialog_ir_a_la_calle.dialog_text = (
+			"No tienes suficiente para el alquiler (%d€).\nTienes %.0f€.\n¿Ir a la calle voluntariamente?" % [alquiler, dinero]
+		)
+		_dialog_ir_a_la_calle.popup_centered(Vector2i(500, 220))
+		return
+
+	# Situación normal → info
+	if _dialog_alquiler_info == null:
+		_dialog_alquiler_info = AcceptDialog.new()
+		_dialog_alquiler_info.title = "Alquiler"
+		add_child(_dialog_alquiler_info)
+	_dialog_alquiler_info.ok_button_text = "Cerrar"
+	_dialog_alquiler_info.dialog_text = (
+		"Alquiler: %d€/semana\nDinero actual: %.0f€" % [alquiler, dinero]
+	)
+	_dialog_alquiler_info.popup_centered(Vector2i(500, 180))
+
+func _Confirmar_Volver_A_Casa():
+	Actividades.Volver_A_Alquiler()
+	Guardar_Variables_Dinamicas.save_game()
+	_Actualizar_Pantalla_Economia()
+	Actualizar_Dinero()
+
+func _Actualizar_Pantalla_Economia():
+	if _economia_alquiler_btn == null:
+		return
+	if Variables_Dinamicas.En_La_Calle:
+		var dinero = Variables_Dinamicas.Dinero
+		var alquiler = Variables_Estaticas.ALQUILER_SEMANAL
+		if dinero >= alquiler:
+			_economia_alquiler_btn.text = "Alquiler: en la calle · Volver (tienes %.0f€)" % dinero
+			_Aplicar_Estilo_Tarjeta(_economia_alquiler_btn, Color(0.85, 0.50, 0.05))
+		else:
+			_economia_alquiler_btn.text = "Alquiler: EN LA CALLE · Necesitas %d€ (tienes %.0f€)" % [alquiler, dinero]
+			_Aplicar_Estilo_Tarjeta(_economia_alquiler_btn, Color(0.80, 0.12, 0.12))
+	else:
+		_economia_alquiler_btn.text = "Alquiler %d€/sem  ·  Tienes %.0f€" % [
+			Variables_Estaticas.ALQUILER_SEMANAL, Variables_Dinamicas.Dinero
+		]
+		_Aplicar_Estilo_Tarjeta(_economia_alquiler_btn, Color(0.15, 0.55, 0.25))
+
+	if Variables_Dinamicas.Esta_Invirtiendo:
+		var valor    = Variables_Dinamicas.Valor_Inversion
+		var invertido = Variables_Dinamicas.Dinero_Invertido
+		var pct  = (valor - invertido) / invertido * 100.0 if invertido > 0 else 0.0
+		var signo = "+" if pct >= 0 else ""
+		_economia_bolsa_btn.text = "Bolsa: %.0f€  (%s%.1f%%)" % [valor, signo, pct]
+		var color_bolsa = Color(0.10, 0.65, 0.30) if pct >= 0 else Color(0.75, 0.15, 0.15)
+		_Aplicar_Estilo_Tarjeta(_economia_bolsa_btn, color_bolsa)
+	else:
+		_economia_bolsa_btn.text = "Invertir en Bolsa"
+		_Aplicar_Estilo_Tarjeta(_economia_bolsa_btn, Color(0.10, 0.40, 0.75))
+
+func _Actualizar_Pantalla_Economia_Si_Visible():
+	if _pantalla_economia != null and _pantalla_economia.is_visible_in_tree():
+		_Actualizar_Pantalla_Economia()

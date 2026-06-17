@@ -84,11 +84,7 @@ func _Calcular_Rango(semana, dia_inicio, dia_final, hora_inicio, hora_final, min
 		j += 1
 	return celdas
 
-func _Prioridad_Celda(celda, i: int, j: int) -> int:
-	var carrera = Variables_Dinamicas.Carrera_Actual
-	if carrera != null and carrera.hora_examen_dia >= 0 and (carrera.matriculado or carrera.prematriculado):
-		if i % 7 == carrera.hora_examen_dia and j >= carrera.hora_examen_inicio and j < carrera.hora_examen_inicio + 60:
-			return 3
+func _Prioridad_Celda(celda, _i: int, _j: int) -> int:
 	if celda is Actividad:
 		return celda.Obtener_Prioridad()
 	return 0
@@ -130,6 +126,21 @@ func Crear_Actividad(i, j, actividad) -> bool:
 		return false
 	Variables_Dinamicas.Matriz_Jugador[j][i] = actividad
 	return true
+
+
+func Escribir_Examen_En_Matriz(carrera: Carrera):
+	var semana_actual = Variables_Dinamicas.Minute_Day / 7
+	var dia_semana_actual = Variables_Dinamicas.Minute_Day % 7
+	# Mon/Tue (0-1): el examen es esta semana. Wed-Sun (2-6): la semana que viene.
+	var semana_examen = semana_actual if dia_semana_actual <= 1 else semana_actual + 1
+	var columna = semana_examen * 7 + carrera.hora_examen_dia
+	if columna >= 574:
+		return
+	var actividad = Variables_Estaticas.Catalogo_Actividades["Examen_Carrera"]
+	for offset in range(60):
+		var fila = carrera.hora_examen_inicio + offset
+		if fila < 1440:
+			Variables_Dinamicas.Matriz_Jugador[fila][columna] = actividad
 
 
 func Cobrar_Alquiler():
@@ -235,6 +246,7 @@ func Actualizar_Horario(minutos_a_procesar: int) -> bool:
 					c.dinero_matricula_gastado += c.costo_matricula_anual
 					c.matriculado = true
 					c.prematriculado = false
+					Escribir_Examen_En_Matriz(c)
 				else:
 					# Sin dinero: cancelar prematrícula silenciosamente
 					c.prematriculado = false
@@ -246,14 +258,6 @@ func Actualizar_Horario(minutos_a_procesar: int) -> bool:
 				var hora_fin_examen = c.hora_examen_inicio + 60
 				if dia_semana_actual == c.hora_examen_dia and minuto_del_dia >= hora_fin_examen and not c.fin_de_semana_procesado:
 					Procesar_Fin_De_Semana_Carrera()
-
-		# TEMPORAL: Para testing, crear un mensaje cada minuto
-		var _msg_test = Mensaje.new()
-		_msg_test.titulo = "Mensaje de prueba - Minuto %d" % Variables_Dinamicas.Minute
-		_msg_test.descripcion = "Este es un mensaje automático para testing"
-		_msg_test.leido = false
-		_msg_test.minuto = Variables_Dinamicas.Minute
-		Variables_Dinamicas.Mensajes.append(_msg_test)
 
 		if Comprobar_Muerte():
 			Variables_Dinamicas.Muerto = true
@@ -279,6 +283,21 @@ func Procesar_Fin_De_Semana_Carrera():
 	carrera.fin_de_semana_procesado = true
 	carrera.matriculado = false
 	carrera.prematriculado = false
+
+	var msg = Mensaje.new()
+	var nota = carrera.ultima_nota_final
+	var aprobado = carrera.ultimo_resultado_aprobado
+	var estado = "APROBADO" if aprobado else "SUSPENDIDO"
+	msg.titulo = "Nota del examen — " + estado
+	if carrera.completada:
+		msg.descripcion = "Has sacado un %.1f/100 en %s.\nCarrera completada. Bonus: +%.0f€." % [nota, carrera.nombre, get_node("/root/Sistema_Examenes").BONUS_DINERO_CARRERA_COMPLETADA]
+	elif aprobado:
+		msg.descripcion = "Has sacado un %.1f/100 en %s.\nAvanzas al Año %d." % [nota, carrera.nombre, carrera.año_actual]
+	else:
+		msg.descripcion = "Has sacado un %.1f/100 en %s.\nPuedes volver a intentarlo (500€)." % [nota, carrera.nombre]
+	msg.leido = false
+	msg.minuto = Variables_Dinamicas.Minute_Day * 1440 + Variables_Dinamicas.Minute_Minute
+	Variables_Dinamicas.Mensajes.append(msg)
 
 
 # ---------------- Sistema de Objetos/Muebles ----------------
@@ -386,5 +405,5 @@ func _Auto_Vender_Inversion():
 	msg.titulo = "Inversión retirada automáticamente"
 	msg.descripcion = "Tu sangre fría es baja. Al alcanzar un %.0f%% de pérdidas has entrado en pánico y has retirado la inversión (%.0f€ recuperados)." % [pct_perdida, valor_actual]
 	msg.leido = false
-	msg.minuto = Variables_Dinamicas.Minute
+	msg.minuto = Variables_Dinamicas.Minute_Day * 1440 + Variables_Dinamicas.Minute_Minute
 	Variables_Dinamicas.Mensajes.append(msg)

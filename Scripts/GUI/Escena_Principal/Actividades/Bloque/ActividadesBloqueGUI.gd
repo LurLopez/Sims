@@ -114,12 +114,15 @@ func CrearNuevosBotones(i,j,raiz,crear_boton_del_pasado):
 					if(crear_boton_del_pasado):
 						estilo.bg_color = COLOR_PASADO
 						estilo_pulsado.bg_color = COLOR_PASADO_P
+						boton.set_meta("estado", "pasado")
 					elif(libre==""):
 						estilo.bg_color = COLOR_LIBRE
 						estilo_pulsado.bg_color = COLOR_LIBRE_P
+						boton.set_meta("estado", "libre")
 					else:
 						estilo.bg_color = COLOR_OCUPADO
 						estilo_pulsado.bg_color = COLOR_OCUPADO_P
+						boton.set_meta("estado", "ocupado")
 					boton.add_theme_stylebox_override("normal",estilo)
 					boton.add_theme_stylebox_override("pressed", estilo_pulsado)
 					
@@ -129,10 +132,23 @@ func CrearNuevosBotones(i,j,raiz,crear_boton_del_pasado):
 					boton.add_theme_stylebox_override("hover", estilo)
 					boton.add_theme_stylebox_override("hover_pressed", estilo_pulsado)
 					boton.toggle_mode = true
-					
-					
-					
-					
+
+					if not (libre is String) and boton.get_meta("estado") == "ocupado" and libre.icono != null:
+						var tex_rect = TextureRect.new()
+						tex_rect.texture = libre.icono
+						tex_rect.stretch_mode = TextureRect.STRETCH_TILE
+						tex_rect.anchor_left = 0.0
+						tex_rect.anchor_top = 0.0
+						tex_rect.anchor_right = 1.0
+						tex_rect.anchor_bottom = 1.0
+						tex_rect.offset_left = 0
+						tex_rect.offset_top = 0
+						tex_rect.offset_right = 0
+						tex_rect.offset_bottom = 0
+						tex_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+						boton.clip_contents = true
+						boton.add_child(tex_rect)
+
 					if(libre!=matriz_bloques[j][i] and crear_boton_del_pasado==false):
 						boton.custom_minimum_size=Vector2(0,10*(tamaño_bloque))
 						libre=matriz_bloques[j][i]
@@ -183,7 +199,11 @@ func click_bloque(boton,raiz):
 	comprobar_color_boton_seleccionado(boton,raiz)
 	comprobar_izquierda(boton,raiz)
 	comprobar_derecha(boton,raiz)
-	raiz.get_node("Actividades/Horario_Semanal/OPCIONES_CALENDARIO/Actividad_Texto").text = boton.get_meta("actividad")
+	var act_meta = boton.get_meta("actividad")
+	if act_meta is String:
+		raiz.get_node("Actividades/Horario_Semanal/OPCIONES_CALENDARIO/Actividad_Texto").text = act_meta
+	else:
+		raiz.get_node("Actividades/Horario_Semanal/OPCIONES_CALENDARIO/Actividad_Texto").text = act_meta.nombre
 func comprobar_izquierda(boton,raiz):
 	var comprobar_izq=true
 	var ver_dia=primer_dia_comprobar(boton,raiz)
@@ -201,9 +221,11 @@ func comprobar_derecha(boton,raiz):
 		boton=boton2
 		ver_dia=ultimo_dia_comprobar(boton,raiz)
 func fusinar_botones(boton1,boton2):
-	var stylebox1=boton1.get_theme_stylebox("normal", "Button")
-	var stylebox2=boton2.get_theme_stylebox("normal", "Button")
-	if (stylebox1.bg_color==stylebox2.bg_color and (boton1.get_meta("actividad")==boton2.get_meta("actividad"))):
+	var act1 = boton1.get_meta("actividad", null)
+	var act2 = boton2.get_meta("actividad", null)
+	var est1 = boton1.get_meta("estado", "")
+	var est2 = boton2.get_meta("estado", "")
+	if act1 == act2 and est1 == est2:
 		boton2.set_pressed(true)
 		boton2.set_toggle_mode(true)
 		return true
@@ -245,12 +267,12 @@ func devolver_primeros_botones(raiz):
 	return bloque_list
 
 func comprobar_color_boton_seleccionado(boton,raiz):
-	var estilo_normal = boton.get_theme_stylebox("normal", "Button")
-	if estilo_normal is StyleBoxFlat and estilo_normal.bg_color == COLOR_LIBRE:
+	var estado = boton.get_meta("estado", "libre")
+	if estado == "libre":
 		verde_seleccionado(raiz)
-	elif estilo_normal is StyleBoxFlat and estilo_normal.bg_color == COLOR_OCUPADO:
+	elif estado == "ocupado":
 		rojo_seleccionado(raiz)
-	elif estilo_normal is StyleBoxFlat and estilo_normal.bg_color == COLOR_PASADO:
+	elif estado == "pasado":
 		azul_seleccionado(raiz)
 
 func verde_seleccionado(raiz):
@@ -305,19 +327,16 @@ func comprobar_seleccionado():
 	else: return false
 func comprobar_seleccionado_dia(dia):
 	var verde=true
-	var rojo=true
 	for child in dia.get_children():
 		if child is Button:
 			if child.button_pressed:
 					presionado=true
-					var stylebox=child.get_theme_stylebox("normal", "Button")
-					var color=stylebox.bg_color
 					dia_final=calcular_dia(dia)
 					posicion_minuto_final=child.position.y+int(child.size.y)
 					if(dia_inicio==-1):
 						dia_inicio=calcular_dia(dia)
 						posicion_minuto_inicio=child.position.y
-					if(color!=COLOR_LIBRE and color!=COLOR_OCUPADO):
+					if child.get_meta("estado", "") == "pasado":
 						verde=false
 	return verde
 func calcular_dia(dia):

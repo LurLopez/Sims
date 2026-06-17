@@ -27,44 +27,52 @@ func _ready():
 func _Inicializar_Catalogo():
 	var dormir = Actividad_Temporal.new()
 	dormir.nombre = "Dormir"
+	dormir.color = Color(0.15, 0.30, 0.65)
 	dormir.efectos_necesidades_basicas = [1, 1, -1, 4, -1]
 	Catalogo_Actividades["Dormir"] = dormir
 
 	var comer = Actividad_Temporal.new()
 	comer.nombre = "Comer"
+	comer.color = Color(0.85, 0.45, 0.10)
 	comer.efectos_necesidades_basicas = [-1, 2, 20, -1, -1]
 	Catalogo_Actividades["Comer"] = comer
 
 	var duchar = Actividad_Temporal.new()
 	duchar.nombre = "Duchar"
+	duchar.color = Color(0.10, 0.65, 0.80)
 	duchar.efectos_necesidades_basicas = [1, 1, -1, -1, 20]
 	Catalogo_Actividades["Duchar"] = duchar
 
 	var television = Actividad_Temporal.new()
 	television.nombre = "Ver_La_Television"
+	television.color = Color(0.50, 0.20, 0.72)
 	television.efectos_necesidades_basicas = [-1, 5, -1, 2, -1]
 	Catalogo_Actividades["Ver_La_Television"] = television
 
 	var estudiar = Actividad_Temporal.new()
 	estudiar.nombre = "Estudiar"
+	estudiar.color = Color(0.75, 0.65, 0.05)
 	estudiar.efectos_necesidades_basicas = [-1, -2, -1, -2, -1]
 	estudiar.efectos_progreso = [0, 4, 0]
 	Catalogo_Actividades["Estudiar"] = estudiar
 
 	var correr = Actividad_Temporal.new()
 	correr.nombre = "Salir_A_Correr"
+	correr.color = Color(0.15, 0.70, 0.25)
 	correr.efectos_necesidades_basicas = [4, 2, -3, -3, -4]
 	correr.efectos_progreso = [4, 0, 0]
 	Catalogo_Actividades["Salir_A_Correr"] = correr
 
 	var manualidades = Actividad_Temporal.new()
 	manualidades.nombre = "Practicar_Manualidades"
+	manualidades.color = Color(0.65, 0.38, 0.10)
 	manualidades.efectos_necesidades_basicas = [-2, -1, -1, -2, -1]
 	manualidades.efectos_progreso = [0, 0, 4]
 	Catalogo_Actividades["Practicar_Manualidades"] = manualidades
 
 	var comida_rapida = Actividad_Fija_Trabajo.new()
 	comida_rapida.nombre = "Trabajar_En_Comida_Rapida"
+	comida_rapida.color = Color(0.80, 0.25, 0.08)
 	comida_rapida.efectos_necesidades_basicas = [-1, -1, -1, -2, -1]
 	comida_rapida.hora_inicio = 480
 	comida_rapida.hora_final = 960
@@ -77,14 +85,24 @@ func _Inicializar_Catalogo():
 	# probabilísticamente a Carrera_Actual.progreso_actual (no al Progreso académico general).
 	var estudiar_carrera = Actividad_Carrera.new()
 	estudiar_carrera.nombre = "Estudiar_Carrera"
+	estudiar_carrera.color = Color(0.60, 0.50, 0.00)
 	estudiar_carrera.efectos_necesidades_basicas = [-1, -2, -1, -2, -1]
 	estudiar_carrera.efectos_progreso = [0, 0, 0]
 	estudiar_carrera.carrera_nombre = ""
 	estudiar_carrera.año_referencia = 0
 	Catalogo_Actividades["Estudiar_Carrera"] = estudiar_carrera
 
+	# Actividad examen: bloque de 60 min en la matriz con prioridad máxima (P3).
+	var examen = Actividad_Examen.new()
+	examen.nombre = "Examen_Carrera"
+	examen.color = Color(0.85, 0.08, 0.08)
+	examen.efectos_necesidades_basicas = [-1, -3, -1, -3, -1]
+	examen.efectos_progreso = [0, 0, 0]
+	Catalogo_Actividades["Examen_Carrera"] = examen
+
 	var carpintero = Actividad_Fija_Trabajo.new()
 	carpintero.nombre = "Trabajar_De_Carpintero"
+	carpintero.color = Color(0.45, 0.28, 0.05)
 	carpintero.efectos_necesidades_basicas = [-1, -1, -1, -2, -2]
 	carpintero.hora_inicio = 420
 	carpintero.hora_final = 900
@@ -96,6 +114,7 @@ func _Inicializar_Catalogo():
 
 	var cientifico = Actividad_Fija_Trabajo.new()
 	cientifico.nombre = "Trabajar_De_Cientifico"
+	cientifico.color = Color(0.10, 0.55, 0.55)
 	cientifico.efectos_necesidades_basicas = [-1, -2, -1, -2, -1]
 	cientifico.hora_inicio = 540
 	cientifico.hora_final = 1020
