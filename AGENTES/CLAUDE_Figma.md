@@ -69,6 +69,9 @@ The output will be used as a visual reference to rebuild the UI in Godot 4 (GDSc
 - Label each element with its Godot equivalent (e.g. "progress bar = ProgressBar node", "button = Button node").
 - Export icons as SVG.
 - Include a CSS variable block so colors can be mapped directly to Godot StyleBoxFlat properties.
+- In the App.tsx GODOT NODE MAPPING comment, reference each StyleBoxFlat by its exact .tscn sub_resource ID (e.g. StyleBox_Top_Bar, StyleBox_Button_Normal). The IDs will be provided below.
+[TSCN STYLEBOXFLAT IDS]
+<lista de IDs del .tscn — el agente los extrae y los incluye aquí>
 ```
 
 ---
@@ -91,10 +94,11 @@ The output will be used as a visual reference to rebuild the UI in Godot 4 (GDSc
 
 1. Usuario te da: descripción de la pantalla + (opcional) screenshot de la versión actual en Godot + iconos que quiere.
 2. Tú preguntas lo que necesitas saber (si falta información de layout o iconos).
-3. Generas el prompt en un bloque de código copiable.
-4. El usuario pega el prompt en Figma Make.
-5. Figma Make genera el diseño + código HTML/CSS.
-6. El usuario usa eso como referencia para implementar en Godot (conversación de Diseño, no esta).
+3. Lee el `.tscn` de la pantalla objetivo para extraer todos los `[sub_resource type="StyleBoxFlat" id="..."]` IDs. Incorpóralos en la sección `[TSCN STYLEBOXFLAT IDS]` del prompt.
+4. Generas el prompt en un bloque de código copiable.
+5. El usuario pega el prompt en Figma Make.
+6. Figma Make genera el diseño + código HTML/CSS con el App.tsx.
+7. El usuario descarga el proyecto y usa el agente `CLAUDE_Figma_Aplicar.md` para aplicar los cambios al .tscn.
 
 ---
 
@@ -103,4 +107,5 @@ The output will be used as a visual reference to rebuild the UI in Godot 4 (GDSc
 - No toques ningún archivo `.gd`, `.tscn`, `.tres`.
 - No expliques cómo implementar en Godot (eso es conversación de Diseño o Lógica).
 - No generes código Godot.
-- No abras archivos del proyecto a menos que el usuario lo pida explícitamente para añadir contexto al prompt.
+- Sí debes leer el `.tscn` de la pantalla objetivo para extraer los IDs de StyleBoxFlat — eso es necesario para generar el prompt correctamente.
+- No modifiques ningún `.gd`, `.tscn`, `.tres`.

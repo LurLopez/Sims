@@ -1,16 +1,18 @@
-[gd_scene load_steps=35 format=3 uid="uid://1rnm0dk8tc50"]
+[gd_scene load_steps=37 format=3 uid="uid://1rnm0dk8tc50"]
 
 [ext_resource type="Script" uid="uid://c5mbdpn1a1kg3" path="res://Scripts/Globales/Script_Principal.gd" id="1_fcut6"]
-[ext_resource type="Texture2D" uid="uid://xv1rubod4qfa" path="res://Imagenes/Juego/Icono_Habilidades.png" id="4_i2k83"]
-[ext_resource type="Texture2D" uid="uid://c4rpu3q2g06tp" path="res://Imagenes/Juego/Icono_Progreso.png" id="5_rkwud"]
-[ext_resource type="Texture2D" uid="uid://cvxbjcsi2w8i7" path="res://Imagenes/Juego/Icono_Salud.png" id="6_3gpo3"]
-[ext_resource type="Texture2D" uid="uid://bsxr5ol28m753" path="res://Imagenes/Juego/Icono_Actividades.png" id="6_4nwi6"]
+[ext_resource type="Texture2D" uid="uid://bkg0l61bux6f5" path="res://Imagenes/Juego/Icono_Habilidades.svg" id="4_i2k83"]
+[ext_resource type="Texture2D" uid="uid://cy84bs75a023p" path="res://Imagenes/Juego/Icono_Progreso.svg" id="5_rkwud"]
+[ext_resource type="Texture2D" uid="uid://cgb844kuecevh" path="res://Imagenes/Juego/Icono_Salud.svg" id="6_3gpo3"]
+[ext_resource type="Texture2D" uid="uid://ck4667lejmgmh" path="res://Imagenes/Juego/Icono_Actividades.svg" id="6_4nwi6"]
 [ext_resource type="Texture2D" uid="uid://c1ov6vpgx1hj3" path="res://Imagenes/Juego/fondoa.jpg" id="7_ry1og"]
 [ext_resource type="Texture2D" uid="uid://bjj4duehmq3fq" path="res://Imagenes/Juego/Flecha.png" id="8_8fp1q"]
-[ext_resource type="Texture2D" uid="uid://bron46wux6ffn" path="res://Imagenes/Juego/Icono_Moneda.png" id="9_qavxk"]
+[ext_resource type="Texture2D" uid="uid://6jrdgmitqvki" path="res://Imagenes/Juego/Icono_Moneda.svg" id="9_qavxk"]
 [ext_resource type="Texture2D" uid="uid://b3peknp6wp5q3" path="res://Imagenes/Juego/Flecha_Atras.png" id="10_gm38p"]
 [ext_resource type="FontFile" uid="uid://cv7qxhihm0bbj" path="res://Fuentes/Call of Ops Duty.otf" id="10_m1ee0"]
 [ext_resource type="Theme" uid="uid://cl8a4xknfugec" path="res://Imagenes/Juego/Horario/Rojo.tres" id="11_gahox"]
+[ext_resource type="Texture2D" uid="uid://cqchnsnvgxhx6" path="res://Imagenes/Juego/Icono_Perfil_Mini.svg" id="12_pmini"]
+[ext_resource type="Texture2D" uid="uid://b2x0b58ohf1h7" path="res://Imagenes/Juego/Icono_Horario_Mini.svg" id="13_hmini"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBox_Top_Bar"]
 bg_color = Color(0.05, 0.07, 0.12, 0.94)
@@ -1540,7 +1542,8 @@ offset_right = 183.0
 offset_bottom = 60.0
 theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
 theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
-text = "👤 Perfil"
+text = "Perfil"
+icon = ExtResource("12_pmini")
 
 [node name="Tienda_Button" type="Button" parent="."]
 visible = false
@@ -1571,7 +1574,8 @@ offset_right = 543.0
 offset_bottom = 60.0
 theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
 theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
-text = "📅 Horario"
+text = "Horario"
+icon = ExtResource("13_hmini")
 
 [node name="Carrera_Button" type="Button" parent="."]
 z_index = 10
