@@ -27,6 +27,7 @@ Actividades_Habilidades="*res://Scripts/Logica/Escena_Principal/Actividades/Acti
 Actividades_Necesidades_Basicas="*res://Scripts/Logica/Escena_Principal/Actividades/Actividades_Necesidades_Basicas.gd"
 Sistema_Examenes="*res://Scripts/Logica/Escena_Principal/Actividades/Carreras/Sistema_Examenes.gd"
 Actividades="*res://Scripts/Logica/Escena_Principal/Actividades/Actividades.gd"
+Eventos_Aleatorios="*res://Scripts/Logica/Escena_Principal/Actividades/Eventos_Aleatorios.gd"
 Gestionar_Visibilidad="*res://Scripts/GUI/Escena_Principal/Gestionar_Visibilidad.gd"
 Debug_Cargar_Guardado="*res://Scripts/Otro/Debug/Debug_Cargar_Guardado.gd"
 

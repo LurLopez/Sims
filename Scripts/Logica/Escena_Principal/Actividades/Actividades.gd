@@ -213,6 +213,9 @@ func Actualizar_Horario(minutos_a_procesar: int) -> bool:
 		else:
 			Ejecutar_Actividad(celda)
 
+		# Tick de eventos aleatorios (despido por higiene, eventos generales)
+		get_node("/root/Eventos_Aleatorios").Tick_Eventos(celda)
+
 		if Variables_Dinamicas.Minute_Minute == 1439:
 			Variables_Dinamicas.Minute_Day = Variables_Dinamicas.Minute_Day + 1
 			Variables_Dinamicas.Minute_Minute = 0

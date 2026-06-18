@@ -17,6 +17,8 @@ func load_game():
 		Variables_Dinamicas.Matriz_Jugador = _Strings_A_Matriz(game_data["Matriz_Jugador"])
 		Variables_Dinamicas.Progreso = game_data["Progreso"]
 		Variables_Dinamicas.Necesidades_Basicas = game_data["Necesidades_Basicas"]
+		for i in range(Variables_Dinamicas.Necesidades_Basicas.size()):
+			Variables_Dinamicas.Necesidades_Basicas[i] = clamp(Variables_Dinamicas.Necesidades_Basicas[i], 1, 100)
 		Variables_Dinamicas.Dinero = game_data["Dinero"]
 		Variables_Dinamicas.Minute = game_data["Minute"]
 		Variables_Dinamicas.Minute_Day = game_data["Minute_Day"]
@@ -80,7 +82,12 @@ func load_game():
 		Variables_Dinamicas.Dinero_Invertido = game_data.get("Dinero_Invertido", 0.0)
 		Variables_Dinamicas.Valor_Inversion = game_data.get("Valor_Inversion", 0.0)
 		Variables_Dinamicas.Salud_Mental_Al_Invertir = game_data.get("Salud_Mental_Al_Invertir", 50)
-		Variables_Dinamicas.Progreso_Inversion = game_data.get("Progreso_Inversion", 1)
+		# Sistema de Eventos Aleatorios — Cooldown de trabajos
+		if game_data.has("Cooldown_Trabajos"):
+			Variables_Dinamicas.Cooldown_Trabajos = game_data["Cooldown_Trabajos"]
+		else:
+			Variables_Dinamicas.Cooldown_Trabajos = {}
+		get_node("/root/Eventos_Aleatorios").Limpiar_Cooldowns_Expirados()
 		save_file = null
 
 func game_data_func():
@@ -110,6 +117,7 @@ func game_data_func():
 		"Valor_Inversion": Variables_Dinamicas.Valor_Inversion,
 		"Salud_Mental_Al_Invertir": Variables_Dinamicas.Salud_Mental_Al_Invertir,
 		"Progreso_Inversion": Variables_Dinamicas.Progreso_Inversion,
+		"Cooldown_Trabajos": Variables_Dinamicas.Cooldown_Trabajos,
 	}
 	return game_data
 

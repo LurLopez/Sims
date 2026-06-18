@@ -83,6 +83,11 @@ func _ready():
 	_Crear_Pantalla_Economia()
 	_badge_perfil = _Crear_Badge($Boton_Perfil)
 	_badge_tab_mensajes = _Crear_Badge($Pantalla_Mensajes/Tab_Bar/Tab_Mensajes)
+	$Pantalla_Mensajes/Boton_Cerrar.pressed.connect(_on_mensajes_boton_cerrar_pressed)
+	$Pantalla_Mensajes/Tab_Bar/Tab_Mensajes.pressed.connect(_on_perfil_tab_mensajes_pressed)
+	$Pantalla_Mensajes/Tab_Bar/Tab_Info.pressed.connect(_on_perfil_tab_info_pressed)
+	$Pantalla_Mensajes/Tab_Bar/Tab_Apuntes.pressed.connect(_on_perfil_tab_apuntes_pressed)
+	$Pantalla_Mensajes/Contenido_Mensaje/Boton_Volver.pressed.connect(_on_mensajes_boton_volver_pressed)
 	# TEST: mensaje para verificar que el badge funciona — borrar cuando esté confirmado
 	var _msg_test = Mensaje.new()
 	_msg_test.titulo = "Test badge"
@@ -594,6 +599,14 @@ func _on_cientifico_pressed() -> void:
 
 func _Intentar_Tomar_Trabajo(actividad: Actividad_Fija_Trabajo) -> void:
 	if not _Cumple_Requisitos_Trabajo(actividad):
+		return
+	# Comprobar cooldown por despido
+	var minutos_rest = get_node("/root/Eventos_Aleatorios").Minutos_Restantes_Cooldown(actividad.nombre)
+	if minutos_rest > 0:
+		var horas = minutos_rest / 60
+		var mins = minutos_rest % 60
+		var nombre = actividad.nombre.replace("Trabajar_En_", "").replace("Trabajar_De_", "").replace("_", " ")
+		_Mostrar_Error_Requisito("No puedes trabajar de %s.\nFuiste despedido recientemente.\nTiempo restante: %d horas y %d minutos." % [nombre, horas, mins])
 		return
 	var actual = Variables_Dinamicas.Trabajo_Actual
 	if actual != null and actual == actividad:

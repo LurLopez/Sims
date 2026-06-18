@@ -35,7 +35,7 @@ func Ejecutar_Actividad_Necesidades_Basicas(por_cuanto,indice,frecuencia,multipl
 
 func Cambiar_Necesidades_Basicas(valor,indice):
 	if(valor<0):
-		if(Variables_Dinamicas.Necesidades_Basicas[indice]!=1):
+		if(Variables_Dinamicas.Necesidades_Basicas[indice] > 1):
 			Variables_Dinamicas.Necesidades_Basicas[indice]=Variables_Dinamicas.Necesidades_Basicas[indice]-1
 	if (valor>0):
 		if (Variables_Dinamicas.Necesidades_Basicas[indice]!=100):

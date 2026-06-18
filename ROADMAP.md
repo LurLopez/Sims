@@ -6,10 +6,26 @@ El bucle de juego ya funciona end-to-end. La GUI tiene cuatro pantallas accesibl
 
 | Botón | Estado | Notas |
 |---|---|---|
-| **Necesidades Básicas** | Hecho | 5 barras (Salud Física, Salud Mental, Hambre, Descanso, Higiene) que cambian con el tiempo y la actividad. |
-| **Progreso** | Hecho | 3 barras (Deporte, Académico, Manualidades) que aumentan al hacer actividades relacionadas. |
-| **Actividades** | Hecho | Calendario semanal, selección de bloques, mini calendario con preview blink, cancelar/crear actividad. |
-| **Habilidades / Talentos** | **Pendiente** | El icono existe pero no abre nada. Hay que diseñar e implementar esta pantalla — ver sección siguiente. |
+| **Necesidades Básicas** | ✅ Hecho | 5 barras (Salud Física, Salud Mental, Hambre, Descanso, Higiene) que cambian con el tiempo y la actividad. |
+| **Progreso** | ✅ Hecho | 3 barras (Deporte, Académico, Manualidades) que aumentan al hacer actividades relacionadas. |
+| **Actividades** | ✅ Hecho | Calendario semanal, selección de bloques, mini calendario con preview blink, cancelar/crear actividad. |
+| **Habilidades / Talentos** | ✅ Hecho | 6 barras de habilidades innatas visibles. Descubrimiento progresivo pendiente. |
+
+### Funcionalidades adicionales implementadas
+
+| Funcionalidad | Estado | Notas |
+|---|---|---|
+| **Economía / Alquiler** | ✅ Hecho | 200€/semana; sin dinero → calle; necesidades capeadas a 20 en calle. |
+| **Trabajos** | ✅ Hecho | Comida rápida, carpintero, científico. Salario al final del turno. Jerarquía P1/P2/P3. |
+| **Invertir en bolsa** | ✅ Hecho | Inversión pasiva; ~3 eventos/día; auto-venta si pánico (Sangre_Fría < 30). |
+| **Sistema de objetos / Tienda** | ✅ Hecho | Compra/venta de camas, mesas, duchas con multiplicadores de efectos. |
+| **Carreras universitarias** | ✅ Hecho | Sistema de carreras; libros desbloqueados por carrera visibles en Apuntes. |
+| **Muerte** | ✅ Hecho | Condiciones de muerte del personaje implementadas. |
+| **Eventos aleatorios** | ✅ Hecho | Despido por higiene (cooldown 5 días) + 20 eventos generales con franja horaria. |
+| **Perfil** | ✅ Hecho | 3 pestañas: Info (datos en tiempo real), Mensajes, Apuntes. |
+| **Calendario solo lectura** | ✅ Hecho | Botón horario abre el calendario en modo consulta (`calendario_solo_lectura`). |
+| **Jerarquía de actividades** | ✅ Hecho | Prioridades P1 (Normal) / P2 (Trabajo) / P3 (Examen). |
+| **Refactorización de escenas** | ✅ Hecho | Escenas reorganizadas; mejoras de UI e iconos. |
 
 ---
 
@@ -50,46 +66,37 @@ Para que el jugador no esté completamente a ciegas al principio, después de ca
 
 ## Roadmap priorizado (mayor → menor importancia)
 
-### 1. Economía real (dinero, alquiler, comida)
-- **Por qué primero**: sin presión económica no hay tensión. El jugador necesita un motivo para trabajar.
-- **Qué hacer**:
-  - `Dinero -= alquiler` cada lunes (semana real).
-  - `Dinero -= coste_comida` cuando se programa `Comer`.
-  - Trabajo paga al final del turno.
-  - Si `Dinero < 0` → desalojo → game over o consecuencia narrativa.
-- **Esfuerzo**: 1–2 días.
+### ~~1. Economía real (dinero, alquiler, comida)~~ ✅ HECHO
+- Alquiler 200€/semana, modo calle, trabajos con salario, inversión en bolsa, tienda de objetos.
 
 ### 2. Pantalla de Habilidades + descubrimiento progresivo
-- **Por qué segundo**: define toda la estrategia del jugador. Mientras no sepa sus aptitudes, no puede planificar a medio plazo.
-- **Qué hacer** (diseño completo en [Progreso.md](Progreso.md)):
+- **Estado**: Las barras existen. Falta el sistema de descubrimiento (`Conocimiento[]`).
+- **Qué hacer**:
   - Añadir `Variables_Dinamicas.Conocimiento` (Array de 6 ints, persistido).
   - Incrementar Conocimiento al ejecutar cada actividad que use esa habilidad.
-  - Pantalla `Habilidades` con 6 barras mostrando `min(Conocimiento[i], Innata[i])`.
+  - Mostrar `min(Conocimiento[i], Innata[i])` en la pantalla Habilidades.
   - Dialogo de revelación cuando Conocimiento alcanza Innata.
   - Pistas contextuales tras cada actividad ("te ha costado", "lo has bordado").
   - Decadencia del Progreso por desuso (1 punto cada 3 días sin actividad, tras umbral de 5 días).
-- **Esfuerzo**: 3–4 días.
+- **Esfuerzo**: 2–3 días.
 
-### 3. Sistema universitario + examen del jugador
-- **Por qué tercero**: es el **feature único y vendible**. Mecánica que no he visto en otros life-sim. Profundidad emocional: el personaje estudió toda la semana, ahora TÚ tienes que aprobar.
+### ~~3. Sistema universitario + examen del jugador~~ ✅ HECHO (parcial)
+- Carreras implementadas con libros y apuntes. El minijuego de examen sigue pendiente.
+- **Pendiente**: Minijuego de 10 preguntas tipo test en el examen. Nota final combinada jugador + personaje.
+
+### ~~4. Eventos aleatorios narrativos~~ ✅ HECHO
+- 20 eventos generales con franja horaria + despido por higiene.
+
+### 5. Minijuego de examen universitario
+- **Por qué**: es el **feature único y vendible**. Mecánica que diferencia este juego de un BitLife clónico.
 - **Qué hacer**:
-  - Matricularte en una carrera (empieza con UNA, p.ej. Derecho).
-  - Duración 4 semanas reales. Cada semana se programa "Estudiar".
-  - Viernes por la tarde: examen. Se abre un minijuego de 10 preguntas tipo test.
+  - Minijuego de 10 preguntas tipo test cuando llega el examen.
   - Nota final = (nota_del_jugador × peso1) + (estudio_del_personaje × peso2).
-  - Aprobar la carrera desbloquea trabajos mejor pagados.
-- **Esfuerzo**: 1–2 semanas (lo más grande del roadmap).
+  - Aprobar desbloquea trabajos mejor pagados.
+- **Esfuerzo**: 1 semana.
 
-### 4. Eventos aleatorios narrativos
-- **Por qué cuarto**: barato y alto impacto en retención. Rompe la monotonía.
-- **Qué hacer**:
-  - 20–30 eventos cortos: "Te ofrecen un ascenso", "Te enfermas", "Encuentras 50€ en la calle", "Un amigo te invita a una fiesta"…
-  - Cada evento: condición de disparo + 1–3 opciones + consecuencia (dinero, necesidad básica, progreso, dia perdido…).
-  - Disparador: probabilidad pequeña cada día.
-- **Esfuerzo**: 3–5 días (el diseño del contenido es lo que más cuesta).
-
-### 5. Minijuego genérico aplicado a 2–3 actividades
-- **Por qué quinto**: convierte tiempo pasivo en activo, pero hay que validar antes de escalar.
+### 6. Minijuego genérico aplicado a actividades
+- **Por qué**: convierte tiempo pasivo en activo, pero hay que validar antes de escalar.
 - **Qué hacer**:
   - UN minijuego sencillo (tap-rhythm, memoria, o cálculo mental rápido).
   - Skin distinto por actividad para que parezca específico.
@@ -97,8 +104,8 @@ Para que el jugador no esté completamente a ciegas al principio, después de ca
 - **Esfuerzo**: 4–7 días.
 - **Nota**: NO hacer un minijuego por actividad (8+ minijuegos = trampa de scope). Si funciona el genérico, después se escala.
 
-### 6. Relaciones simples (NPCs)
-- **Por qué sexto**: añade dimensión social, abre el espacio para eventos románticos y narrativos.
+### 7. Relaciones simples (NPCs)
+- **Por qué**: añade dimensión social, abre el espacio para eventos románticos y narrativos.
 - **Qué hacer**:
   - 2–3 NPCs base: amigo, pareja potencial, familiar.
   - Cada uno tiene `afinidad` (0–100).
@@ -106,17 +113,17 @@ Para que el jugador no esté completamente a ciegas al principio, después de ca
   - Si afinidad > umbral → desbloquea evento (cita, boda, etc.).
 - **Esfuerzo**: 1 semana.
 
-### 7. Hitos por edad
-- **Por qué séptimo**: estructura narrativa al largo plazo. Da sentido a las 60 semanas reales.
+### 8. Hitos por edad
+- **Por qué**: estructura narrativa al largo plazo. Da sentido a las 60 semanas reales.
 - **Qué hacer**:
   - 25 años → puedes casarte.
   - 30 años → puedes tener hijos.
   - 50 años → reflexión de mitad de vida.
   - 65 años → jubilación.
-  - 80+ años → game over.
-- **Esfuerzo**: 3–5 días (depende de cuántos hitos haya).
+  - 80+ años → game over (muerte implementada, falta conectar con edad).
+- **Esfuerzo**: 3–5 días.
 
-### 8. Avatar visual del personaje
+### 9. Avatar visual del personaje
 - **Por qué último**: muchísimo trabajo de assets. No es necesario para validar que el juego funciona.
 - **Qué hacer**: dejarlo para después del MVP. Mientras tanto, un retrato estático + texto descriptivo basta.
 - **Esfuerzo**: 2–4 semanas (con assets).

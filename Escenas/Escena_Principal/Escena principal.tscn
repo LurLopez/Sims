@@ -13,8 +13,8 @@
 [ext_resource type="Theme" uid="uid://cl8a4xknfugec" path="res://Imagenes/Juego/Horario/Rojo.tres" id="11_gahox"]
 [ext_resource type="Texture2D" uid="uid://cqchnsnvgxhx6" path="res://Imagenes/Juego/Icono_Perfil_Mini.svg" id="12_pmini"]
 [ext_resource type="Texture2D" uid="uid://b2x0b58ohf1h7" path="res://Imagenes/Juego/Icono_Horario_Mini.svg" id="13_hmini"]
-[ext_resource type="PackedScene" path="res://Escenas/Escena_Principal/Tienda.tscn" id="14_tienda"]
-[ext_resource type="PackedScene" path="res://Escenas/Escena_Principal/Pantalla_Mensajes.tscn" id="15_mensajes"]
+[ext_resource type="PackedScene" uid="uid://tv5r1khp3dx7" path="res://Escenas/Escena_Principal/Tienda.tscn" id="14_tienda"]
+[ext_resource type="PackedScene" uid="uid://byamq2rks6t4" path="res://Escenas/Escena_Principal/Pantalla_Mensajes.tscn" id="15_mensajes"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBox_Top_Bar"]
 bg_color = Color(0.05, 0.07, 0.12, 0.94)

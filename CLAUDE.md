@@ -25,6 +25,55 @@
 
 ---
 
+## Estructura de escenas
+
+| Archivo | Líneas | Contenido |
+|---|---|---|
+| `Escenas/Escena_Principal/Escena principal.tscn` | ~1634 | Root + barra nav + paneles stats + calendario actividades |
+| `Escenas/Escena_Principal/Tienda.tscn` | ~869 | Pantalla tienda (objetos Dormir/Comer/Duchar) |
+| `Escenas/Escena_Principal/Pantalla_Mensajes.tscn` | ~235 | Pantalla perfil (Mensajes/Info/Apuntes) |
+
+`Tienda` y `Pantalla_Mensajes` son instancias en la escena principal. Los paths de nodo desde el root son idénticos (`$Tienda/Objetos_Dormir/Cama_Basica`, etc.) — los scripts no cambian.
+
+### Nodos de primer nivel (Escena principal)
+
+```
+Node2D (root, Script_Principal.gd)
+├── Top_Bar_Panel
+├── Barra_Abajo → Boton_Habilidades · Boton_Progreso · Boton_Actividades · Boton_Necesidades_Basicas
+├── Fondo
+├── Progreso (oculto) → Panel_BG · Progreso_Barra/[Deporte|Academico|Manualidades] · Progreso_Texto/[...]
+├── Necesidades_Basicas → Necesidades_Basicas_Barra/[Salud_Fisica|Salud_Mental|Hambre|Descanso|Higiene]
+├── Trabajo (oculto) → Actividades_Trabajo_Opciones2 · Actividades_Trabajo_Nomina_Opciones/[COMIDA_RAPIDA|CARPINTERO|CIENTIFICO]
+├── Habilidades (oculto) → Habilidades_Barra/[Slot_0..4] · Habilidades_Texto/[Slot_0..4]
+├── Actividades
+│   ├── Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones/[Necesidades_Basicas_Opciones|Progreso_Opciones]
+│   ├── Horario_Semanal/[OPCIONES_CALENDARIO|Cabezal_horario|Mover_Vertical/Todo calendario/Dias]
+│   └── Seleccionar_Horario/[Inicio|Final|Cancelar|Crear_Actividad]
+├── Boton_Perfil · Tienda_Button (oculto) · Economia_Button · Calendario_Button · Carrera_Button
+├── Tienda [instancia Tienda.tscn]
+│   ├── Flecha_Atras · Titulo · Categorias/[Tab_Dormir|Tab_Comer|Tab_Duchar]
+│   ├── Objetos_Dormir/[Cama_Basica|Cama_Premium]/[Imagen_Placeholder|Nombre|Precio|Multiplicador|En_Uso|Comprar|Vender|Elegir]
+│   ├── Objetos_Comer/[Mesa_Basica|Mesa_Premium]/[...]
+│   └── Objetos_Duchar/[Ducha_Basica|Ducha_Premium]/[...]
+└── Pantalla_Mensajes [instancia Pantalla_Mensajes.tscn]
+    ├── Fondo_Mensajes · Header_Bar · Titulo · Boton_Cerrar
+    ├── Tab_Bar/[Tab_Mensajes|Tab_Info|Tab_Apuntes]
+    ├── Panel_Info/Scroll_Info/VBox_Info
+    ├── Panel_Apuntes/[Tabs_Libros|Texto_Apuntes|Sin_Apuntes_Label]
+    ├── Lista_Mensajes/VBoxContainer
+    └── Contenido_Mensaje/[Mensaje_Card|Boton_Volver|Hora_Mensaje_Label|Titulo_Mensaje_Label|Descripcion_Mensaje_Label]
+```
+
+### Dónde añadir cosas comunes
+
+- **Nuevo objeto en Tienda** → `Tienda.tscn`. Copiar bloque `Cama_Basica`/`Cama_Premium`, ajustar nombre/precio/emoji/multiplicador. Añadir conexiones al final de `Escena principal.tscn`. Registrar en `Variables_Estaticas.gd`.
+- **Nueva actividad temporal** → botón en `Escena principal.tscn` dentro de `Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones/Necesidades_Basicas_Opciones` o `Progreso_Opciones`. Añadir al catálogo en `Variables_Estaticas.gd` y handler en `Script_Principal.gd`.
+- **Nueva pestaña en Perfil** → `Pantalla_Mensajes.tscn`: botón en `Tab_Bar` + panel hijo del root.
+- **Nuevo trabajo de nómina** → botón en `Escena principal.tscn` > `Trabajo/Actividades_Trabajo_Nomina_Opciones`. Registrar como `Actividad_Fija_Trabajo` en `Variables_Estaticas.gd`. Lógica en `Trabajo.gd`.
+
+---
+
 ## Descripción del juego
 
 SIMS simplificado para Android. Personaje de 18 a ~80 años.
@@ -147,3 +196,4 @@ Documentación detallada en `Funcionalidades/<ruta>/Documentacion/`.
 | Carreras | `Carreras` | Sistema de carreras universitarias |
 | Muerte | `Muerte` | Condiciones de muerte del personaje |
 | Jerarquia_Actividades | `Actividades/Jerarquia` | Prioridades P1/P2/P3 (Normal/Trabajo/Examen) |
+| Eventos_Aleatorios | `Actividades/Eventos_Aleatorios` | Despido por higiene (cooldown 5 días) + 20 eventos generales con franja horaria |

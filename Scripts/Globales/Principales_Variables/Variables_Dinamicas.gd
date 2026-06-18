@@ -51,6 +51,11 @@ var Valor_Inversion: float = 0.0
 var Salud_Mental_Al_Invertir: int = 50
 var Progreso_Inversion: int = 1
 
+# Sistema de Eventos Aleatorios
+# Cooldown_Trabajos: Dictionary {nombre_trabajo: minuto_fin_cooldown}
+# Cuando te echan de un trabajo, no puedes volver a ese mismo durante 5 días.
+var Cooldown_Trabajos: Dictionary = {}
+
 # Estado de muerte del personaje
 var Muerto: bool = false
 var Edad_Muerte: int = 0
