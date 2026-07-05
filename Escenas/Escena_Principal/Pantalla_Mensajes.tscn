@@ -111,7 +111,7 @@ size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 22
 theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
 theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
-text = "Apuntes"
+text = "Inventario"
 
 [node name="Panel_Info" type="Control" parent="."]
 visible = false
@@ -137,34 +137,31 @@ offset_top = 210.0
 offset_right = 720.0
 offset_bottom = 1280.0
 
-[node name="Tabs_Libros" type="HBoxContainer" parent="Panel_Apuntes"]
-layout_mode = 0
-offset_right = 720.0
-offset_bottom = 65.0
-theme_override_constants/separation = 4
-
-[node name="Texto_Apuntes" type="TextEdit" parent="Panel_Apuntes"]
-layout_mode = 0
-offset_top = 70.0
-offset_right = 720.0
-offset_bottom = 1060.0
-theme_override_font_sizes/font_size = 22
-editable = false
-wrap_mode = 1
-
 [node name="Sin_Apuntes_Label" type="Label" parent="Panel_Apuntes"]
 visible = false
 layout_mode = 0
 offset_left = 30.0
-offset_top = 80.0
+offset_top = 100.0
 offset_right = 690.0
-offset_bottom = 200.0
+offset_bottom = 260.0
 theme_override_colors/font_color = Color(0.55, 0.62, 0.78, 1)
 theme_override_font_sizes/font_size = 26
-text = "Aun no tienes apuntes.
-Desbloquealos avanzando en tu carrera."
+text = "Aún no tienes libros.
+Matricúlate en una carrera para conseguirlos."
 horizontal_alignment = 1
 autowrap_mode = 3
+
+[node name="Scroll_Inventario" type="ScrollContainer" parent="Panel_Apuntes"]
+layout_mode = 0
+offset_right = 720.0
+offset_bottom = 1070.0
+
+[node name="Grid_Libros" type="GridContainer" parent="Panel_Apuntes/Scroll_Inventario"]
+layout_mode = 2
+size_flags_horizontal = 3
+columns = 2
+theme_override_constants/h_separation = 16
+theme_override_constants/v_separation = 20
 
 [node name="Lista_Mensajes" type="ScrollContainer" parent="."]
 layout_mode = 0
@@ -233,3 +230,4 @@ offset_bottom = 665.0
 theme_override_colors/font_color = Color(0.78, 0.82, 0.9, 1)
 theme_override_font_sizes/font_size = 24
 autowrap_mode = 3
+

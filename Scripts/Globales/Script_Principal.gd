@@ -32,6 +32,7 @@ var _dialog_ir_a_la_calle: ConfirmationDialog = null
 var _badge_perfil: Label = null
 var _badge_tab_mensajes: Label = null
 
+
 func _Crear_Badge(parent: Control) -> Label:
 	var lbl = Label.new()
 	lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -994,15 +995,15 @@ func _on_mensajes_boton_volver_pressed():
 func _on_mensajes_boton_cerrar_pressed():
 	Gestionar_Visibilidad.Quitar_Todo(self)
 
-# ---------------- Tab Apuntes ----------------
+# ---------------- Tab Inventario (libros) ----------------
 
 func _Renderizar_Apuntes():
 	var panel = $Pantalla_Mensajes/Panel_Apuntes
-	var tabs = panel.get_node("Tabs_Libros")
-	var texto = panel.get_node("Texto_Apuntes")
-	var sin_apuntes = panel.get_node("Sin_Apuntes_Label")
+	var grid = panel.get_node("Scroll_Inventario/Grid_Libros")
+	var scroll = panel.get_node("Scroll_Inventario")
+	var sin_libros = panel.get_node("Sin_Apuntes_Label")
 
-	for hijo in tabs.get_children():
+	for hijo in grid.get_children():
 		hijo.queue_free()
 
 	var libros = []
@@ -1015,31 +1016,124 @@ func _Renderizar_Apuntes():
 			libros.append({"carrera": c, "libro": libro})
 
 	if libros.is_empty():
-		sin_apuntes.visible = true
-		texto.visible = false
+		sin_libros.visible = true
+		scroll.visible = false
 		return
 
-	sin_apuntes.visible = false
-	texto.visible = true
+	sin_libros.visible = false
+	scroll.visible = true
 
 	for item in libros:
 		var año = int(String(item.libro).replace("Anio_", ""))
-		var btn = Button.new()
-		btn.text = item.carrera.nombre + " – Año " + str(año)
-		btn.add_theme_font_size_override("font_size", 20)
-		btn.pressed.connect(_Mostrar_Apunte.bind(item.carrera, año))
-		tabs.add_child(btn)
+		grid.add_child(_Crear_Miniatura_Libro(item.carrera, año))
 
-	var primero = libros[0]
-	_Mostrar_Apunte(primero.carrera, int(String(primero.libro).replace("Anio_", "")))
 
-func _Mostrar_Apunte(carrera, año: int):
-	var texto = $Pantalla_Mensajes/Panel_Apuntes/Texto_Apuntes
+func _Crear_Miniatura_Libro(carrera: Carrera, año: int) -> Control:
+	var outer = VBoxContainer.new()
+	outer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	outer.add_theme_constant_override("separation", 8)
+
+	var btn = Button.new()
+	btn.custom_minimum_size = Vector2(0, 190)
+	btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	btn.text = "💻"
+	btn.add_theme_font_size_override("font_size", 58)
+	btn.add_theme_color_override("font_color", Color(0.96, 0.84, 0.54))
+
+	var sn = StyleBoxFlat.new()
+	sn.bg_color = Color(0.49, 0.12, 0.12)
+	sn.corner_radius_top_left = 3
+	sn.corner_radius_top_right = 7
+	sn.corner_radius_bottom_right = 7
+	sn.corner_radius_bottom_left = 3
+	sn.border_width_left = 12
+	sn.border_color = Color(0.10, 0.03, 0.03)
+	btn.add_theme_stylebox_override("normal", sn)
+
+	var sh = StyleBoxFlat.new()
+	sh.bg_color = Color(0.58, 0.16, 0.16)
+	sh.corner_radius_top_left = 3
+	sh.corner_radius_top_right = 7
+	sh.corner_radius_bottom_right = 7
+	sh.corner_radius_bottom_left = 3
+	sh.border_width_left = 12
+	sh.border_color = Color(0.10, 0.03, 0.03)
+	btn.add_theme_stylebox_override("hover", sh)
+	btn.add_theme_stylebox_override("pressed", sh)
+
+	btn.pressed.connect(_Abrir_Libro.bind(carrera, año))
+	outer.add_child(btn)
+
+	var lbl = Label.new()
+	lbl.text = carrera.nombre + " · Año " + str(año)
+	lbl.add_theme_font_size_override("font_size", 16)
+	lbl.add_theme_color_override("font_color", Color(0.78, 0.84, 0.95))
+	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	outer.add_child(lbl)
+
+	return outer
+
+
+func _Abrir_Libro(carrera: Carrera, año: int):
+	var paginas = _Parsear_Libro(año)
+	var lector_script = load("res://Scripts/GUI/Escena_Principal/Lector_Libro.gd")
+	var lector = CanvasLayer.new()
+	lector.set_script(lector_script)
+	add_child(lector)
+	lector.configurar(paginas, carrera.nombre, año)
+
+
+func _Parsear_Libro(año: int) -> Array:
+	var paginas = []
 	var ruta = "res://Scripts/Logica/Escena_Principal/Actividades/Carreras/Contenido/apuntes_ing_informatica_anio%d.txt" % año
-	if FileAccess.file_exists(ruta):
-		texto.text = FileAccess.get_file_as_string(ruta)
-	else:
-		texto.text = "Apuntes no disponibles para Año %d." % año
+	var libro_titulo = "Fundamentos de Programación"
+
+	if not FileAccess.file_exists(ruta):
+		paginas.append({"type": "cover", "title": libro_titulo})
+		return paginas
+
+	var texto = FileAccess.get_file_as_string(ruta)
+	var lineas = texto.split("\n")
+
+	if lineas.size() > 0:
+		var idx = lineas[0].find(": ")
+		if idx >= 0:
+			libro_titulo = lineas[0].substr(idx + 2).capitalize()
+
+	paginas.append({"type": "cover", "title": libro_titulo})
+
+	var regex = RegEx.new()
+	regex.compile("^(\\d+)\\.\\s+(.+)$")
+	var sec_titulo = ""
+	var sec_cuerpo = []
+
+	for i in range(1, lineas.size()):
+		var m = regex.search(lineas[i])
+		if m:
+			if sec_titulo != "":
+				paginas.append({
+					"type": "content",
+					"chapter": "Año %d" % año,
+					"title": sec_titulo,
+					"body": "\n".join(sec_cuerpo).strip_edges()
+				})
+			sec_titulo = m.get_string(2)
+			sec_cuerpo = []
+		elif sec_titulo != "":
+			sec_cuerpo.append(lineas[i])
+
+	if sec_titulo != "":
+		paginas.append({
+			"type": "content",
+			"chapter": "Año %d" % año,
+			"title": sec_titulo,
+			"body": "\n".join(sec_cuerpo).strip_edges()
+		})
+
+	return paginas
+
 
 func _on_tienda_button_pressed():
 	Detener_Blink()

@@ -69,33 +69,17 @@ Para que el jugador no esté completamente a ciegas al principio, después de ca
 ### ~~1. Economía real (dinero, alquiler, comida)~~ ✅ HECHO
 - Alquiler 200€/semana, modo calle, trabajos con salario, inversión en bolsa, tienda de objetos.
 
-### 2. Pantalla de Habilidades + descubrimiento progresivo
-- **Estado**: Las barras existen. Falta el sistema de descubrimiento (`Conocimiento[]`).
-- **Qué hacer**:
-  - Añadir `Variables_Dinamicas.Conocimiento` (Array de 6 ints, persistido).
-  - Incrementar Conocimiento al ejecutar cada actividad que use esa habilidad.
-  - Mostrar `min(Conocimiento[i], Innata[i])` en la pantalla Habilidades.
-  - Dialogo de revelación cuando Conocimiento alcanza Innata.
-  - Pistas contextuales tras cada actividad ("te ha costado", "lo has bordado").
-  - Decadencia del Progreso por desuso (1 punto cada 3 días sin actividad, tras umbral de 5 días).
-- **Esfuerzo**: 2–3 días.
+### ~~2. Pantalla de Habilidades + descubrimiento progresivo~~ ✅ HECHO
+- `Habilidades_Mostradas[]` (6 ints) creado, persistido e incrementado por actividad.
+- Capeado en el valor innato (`Variables_Estaticas.Habilidades[i]`), con revelación al alcanzarlo.
 
-### ~~3. Sistema universitario + examen del jugador~~ ✅ HECHO (parcial)
-- Carreras implementadas con libros y apuntes. El minijuego de examen sigue pendiente.
-- **Pendiente**: Minijuego de 10 preguntas tipo test en el examen. Nota final combinada jugador + personaje.
+### ~~3. Sistema universitario + examen del jugador~~ ✅ HECHO
+- Carreras, libros, apuntes y minijuego de examen implementados (`Sistema_Examenes.gd`, `Modal_Examen.gd`).
 
 ### ~~4. Eventos aleatorios narrativos~~ ✅ HECHO
 - 20 eventos generales con franja horaria + despido por higiene.
 
-### 5. Minijuego de examen universitario
-- **Por qué**: es el **feature único y vendible**. Mecánica que diferencia este juego de un BitLife clónico.
-- **Qué hacer**:
-  - Minijuego de 10 preguntas tipo test cuando llega el examen.
-  - Nota final = (nota_del_jugador × peso1) + (estudio_del_personaje × peso2).
-  - Aprobar desbloquea trabajos mejor pagados.
-- **Esfuerzo**: 1 semana.
-
-### 6. Minijuego genérico aplicado a actividades
+### 5. Minijuego genérico aplicado a actividades
 - **Por qué**: convierte tiempo pasivo en activo, pero hay que validar antes de escalar.
 - **Qué hacer**:
   - UN minijuego sencillo (tap-rhythm, memoria, o cálculo mental rápido).

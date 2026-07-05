@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carrera Correr - Documentación</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; line-height: 1.6; max-width: 900px; margin: 0 auto; padding: 20px; background: #f5f5f5; color: #333; }
+        .container { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { color: #2c3e50; border-bottom: 3px solid #2980b9; padding-bottom: 10px; }
+        h2 { color: #34495e; margin-top: 30px; padding-top: 15px; border-top: 1px solid #ecf0f1; }
+        h3 { color: #7f8c8d; }
+        .section { margin: 20px 0; padding: 15px; background: #ecf0f1; border-left: 4px solid #2980b9; border-radius: 4px; }
+        .critical { background: #fadbd8; border-left-color: #e74c3c; color: #c0392b; font-weight: bold; }
+        .info { background: #d6eaf8; border-left-color: #2980b9; }
+        .success { background: #d5f4e6; border-left-color: #27ae60; }
+        .warning { background: #fef9e7; border-left-color: #f39c12; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; background: white; border-radius: 4px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        th { background: #2980b9; color: white; padding: 12px; text-align: left; }
+        td { padding: 10px 12px; border-bottom: 1px solid #ecf0f1; }
+        tr:last-child td { border-bottom: none; }
+        tr:nth-child(even) td { background: #f9f9f9; }
+        code { background: #f8f9fa; padding: 2px 6px; border-radius: 3px; font-family: monospace; font-size: 0.9em; }
+        pre { background: #2c3e50; color: #ecf0f1; padding: 15px; border-radius: 6px; overflow-x: auto; }
+        pre code { background: none; color: inherit; padding: 0; }
+        .flow-step { display: flex; align-items: flex-start; margin: 10px 0; }
+        .step-number { background: #2980b9; color: white; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 12px; flex-shrink: 0; font-size: 14px; }
+        .step-content { flex: 1; padding-top: 2px; }
+        .checklist { list-style: none; padding-left: 0; }
+        .checklist li { margin: 8px 0; }
+        .checklist li::before { content: "☐ "; color: #7f8c8d; }
+        .badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-weight: bold; font-size: 0.85em; color: white; margin-right: 4px; }
+        .badge-gold   { background: #f39c12; }
+        .badge-silver { background: #7f8c8d; }
+        .badge-bronze { background: #ca6f1e; }
+        .badge-ok     { background: #27ae60; }
+        .badge-loss   { background: #e74c3c; }
+        .prize-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin: 20px 0; }
+        .prize-card { border-radius: 8px; padding: 14px; text-align: center; border: 2px solid transparent; }
+        .prize-card .puesto { font-size: 1.4em; font-weight: bold; margin-bottom: 4px; }
+        .prize-card .dinero { font-size: 1.1em; }
+        .prize-card .boost  { font-size: 0.9em; color: #555; margin-top: 6px; }
+        .pc-1    { background: #fef9e7; border-color: #f1c40f; }
+        .pc-2-3  { background: #f5eef8; border-color: #9b59b6; }
+        .pc-4-10 { background: #eaf4fb; border-color: #2980b9; }
+        .pc-11-20{ background: #eafaf1; border-color: #27ae60; }
+        .pc-21-50{ background: #f9f9f9; border-color: #7f8c8d; }
+        .pc-51   { background: #fdedec; border-color: #e74c3c; }
+        .formula-box { background: #2c3e50; color: #ecf0f1; padding: 18px; border-radius: 8px; font-family: monospace; margin: 16px 0; }
+        .formula-box .line { margin: 4px 0; }
+        .formula-box .comment { color: #95a5a6; }
+        .participants-bar { display: flex; align-items: center; gap: 10px; margin: 10px 0; }
+        .bar-bg { flex: 1; background: #ecf0f1; border-radius: 4px; height: 20px; overflow: hidden; }
+        .bar-fill { height: 100%; border-radius: 4px; display: flex; align-items: center; padding-left: 8px; font-size: 0.8em; color: white; font-weight: bold; }
+        .bar-lun { background: #3498db; width: 10%; }
+        .bar-mar { background: #2980b9; width: 25%; }
+        .bar-mie { background: #1f618d; width: 45%; }
+        .bar-jue { background: #154360; width: 70%; }
+        .bar-vie { background: #0b2545; width: 90%; }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <h1>Carreras de Atletismo</h1>
+
+    <div class="section info">
+        <strong>Categoria:</strong> Actividades Especiales &nbsp;|&nbsp;
+        <strong>Dias disponibles:</strong> Sabado y Domingo &nbsp;|&nbsp;
+        <strong>Duracion:</strong> 1 hora en calendario &nbsp;|&nbsp;
+        <strong>Coste inscripcion:</strong> 50€
+    </div>
+
+    <p>
+        Las carreras de atletismo son <strong>eventos semanales de competicion</strong> que dan utilidad real al progreso de Deporte.
+        El jugador puede inscribirse de lunes a viernes, eligiendo un horario de fin de semana. La inscripcion cuesta 50€,
+        y el resultado (puesto entre todos los inscritos esa semana) determina si gana dinero y cuanto progreso extra de Deporte obtiene.
+        La estrategia clave: inscribirse tarde cuando hay pocos participantes reduce el riesgo economico.
+    </p>
+
+    <!-- ═══════════════════════════════════════════════════════ PARTICIPANTES -->
+    <h2>Participantes dinamicos</h2>
+
+    <p>
+        Cada lunes a las 00:00 se pre-genera un <strong>total de participantes</strong> para la carrera de esa semana
+        mediante una distribucion normal. El jugador ve el contador acumulado en funcion del dia en que consulta.
+    </p>
+
+    <table>
+        <tr><th>Parametro</th><th>Valor</th></tr>
+        <tr><td>Media de inscritos</td><td>~100</td></tr>
+        <tr><td>Rango normal</td><td>80 – 120</td></tr>
+        <tr><td>Minimo absoluto (raro)</td><td>~60</td></tr>
+        <tr><td>Maximo absoluto (raro)</td><td>~140</td></tr>
+        <tr><td>Distribucion</td><td><code>randfn(100, 15)</code>, clamp(60, 140)</td></tr>
+    </table>
+
+    <h3>Acumulacion visible por dia (% del total final)</h3>
+    <div class="participants-bar"><span style="width:50px">Lunes</span><div class="bar-bg"><div class="bar-fill bar-lun">10%</div></div></div>
+    <div class="participants-bar"><span style="width:50px">Martes</span><div class="bar-bg"><div class="bar-fill bar-mar">25%</div></div></div>
+    <div class="participants-bar"><span style="width:50px">Mier.</span><div class="bar-bg"><div class="bar-fill bar-mie">45%</div></div></div>
+    <div class="participants-bar"><span style="width:50px">Jueves</span><div class="bar-bg"><div class="bar-fill bar-jue">70%</div></div></div>
+    <div class="participants-bar"><span style="width:50px">Viernes</span><div class="bar-bg"><div class="bar-fill bar-vie">90%</div></div></div>
+
+    <div class="section warning">
+        <strong>Estrategia del jugador:</strong> Si el viernes hay 60 inscritos, los primeros 50 en no perder dinero representan
+        un 83% de probabilidad de recuperar la inversion. Inscribirse tarde es menos arriesgado si hay pocos participantes.
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ INSCRIPCION -->
+    <h2>Flujo de inscripcion</h2>
+
+    <div class="flow-step">
+        <div class="step-number">1</div>
+        <div class="step-content">
+            <strong>Boton "Inscribirse a Carrera"</strong> en el panel de Actividades (dentro de Progreso_Opciones).
+            Solo disponible de <strong>lunes a viernes</strong>. Si ya hay una carrera pendiente, muestra el estado actual.
+        </div>
+    </div>
+    <div class="flow-step">
+        <div class="step-number">2</div>
+        <div class="step-content">
+            <strong>Modal de inscripcion:</strong> muestra inscritos actuales, permite elegir dia (Sabado o Domingo)
+            y hora de inicio (rango 07:00 – 17:00, duracion fija 1h).
+        </div>
+    </div>
+    <div class="flow-step">
+        <div class="step-number">3</div>
+        <div class="step-content">
+            <strong>Confirmacion:</strong> se descuentan 50€ de <code>Variables_Dinamicas.Dinero</code>.
+            La carrera se escribe en <code>Matriz_Jugador</code> (bloque de 60 minutos con prioridad P3,
+            igual que <code>Examen_Carrera</code>). No se puede cancelar tras confirmar.
+        </div>
+    </div>
+    <div class="flow-step">
+        <div class="step-number">4</div>
+        <div class="step-content">
+            <strong>Al iniciar la hora de carrera (primer minuto):</strong> se hace un <em>snapshot</em> de
+            <code>Progreso[0]</code>, <code>Necesidades_Basicas[0,2,3]</code> y se calcula el resultado
+            (<code>Sistema_Carreras_Deportivas.Calcular_Y_Guardar_Resultado()</code>). El puesto queda almacenado
+            en <code>Carrera_Deportiva_Pendiente</code> pero <strong>no se revela todavia</strong>.
+        </div>
+    </div>
+    <div class="flow-step">
+        <div class="step-number">5</div>
+        <div class="step-content">
+            <strong>Durante los 60 minutos:</strong> la actividad <code>Carrera_Deportiva</code> se ejecuta
+            minuto a minuto con los mismos efectos que <code>Salir_A_Correr</code> (necesidades basicas + progreso Deporte normal).
+            Las necesidades se degradan durante la carrera — esto no afecta al resultado ya calculado.
+        </div>
+    </div>
+    <div class="flow-step">
+        <div class="step-number">6</div>
+        <div class="step-content">
+            <strong>Al terminar la hora:</strong> <code>Actividades.Actualizar_Horario()</code> detecta el fin,
+            aplica el premio en dinero y el bonus de minutos de Deporte, y envia un <strong>mensaje de notificacion</strong>
+            al sistema de mensajes con el puesto, el total de inscritos, el dinero ganado y el boost aplicado.
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ FORMULA -->
+    <h2>Formula de resultado</h2>
+
+    <div class="formula-box">
+        <div class="line comment"># SNAPSHOT al primer minuto de la carrera — valores PRE-carrera, antes de que correr los degrade</div>
+        <div class="line">condicion_fisica = (Salud_Fisica * 0.50) + (Descanso * 0.35) + (Hambre * 0.15)</div>
+        <div class="line">&nbsp;</div>
+        <div class="line comment"># Puntuacion base combinando habilidad entrenada y estado fisico</div>
+        <div class="line">puntuacion_base = (Progreso_Deporte * 0.65) + (condicion_fisica * 0.35)</div>
+        <div class="line">&nbsp;</div>
+        <div class="line comment"># Aleatoriedad — el rendimiento en carrera nunca es deterministico</div>
+        <div class="line">puntuacion_final = clamp(randfn(puntuacion_base, 15), 0, 100)</div>
+        <div class="line">&nbsp;</div>
+        <div class="line comment"># Cada rival tambien genera su puntuacion con randfn(50, 20)</div>
+        <div class="line comment"># El puesto es la posicion del jugador ordenando todas las puntuaciones de mayor a menor</div>
+        <div class="line">puesto = posicion_del_jugador_entre_todos_los_inscritos</div>
+    </div>
+
+    <table>
+        <tr><th>Variable</th><th>Peso en la formula</th><th>Fuente</th></tr>
+        <tr><td>Progreso Deporte</td><td>65%</td><td><code>Variables_Dinamicas.Progreso[0]</code></td></tr>
+        <tr><td>Salud Fisica</td><td>17.5% (35% × 50%)</td><td><code>Variables_Dinamicas.Necesidades_Basicas[0]</code></td></tr>
+        <tr><td>Descanso</td><td>12.25% (35% × 35%)</td><td><code>Variables_Dinamicas.Necesidades_Basicas[3]</code></td></tr>
+        <tr><td>Hambre</td><td>5.25% (35% × 15%)</td><td><code>Variables_Dinamicas.Necesidades_Basicas[2]</code></td></tr>
+        <tr><td>Aleatoriedad</td><td>σ = 15 puntos</td><td><code>randfn()</code></td></tr>
+    </table>
+
+    <div class="section warning">
+        <strong>Ejemplo critico:</strong> Deporte 80 pero Salud Fisica 20 y Descanso 20 →
+        puntuacion_base ≈ (80×0.65) + (24×0.35) = 52 + 8.4 = <strong>60.4</strong>.
+        Con σ=15 es probable acabar entre el puesto 35 y 60, no en el top 10.
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ PREMIOS -->
+    <h2>Tabla de premios</h2>
+
+    <p>Los cortes de posicion son <strong>numeros fijos</strong> (no porcentajes), por lo que el numero total de inscritos
+    afecta directamente la probabilidad de cada tramo.</p>
+
+    <div class="prize-grid">
+        <div class="prize-card pc-1">
+            <div class="puesto">1er puesto</div>
+            <div class="dinero">+500€ netos</div>
+            <div class="boost">+200 min bonus</div>
+        </div>
+        <div class="prize-card pc-2-3">
+            <div class="puesto">2º – 3er</div>
+            <div class="dinero">+300€ / +200€</div>
+            <div class="boost">+150 / +100 min bonus</div>
+        </div>
+        <div class="prize-card pc-4-10">
+            <div class="puesto">4º – 10º</div>
+            <div class="dinero">+150€ → +80€</div>
+            <div class="boost">+80 min bonus</div>
+        </div>
+        <div class="prize-card pc-11-20">
+            <div class="puesto">11º – 20º</div>
+            <div class="dinero">+30€ → +10€</div>
+            <div class="boost">+50 min bonus</div>
+        </div>
+        <div class="prize-card pc-21-50">
+            <div class="puesto">21º – 50º</div>
+            <div class="dinero">Break even (devuelve 50€)</div>
+            <div class="boost">+20 min bonus</div>
+        </div>
+        <div class="prize-card pc-51">
+            <div class="puesto">51º en adelante</div>
+            <div class="dinero">Sin premio (pierdes 50€)</div>
+            <div class="boost">0 min bonus</div>
+        </div>
+    </div>
+
+    <div class="section info">
+        <strong>Nota sobre el dinero:</strong> Los 50€ de inscripcion se pagan al confirmar. Las cifras de la tabla son
+        lo que se recibe al terminar la carrera (neto ya descontada la inscripcion para puestos de ganancia).
+        El "break even" devuelve exactamente 50€.
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ BOOST DEPORTE -->
+    <h2>Boost de progreso Deporte</h2>
+
+    <p>
+        La carrera ya aplica los efectos de <code>Salir_A_Correr</code> durante los 60 minutos en calendario.
+        Ademas, al terminar, se simula un <strong>bonus de minutos extra</strong> corriendo
+        usando el mismo mecanismo de probabilidad de <code>Actividades_Habilidades.gd</code>.
+    </p>
+
+    <div class="section">
+        El bonus es natural y logaritmico: con Deporte 20 subiras muchos puntos, con Deporte 90 subiras pocos.
+        Esto es correcto — mejorar de 20 a 25 es facil, mejorar de 90 a 95 es un logro.
+    </div>
+
+    <table>
+        <tr><th>Puesto</th><th>Bonus extra (minutos equivalentes de Salir_A_Correr)</th></tr>
+        <tr><td>1º</td><td>+200 minutos</td></tr>
+        <tr><td>2º</td><td>+150 minutos</td></tr>
+        <tr><td>3º</td><td>+100 minutos</td></tr>
+        <tr><td>4º – 10º</td><td>+80 minutos</td></tr>
+        <tr><td>11º – 20º</td><td>+50 minutos</td></tr>
+        <tr><td>21º – 50º</td><td>+20 minutos</td></tr>
+        <tr><td>51º+</td><td>0 minutos</td></tr>
+    </table>
+
+    <!-- ═══════════════════════════════════════════════════════ VARIABLES -->
+    <h2>Variables afectadas</h2>
+
+    <table>
+        <tr><th>Variable</th><th>Tipo</th><th>Descripcion</th></tr>
+        <tr>
+            <td><code>Variables_Dinamicas.Carrera_Deportiva_Pendiente</code></td>
+            <td>Dictionary</td>
+            <td>Estado de la carrera inscrita: <code>{ inscrito, dia, hora_inicio, semana, total_inscritos, procesada }</code></td>
+        </tr>
+        <tr>
+            <td><code>Variables_Dinamicas.Progreso[0]</code></td>
+            <td>float 1–100</td>
+            <td>Progreso de Deporte — afectado durante la hora y por el bonus post-carrera</td>
+        </tr>
+        <tr>
+            <td><code>Variables_Dinamicas.Necesidades_Basicas[0]</code></td>
+            <td>float 1–100</td>
+            <td>Salud Fisica — entrada a la formula + modificada durante la carrera</td>
+        </tr>
+        <tr>
+            <td><code>Variables_Dinamicas.Necesidades_Basicas[3]</code></td>
+            <td>float 1–100</td>
+            <td>Descanso — entrada a la formula + modificada durante la carrera</td>
+        </tr>
+        <tr>
+            <td><code>Variables_Dinamicas.Necesidades_Basicas[2]</code></td>
+            <td>float 1–100</td>
+            <td>Hambre — entrada a la formula + modificada durante la carrera</td>
+        </tr>
+        <tr>
+            <td><code>Variables_Dinamicas.Dinero</code></td>
+            <td>float</td>
+            <td>-50€ al inscribirse, +premio al terminar (si aplica)</td>
+        </tr>
+        <tr>
+            <td><code>Variables_Estaticas.Catalogo_Actividades["Carrera_Deportiva"]</code></td>
+            <td>Actividad</td>
+            <td>Actividad especial P3 con efectos identicos a Salir_A_Correr</td>
+        </tr>
+    </table>
+
+    <!-- ═══════════════════════════════════════════════════════ CASOS DE USO -->
+    <h2>Casos de uso</h2>
+
+    <table>
+        <tr><th>Escenario</th><th>Estado del personaje</th><th>Resultado esperado</th></tr>
+        <tr>
+            <td>Jugador entrenado + bien descansado</td>
+            <td>Deporte 85, Salud 80, Descanso 75</td>
+            <td>Puntuacion ~82. Probable top 10 con 100 inscritos. Gana dinero + bonus alto.</td>
+        </tr>
+        <tr>
+            <td>Jugador entrenado pero agotado</td>
+            <td>Deporte 80, Salud 20, Descanso 15</td>
+            <td>Puntuacion ~60. Probable puesto 30-50. Break even o pequeña perdida.</td>
+        </tr>
+        <tr>
+            <td>Jugador debil inscrito tarde con pocos rivales</td>
+            <td>Deporte 30, Salud 60, Descanso 60 — solo 62 inscritos</td>
+            <td>Puntuacion ~42. Puesto probable ~40 de 62. Recupera los 50€ (break even).</td>
+        </tr>
+        <tr>
+            <td>Inscripcion el lunes con 120 inscritos finales</td>
+            <td>Deporte 50, Salud 50, Descanso 50</td>
+            <td>Puntuacion ~50. Puesto probable ~60 de 120. Pierde 50€.</td>
+        </tr>
+        <tr>
+            <td>Sin dinero al intentar inscribirse</td>
+            <td>Dinero &lt; 50€</td>
+            <td>Inscripcion bloqueada. Mensaje de fondos insuficientes.</td>
+        </tr>
+    </table>
+
+    <!-- ═══════════════════════════════════════════════════════ CHECKLIST -->
+    <h2>Checklist de implementacion</h2>
+
+    <h3>Clases y recursos</h3>
+    <ul class="checklist">
+        <li>Crear <code>Actividad_Carrera_Deportiva.gd</code> (P3, efectos = Salir_A_Correr, color verde)</li>
+        <li>Registrar en <code>Variables_Estaticas.Catalogo_Actividades["Carrera_Deportiva"]</code></li>
+        <li>Crear <code>Sistema_Carreras_Deportivas.gd</code> con la logica de resultado</li>
+    </ul>
+
+    <h3>Variables</h3>
+    <ul class="checklist">
+        <li>Anadir <code>Carrera_Deportiva_Pendiente: Dictionary</code> a <code>Variables_Dinamicas.gd</code></li>
+        <li>Actualizar <code>Guardar_Variables_Dinamicas.gd</code> (save/load del diccionario)</li>
+    </ul>
+
+    <h3>Logica</h3>
+    <ul class="checklist">
+        <li>Generar total inscritos en <code>Actividades.Actualizar_Horario()</code> cada lunes 00:00</li>
+        <li>Calcular contador visible segun dia de semana actual</li>
+        <li>Detectar fin de carrera en <code>Actualizar_Horario()</code> y llamar <code>Procesar_Resultado()</code></li>
+        <li>Implementar formula de puntuacion con <code>randfn</code></li>
+        <li>Generar puntuaciones rivales y ordenar para obtener puesto</li>
+        <li>Aplicar premio en dinero segun tabla de puestos</li>
+        <li>Aplicar bonus de minutos de Deporte usando mecanismo de <code>Actividades_Habilidades.gd</code></li>
+        <li>Emitir mensaje de resultado via sistema de mensajes</li>
+    </ul>
+
+    <h3>UI / Escenas</h3>
+    <ul class="checklist">
+        <li>Anadir boton "Inscribirse a Carrera" en <code>Progreso_Opciones</code> (Escena principal.tscn)</li>
+        <li>Crear modal de inscripcion con selector de dia (Sab/Dom) y hora (07:00-17:00)</li>
+        <li>Mostrar contador de inscritos actuales en el modal</li>
+        <li>Mostrar estado "carrera pendiente" si ya hay una inscrita</li>
+        <li>Conectar senales en <code>Script_Principal.gd</code></li>
+    </ul>
+
+    <h3>Persistencia</h3>
+    <ul class="checklist">
+        <li>Guardar <code>Carrera_Deportiva_Pendiente</code> en <code>Guardar_Variables_Dinamicas.dat</code></li>
+        <li>Restaurar estado al cargar partida (detectar si la carrera ya paso mientras el juego estaba cerrado)</li>
+    </ul>
+
+    <!-- ═══════════════════════════════════════════════════════ NOTAS -->
+    <h2>Notas tecnicas</h2>
+
+    <div class="section critical">
+        CRITICO: El total de inscritos se genera al inicio de semana y NO cambia aunque el jugador haga reload.
+        Almacenar en <code>Carrera_Deportiva_Pendiente["total_inscritos"]</code> para que sea persistente.
+    </div>
+
+    <div class="section critical">
+        CRITICO: La actividad Carrera_Deportiva debe tener prioridad P3 para no ser sobreescrita por P2 (trabajo)
+        ni por actividades aleatorias. Mismo mecanismo que Examen_Carrera.
+    </div>
+
+    <table>
+        <tr><th>Aspecto</th><th>Detalle</th></tr>
+        <tr><td>Plazo inscripcion</td><td>Solo lunes a viernes. Sabado y domingo la carrera ya empezo o empieza pronto.</td></tr>
+        <tr><td>Horario carrera</td><td>Sabado o Domingo, 07:00 – 17:00 (hora inicio), duracion fija 60 minutos.</td></tr>
+        <tr><td>Una carrera por semana</td><td>No se pueden tener dos carreras pendientes a la vez.</td></tr>
+        <tr><td>Dinero insuficiente</td><td>Si Dinero &lt; 50€, bloquear inscripcion con mensaje.</td></tr>
+        <tr><td>Carrera no jugada</td><td>Si el juego estaba cerrado durante la carrera, procesar resultado igual al reabrir.</td></tr>
+        <tr><td>Rival score distribucion</td><td><code>randfn(50, 20)</code> por rival — distribucion normal centrada en 50.</td></tr>
+        <tr><td>Momento del calculo</td><td>Snapshot al <strong>primer minuto</strong> de la carrera (inicio). El resultado se almacena y se revela al <strong>ultimo minuto</strong> (fin) via mensaje. Las necesidades basicas degradadas por correr NO penalizan el resultado.</td></tr>
+        <tr><td>Mensaje de fin de carrera</td><td>Al terminar la hora, el sistema de mensajes recibe: puesto obtenido, total inscritos esa semana, dinero recibido y bonus de Deporte aplicado.</td></tr>
+    </table>
+
+</div>
+</body>
+</html>
