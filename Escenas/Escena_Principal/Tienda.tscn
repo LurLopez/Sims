@@ -410,6 +410,109 @@ theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
 theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
 text = "Elegir"
 
+[node name="Cama_Lujo" type="Panel" parent="Objetos_Dormir"]
+layout_mode = 0
+offset_left = 20.0
+offset_top = 634.0
+offset_right = 352.0
+offset_bottom = 1004.0
+theme_override_styles/panel = SubResource("StyleBox_Card_Normal")
+
+[node name="Imagen_Placeholder" type="Panel" parent="Objetos_Dormir/Cama_Lujo"]
+layout_mode = 0
+offset_left = 15.0
+offset_top = 15.0
+offset_right = 315.0
+offset_bottom = 140.0
+theme_override_styles/panel = SubResource("StyleBox_Image_Placeholder")
+
+[node name="Nombre" type="Label" parent="Objetos_Dormir/Cama_Lujo"]
+layout_mode = 0
+offset_left = 15.0
+offset_top = 150.0
+offset_right = 315.0
+offset_bottom = 180.0
+theme_override_colors/font_color = Color(0.04, 0.1, 0.18, 1)
+theme_override_font_sizes/font_size = 26
+text = "Cama de Lujo"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Precio" type="Label" parent="Objetos_Dormir/Cama_Lujo"]
+layout_mode = 0
+offset_left = 15.0
+offset_top = 185.0
+offset_right = 315.0
+offset_bottom = 215.0
+theme_override_colors/font_color = Color(0.55, 0.35, 0.05, 1)
+theme_override_font_sizes/font_size = 22
+text = "800€"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Multiplicador" type="Label" parent="Objetos_Dormir/Cama_Lujo"]
+layout_mode = 0
+offset_left = 15.0
+offset_top = 220.0
+offset_right = 315.0
+offset_bottom = 245.0
+theme_override_colors/font_color = Color(0.25, 0.45, 0.65, 1)
+theme_override_font_sizes/font_size = 20
+text = "× 1.10 Descanso (+10%)"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="En_Uso" type="Label" parent="Objetos_Dormir/Cama_Lujo"]
+visible = false
+layout_mode = 0
+offset_left = 15.0
+offset_top = 250.0
+offset_right = 315.0
+offset_bottom = 280.0
+theme_override_colors/font_color = Color(0.18, 0.55, 0.22, 1)
+theme_override_font_sizes/font_size = 22
+text = "✓ En uso"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Comprar" type="Button" parent="Objetos_Dormir/Cama_Lujo"]
+layout_mode = 0
+offset_left = 15.0
+offset_top = 312.0
+offset_right = 315.0
+offset_bottom = 354.0
+theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
+theme_override_font_sizes/font_size = 22
+theme_override_styles/hover = SubResource("StyleBox_Green_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Green_Normal")
+text = "Comprar"
+
+[node name="Vender" type="Button" parent="Objetos_Dormir/Cama_Lujo"]
+visible = false
+layout_mode = 0
+offset_left = 15.0
+offset_top = 312.0
+offset_right = 315.0
+offset_bottom = 354.0
+theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
+theme_override_font_sizes/font_size = 22
+theme_override_styles/hover = SubResource("StyleBox_Red_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Red_Normal")
+text = "Vender"
+
+[node name="Elegir" type="Button" parent="Objetos_Dormir/Cama_Lujo"]
+visible = false
+layout_mode = 0
+offset_left = 15.0
+offset_top = 258.0
+offset_right = 315.0
+offset_bottom = 300.0
+theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
+theme_override_font_sizes/font_size = 22
+theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
+text = "Elegir"
+
 [node name="Objetos_Comer" type="Control" parent="."]
 visible = false
 layout_mode = 3
@@ -515,118 +618,6 @@ theme_override_styles/normal = SubResource("StyleBox_Red_Normal")
 text = "Vender"
 
 [node name="Elegir" type="Button" parent="Objetos_Comer/Mesa_Basica"]
-visible = false
-layout_mode = 0
-offset_left = 15.0
-offset_top = 640.0
-offset_right = 315.0
-offset_bottom = 695.0
-theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
-theme_override_font_sizes/font_size = 22
-theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
-theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
-text = "Elegir"
-
-[node name="Mesa_Premium" type="Panel" parent="Objetos_Comer"]
-layout_mode = 0
-offset_left = 375.0
-offset_top = 270.0
-offset_right = 705.0
-offset_bottom = 970.0
-theme_override_styles/panel = SubResource("StyleBox_Card_Normal")
-
-[node name="Imagen_Placeholder" type="Panel" parent="Objetos_Comer/Mesa_Premium"]
-layout_mode = 0
-offset_left = 15.0
-offset_top = 15.0
-offset_right = 315.0
-offset_bottom = 345.0
-theme_override_styles/panel = SubResource("StyleBox_Image_Placeholder")
-
-[node name="Imagen_Emoji" type="Label" parent="Objetos_Comer/Mesa_Premium/Imagen_Placeholder"]
-layout_mode = 0
-offset_right = 300.0
-offset_bottom = 330.0
-theme_override_font_sizes/font_size = 150
-text = "🍱"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="Nombre" type="Label" parent="Objetos_Comer/Mesa_Premium"]
-layout_mode = 0
-offset_left = 15.0
-offset_top = 360.0
-offset_right = 315.0
-offset_bottom = 410.0
-theme_override_colors/font_color = Color(0.04, 0.1, 0.18, 1)
-theme_override_font_sizes/font_size = 26
-text = "Mesa Premium"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="Precio" type="Label" parent="Objetos_Comer/Mesa_Premium"]
-layout_mode = 0
-offset_left = 15.0
-offset_top = 415.0
-offset_right = 315.0
-offset_bottom = 455.0
-theme_override_colors/font_color = Color(0.55, 0.35, 0.05, 1)
-theme_override_font_sizes/font_size = 22
-text = "200€"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="Multiplicador" type="Label" parent="Objetos_Comer/Mesa_Premium"]
-layout_mode = 0
-offset_left = 15.0
-offset_top = 460.0
-offset_right = 315.0
-offset_bottom = 495.0
-theme_override_colors/font_color = Color(0.25, 0.45, 0.65, 1)
-theme_override_font_sizes/font_size = 20
-text = "× 1.05 Hambre (+5%)"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="En_Uso" type="Label" parent="Objetos_Comer/Mesa_Premium"]
-visible = false
-layout_mode = 0
-offset_left = 15.0
-offset_top = 510.0
-offset_right = 315.0
-offset_bottom = 565.0
-theme_override_colors/font_color = Color(0.18, 0.55, 0.22, 1)
-theme_override_font_sizes/font_size = 22
-text = "✓ En uso"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="Comprar" type="Button" parent="Objetos_Comer/Mesa_Premium"]
-layout_mode = 0
-offset_left = 15.0
-offset_top = 510.0
-offset_right = 315.0
-offset_bottom = 565.0
-theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
-theme_override_font_sizes/font_size = 22
-theme_override_styles/hover = SubResource("StyleBox_Green_Hover")
-theme_override_styles/normal = SubResource("StyleBox_Green_Normal")
-text = "Comprar"
-
-[node name="Vender" type="Button" parent="Objetos_Comer/Mesa_Premium"]
-visible = false
-layout_mode = 0
-offset_left = 15.0
-offset_top = 575.0
-offset_right = 315.0
-offset_bottom = 630.0
-theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
-theme_override_font_sizes/font_size = 22
-theme_override_styles/hover = SubResource("StyleBox_Red_Hover")
-theme_override_styles/normal = SubResource("StyleBox_Red_Normal")
-text = "Vender"
-
-[node name="Elegir" type="Button" parent="Objetos_Comer/Mesa_Premium"]
 visible = false
 layout_mode = 0
 offset_left = 15.0

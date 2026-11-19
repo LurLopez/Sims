@@ -18,6 +18,15 @@ func Trabajar_De_Medico():
 func Trabajar_De_Artista():
 	Trabajar(Variables_Estaticas.Catalogo_Actividades["Trabajar_De_Artista"])
 
+func Trabajar_De_Ayudante_Cocina():
+	Trabajar(Variables_Estaticas.Catalogo_Actividades["Trabajar_De_Ayudante_Cocina"])
+
+func Trabajar_De_Cocinero_Partida():
+	Trabajar(Variables_Estaticas.Catalogo_Actividades["Trabajar_De_Cocinero_Partida"])
+
+func Trabajar_De_Chef_Ejecutivo():
+	Trabajar(Variables_Estaticas.Catalogo_Actividades["Trabajar_De_Chef_Ejecutivo"])
+
 
 func Trabajar(actividad: Actividad_Fija_Trabajo):
 	var dia_inicio: int
@@ -53,6 +62,7 @@ func Dejar_Trabajo(actividad: Actividad_Fija_Trabajo):
 			# con la actividad (objeto), porque String == Object lanza error de tipo.
 			if celda is Actividad_Fija_Trabajo and celda == actividad:
 				Variables_Dinamicas.Matriz_Jugador[j][i] = ""
+	Variables_Dinamicas.Matriz_Sucia = true
 	Variables_Dinamicas.Trabajo_Actual = null
 
 

@@ -79,7 +79,7 @@ En `Actividades_Necesidades_Basicas.gd`:
 ```gdscript
 func _Obtener_Multiplicador(nombre_actividad: String) -> float:
     match nombre_actividad:
-        "Dormir", "Comer", "Duchar":
+        "Dormir", "Duchar":
             var clave = Variables_Dinamicas.Objeto_Seleccionado.get(nombre_actividad, "")
             if clave == "" or not Variables_Estaticas.Catalogo_Objetos.has(clave):
                 return 1.0
@@ -150,15 +150,14 @@ En `Guardar_Variables_Dinamicas.gd`:
 3. **Venta:** No se puede vender si está actualmente seleccionado
 4. **Precio:** Reventa = 50% del precio original
 
-## Catálogo Implementado (7 objetos)
+## Catálogo Implementado (6 objetos)
 
 | Nombre | Categoría | Precio | Multiplicador | Básico | Descripción |
 |--------|-----------|--------|----------------|--------|-------------|
 | **Cama_Basica** | Dormir | 0€ | 1.0 | ✓ | Cama de inicio. No se puede vender si es única. |
 | **Cama_Premium** | Dormir | 200€ | 1.05 | ✗ | Descanso 5% más rápido. |
 | **Cama_Lujo** | Dormir | 800€ | 1.10 | ✗ | Descanso 10% más rápido. |
-| **Mesa_Basica** | Comer | 0€ | 1.0 | ✓ | Mesa de inicio. No se puede vender si es única. |
-| **Mesa_Premium** | Comer | 200€ | 1.05 | ✗ | Saciar hambre 5% más rápido. |
+| **Mesa_Basica** | Comer | 0€ | 1.0 | ✓ | Mesa de inicio sin efecto sobre los alimentos. `Mesa_Premium` fue retirada y comer ya no usa mesas. |
 | **Ducha_Basica** | Duchar | 0€ | 1.0 | ✓ | Ducha de inicio. No se puede vender si es única. |
 | **Ducha_Premium** | Duchar | 200€ | 1.05 | ✗ | Higiene 5% más rápida. |
 
@@ -229,8 +228,7 @@ Tienda (Control, visible=false por defecto, z_index=5)
 │   ├── Cama_Basica (Panel)
 │   └── Cama_Premium (Panel)
 ├── Objetos_Comer (Control)
-│   ├── Mesa_Basica (Panel)
-│   └── Mesa_Premium (Panel)
+│   └── Mesa_Basica (Panel)
 └── Objetos_Duchar (Control)
     ├── Ducha_Basica (Panel)
     └── Ducha_Premium (Panel)
@@ -288,6 +286,6 @@ Mostrar_Categoria_Tienda(raiz, categoria)
 
 ## Estado Actual
 
-- **Implementado:** 7 objetos en catálogo, 3 categorías (Dormir, Comer, Duchar), backend completo (compra/venta/selección), aplicación de multiplicador, guardado/carga, UI de tienda funcional con tabs y estados visuales.
+- **Implementado:** 6 objetos en catálogo, 3 categorías (Dormir, Comer, Duchar), backend completo (compra/venta/selección), aplicación de multiplicador en Dormir/Duchar, guardado/carga, UI de tienda funcional con tabs y estados visuales. La alimentación pasó a `Cocinar`/`Comer_Tupper`/`Comer_Basura`; las mesas ya no modulan comer.
 - **Pendiente en UI:** Tarjeta para `Cama_Lujo`, sprites reales en lugar de emojis.
 - **Planeado:** Efectos negativos (multiplicador < 1.0), más categorías (Ocio, Trabajo).

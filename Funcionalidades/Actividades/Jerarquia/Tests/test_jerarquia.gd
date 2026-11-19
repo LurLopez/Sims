@@ -101,7 +101,7 @@ func test_borrar_siempre_permitido():
 func test_temporal_sobre_temporal_permitida():
 	# P1 puede sobreescribir otra P1
 	var actividad_correr = Variables_Estaticas.Catalogo_Actividades["Salir_A_Correr"]
-	var actividad_comer = Variables_Estaticas.Catalogo_Actividades["Comer"]
+	var actividad_comer = Variables_Estaticas.Catalogo_Actividades["Comer_Basura"]
 	Variables_Dinamicas.Matriz_Jugador[600][0] = actividad_correr
 
 	var resultado = Actividades.Crear_Actividad(0, 600, actividad_comer)

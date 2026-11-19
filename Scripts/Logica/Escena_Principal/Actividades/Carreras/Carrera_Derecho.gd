@@ -7,6 +7,7 @@ func _init():
 	emoji = "⚖️"
 	años_totales = 4
 	costo_matricula_anual = 500.0
+	ajuste_dificultad = 0.0
 	año_actual = 1
 	progreso_actual = 0.0
 	historial_notas = []

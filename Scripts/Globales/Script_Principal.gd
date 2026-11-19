@@ -6,6 +6,7 @@ extends Node
 
 
 const TUTORIAL_INICIAL := preload("res://Scripts/GUI/Escena_Principal/Tutorial_Inicial.gd")
+const _MODAL_TUPPERS_SCRIPT := preload("res://Scripts/GUI/Escena_Principal/Tuppers/Modal_Tuppers.gd")
 
 var mirar_semana
 var calendario_solo_lectura: bool = false
@@ -23,6 +24,8 @@ var first_time_logica
 var seleccionar_horario_activo: bool = false
 # Flujo de dos pasos para Salir_De_Fiesta: el selector se reabre con preview.
 var modo_fiesta: bool = false
+# Flujo de dos pasos para Cocinar / Comer: el selector se reabre con preview.
+var modo_alimentacion: bool = false
 var drag_inicio_y: float = 0.0
 var drag_threshold: float = 30.0
 var rueda_activa: String = ""
@@ -91,6 +94,7 @@ func _ready():
 	$Pantalla_Mensajes/Tab_Bar/Tab_Mensajes.pressed.connect(_on_perfil_tab_mensajes_pressed)
 	$Pantalla_Mensajes/Tab_Bar/Tab_Info.pressed.connect(_on_perfil_tab_info_pressed)
 	$Pantalla_Mensajes/Tab_Bar/Tab_Apuntes.pressed.connect(_on_perfil_tab_apuntes_pressed)
+	$Pantalla_Mensajes/Tab_Bar/Tab_Despensa.pressed.connect(_on_perfil_tab_despensa_pressed)
 	$Pantalla_Mensajes/Contenido_Mensaje/Boton_Volver.pressed.connect(_on_mensajes_boton_volver_pressed)
 	if (Variables_Estaticas.First_Time):
 		first_time_logica.First_Time_Function()
@@ -108,8 +112,13 @@ func _ready():
 	_Conectar_Tienda()
 	Estilos_UI.aplicar_tema_global(self)
 	_Aplicar_Rediseno()
+	get_viewport().size_changed.connect(_Ajustar_Disposicion_Vertical)
 	necesidades_basicas_gui.Inicializar(self)
+	Actualizar_Progreso()
+	Actualizar_Dinero()
+	necesidades_basicas_gui.Actualizar_Necesidades_Basicas(self)
 	_Actualizar_Badges()
+	_Actualizar_Nav_Activa()
 	if not Variables_Estaticas.Tutorial_Completado:
 		_Iniciar_Tutorial()
 	
@@ -123,18 +132,20 @@ func _process(delta):
 			if murio:
 				get_tree().change_scene_to_file("res://Escenas/Menu/Menu.tscn")
 				return
-		Actualizar_Progreso()
-		Actualizar_Dinero()
-		necesidades_basicas_gui.Actualizar_Necesidades_Basicas(self)
-		if $Habilidades.visible:
-			Actualizar_Habilidades()
-		_Actualizar_Badges()
+			Actualizar_Progreso()
+			Actualizar_Dinero()
+			necesidades_basicas_gui.Actualizar_Necesidades_Basicas(self)
+			if $Habilidades.visible:
+				Actualizar_Habilidades()
+			_Actualizar_Badges()
+			_Actualizar_Nav_Activa()
 		_home_refresh -= delta
 		if _home_refresh <= 0.0:
 			_home_refresh = 0.5
 			_Actualizar_Reloj_Header()
 			_Actualizar_Home()
 			_Actualizar_Necesidades_Extra()
+			_Actualizar_Tuppers_UI_Si_Visible()
 			for n in find_children("*", "", true, false):
 				if n is AcceptDialog and not n.has_meta("_tema_dialogo"):
 					n.set_meta("_tema_dialogo", true)
@@ -142,7 +153,6 @@ func _process(delta):
 				elif n is Window and not n.has_meta("_tema_ventana"):
 					n.set_meta("_tema_ventana", true)
 					Estilos_UI.estilizar_ventana(n)
-		_Actualizar_Nav_Activa()
 
 
 const _DINERO_OFFSET_RIGHT_3_DIGITOS: int = 600
@@ -256,6 +266,18 @@ func Actualizar_Progreso():
 		if pct != null:
 			pct.text = "%d%%" % valor
 			pct.add_theme_color_override("font_color", col)
+	var bar_cocina := $Progreso/Progreso_Barra.get_node_or_null("Cocina") as ProgressBar
+	var col_cocina := Color("#ea580c")
+	if bar_cocina != null:
+		bar_cocina.self_modulate = Color.WHITE
+		Estilos_UI.animar_barra(bar_cocina, float(Variables_Dinamicas.Progreso_Cocina), col_cocina)
+	var lbl_cocina := $Progreso/Progreso_Texto.get_node_or_null("Slot_Cocina") as Label
+	if lbl_cocina != null:
+		lbl_cocina.text = "Cocina"
+	var pct_cocina := $Progreso.get_node_or_null("Pct_3") as Label
+	if pct_cocina != null:
+		pct_cocina.text = "%d%%" % Variables_Dinamicas.Progreso_Cocina
+		pct_cocina.add_theme_color_override("font_color", col_cocina)
 	if $Progreso.visible:
 		_Actualizar_Progreso_Extra()
 
@@ -321,6 +343,7 @@ func _on_boton_actividades_pressed():
 	_Mostrar_Titulo_Actividades()
 	_Ocultar_Home()
 	_Actualizar_Trabajos_UI()
+	_Actualizar_Boton_Carrera_Deportiva()
 	_Actualizar_Nav_Activa()
 
 
@@ -424,8 +447,12 @@ func Iniciar_Blink() -> void:
 	blink_estado = false
 	if modo_fiesta:
 		_Mostrar_Preview_Fiesta()
+	elif modo_alimentacion:
+		_Ocultar_Preview_Fiesta()
+		_Mostrar_Preview_Alimentacion()
 	else:
 		_Ocultar_Preview_Fiesta()
+		_Ocultar_Preview_Alimentacion()
 		mini_cal_preview = MiniCalendarioPreview.new()
 		mini_cal_preview.crear(self, mirar_semana)
 		_actualizar_mini_cal()
@@ -451,6 +478,8 @@ func _actualizar_blink_si_activo():
 	if seleccionar_horario_activo:
 		if modo_fiesta:
 			_Actualizar_Preview_Fiesta()
+		elif modo_alimentacion:
+			_Actualizar_Preview_Alimentacion()
 		else:
 			_actualizar_mini_cal()
 
@@ -463,7 +492,9 @@ func Detener_Blink() -> void:
 		mini_cal_preview.limpiar()
 		mini_cal_preview = null
 	_Ocultar_Preview_Fiesta()
+	_Ocultar_Preview_Alimentacion()
 	modo_fiesta = false
+	modo_alimentacion = false
 
 
 func _Mostrar_Preview_Fiesta() -> void:
@@ -483,6 +514,52 @@ func _Ocultar_Preview_Fiesta() -> void:
 	if panel != null:
 		panel.queue_free()
 
+func _Mostrar_Preview_Alimentacion() -> void:
+	if actividades_reloj_gui == null or actividades_reloj_gui.horario == null:
+		return
+	actividades_reloj_gui.horario.Actualizar_Preview_Alimentacion(self)
+
+func _Actualizar_Preview_Alimentacion() -> void:
+	if actividades_reloj_gui == null or actividades_reloj_gui.horario == null:
+		return
+	actividades_reloj_gui.horario.Actualizar_Preview_Alimentacion(self)
+
+func _Ocultar_Preview_Alimentacion() -> void:
+	var panel := get_node_or_null("Actividades/Seleccionar_Horario/Preview_Alimentacion")
+	if panel != null:
+		panel.queue_free()
+
+func _Seleccionar_Modo_Comer(modo: String) -> void:
+	if modo != "Comer_Tupper" and modo != "Comer_Basura":
+		return
+	actividad_seleccionada = modo
+	if modo == "Comer_Tupper" and not Variables_Dinamicas.Tuppers.is_empty():
+		_Abrir_Modal_Tuppers()
+	_Actualizar_Preview_Alimentacion()
+
+var _modal_tuppers: AcceptDialog = null
+
+func _Abrir_Modal_Tuppers() -> void:
+	if _modal_tuppers != null and is_instance_valid(_modal_tuppers):
+		_modal_tuppers.Refrescar()
+		_modal_tuppers.popup_centered()
+		return
+	_modal_tuppers = _MODAL_TUPPERS_SCRIPT.new()
+	add_child(_modal_tuppers)
+	_modal_tuppers.tupper_elegido.connect(_on_tupper_elegido)
+	_modal_tuppers.tuppers_cambiados.connect(_on_tuppers_cambiados)
+	_modal_tuppers.popup_centered()
+
+func _on_tupper_elegido(_indice: int) -> void:
+	Guardar_Variables_Dinamicas.save_game()
+	_Actualizar_Preview_Alimentacion()
+	_Actualizar_Tuppers_UI_Si_Visible()
+
+func _on_tuppers_cambiados() -> void:
+	_Actualizar_Preview_Alimentacion()
+	_Actualizar_Tuppers_UI_Si_Visible()
+	Guardar_Variables_Dinamicas.save_game()
+
 func _on_blink_timeout() -> void:
 	blink_estado = !blink_estado
 	if mini_cal_preview != null:
@@ -490,6 +567,7 @@ func _on_blink_timeout() -> void:
 
 func _on_ocupar_actividad_pressed() -> void:
 	modo_fiesta = false
+	modo_alimentacion = false
 	if(actividades_bloque_gui.comprobar_seleccionado()):
 		horario_bloque=(actividades_bloque_gui.devolver_hora_desde_posiciones())
 		Gestionar_Visibilidad.Visibilizar_Seleccionar_Horario(self)
@@ -502,6 +580,10 @@ func _on_crear_actividad_pressed():
 		# Segundo paso del flujo de Fiesta: la franja ya está elegida y el
 		# jugador ha visto la vista previa; confirmar valida y escribe.
 		Crear_Actividad("Salir_De_Fiesta")
+		return
+	if modo_alimentacion:
+		# Segundo paso de Cocinar / Comer: confirmar escribe el bloque elegido.
+		Crear_Actividad(actividad_seleccionada)
 		return
 	Detener_Blink()
 	Gestionar_Visibilidad.Recursivo_Desvisibilizar($Actividades/Seleccionar_Horario)
@@ -519,6 +601,7 @@ func _on_crear_actividad_pressed():
 func _on_cancelar_pressed():
 	calendario_solo_lectura = false
 	modo_fiesta = false
+	modo_alimentacion = false
 	Detener_Blink()
 	Gestionar_Visibilidad.Recursivo_Desvisibilizar($Actividades/Seleccionar_Horario)
 	Iniciar_Bloques_Actividad()
@@ -695,6 +778,11 @@ func Opciones_Actividades_Fijas() -> void:
 	Gestionar_Visibilidad.Pulsar_Boton_Opciones_Actividades("Fijas", self)
 
 
+func _on_especiales_pressed() -> void:
+	Gestionar_Visibilidad.Pulsar_Boton_Opciones_Actividades("Especiales", self)
+	_Actualizar_Boton_Carrera_Deportiva()
+
+
 func Opciones_Actividades_Trabajo() -> void:
 	Gestionar_Visibilidad.Pulsar_Boton_Opciones_Actividades("Trabajo", self)
 	_Actualizar_Trabajos_UI()
@@ -717,6 +805,15 @@ func _on_medico_pressed() -> void:
 
 func _on_artista_pressed() -> void:
 	_Intentar_Tomar_Trabajo(Variables_Estaticas.Catalogo_Actividades["Trabajar_De_Artista"])
+
+func _on_ayudante_cocina_pressed() -> void:
+	_Intentar_Tomar_Trabajo(Variables_Estaticas.Catalogo_Actividades["Trabajar_De_Ayudante_Cocina"])
+
+func _on_cocinero_partida_pressed() -> void:
+	_Intentar_Tomar_Trabajo(Variables_Estaticas.Catalogo_Actividades["Trabajar_De_Cocinero_Partida"])
+
+func _on_chef_ejecutivo_pressed() -> void:
+	_Intentar_Tomar_Trabajo(Variables_Estaticas.Catalogo_Actividades["Trabajar_De_Chef_Ejecutivo"])
 
 
 func _Intentar_Tomar_Trabajo(actividad: Actividad_Fija_Trabajo) -> void:
@@ -785,6 +882,11 @@ func _Cumple_Requisitos_Trabajo(actividad: Actividad_Fija_Trabajo) -> bool:
 				actividad.requisito_progreso[i],
 				Variables_Dinamicas.Progreso[i]
 			])
+	if actividad.requisito_cocina > 0 and Variables_Dinamicas.Progreso_Cocina < actividad.requisito_cocina:
+		errores.append("• Cocina ≥ %d (tienes %d)" % [
+			actividad.requisito_cocina,
+			Variables_Dinamicas.Progreso_Cocina
+		])
 	for nombre_carrera in actividad.requisito_carrera:
 		var tiene = false
 		for carrera in Variables_Dinamicas.Carreras_Completadas:
@@ -838,7 +940,40 @@ func Actividad_Terminada_Dormir() -> void:
 	Crear_Actividad("Dormir")
 
 func Actividad_Terminada_Comer() -> void:
-	Crear_Actividad("Comer")
+	# Primer paso: reabrir el reloj con las pestañas Tupper / Comida rápida.
+	if horario_bloque == null:
+		_on_temporales_pressed()
+		return
+	modo_fiesta = false
+	modo_alimentacion = true
+	actividad_seleccionada = "Comer_Tupper" if not Variables_Dinamicas.Tuppers.is_empty() else "Comer_Basura"
+	Gestionar_Visibilidad.Visibilizar_Seleccionar_Horario(self)
+	actividades_reloj_gui.Comprobar_Visibilidad(self, horario_bloque)
+	Iniciar_Blink()
+	if actividad_seleccionada == "Comer_Tupper":
+		call_deferred("_Abrir_Modal_Tuppers_Al_Entrar")
+
+func _Abrir_Modal_Tuppers_Al_Entrar() -> void:
+	if not modo_alimentacion or actividad_seleccionada != "Comer_Tupper":
+		return
+	if Variables_Dinamicas.Tuppers.is_empty():
+		return
+	_Abrir_Modal_Tuppers()
+
+func Actividad_Terminada_Cocinar() -> void:
+	if Variables_Dinamicas.En_La_Calle:
+		_Mostrar_Error_Alimentacion("No puedes cocinar sin una vivienda.")
+		return
+	if horario_bloque == null:
+		_on_temporales_pressed()
+		return
+	modo_fiesta = false
+	modo_alimentacion = true
+	actividad_seleccionada = "Cocinar"
+	Gestionar_Visibilidad.Visibilizar_Seleccionar_Horario(self)
+	actividades_reloj_gui.Comprobar_Visibilidad(self, horario_bloque)
+	Iniciar_Blink()
+
 func Actividad_Terminada_Ver_La_Television() -> void:
 	Crear_Actividad("Ver_La_Television")
 
@@ -877,6 +1012,17 @@ func _Mostrar_Error_Fiesta(motivo: String) -> void:
 	_dialog_fiesta.popup_centered(Vector2i(520, 190))
 
 
+var _dialog_alimentacion: AcceptDialog = null
+
+func _Mostrar_Error_Alimentacion(mensaje: String) -> void:
+	if _dialog_alimentacion == null:
+		_dialog_alimentacion = AcceptDialog.new()
+		_dialog_alimentacion.title = "No se puede programar"
+		add_child(_dialog_alimentacion)
+	_dialog_alimentacion.dialog_text = mensaje
+	_dialog_alimentacion.popup_centered(Vector2i(540, 190))
+
+
 func Crear_Actividad(actividad):
 	var horario = actividades_reloj_gui.horario
 	if horario == null:
@@ -893,6 +1039,22 @@ func Crear_Actividad(actividad):
 		if not bool(validacion.get("valido", false)):
 			_Mostrar_Error_Fiesta(str(validacion.get("motivo", "")))
 			return
+	elif actividad == "Cocinar":
+		var duracion: int = Actividades.Calcular_Duracion_Rango(
+			horario.dia_inicio_a_int(),
+			horario.hora_inicio_texto.text.to_int(),
+			horario.minuto_inicio_texto.text.to_int(),
+			horario.dia_final_a_int(),
+			horario.hora_final_texto.text.to_int(),
+			horario.minuto_final_texto.text.to_int())
+		var validacion_cocina: Dictionary = Actividades.Validar_Horario_Cocinar(duracion)
+		if not bool(validacion_cocina.get("valido", false)):
+			_Mostrar_Error_Alimentacion(str(validacion_cocina.get("motivo", "")))
+			return
+	elif actividad == "Comer_Tupper":
+		if Variables_Dinamicas.Tuppers.is_empty():
+			# Sin tuppers, el bloque se programa directamente como comida rápida.
+			actividad = "Comer_Basura"
 	var ok = horario.Crear_Actividad(mirar_semana, actividad)
 	if not ok:
 		_Mostrar_Error_Prioridad()
@@ -919,8 +1081,8 @@ func _Confirmar_Ir_A_La_Calle():
 const _TIENDA_CARDS = [
 	{"categoria": "Dormir", "clave": "Cama_Basica"},
 	{"categoria": "Dormir", "clave": "Cama_Premium"},
+	{"categoria": "Dormir", "clave": "Cama_Lujo"},
 	{"categoria": "Comer", "clave": "Mesa_Basica"},
-	{"categoria": "Comer", "clave": "Mesa_Premium"},
 	{"categoria": "Duchar", "clave": "Ducha_Basica"},
 	{"categoria": "Duchar", "clave": "Ducha_Premium"},
 ]
@@ -1003,6 +1165,7 @@ func _on_perfil_tab_info_pressed():
 	$Pantalla_Mensajes/Panel_Info.visible = true
 	$Pantalla_Mensajes/Lista_Mensajes.visible = false
 	$Pantalla_Mensajes/Panel_Apuntes.visible = false
+	$Pantalla_Mensajes/Panel_Despensa.visible = false
 	$Pantalla_Mensajes/Contenido_Mensaje.visible = false
 	_Renderizar_Info()
 	_Actualizar_Nav_Activa()
@@ -1012,6 +1175,7 @@ func _on_perfil_tab_mensajes_pressed():
 	$Pantalla_Mensajes/Panel_Info.visible = false
 	$Pantalla_Mensajes/Lista_Mensajes.visible = true
 	$Pantalla_Mensajes/Panel_Apuntes.visible = false
+	$Pantalla_Mensajes/Panel_Despensa.visible = false
 	$Pantalla_Mensajes/Contenido_Mensaje.visible = false
 	_Renderizar_Lista_Mensajes()
 	_Actualizar_Nav_Activa()
@@ -1021,9 +1185,97 @@ func _on_perfil_tab_apuntes_pressed():
 	$Pantalla_Mensajes/Panel_Info.visible = false
 	$Pantalla_Mensajes/Lista_Mensajes.visible = false
 	$Pantalla_Mensajes/Panel_Apuntes.visible = true
+	$Pantalla_Mensajes/Panel_Despensa.visible = false
 	$Pantalla_Mensajes/Contenido_Mensaje.visible = false
 	_Renderizar_Apuntes()
 	_Actualizar_Nav_Activa()
+
+func _on_perfil_tab_despensa_pressed():
+	_Marcar_Tab_Perfil("Tab_Despensa")
+	$Pantalla_Mensajes/Panel_Info.visible = false
+	$Pantalla_Mensajes/Lista_Mensajes.visible = false
+	$Pantalla_Mensajes/Panel_Apuntes.visible = false
+	$Pantalla_Mensajes/Panel_Despensa.visible = true
+	$Pantalla_Mensajes/Contenido_Mensaje.visible = false
+	_Renderizar_Despensa()
+	_Actualizar_Nav_Activa()
+
+# ---------------- Tab Despensa (tuppers) ----------------
+
+func _Renderizar_Despensa():
+	var panel = get_node_or_null("Pantalla_Mensajes/Panel_Despensa")
+	if panel == null:
+		return
+	var lista := panel.get_node_or_null("Scroll_Tuppers/VBox_Tuppers") as VBoxContainer
+	var scroll := panel.get_node_or_null("Scroll_Tuppers") as ScrollContainer
+	var sin_tuppers := panel.get_node_or_null("Sin_Tuppers_Label") as Label
+	if lista == null or scroll == null or sin_tuppers == null:
+		return
+	for hijo in lista.get_children():
+		lista.remove_child(hijo)
+		hijo.queue_free()
+
+	_firma_tuppers_ui = _Firma_Tuppers()
+	var hay: bool = not Variables_Dinamicas.Tuppers.is_empty()
+	sin_tuppers.visible = not hay
+	scroll.visible = hay
+	if not hay:
+		return
+
+	for i in range(Variables_Dinamicas.Tuppers.size()):
+		var tupper = Variables_Dinamicas.Tuppers[i]
+		if not (tupper is Dictionary):
+			continue
+		var seleccionado: bool = int(Variables_Dinamicas.Tupper_Seleccionado_Idx) == i
+		var fila := Tupper_UI.crear_fila(i, tupper, seleccionado,
+			_Elegir_Tupper_Desde_Perfil.bind(i), _Tirar_Tupper_Desde_Perfil.bind(i))
+		lista.add_child(fila)
+
+
+func _Elegir_Tupper_Desde_Perfil(indice: int) -> void:
+	if indice < 0 or indice >= Variables_Dinamicas.Tuppers.size():
+		return
+	Variables_Dinamicas.Tupper_Seleccionado_Idx = indice
+	Guardar_Variables_Dinamicas.save_game()
+	_Renderizar_Despensa()
+	_Actualizar_Preview_Alimentacion()
+
+
+func _Tirar_Tupper_Desde_Perfil(indice: int) -> void:
+	if indice < 0 or indice >= Variables_Dinamicas.Tuppers.size():
+		return
+	Variables_Dinamicas.Tuppers.remove_at(indice)
+	var seleccionado: int = int(Variables_Dinamicas.Tupper_Seleccionado_Idx)
+	if seleccionado == indice:
+		Variables_Dinamicas.Tupper_Seleccionado_Idx = -1
+	elif seleccionado > indice:
+		Variables_Dinamicas.Tupper_Seleccionado_Idx = seleccionado - 1
+	Guardar_Variables_Dinamicas.save_game()
+	_Renderizar_Despensa()
+	_Actualizar_Preview_Alimentacion()
+
+
+func _Actualizar_Tuppers_UI_Si_Visible() -> void:
+	var panel = get_node_or_null("Pantalla_Mensajes/Panel_Despensa")
+	if panel != null and panel.visible:
+		var firma: String = _Firma_Tuppers()
+		if firma == _firma_tuppers_ui:
+			return
+		_firma_tuppers_ui = firma
+		_Renderizar_Despensa()
+
+
+var _firma_tuppers_ui: String = ""
+
+func _Firma_Tuppers() -> String:
+	var partes: Array[String] = [str(int(Variables_Dinamicas.Minute) / 60), str(int(Variables_Dinamicas.Tupper_Seleccionado_Idx))]
+	for t in Variables_Dinamicas.Tuppers:
+		if t is Dictionary:
+			partes.append("%d:%s:%d" % [
+				int(t.get("id", 0)),
+				Alimentacion.Formatear_Porcentaje(float(t.get("porcentaje_restante", 0.0))),
+				int(t.get("minuto_caducidad", 0))])
+	return "|".join(partes)
 
 # ---------------- Tab Info ----------------
 
@@ -1075,6 +1327,7 @@ func _Renderizar_Info():
 	_Info_Fila(grupo_pr, "Deporte", str(Variables_Dinamicas.Progreso[0]) + " / 100")
 	_Info_Fila(grupo_pr, "Académico", str(Variables_Dinamicas.Progreso[1]) + " / 100")
 	_Info_Fila(grupo_pr, "Manualidades", str(Variables_Dinamicas.Progreso[2]) + " / 100")
+	_Info_Fila(grupo_pr, "Cocina", str(Variables_Dinamicas.Progreso_Cocina) + " / 100")
 	_Info_Fila(grupo_pr, "Inversiones", str(Variables_Dinamicas.Progreso_Inversion) + " / 100", false)
 
 	_Info_Seccion(vbox, "Habilidades innatas")
@@ -1532,12 +1785,12 @@ func _on_elegir_cama_basica_pressed(): _Tienda_Elegir("Dormir", "Cama_Basica")
 func _on_comprar_cama_premium_pressed(): _Tienda_Comprar("Cama_Premium")
 func _on_vender_cama_premium_pressed(): _Tienda_Vender("Cama_Premium")
 func _on_elegir_cama_premium_pressed(): _Tienda_Elegir("Dormir", "Cama_Premium")
+func _on_comprar_cama_lujo_pressed(): _Tienda_Comprar("Cama_Lujo")
+func _on_vender_cama_lujo_pressed(): _Tienda_Vender("Cama_Lujo")
+func _on_elegir_cama_lujo_pressed(): _Tienda_Elegir("Dormir", "Cama_Lujo")
 func _on_comprar_mesa_basica_pressed(): _Tienda_Comprar("Mesa_Basica")
 func _on_vender_mesa_basica_pressed(): _Tienda_Vender("Mesa_Basica")
 func _on_elegir_mesa_basica_pressed(): _Tienda_Elegir("Comer", "Mesa_Basica")
-func _on_comprar_mesa_premium_pressed(): _Tienda_Comprar("Mesa_Premium")
-func _on_vender_mesa_premium_pressed(): _Tienda_Vender("Mesa_Premium")
-func _on_elegir_mesa_premium_pressed(): _Tienda_Elegir("Comer", "Mesa_Premium")
 func _on_comprar_ducha_basica_pressed(): _Tienda_Comprar("Ducha_Basica")
 func _on_vender_ducha_basica_pressed(): _Tienda_Vender("Ducha_Basica")
 func _on_elegir_ducha_basica_pressed(): _Tienda_Elegir("Duchar", "Ducha_Basica")
@@ -1553,6 +1806,7 @@ var _dialog_resultado_examen: AcceptDialog = null
 const _MODAL_EXAMEN_SCRIPT = preload("res://Scripts/Logica/Escena_Principal/Actividades/Carreras/UI/Modal_Examen.gd")
 const _MODAL_SELECCIONAR_EXAMEN_SCRIPT = preload("res://Scripts/Logica/Escena_Principal/Actividades/Carreras/UI/Modal_Seleccionar_Examen.gd")
 const _MODAL_SELECCIONAR_CARRERA_SCRIPT = preload("res://Scripts/Logica/Escena_Principal/Actividades/Carreras/UI/Modal_Seleccionar_Carrera.gd")
+const _MODAL_CARRERA_DEPORTIVA_SCRIPT = preload("res://Scripts/Logica/Escena_Principal/Actividades/UI/Modal_Carrera_Deportiva.gd")
 const _LECTOR_LIBROS_SCRIPT = preload("res://Scripts/Logica/Escena_Principal/Actividades/Carreras/UI/Lector_Libros.gd")
 
 const _DIAS_NOMBRES = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sab", "Dom"]
@@ -1648,6 +1902,7 @@ func _on_horario_elegido(dia: int, hora_minutos: int, carrera: Carrera, es_matri
 		# Prematriculación: gratis, flexible hasta el Lunes 00:00
 		carrera.prematriculado = true
 		carrera.matriculado = false
+		Actividades.Escribir_Examen_En_Matriz(carrera)
 
 	Guardar_Variables_Dinamicas.save_game()
 	_Actualizar_Pantalla_Carrera()
@@ -1870,7 +2125,7 @@ func _Crear_Pantalla_Carrera():
 	_pantalla_carrera.name = "Pantalla_Carrera"
 	_pantalla_carrera.color = Estilos_UI.FONDO
 	_pantalla_carrera.position = Vector2.ZERO
-	_pantalla_carrera.size = Vector2(720, 1280)
+	_pantalla_carrera.size = Vector2(720, _Alto_Pantalla())
 	_pantalla_carrera.z_index = 5
 	_pantalla_carrera.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_pantalla_carrera.visible = false
@@ -1880,7 +2135,7 @@ func _Crear_Pantalla_Carrera():
 
 	var vbox = VBoxContainer.new()
 	vbox.position = Vector2(20, 190)
-	vbox.size = Vector2(680, 960)
+	vbox.size = Vector2(680, _Alto_Pantalla() - 320.0)
 	vbox.add_theme_constant_override("separation", 14)
 	_pantalla_carrera.add_child(vbox)
 
@@ -2151,7 +2406,7 @@ func _Crear_Pantalla_Economia():
 	_pantalla_economia.name = "Pantalla_Economia"
 	_pantalla_economia.color = Estilos_UI.FONDO
 	_pantalla_economia.position = Vector2.ZERO
-	_pantalla_economia.size = Vector2(720, 1280)
+	_pantalla_economia.size = Vector2(720, _Alto_Pantalla())
 	_pantalla_economia.z_index = 5
 	_pantalla_economia.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_pantalla_economia.visible = false
@@ -2161,7 +2416,7 @@ func _Crear_Pantalla_Economia():
 
 	var vbox = VBoxContainer.new()
 	vbox.position = Vector2(20, 186)
-	vbox.size = Vector2(680, 976)
+	vbox.size = Vector2(680, _Alto_Pantalla() - 304.0)
 	vbox.add_theme_constant_override("separation", 12)
 	_pantalla_economia.add_child(vbox)
 
@@ -2408,9 +2663,8 @@ func _Actualizar_Pantalla_Economia():
 
 	if _economia_tienda_desc != null:
 		var cama := str(Variables_Dinamicas.Objeto_Seleccionado.get("Dormir", "Cama_Basica")).replace("_", " ")
-		var mesa := str(Variables_Dinamicas.Objeto_Seleccionado.get("Comer", "Mesa_Basica")).replace("_", " ")
 		var ducha := str(Variables_Dinamicas.Objeto_Seleccionado.get("Duchar", "Ducha_Basica")).replace("_", " ")
-		_economia_tienda_desc.text = "Equipado: %s · %s · %s" % [cama, mesa, ducha]
+		_economia_tienda_desc.text = "Equipado: %s · %s" % [cama, ducha]
 
 func _Actualizar_Pantalla_Economia_Si_Visible():
 	if _pantalla_economia != null and _pantalla_economia.is_visible_in_tree():
@@ -2445,14 +2699,26 @@ var _progreso_metas_box: VBoxContainer = null
 var _tienda_origen: String = "economia"
 
 
+# Alto visible del área de juego en coordenadas de diseño (720 x H).
+# Con stretch "canvas_items" + "expand" el alto crece en pantallas más alargadas
+# que 16:9, así que todo lo anclado abajo debe usar este valor y no 1280 fijo.
+func _Alto_Pantalla() -> float:
+	var vp := get_viewport()
+	if vp == null:
+		return 1280.0
+	var alto: float = vp.get_visible_rect().size.y
+	return alto if alto >= 1280.0 else 1280.0
+
+
 func _Aplicar_Rediseno() -> void:
+	var alto := _Alto_Pantalla()
 	var fondo := get_node_or_null("Fondo")
 	if fondo is Sprite2D:
 		var img := Image.create(2, 2, false, Image.FORMAT_RGBA8)
 		img.fill(Estilos_UI.FONDO)
 		fondo.texture = ImageTexture.create_from_image(img)
-		fondo.position = Vector2(360, 640)
-		fondo.scale = Vector2(360, 640)
+		fondo.position = Vector2(360.0, alto * 0.5)
+		fondo.scale = Vector2(360.0, alto * 0.5)
 
 	var top := get_node_or_null("Top_Bar_Panel")
 	if top != null:
@@ -2473,6 +2739,7 @@ func _Aplicar_Rediseno() -> void:
 	_Actualizar_Reloj_Header()
 	_Actualizar_Home()
 	_Actualizar_Nav_Activa()
+	_Ajustar_Disposicion_Vertical()
 
 	for ruta in [
 		"Habilidades", "Progreso", "Necesidades_Basicas", "Actividades",
@@ -2694,13 +2961,14 @@ func _Actualizar_Nav_Activa() -> void:
 
 
 func _Redisenar_Inferior() -> void:
+	var alto := _Alto_Pantalla()
 	var dock := get_node_or_null("Dock_Fondo") as Panel
 	if dock == null:
 		dock = Panel.new()
 		dock.name = "Dock_Fondo"
 		dock.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		add_child(dock)
-	dock.position = Vector2(0, 1184)
+	dock.position = Vector2(0, alto - 96.0)
 	dock.size = Vector2(720, 96)
 	dock.z_index = 19
 	var ds := Estilos_UI.caja(Estilos_UI.NAVY, 0, Color("#2d3a50"), 0, 0)
@@ -2727,17 +2995,100 @@ func _Redisenar_Inferior() -> void:
 				b.expand_icon = false
 				b.size = Vector2(137, 72)
 		barra.custom_minimum_size = Vector2(704, 78)
-		barra.position = Vector2(8, 1192)
+		barra.position = Vector2(8, alto - 88.0)
 		barra.size = Vector2(704, 78)
 		barra.z_index = 20
 		barra.add_theme_constant_override("separation", 4)
 
 
+# Recoloca y redimensiona los elementos que dependen del alto real de la pantalla.
+# Se llama al terminar el rediseño y cada vez que cambia el tamaño del viewport.
+func _Ajustar_Disposicion_Vertical() -> void:
+	var alto := _Alto_Pantalla()
+
+	var fondo := get_node_or_null("Fondo") as Sprite2D
+	if fondo != null:
+		fondo.position = Vector2(360.0, alto * 0.5)
+		fondo.scale = Vector2(360.0, alto * 0.5)
+
+	var dock := get_node_or_null("Dock_Fondo") as Control
+	if dock != null:
+		dock.position.y = alto - 96.0
+	var barra := get_node_or_null("Barra_Abajo") as Control
+	if barra != null:
+		barra.position.y = alto - 88.0
+
+	if _home != null and is_instance_valid(_home):
+		_home.size.y = alto - 228.0
+
+	for ruta in [
+		"Progreso", "Habilidades", "Necesidades_Basicas", "Actividades",
+		"Actividades/Horario_Semanal", "Actividades/Seleccionar_Horario",
+		"Pantalla_Mensajes", "Tienda", "Pantalla_Carrera", "Pantalla_Economia",
+	]:
+		var seccion := get_node_or_null(ruta) as Control
+		if seccion == null:
+			continue
+		seccion.size.y = alto
+		for hijo in seccion.get_children():
+			if hijo is Control and (hijo.name == "Fondo_Seccion" or hijo.name == "Fondo_Mensajes"):
+				(hijo as Control).size.y = alto
+
+	# Contenido del perfil: crece hasta dejar el mismo margen sobre el dock.
+	var alto_contenido := alto - 358.0
+	for ruta in [
+		"Pantalla_Mensajes/Lista_Mensajes", "Pantalla_Mensajes/Panel_Info",
+		"Pantalla_Mensajes/Panel_Apuntes", "Pantalla_Mensajes/Contenido_Mensaje",
+		"Pantalla_Mensajes/Panel_Despensa",
+		"Pantalla_Mensajes/Panel_Info/Scroll_Info",
+		"Pantalla_Mensajes/Panel_Apuntes/Scroll_Inventario",
+		"Pantalla_Mensajes/Panel_Despensa/Scroll_Tuppers",
+	]:
+		var contenido := get_node_or_null(ruta) as Control
+		if contenido != null:
+			contenido.size.y = alto_contenido
+
+	var card_mensaje := get_node_or_null("Pantalla_Mensajes/Contenido_Mensaje/Mensaje_Card") as Control
+	if card_mensaje != null:
+		card_mensaje.size.y = alto_contenido - 22.0
+	var desc_mensaje := get_node_or_null("Pantalla_Mensajes/Contenido_Mensaje/Descripcion_Mensaje_Label") as Control
+	if desc_mensaje != null:
+		desc_mensaje.size.y = alto_contenido - 202.0
+
+	for ruta in ["Tienda/Objetos_Dormir", "Tienda/Objetos_Comer", "Tienda/Objetos_Duchar"]:
+		var contenedor := get_node_or_null(ruta) as Control
+		if contenedor != null:
+			contenedor.size.y = alto
+
+	var vbox_carrera := get_node_or_null("Pantalla_Carrera/VBoxContainer") as Control
+	if vbox_carrera == null:
+		var pantalla_carrera := get_node_or_null("Pantalla_Carrera")
+		if pantalla_carrera != null:
+			for hijo in pantalla_carrera.get_children():
+				if hijo is VBoxContainer:
+					vbox_carrera = hijo
+					break
+	if vbox_carrera != null:
+		vbox_carrera.size.y = alto - 320.0
+
+	var vbox_economia := get_node_or_null("Pantalla_Economia/VBoxContainer") as Control
+	if vbox_economia == null:
+		var pantalla_economia := get_node_or_null("Pantalla_Economia")
+		if pantalla_economia != null:
+			for hijo in pantalla_economia.get_children():
+				if hijo is VBoxContainer:
+					vbox_economia = hijo
+					break
+	if vbox_economia != null:
+		vbox_economia.size.y = alto - 304.0
+
+
 func _Preparar_Seccion(panel: Control, titulo_txt: String, icono_sec: String = "", color_sec: Color = Estilos_UI.ROJO_BIT) -> void:
 	if panel == null:
 		return
+	var alto := _Alto_Pantalla()
 	panel.position = Vector2.ZERO
-	panel.size = Vector2(720, 1280)
+	panel.size = Vector2(720, alto)
 
 	var bg := panel.get_node_or_null("Fondo_Seccion") as ColorRect
 	if bg == null:
@@ -2748,7 +3099,7 @@ func _Preparar_Seccion(panel: Control, titulo_txt: String, icono_sec: String = "
 		panel.add_child(bg)
 		panel.move_child(bg, 0)
 	bg.position = Vector2.ZERO
-	bg.size = Vector2(720, 1280)
+	bg.size = Vector2(720, alto)
 	bg.z_index = -3
 
 	var card := panel.get_node_or_null("Panel_BG") as Panel
@@ -2891,16 +3242,28 @@ func _Redisenar_Progreso() -> void:
 		var flecha := panel.get_node_or_null(n)
 		if flecha != null:
 			flecha.queue_free()
+
+	var barras := panel.get_node_or_null("Progreso_Barra") as VBoxContainer
+	if barras != null and barras.get_node_or_null("Cocina") == null:
+		var bar_cocina := ProgressBar.new()
+		bar_cocina.name = "Cocina"
+		barras.add_child(bar_cocina)
+	var textos := panel.get_node_or_null("Progreso_Texto") as VBoxContainer
+	if textos != null and textos.get_node_or_null("Slot_Cocina") == null:
+		var lbl_cocina := Label.new()
+		lbl_cocina.name = "Slot_Cocina"
+		textos.add_child(lbl_cocina)
+
 	_Configurar_Filas(panel, "Progreso_Barra", "Progreso_Texto",
-		["Deporte", "Academico", "Manualidades"],
-		["Deporte", "Académico", "Manualidades"],
-		["dumbbell", "book-open", "palette"],
-		_COLORES_PROGRESO,
+		["Deporte", "Academico", "Manualidades", "Cocina"],
+		["Deporte", "Académico", "Manualidades", "Cocina"],
+		["dumbbell", "book-open", "palette", "utensils"],
+		[_COLORES_PROGRESO[0], _COLORES_PROGRESO[1], _COLORES_PROGRESO[2], Color("#ea580c")],
 		198, 38, 16, false)
 
 	var extra_card := PanelContainer.new()
 	extra_card.name = "Card_Metas_Progreso"
-	extra_card.position = Vector2(20, 376)
+	extra_card.position = Vector2(20, 432)
 	extra_card.size = Vector2(680, 0)
 	extra_card.add_theme_stylebox_override("panel", Estilos_UI.caja_tarjeta(16, 3))
 	panel.add_child(extra_card)
@@ -2958,6 +3321,9 @@ func _Actualizar_Progreso_Extra() -> void:
 		["Abogado", "Académico ≥ 50 + Derecho", Variables_Dinamicas.Progreso[1] >= 50],
 		["Médico", "Académico ≥ 60 + Medicina", Variables_Dinamicas.Progreso[1] >= 60],
 		["Científico", "Académico ≥ 65 + Ing. Informática", Variables_Dinamicas.Progreso[1] >= 65],
+		["Ayudante de cocina", "Cocina ≥ 30", Variables_Dinamicas.Progreso_Cocina >= 30],
+		["Cocinero de partida", "Cocina ≥ 60", Variables_Dinamicas.Progreso_Cocina >= 60],
+		["Chef ejecutivo", "Cocina ≥ 85", Variables_Dinamicas.Progreso_Cocina >= 85],
 	]
 	for m in metas:
 		var row := HBoxContainer.new()
@@ -2970,6 +3336,16 @@ func _Actualizar_Progreso_Extra() -> void:
 		row.add_child(lbl)
 		row.add_child(Estilos_UI.texto(m[1], 12, Estilos_UI.EXITO if cumplido else Estilos_UI.TINTA_FANTASMA, 500))
 		_progreso_metas_box.add_child(row)
+	if not Variables_Dinamicas.Ultimas_Pistas_Progreso.is_empty():
+		var sep := HSeparator.new()
+		_progreso_metas_box.add_child(sep)
+		var pista_row := HBoxContainer.new()
+		pista_row.add_theme_constant_override("separation", 8)
+		pista_row.add_child(Estilos_UI.icono_rect("sparkles", 16, Estilos_UI.MORADO))
+		var pista_lbl := Estilos_UI.parrafo(str(Variables_Dinamicas.Ultimas_Pistas_Progreso[0]), 12, Estilos_UI.TINTA_SUAVE)
+		pista_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		pista_row.add_child(pista_lbl)
+		_progreso_metas_box.add_child(pista_row)
 
 
 func _Redisenar_Habilidades() -> void:
@@ -3096,7 +3472,7 @@ func _Actualizar_Necesidades_Extra() -> void:
 
 	if _necesidades_equipo_lbl != null:
 		var partes: Array = []
-		for cat in ["Dormir", "Comer", "Duchar"]:
+		for cat in ["Dormir", "Duchar"]:
 			var clave: String = Variables_Dinamicas.Objeto_Seleccionado.get(cat, "")
 			var obj = Variables_Estaticas.Catalogo_Objetos.get(clave, null)
 			if obj != null:
@@ -3110,14 +3486,19 @@ func _Actualizar_Necesidades_Extra() -> void:
 const _SUBTITULOS_ACTIVIDADES := {
 	"Temporales": ["clock", "Dormir, comer, estudiar y ocio por bloques", Color("#1d7afc")],
 	"Fijas": ["briefcase-business", "Empleos con jornada y sueldo fijo", Color("#1ea34a")],
+	"Especiales": ["sparkles", "Fiesta nocturna y carreras de fin de semana", Color("#d92673")],
 	"Necesidades_Basicas": ["heart-pulse", "Descanso, comida, higiene y ocio", Color("#d62828")],
 	"Progreso": ["trending-up", "Deporte, estudio y manualidades", Color("#1d7afc")],
 	"Dormir": ["moon", "+4 Descanso · +1 Salud física/mental", Color("#4f46e5")],
-	"Comer": ["utensils", "+20 Hambre · +2 Salud mental", Color("#f59e0b")],
+	"Cocinar": ["utensils", "15 min/tupper · 2 €/ciclo · +Cocina", Color("#ea580c")],
+	"Comer_Tupper": ["package", "Ración casera · 0 € · Calidad y caducidad", Color("#16a34a")],
+	"Comer_Basura": ["utensils-crossed", "2 € cada 5 min · −Salud física", Color("#dc2626")],
+	"Comer": ["utensils", "Elige tupper casero o comida rápida", Color("#f59e0b")],
 	"Duchar": ["droplet", "+20 Higiene · +1 Salud física/mental", Color("#0ea5e9")],
 	"Ver_La_Television": ["tv", "+5 Salud mental · +2 Descanso", Color("#8b5cf6")],
 	"Salir_De_Fiesta": ["party-popper", "Noche · 2–12 h · Prob. según estado", Color("#d92673")],
 	"Salir_A_Correr": ["footprints", "+4 Deporte · +4 Salud física", Color("#1ea34a")],
+	"Carrera_Deportiva": ["trophy", "Fin de semana · Inscripción 50€", Color("#ea580c")],
 	"Estudiar": ["book-open", "+4 Académico · Avanza carrera", Color("#1d7afc")],
 	"Manualidades": ["palette", "+4 Manualidades", Color("#ea580c")],
 	"Trabajo": ["briefcase-business", "Elige un empleo fijo semanal", Color("#1ea34a")],
@@ -3127,6 +3508,9 @@ const _SUBTITULOS_ACTIVIDADES := {
 	"Abogado": ["scale", "30 €/h · L–V 09:00–17:00 · Derecho", Color("#7c3aed")],
 	"Medico": ["stethoscope", "35 €/h · L–V 09:00–17:00 · Medicina", Color("#d62828")],
 	"Artista": ["palette", "25 €/h · L–V 09:00–17:00 · Bellas Artes", Color("#ec4899")],
+	"Ayudante_Cocina": ["utensils", "17 €/h · L–V 11:00–19:00 · Cocina 30", Color("#f59e0b")],
+	"Cocinero_Partida": ["flame", "24 €/h · L–V 12:00–20:00 · Cocina 60", Color("#ea580c")],
+	"Chef_Ejecutivo": ["star", "36 €/h · L–V 13:00–21:00 · Cocina 85", Color("#b91c1c")],
 }
 
 const _TRABAJO_A_BOTON := {
@@ -3136,6 +3520,9 @@ const _TRABAJO_A_BOTON := {
 	"Trabajar_De_Abogado": "Abogado",
 	"Trabajar_De_Medico": "Medico",
 	"Trabajar_De_Artista": "Artista",
+	"Trabajar_De_Ayudante_Cocina": "Ayudante_Cocina",
+	"Trabajar_De_Cocinero_Partida": "Cocinero_Partida",
+	"Trabajar_De_Chef_Ejecutivo": "Chef_Ejecutivo",
 }
 
 
@@ -3146,6 +3533,9 @@ const _SALARIOS_BOTON := {
 	"Abogado": "30 €/h",
 	"Medico": "35 €/h",
 	"Artista": "25 €/h",
+	"Ayudante_Cocina": "17 €/h",
+	"Cocinero_Partida": "24 €/h",
+	"Chef_Ejecutivo": "36 €/h",
 }
 
 
@@ -3229,8 +3619,9 @@ func _Redisenar_Actividades() -> void:
 	var activ := get_node_or_null("Actividades") as Control
 	if activ == null:
 		return
+	var alto := _Alto_Pantalla()
 	activ.position = Vector2.ZERO
-	activ.size = Vector2(720, 1280)
+	activ.size = Vector2(720, alto)
 
 	var bg := activ.get_node_or_null("Fondo_Seccion") as ColorRect
 	if bg == null:
@@ -3241,7 +3632,7 @@ func _Redisenar_Actividades() -> void:
 		activ.add_child(bg)
 		activ.move_child(bg, 0)
 	bg.position = Vector2.ZERO
-	bg.size = Vector2(720, 1280)
+	bg.size = Vector2(720, alto)
 	bg.z_index = -3
 
 	var titulo := activ.get_node_or_null("Titulo_Actividades") as Label
@@ -3265,6 +3656,16 @@ func _Redisenar_Actividades() -> void:
 
 	var tipos := activ.get_node_or_null("Elegir_Actividad/Tipos_De_Actividades") as VBoxContainer
 	if tipos != null:
+		var esp_opc := tipos.get_node_or_null("Especiales_Opciones")
+		if esp_opc != null:
+			var btn_cd := esp_opc.get_node_or_null("Carrera_Deportiva") as Button
+			if btn_cd == null:
+				btn_cd = Button.new()
+				btn_cd.name = "Carrera_Deportiva"
+				btn_cd.text = "Carrera deportiva"
+				esp_opc.add_child(btn_cd)
+			if not btn_cd.pressed.is_connected(_on_carrera_deportiva_pressed):
+				btn_cd.pressed.connect(_on_carrera_deportiva_pressed)
 		tipos.position = Vector2(20, 194)
 		tipos.size = Vector2(680, 960)
 		tipos.add_theme_constant_override("separation", 10)
@@ -3280,6 +3681,61 @@ func _Redisenar_Actividades() -> void:
 		atras.rotation = 0.0
 
 	_Actualizar_Trabajos_UI()
+	_Actualizar_Boton_Carrera_Deportiva()
+
+
+func _Actualizar_Boton_Carrera_Deportiva() -> void:
+	var btn := get_node_or_null("Actividades/Elegir_Actividad/Tipos_De_Actividades/Especiales_Opciones/Carrera_Deportiva") as Button
+	if btn == null:
+		return
+	var sys := Sistema_Carreras_Deportivas
+	if sys == null:
+		return
+	var pendiente: Dictionary = Variables_Dinamicas.Carrera_Deportiva_Pendiente
+	var inscrito: bool = pendiente.get("inscrito", false)
+	var puede_hoy: bool = sys.Puede_Inscribirse_Hoy()
+	var card_row := btn.get_node_or_null("Card_Contenido")
+	var sub_lbl: Label = null
+	if card_row != null and card_row.get_child_count() > 1:
+		var vbox := card_row.get_child(1)
+		if vbox.get_child_count() > 1:
+			sub_lbl = vbox.get_child(1) as Label
+	if inscrito:
+		var dia_txt: String = "Sábado" if int(pendiente.get("dia", 5)) == 5 else "Domingo"
+		var h_min: int = int(pendiente.get("hora_inicio", 540))
+		var h_str: String = "%02d:%02d" % [h_min / 60, h_min % 60]
+		btn.disabled = true
+		if sub_lbl != null:
+			sub_lbl.text = "Carrera inscrita: %s %s" % [dia_txt, h_str]
+	elif not puede_hoy:
+		btn.disabled = true
+		if sub_lbl != null:
+			sub_lbl.text = "Inscripción cerrada en fin de semana (L–V)"
+	else:
+		btn.disabled = false
+		if sub_lbl != null:
+			var costo: int = int(sys.Obtener_Costo_Inscripcion())
+			var visibles: int = sys.Calcular_Inscritos_Visibles()
+			sub_lbl.text = "Fin de semana · %d€ · %d inscritos" % [costo, visibles]
+
+
+func _on_carrera_deportiva_pressed() -> void:
+	var sys := Sistema_Carreras_Deportivas
+	if sys == null or not sys.Puede_Inscribirse_Hoy():
+		return
+	if Variables_Dinamicas.Carrera_Deportiva_Pendiente.get("inscrito", false):
+		return
+	var modal := _MODAL_CARRERA_DEPORTIVA_SCRIPT.new()
+	add_child(modal)
+	modal.inscripcion_confirmada.connect(_on_inscripcion_carrera_deportiva_confirmada)
+	modal.popup_centered()
+
+
+func _on_inscripcion_carrera_deportiva_confirmada(dia: int, hora_inicio: int) -> void:
+	var sys := Sistema_Carreras_Deportivas
+	if sys != null and sys.Inscribirse_Carrera(dia, hora_inicio):
+		Actualizar_Dinero()
+		_Actualizar_Boton_Carrera_Deportiva()
 
 
 func _Redisenar_Horario() -> void:
@@ -3287,7 +3743,7 @@ func _Redisenar_Horario() -> void:
 	if horario == null:
 		return
 	horario.position = Vector2.ZERO
-	horario.size = Vector2(720, 1280)
+	horario.size = Vector2(720, _Alto_Pantalla())
 
 	var fondo_cal := horario.get_node_or_null("Fondo_Calendario") as Panel
 	if fondo_cal == null:
@@ -3430,7 +3886,7 @@ func _Redisenar_Seleccionar_Horario() -> void:
 	if sel == null:
 		return
 	sel.position = Vector2.ZERO
-	sel.size = Vector2(720, 1280)
+	sel.size = Vector2(720, _Alto_Pantalla())
 
 	var titulo := sel.get_node_or_null("Titulo") as Label
 	if titulo != null:
@@ -3539,14 +3995,16 @@ func _Redisenar_Perfil() -> void:
 	var p := get_node_or_null("Pantalla_Mensajes") as Control
 	if p == null:
 		return
+	var alto := _Alto_Pantalla()
+	var alto_contenido := alto - 358.0
 	p.position = Vector2.ZERO
-	p.size = Vector2(720, 1280)
+	p.size = Vector2(720, alto)
 
 	var fondo := p.get_node_or_null("Fondo_Mensajes") as ColorRect
 	if fondo != null:
 		fondo.color = Estilos_UI.FONDO
 		fondo.position = Vector2.ZERO
-		fondo.size = Vector2(720, 1280)
+		fondo.size = Vector2(720, alto)
 		fondo.z_index = -3
 
 	var header := p.get_node_or_null("Header_Bar")
@@ -3600,11 +4058,11 @@ func _Redisenar_Perfil() -> void:
 				tab.add_theme_font_size_override("font_size", 14)
 				tab.add_theme_constant_override("icon_max_width", 16)
 
-	for n in ["Lista_Mensajes", "Panel_Info", "Panel_Apuntes"]:
+	for n in ["Lista_Mensajes", "Panel_Info", "Panel_Apuntes", "Panel_Despensa"]:
 		var c := p.get_node_or_null(n) as Control
 		if c != null:
 			c.position = Vector2(20, 246)
-			c.size = Vector2(680, 922)
+			c.size = Vector2(680, alto_contenido)
 
 	var lista_vbox := p.get_node_or_null("Lista_Mensajes/VBoxContainer") as VBoxContainer
 	if lista_vbox != null:
@@ -3613,7 +4071,7 @@ func _Redisenar_Perfil() -> void:
 	var scroll_info := p.get_node_or_null("Panel_Info/Scroll_Info") as ScrollContainer
 	if scroll_info != null:
 		scroll_info.position = Vector2.ZERO
-		scroll_info.size = Vector2(680, 922)
+		scroll_info.size = Vector2(680, alto_contenido)
 		scroll_info.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	var vbox_info := p.get_node_or_null("Panel_Info/Scroll_Info/VBox_Info") as VBoxContainer
 	if vbox_info != null:
@@ -3622,7 +4080,7 @@ func _Redisenar_Perfil() -> void:
 	var scroll_inv := p.get_node_or_null("Panel_Apuntes/Scroll_Inventario") as ScrollContainer
 	if scroll_inv != null:
 		scroll_inv.position = Vector2.ZERO
-		scroll_inv.size = Vector2(680, 922)
+		scroll_inv.size = Vector2(680, alto_contenido)
 		scroll_inv.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	var grid := p.get_node_or_null("Panel_Apuntes/Scroll_Inventario/Grid_Libros") as GridContainer
 	if grid != null:
@@ -3638,15 +4096,31 @@ func _Redisenar_Perfil() -> void:
 		sin_libros.add_theme_font_size_override("font_size", 15)
 		sin_libros.add_theme_color_override("font_color", Estilos_UI.TINTA_SUAVE)
 
+	var scroll_tuppers := p.get_node_or_null("Panel_Despensa/Scroll_Tuppers") as ScrollContainer
+	if scroll_tuppers != null:
+		scroll_tuppers.position = Vector2.ZERO
+		scroll_tuppers.size = Vector2(680, alto_contenido)
+		scroll_tuppers.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	var vbox_tuppers := p.get_node_or_null("Panel_Despensa/Scroll_Tuppers/VBox_Tuppers") as VBoxContainer
+	if vbox_tuppers != null:
+		vbox_tuppers.add_theme_constant_override("separation", 10)
+	var sin_tuppers := p.get_node_or_null("Panel_Despensa/Sin_Tuppers_Label") as Label
+	if sin_tuppers != null:
+		sin_tuppers.position = Vector2(20, 60)
+		sin_tuppers.size = Vector2(640, 120)
+		sin_tuppers.add_theme_font_override("font", Estilos_UI.fuente_ui(400))
+		sin_tuppers.add_theme_font_size_override("font_size", 15)
+		sin_tuppers.add_theme_color_override("font_color", Estilos_UI.TINTA_SUAVE)
+
 	var cont := p.get_node_or_null("Contenido_Mensaje") as ColorRect
 	if cont != null:
 		cont.position = Vector2(20, 246)
-		cont.size = Vector2(680, 922)
+		cont.size = Vector2(680, alto_contenido)
 		cont.color = Estilos_UI.FONDO
 		var card := cont.get_node_or_null("Mensaje_Card") as Panel
 		if card != null:
 			card.position = Vector2.ZERO
-			card.size = Vector2(680, 900)
+			card.size = Vector2(680, alto_contenido - 22.0)
 			card.add_theme_stylebox_override("panel",
 				Estilos_UI.caja(Estilos_UI.SUPERFICIE, 16, Estilos_UI.BORDE, 1, 1))
 		var volver := cont.get_node_or_null("Boton_Volver") as Button
@@ -3673,7 +4147,7 @@ func _Redisenar_Perfil() -> void:
 		var desc := cont.get_node_or_null("Descripcion_Mensaje_Label") as Label
 		if desc != null:
 			desc.position = Vector2(24, 152)
-			desc.size = Vector2(632, 720)
+			desc.size = Vector2(632, alto_contenido - 202.0)
 			desc.vertical_alignment = VERTICAL_ALIGNMENT_TOP
 			desc.add_theme_font_override("font", Estilos_UI.fuente_ui(400))
 			desc.add_theme_font_size_override("font_size", 16)
@@ -3717,8 +4191,8 @@ func _Conectar_Tienda() -> void:
 	var acciones := {
 		"Cama_Basica": [_on_comprar_cama_basica_pressed, _on_vender_cama_basica_pressed, _on_elegir_cama_basica_pressed],
 		"Cama_Premium": [_on_comprar_cama_premium_pressed, _on_vender_cama_premium_pressed, _on_elegir_cama_premium_pressed],
+		"Cama_Lujo": [_on_comprar_cama_lujo_pressed, _on_vender_cama_lujo_pressed, _on_elegir_cama_lujo_pressed],
 		"Mesa_Basica": [_on_comprar_mesa_basica_pressed, _on_vender_mesa_basica_pressed, _on_elegir_mesa_basica_pressed],
-		"Mesa_Premium": [_on_comprar_mesa_premium_pressed, _on_vender_mesa_premium_pressed, _on_elegir_mesa_premium_pressed],
 		"Ducha_Basica": [_on_comprar_ducha_basica_pressed, _on_vender_ducha_basica_pressed, _on_elegir_ducha_basica_pressed],
 		"Ducha_Premium": [_on_comprar_ducha_premium_pressed, _on_vender_ducha_premium_pressed, _on_elegir_ducha_premium_pressed],
 	}
@@ -3738,8 +4212,9 @@ func _Redisenar_Tienda() -> void:
 	var tienda := get_node_or_null("Tienda") as Control
 	if tienda == null:
 		return
+	var alto := _Alto_Pantalla()
 	tienda.position = Vector2.ZERO
-	tienda.size = Vector2(720, 1280)
+	tienda.size = Vector2(720, alto)
 	var bg := tienda.get_node_or_null("Fondo_Seccion") as ColorRect
 	if bg == null:
 		bg = ColorRect.new()
@@ -3749,7 +4224,7 @@ func _Redisenar_Tienda() -> void:
 		tienda.add_child(bg)
 		tienda.move_child(bg, 0)
 	bg.position = Vector2.ZERO
-	bg.size = Vector2(720, 1280)
+	bg.size = Vector2(720, alto)
 	bg.z_index = -3
 
 	var titulo := tienda.get_node_or_null("Titulo") as Label
@@ -3803,8 +4278,8 @@ func _Redisenar_Tienda() -> void:
 	var iconos := {
 		"Cama_Basica": ["bed-double", Estilos_UI.AZUL_SUAVE, Estilos_UI.AZUL],
 		"Cama_Premium": ["bed-double", Estilos_UI.AZUL, Color.WHITE],
+		"Cama_Lujo": ["sparkles", Estilos_UI.MORADO, Color.WHITE],
 		"Mesa_Basica": ["utensils", Estilos_UI.ORO_SUAVE, Estilos_UI.ORO],
-		"Mesa_Premium": ["utensils-crossed", Estilos_UI.AVISO, Color.WHITE],
 		"Ducha_Basica": ["shower-head", Estilos_UI.EXITO_SUAVE, Estilos_UI.EXITO],
 		"Ducha_Premium": ["bath", Estilos_UI.EXITO, Color.WHITE],
 	}
@@ -3812,7 +4287,7 @@ func _Redisenar_Tienda() -> void:
 		var contenedor := tienda.get_node_or_null("Objetos_" + categoria) as Control
 		if contenedor != null:
 			contenedor.position = Vector2.ZERO
-			contenedor.size = Vector2(720, 1280)
+			contenedor.size = Vector2(720, alto)
 		var claves := iconos.keys()
 		var idx := 0
 		for clave in claves:
@@ -3824,14 +4299,16 @@ func _Redisenar_Tienda() -> void:
 			var card := tienda.get_node_or_null("Objetos_" + categoria + "/" + clave) as Panel
 			if card == null:
 				continue
-			card.position = Vector2(20 if idx == 0 else 368, 248)
-			card.size = Vector2(332, 412)
+			var col := idx % 2
+			var row := idx / 2
+			card.position = Vector2(20 if col == 0 else 368, 248 + row * 386)
+			card.size = Vector2(332, 370)
 			card.add_theme_stylebox_override("panel", Estilos_UI.caja_tarjeta(16, 3))
 
 			var img := card.get_node_or_null("Imagen_Placeholder") as Panel
 			if img != null:
 				img.position = Vector2(14, 14)
-				img.size = Vector2(304, 126)
+				img.size = Vector2(304, 112)
 				var st_img := Estilos_UI.caja(iconos[clave][1], 12, Color(0, 0, 0, 0), 0, 0)
 				st_img.border_width_bottom = 2
 				st_img.border_color = iconos[clave][1].darkened(0.14)
@@ -3842,10 +4319,12 @@ func _Redisenar_Tienda() -> void:
 				var tier_old := img.get_node_or_null("Tier_Pill")
 				if tier_old != null:
 					tier_old.queue_free()
+				var es_lujo := str(clave).contains("Lujo")
 				var es_prem := str(clave).contains("Premium")
-				var tier_pill := Estilos_UI.pill_estado("PREMIUM" if es_prem else "BÁSICO",
-					Color(1, 1, 1, 0.92) if es_prem else Color(1, 1, 1, 0.80),
-					Estilos_UI.ORO if es_prem else Estilos_UI.TINTA_SUAVE)
+				var tier_txt := "LUJO" if es_lujo else ("PREMIUM" if es_prem else "BÁSICO")
+				var tier_bg := Color(1, 1, 1, 0.94) if (es_lujo or es_prem) else Color(1, 1, 1, 0.80)
+				var tier_fg := Estilos_UI.MORADO if es_lujo else (Estilos_UI.ORO if es_prem else Estilos_UI.TINTA_SUAVE)
+				var tier_pill := Estilos_UI.pill_estado(tier_txt, tier_bg, tier_fg)
 				tier_pill.name = "Tier_Pill"
 				tier_pill.position = Vector2(10, 10)
 				img.add_child(tier_pill)
@@ -3857,14 +4336,14 @@ func _Redisenar_Tienda() -> void:
 					img.add_child(icono_item)
 				icono_item.texture = Estilos_UI.icono(iconos[clave][0])
 				icono_item.self_modulate = iconos[clave][2]
-				icono_item.position = Vector2(128, 39)
+				icono_item.position = Vector2(128, 32)
 				icono_item.size = Vector2(48, 48)
 				icono_item.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 				icono_item.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 
 			var nombre := card.get_node_or_null("Nombre") as Label
 			if nombre != null:
-				nombre.position = Vector2(16, 152)
+				nombre.position = Vector2(16, 136)
 				nombre.size = Vector2(300, 28)
 				nombre.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 				nombre.add_theme_font_override("font", Estilos_UI.fuente_ui(700))
@@ -3873,8 +4352,8 @@ func _Redisenar_Tienda() -> void:
 
 			var precio := card.get_node_or_null("Precio") as Label
 			if precio != null:
-				precio.position = Vector2(16, 182)
-				precio.size = Vector2(300, 26)
+				precio.position = Vector2(16, 166)
+				precio.size = Vector2(300, 24)
 				precio.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 				var obj_catalogo = Variables_Estaticas.Catalogo_Objetos.get(clave, null)
 				if obj_catalogo != null:
@@ -3888,7 +4367,7 @@ func _Redisenar_Tienda() -> void:
 
 			var mult := card.get_node_or_null("Multiplicador") as Label
 			if mult != null:
-				mult.position = Vector2(16, 212)
+				mult.position = Vector2(16, 194)
 				mult.size = Vector2(300, 22)
 				mult.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 				mult.add_theme_font_override("font", Estilos_UI.fuente_ui(500))
@@ -3897,19 +4376,19 @@ func _Redisenar_Tienda() -> void:
 
 			var uso := card.get_node_or_null("En_Uso") as Label
 			if uso != null:
-				uso.position = Vector2(16, 244)
-				uso.size = Vector2(300, 24)
+				uso.position = Vector2(16, 224)
+				uso.size = Vector2(300, 22)
 				uso.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 				uso.add_theme_font_override("font", Estilos_UI.fuente_ui(700))
 				uso.add_theme_font_size_override("font_size", 13)
 				uso.add_theme_color_override("font_color", Estilos_UI.EXITO)
 
-			var ys := {"Comprar": 348, "Elegir": 294, "Vender": 348}
+			var ys := {"Comprar": 312, "Elegir": 258, "Vender": 312}
 			for bn in ys:
 				var b := card.get_node_or_null(bn) as Button
 				if b != null:
 					b.position = Vector2(16, ys[bn])
-					b.size = Vector2(300, 44)
+					b.size = Vector2(300, 42)
 					b.add_theme_font_size_override("font_size", 14)
 			idx += 1
 
@@ -4037,7 +4516,7 @@ func _Crear_Home() -> void:
 	_home = Control.new()
 	_home.name = "Home"
 	_home.position = Vector2(20, 124)
-	_home.size = Vector2(680, 1052)
+	_home.size = Vector2(680, _Alto_Pantalla() - 228.0)
 	_home.z_index = -1
 	add_child(_home)
 
@@ -4309,6 +4788,8 @@ func _Estilo_Actividad_Actual(nombre_act: String) -> Array:
 	var low := nombre_act.to_lower()
 	if low.contains("dormir"):
 		return ["moon", Estilos_UI.INDIGO]
+	elif low.contains("cocinar"):
+		return ["flame", Color("#ea580c")]
 	elif low.contains("comer"):
 		return ["utensils", Estilos_UI.AVISO]
 	elif low.contains("duchar"):
@@ -4508,7 +4989,20 @@ func _Abrir_Mensaje_Desde_Home(indice_original: int) -> void:
 		_Mostrar_Mensaje(indice_original)
 
 
+func _Titulo_Acceso_Rapido(clave: String) -> String:
+	match clave:
+		"Comer_Tupper":
+			return "Comida casera"
+		"Comer_Basura":
+			return "Comida rápida"
+		_:
+			return clave.replace("_", " ")
+
+
 func _Abrir_Desde_Acceso_Rapido(clave: String) -> void:
+	# La antigua acción "Comer" gratuita ahora elige tupper o comida rápida.
+	if clave == "Comer":
+		clave = "Comer_Tupper" if Alimentacion.Tiene_Tupper_Vigente() else "Comer_Basura"
 	_acceso_rapido_clave = clave
 	if _dialog_acceso_rapido == null:
 		_dialog_acceso_rapido = AcceptDialog.new()
@@ -4541,7 +5035,7 @@ func _Abrir_Desde_Acceso_Rapido(clave: String) -> void:
 		)
 		box.add_child(btn_horario)
 
-	_dialog_acceso_rapido.title = clave.replace("_", " ")
+	_dialog_acceso_rapido.title = _Titulo_Acceso_Rapido(clave)
 	_acceso_rapido_desc.text = "Programa %s empezando ahora:" % clave.replace("_", " ").to_lower()
 	_dialog_acceso_rapido.get_ok_button().text = "Cancelar"
 

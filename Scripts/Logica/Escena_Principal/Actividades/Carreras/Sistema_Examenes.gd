@@ -38,6 +38,7 @@ func Calcular_Nota_Examen_Personaje(carrera: Carrera) -> float:
 	var hab_acad = Calcular_Habilidades_Academicas()
 	var nec = Calcular_Necesidades_Examen()
 	var valor_esperado = (progreso * PESO_PROGRESO) + (hab_acad * PESO_HABILIDADES) + (nec * PESO_NECESIDADES)
+	valor_esperado = clamp(valor_esperado + carrera.ajuste_dificultad, 0.0, 100.0)
 	return Distribucion_Normal(valor_esperado)
 
 func Calcular_Nota_Final(carrera: Carrera) -> float:

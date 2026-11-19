@@ -872,6 +872,9 @@ func _calcular_transform_camara() -> Dictionary:
 	match modo:
 		"retrato":
 			view_rect = Rect2(-50.0, -54.0, 100.0, 102.0)
+		"retrato_cercano":
+			# Encuadre de cara para insignias/logos: la cabeza llena el círculo.
+			view_rect = Rect2(-40.0, -44.0, 80.0, 86.0)
 		"cuerpo_completo":
 			if pose == "volando":
 				view_rect = Rect2(-108.0, -78.0, 218.0, 286.0)

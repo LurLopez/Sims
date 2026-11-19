@@ -6,6 +6,7 @@ extends Resource
 @export var emoji: String = "📘"
 @export var años_totales: int = 4
 @export var costo_matricula_anual: float = 500.0
+@export var ajuste_dificultad: float = 0.0
 
 @export var año_actual: int = 1
 @export var progreso_actual: float = 0.0

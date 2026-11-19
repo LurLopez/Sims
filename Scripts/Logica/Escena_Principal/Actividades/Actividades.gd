@@ -1,6 +1,28 @@
 extends Node
 
 func Ejecutar_Actividad(actividad: Actividad, es_aleatoria: bool = false):
+	# El contador de cocina solo sobrevive mientras se cocina de forma continuada.
+	if actividad.nombre != Alimentacion.NOMBRE_COCINAR:
+		Variables_Dinamicas.Minutos_Cocinando_Actuales = 0
+
+	# Cocina: la producción, el coste y el progreso se resuelven en Alimentacion.
+	# Los efectos fisiológicos siguen aplicándose con el motor genérico.
+	if actividad.nombre == Alimentacion.NOMBRE_COCINAR:
+		var resultado_cocina: Dictionary = Alimentacion.Ejecutar_Minuto_Cocinar()
+		if bool(resultado_cocina.get("cancelado", false)):
+			return
+	# Comer_Tupper y Comer_Basura aplican sus propios efectos modulados.
+	elif actividad.nombre == Alimentacion.NOMBRE_TUPPER:
+		var resultado_tupper: Dictionary = Alimentacion.Ejecutar_Minuto_Comer_Tupper(es_aleatoria)
+		if bool(resultado_tupper.get("cancelado", false)):
+			return
+		return
+	elif actividad.nombre == Alimentacion.NOMBRE_BASURA:
+		var resultado_basura: Dictionary = Alimentacion.Ejecutar_Minuto_Comer_Basura()
+		if bool(resultado_basura.get("cancelado", false)):
+			return
+		return
+
 	# Necesidades básicas SIEMPRE se aplican (incluso en actividades aleatorias),
 	# así el personaje no se muere si el jugador no entra durante tiempo.
 	Actividades_Necesidades_Basicas.Ejecutar_Actividad_Necesidades_Basicas_Array(actividad.efectos_necesidades_basicas, actividad.nombre)
@@ -41,7 +63,7 @@ func Crear_Actividad_Aleatoria_Debajo_De_30(indice) -> Actividad:
 	match indice:
 		0: return Variables_Estaticas.Catalogo_Actividades["Salir_A_Correr"]
 		1: return Variables_Estaticas.Catalogo_Actividades["Ver_La_Television"]
-		2: return Variables_Estaticas.Catalogo_Actividades["Comer"]
+		2: return Alimentacion.Elegir_Comida_IA()
 		3: return Variables_Estaticas.Catalogo_Actividades["Dormir"]
 		4: return Variables_Estaticas.Catalogo_Actividades["Duchar"]
 	return Variables_Estaticas.Catalogo_Actividades["Ver_La_Television"]
@@ -89,6 +111,20 @@ func _Prioridad_Celda(celda, _i: int, _j: int) -> int:
 		return celda.Obtener_Prioridad()
 	return 0
 
+
+func Calcular_Duracion_Rango(dia_inicio: int, hora_inicio: int, minuto_inicio: int,
+		dia_final: int, hora_final: int, minuto_final: int) -> int:
+	var min_ini: int = hora_inicio * 60 + minuto_inicio
+	var min_fin: int = hora_final * 60 + minuto_final
+	var duracion: int = (dia_final - dia_inicio) * 1440 + (min_fin - min_ini)
+	if duracion < 0:
+		duracion += 1440
+	return maxi(0, duracion)
+
+
+func Validar_Horario_Cocinar(duracion_min: int) -> Dictionary:
+	return Alimentacion.Validar_Cocinar(duracion_min, Variables_Dinamicas.En_La_Calle)
+
 func Crear_Actividad_Especifica(semana, dia_inicio, dia_final, hora_inicio, hora_final, minuto_inicio, minuto_final, actividad) -> bool:
 	var actividad_obj
 	if actividad is String:
@@ -106,6 +142,12 @@ func Crear_Actividad_Especifica(semana, dia_inicio, dia_final, hora_inicio, hora
 		if par[0] < 0 or par[0] >= 574 or par[1] < 0 or par[1] >= 1440:
 			return false
 
+	# Cocinar exige vivienda y un bloque mínimo de 15 minutos (un tupper).
+	if actividad_obj is Actividad and actividad_obj.nombre == Alimentacion.NOMBRE_COCINAR:
+		var validacion: Dictionary = Alimentacion.Validar_Cocinar(celdas.size(), Variables_Dinamicas.En_La_Calle)
+		if not bool(validacion.get("valido", false)):
+			return false
+
 	# Actividades de baja prioridad (P1): bloquear toda la operación si alguna celda tiene mayor prioridad
 	if actividad_obj is Actividad and actividad_obj.Obtener_Prioridad() == 1:
 		for par in celdas:
@@ -116,6 +158,11 @@ func Crear_Actividad_Especifica(semana, dia_inicio, dia_final, hora_inicio, hora
 	for par in celdas:
 		Crear_Actividad(par[0], par[1], actividad_obj)
 
+	if actividad_obj is String and actividad_obj == "":
+		Sistema_Notificaciones.Cancelar_Notificacion_Actividad(semana, dia_inicio, hora_inicio, minuto_inicio)
+	elif actividad_obj is Actividad:
+		Sistema_Notificaciones.Programar_Notificacion_Actividad(actividad_obj.nombre, semana, dia_inicio, hora_inicio, minuto_inicio)
+
 	Guardar_Variables_Estaticas.save_game()
 	Guardar_Variables_Dinamicas.save_game()
 	return true
@@ -124,16 +171,32 @@ func Crear_Actividad(i, j, actividad) -> bool:
 	# Borrar ("") siempre permitido
 	if actividad is String:
 		Variables_Dinamicas.Matriz_Jugador[j][i] = actividad
+		Variables_Dinamicas.Matriz_Sucia = true
 		return true
 	# Bloquear si la celda existente tiene mayor prioridad
 	var celda_actual = Variables_Dinamicas.Matriz_Jugador[j][i]
 	if _Prioridad_Celda(celda_actual, i, j) > actividad.Obtener_Prioridad():
 		return false
 	Variables_Dinamicas.Matriz_Jugador[j][i] = actividad
+	Variables_Dinamicas.Matriz_Sucia = true
 	return true
 
 
+func Limpiar_Examen_De_Matriz(carrera: Carrera) -> void:
+	if carrera == null or carrera.hora_examen_dia < 0:
+		return
+	var examen_obj = Variables_Estaticas.Catalogo_Actividades.get("Examen_Carrera", null)
+	if examen_obj == null:
+		return
+	for col in range(574):
+		for fila in range(carrera.hora_examen_inicio, mini(1440, carrera.hora_examen_inicio + 60)):
+			if Variables_Dinamicas.Matriz_Jugador[fila][col] == examen_obj:
+				Variables_Dinamicas.Matriz_Jugador[fila][col] = ""
+	Variables_Dinamicas.Matriz_Sucia = true
+
+
 func Escribir_Examen_En_Matriz(carrera: Carrera):
+	Limpiar_Examen_De_Matriz(carrera)
 	var columna: int
 	if Variables_Estaticas.Modo_Rapido:
 		columna = carrera.hora_examen_dia
@@ -150,6 +213,12 @@ func Escribir_Examen_En_Matriz(carrera: Carrera):
 		var fila = carrera.hora_examen_inicio + offset
 		if fila < 1440:
 			Variables_Dinamicas.Matriz_Jugador[fila][columna] = actividad
+	Variables_Dinamicas.Matriz_Sucia = true
+	var sem_ex: int = columna / 7
+	var dia_ex: int = columna % 7
+	var h_ex: int = carrera.hora_examen_inicio / 60
+	var m_ex: int = carrera.hora_examen_inicio % 60
+	Sistema_Notificaciones.Programar_Notificacion_Actividad("Examen de " + carrera.nombre, sem_ex, dia_ex, h_ex, m_ex)
 
 
 func Cobrar_Alquiler():
@@ -205,6 +274,8 @@ func Comprobar_Muerte() -> bool:
 
 
 func _Guardar_Log_Muerte() -> void:
+	if not OS.is_debug_build():
+		return
 	var edad = Variables_Estaticas.Calcular_Edad()
 	var prob_acum = (1.0 - Variables_Dinamicas.Prob_Supervivencia_Acumulada) * 100.0
 	var prob_min = _ultima_prob_muerte_minuto * 100.0
@@ -434,17 +505,26 @@ func Validar_Horario_Fiesta(dia_inicio: int, hora_inicio: int, minuto_inicio: in
 	return _Resultado_Horario_Fiesta(true, duracion, "")
 
 
+# Curva pura de un techo gradual: meseta al mínimo y subida lineal hasta el máximo.
+func Calcular_Cap_Gradual_Puro(minutos_restantes: int, duracion: int, meseta: int,
+		cap_inicial: int, cap_final: int, en_la_calle: bool, dinero: float) -> int:
+	var duracion_estado: int = maxi(1, duracion)
+	var ventana_bajada: int = maxi(1, duracion_estado - meseta)
+	var minutos: int = clampi(minutos_restantes, 0, duracion_estado)
+	var cap: int = cap_inicial
+	if minutos <= ventana_bajada:
+		var progreso_bajada: float = float(ventana_bajada - minutos) / float(ventana_bajada)
+		cap = cap_inicial + int(floor(progreso_bajada * float(cap_final - cap_inicial)))
+	cap = clampi(cap, cap_inicial, cap_final)
+	if en_la_calle or dinero < 0.0:
+		return mini(cap, Variables_Estaticas.BANCARROTA_MAX_NECESIDAD)
+	return cap
+
+
 # Curva pura del techo de Resacón: 8 h a 30 y 16 h de subida gradual hasta 100.
 func Calcular_Cap_Resacon_Puro(minutos_restantes: int, en_la_calle: bool, dinero: float) -> int:
-	var minutos: int = clampi(minutos_restantes, 0, FIESTA_DURACION_ESTADO)
-	var cap_resacon: int = 30
-	if minutos <= FIESTA_VENTANA_BAJADA:
-		var progreso_bajada: float = float(FIESTA_VENTANA_BAJADA - minutos) / float(FIESTA_VENTANA_BAJADA)
-		cap_resacon = 30 + int(floor(progreso_bajada * 70.0))
-	cap_resacon = clampi(cap_resacon, 30, 100)
-	if en_la_calle or dinero < 0.0:
-		return mini(cap_resacon, Variables_Estaticas.BANCARROTA_MAX_NECESIDAD)
-	return cap_resacon
+	return Calcular_Cap_Gradual_Puro(minutos_restantes, FIESTA_DURACION_ESTADO,
+		FIESTA_MESETA_ESTADO, 30, 100, en_la_calle, dinero)
 
 
 # Curva pura del suelo de Euforia: 8 h a 100 y 16 h de bajada gradual hasta 50.
@@ -460,13 +540,28 @@ func Calcular_Suelo_Euforia_Puro(minutos_restantes: int, en_la_calle: bool, dine
 	return suelo
 
 
-func Obtener_Cap_Resacon() -> int:
-	if not Variables_Dinamicas.Estados_Temporales.has(FIESTA_ESTADO_RESACON):
+# Techo genérico para cualquier estado de tipo "cap_gradual" (Resacón, Intoxicación).
+func Obtener_Cap_Estado(nombre_estado: String = "Resacon") -> int:
+	var def: Dictionary = Variables_Estaticas.Estados_Temporales.get(nombre_estado, {})
+	if def.is_empty():
+		return 100
+	if not Variables_Dinamicas.Estados_Temporales.has(nombre_estado):
 		if Variables_Dinamicas.En_La_Calle or Variables_Dinamicas.Dinero < 0:
 			return Variables_Estaticas.BANCARROTA_MAX_NECESIDAD
 		return 100
-	var minutos: int = int(Variables_Dinamicas.Estados_Temporales[FIESTA_ESTADO_RESACON])
-	return Calcular_Cap_Resacon_Puro(minutos, Variables_Dinamicas.En_La_Calle, Variables_Dinamicas.Dinero)
+	var minutos: int = int(Variables_Dinamicas.Estados_Temporales[nombre_estado])
+	return Calcular_Cap_Gradual_Puro(
+		minutos,
+		int(def.get("duracion", FIESTA_DURACION_ESTADO)),
+		int(def.get("meseta", FIESTA_MESETA_ESTADO)),
+		int(def.get("cap_inicial", 30)),
+		int(def.get("cap_final", 100)),
+		Variables_Dinamicas.En_La_Calle,
+		Variables_Dinamicas.Dinero)
+
+
+func Obtener_Cap_Resacon() -> int:
+	return Obtener_Cap_Estado(FIESTA_ESTADO_RESACON)
 
 
 func Obtener_Suelo_Euforia() -> int:
@@ -493,26 +588,32 @@ func Activar_Estado(nombre_estado: String) -> void:
 	var def: Dictionary = Variables_Estaticas.Estados_Temporales[nombre_estado]
 
 	# Euforia y Resacón son mutuamente excluyentes: el último sustituye al anterior.
-	var opuesto: String = FIESTA_ESTADO_RESACON if nombre_estado == FIESTA_ESTADO_EUFORIA else FIESTA_ESTADO_EUFORIA
-	Variables_Dinamicas.Estados_Temporales.erase(opuesto)
+	# Intoxicación es independiente y puede convivir con cualquiera de ellos.
+	if nombre_estado == FIESTA_ESTADO_EUFORIA:
+		Variables_Dinamicas.Estados_Temporales.erase(FIESTA_ESTADO_RESACON)
+	elif nombre_estado == FIESTA_ESTADO_RESACON:
+		Variables_Dinamicas.Estados_Temporales.erase(FIESTA_ESTADO_EUFORIA)
 	Variables_Dinamicas.Estados_Temporales[nombre_estado] = int(def.get("duracion", FIESTA_DURACION_ESTADO))
 
-	if nombre_estado == FIESTA_ESTADO_EUFORIA:
+	var tipo: String = str(def.get("tipo", ""))
+	if tipo == "suelo_gradual":
 		var suelo: int = Obtener_Suelo_Euforia()
+		var indice_suelo: int = int(def.get("indice", 1))
 		if Variables_Dinamicas.En_La_Calle or Variables_Dinamicas.Dinero < 0:
-			Variables_Dinamicas.Necesidades_Basicas[1] = mini(
+			Variables_Dinamicas.Necesidades_Basicas[indice_suelo] = mini(
 				Variables_Estaticas.BANCARROTA_MAX_NECESIDAD,
-				maxi(Variables_Dinamicas.Necesidades_Basicas[1], suelo))
+				maxi(Variables_Dinamicas.Necesidades_Basicas[indice_suelo], suelo))
 		else:
-			Variables_Dinamicas.Necesidades_Basicas[1] = maxi(
-				Variables_Dinamicas.Necesidades_Basicas[1], suelo)
-	elif nombre_estado == FIESTA_ESTADO_RESACON:
-		var cap: int = Obtener_Cap_Resacon()
-		for indice in [0, 1]:
-			Variables_Dinamicas.Necesidades_Basicas[indice] = mini(
-				Variables_Dinamicas.Necesidades_Basicas[indice], cap)
+			Variables_Dinamicas.Necesidades_Basicas[indice_suelo] = maxi(
+				Variables_Dinamicas.Necesidades_Basicas[indice_suelo], suelo)
+	elif tipo == "cap_gradual":
+		var cap: int = Obtener_Cap_Estado(nombre_estado)
+		for indice in def.get("indices", []):
+			if int(indice) >= 0 and int(indice) < Variables_Dinamicas.Necesidades_Basicas.size():
+				Variables_Dinamicas.Necesidades_Basicas[int(indice)] = mini(
+					Variables_Dinamicas.Necesidades_Basicas[int(indice)], cap)
 
-	var titulo: String = "Has ligado" if nombre_estado == FIESTA_ESTADO_EUFORIA else "Resacón"
+	var titulo: String = str(def.get("titulo_inicio", nombre_estado))
 	_Añadir_Mensaje_Estado(titulo, str(def.get("mensaje_inicio", "")))
 
 
@@ -523,22 +624,25 @@ func Tick_Estados() -> void:
 		return
 	for nombre in Variables_Dinamicas.Estados_Temporales.keys():
 		var minutos: int = int(Variables_Dinamicas.Estados_Temporales[nombre])
-		if nombre == FIESTA_ESTADO_EUFORIA:
+		var def: Dictionary = Variables_Estaticas.Estados_Temporales.get(nombre, {})
+		var tipo: String = str(def.get("tipo", ""))
+		if tipo == "suelo_gradual":
 			var suelo: int = Obtener_Suelo_Euforia()
-			if Variables_Dinamicas.Necesidades_Basicas[1] < suelo:
-				Variables_Dinamicas.Necesidades_Basicas[1] = suelo
-		elif nombre == FIESTA_ESTADO_RESACON:
-			var cap: int = Obtener_Cap_Resacon()
-			for indice in [0, 1]:
-				if Variables_Dinamicas.Necesidades_Basicas[indice] > cap:
-					Variables_Dinamicas.Necesidades_Basicas[indice] = cap
+			var indice_suelo: int = int(def.get("indice", 1))
+			if Variables_Dinamicas.Necesidades_Basicas[indice_suelo] < suelo:
+				Variables_Dinamicas.Necesidades_Basicas[indice_suelo] = suelo
+		elif tipo == "cap_gradual":
+			var cap: int = Obtener_Cap_Estado(nombre)
+			for indice in def.get("indices", []):
+				if int(indice) >= 0 and int(indice) < Variables_Dinamicas.Necesidades_Basicas.size():
+					if Variables_Dinamicas.Necesidades_Basicas[int(indice)] > cap:
+						Variables_Dinamicas.Necesidades_Basicas[int(indice)] = cap
 
 		minutos -= 1
 		if minutos <= 0:
 			Variables_Dinamicas.Estados_Temporales.erase(nombre)
-			var def: Dictionary = Variables_Estaticas.Estados_Temporales.get(nombre, {})
-			var titulo: String = "Fin de la euforia" if nombre == FIESTA_ESTADO_EUFORIA else "Fin del resacón"
-			_Añadir_Mensaje_Estado(titulo, str(def.get("mensaje_fin", "")))
+			var titulo_fin: String = str(def.get("titulo_fin", "Fin de " + nombre))
+			_Añadir_Mensaje_Estado(titulo_fin, str(def.get("mensaje_fin", "")))
 		else:
 			Variables_Dinamicas.Estados_Temporales[nombre] = minutos
 
@@ -559,6 +663,21 @@ func Es_Primer_Minuto_Del_Bloque(i: int, j: int) -> bool:
 	if i_prev < 0 or i_prev >= matriz[0].size() or j_prev < 0 or j_prev >= matriz.size():
 		return true
 	return not _Es_Fiesta(matriz[j_prev][i_prev])
+
+
+func Es_Ultimo_Minuto_Del_Bloque(i: int, j: int, actividad: Actividad) -> bool:
+	var matriz = Variables_Dinamicas.Matriz_Jugador
+	if matriz.is_empty() or matriz[0].is_empty() or actividad == null:
+		return false
+	var i_next: int = i
+	var j_next: int = j + 1
+	if j_next >= 1440:
+		j_next = 0
+		i_next += 1
+	if i_next < 0 or i_next >= matriz[0].size() or j_next < 0 or j_next >= matriz.size():
+		return true
+	var celda_next = matriz[j_next][i_next]
+	return not (celda_next is Actividad and celda_next.nombre == actividad.nombre)
 
 
 func Resolver_Evento_Fiesta() -> void:
@@ -593,16 +712,25 @@ func Actualizar_Horario(minutos_a_procesar: int) -> bool:
 			Funciones_Globales.Guardar_Matriz()
 			return true
 		var celda = Variables_Dinamicas.Matriz_Jugador[Variables_Dinamicas.Minute_Minute][Variables_Dinamicas.Minute_Day]
+		var cd_pendiente: Dictionary = Variables_Dinamicas.Carrera_Deportiva_Pendiente
+		if cd_pendiente.get("inscrito", false) and cd_pendiente.get("resultado_puesto", -1) == -1:
+			if int(Variables_Dinamicas.Minute_Day / 7) == int(cd_pendiente.get("semana_inscripcion", -1)) \
+			and (Variables_Dinamicas.Minute_Day % 7) == int(cd_pendiente.get("dia", -1)) \
+			and Variables_Dinamicas.Minute_Minute == int(cd_pendiente.get("hora_inicio", -1)):
+				get_node("/root/Sistema_Carreras_Deportivas").Calcular_Y_Guardar_Resultado()
 		var es_fiesta: bool = _Es_Fiesta(celda)
 		if es_fiesta and Es_Primer_Minuto_Del_Bloque(Variables_Dinamicas.Minute_Day, Variables_Dinamicas.Minute_Minute):
 			Variables_Dinamicas.Fiesta_Evento_Ocurrido = false
 		if celda == null or (celda is String and celda == ""):
 			Variables_Dinamicas.Matriz_Jugador[Variables_Dinamicas.Minute_Minute][Variables_Dinamicas.Minute_Day] = "Actividad_Aleatoria"
+			Variables_Dinamicas.Matriz_Sucia = true
 			Ejecutar_Actividad(Crear_Actividad_Aleatoria(), true)
 		elif celda is String and celda == "Actividad_Aleatoria":
 			Ejecutar_Actividad(Crear_Actividad_Aleatoria(), true)
 		else:
 			Ejecutar_Actividad(celda)
+			if celda is Actividad and Es_Ultimo_Minuto_Del_Bloque(Variables_Dinamicas.Minute_Day, Variables_Dinamicas.Minute_Minute, celda):
+				Actividades_Habilidades.Registrar_Pista_Contextual(celda)
 
 		# Evento especial de fiesta: como máximo uno por bloque (ligar o resacón).
 		if es_fiesta and not Variables_Dinamicas.Fiesta_Evento_Ocurrido:
@@ -621,6 +749,29 @@ func Actualizar_Horario(minutos_a_procesar: int) -> bool:
 			Variables_Dinamicas.Minute_Minute = Variables_Dinamicas.Minute_Minute + 1
 
 		Variables_Dinamicas.Minute = Variables_Dinamicas.Minute + 1
+
+		# Decadencia del progreso por desuso (>5 días sin práctica relacionada)
+		Actividades_Habilidades.Comprobar_Decadencia_Progreso()
+
+		# Carrera deportiva: generación semanal el lunes 00:00 y premio al finalizar
+		var cd_semana_actual: int = Variables_Dinamicas.Minute_Day / 7
+		var cd_dia_semana: int = Variables_Dinamicas.Minute_Day % 7
+		var cd_minuto_dia: int = Variables_Dinamicas.Minute_Minute
+		if cd_dia_semana == 0 and cd_minuto_dia == 0:
+			if not Variables_Dinamicas.Carrera_Deportiva_Pendiente.get("inscrito", false):
+				var total_inscritos: int = int(clamp(randfn(100.0, 15.0), 60.0, 140.0))
+				Variables_Dinamicas.Carrera_Deportiva_Pendiente["total_inscritos"] = total_inscritos
+				Variables_Dinamicas.Carrera_Deportiva_Pendiente["resultado_puesto"] = -1
+				Variables_Dinamicas.Carrera_Deportiva_Pendiente["resultado_procesado"] = false
+		var cd_pend: Dictionary = Variables_Dinamicas.Carrera_Deportiva_Pendiente
+		if cd_pend.get("inscrito", false) \
+		and int(cd_pend.get("resultado_puesto", -1)) != -1 \
+		and not cd_pend.get("resultado_procesado", false):
+			var cd_hora_fin: int = int(cd_pend.get("hora_inicio", -1)) + 60
+			if cd_semana_actual == int(cd_pend.get("semana_inscripcion", -1)) \
+			and cd_dia_semana == int(cd_pend.get("dia", -1)) \
+			and cd_minuto_dia >= cd_hora_fin:
+				get_node("/root/Sistema_Carreras_Deportivas").Aplicar_Premio_Y_Notificar()
 
 		# Tick de inversión: fluctúa el valor cada ~480 min (8 horas de juego).
 		if Variables_Dinamicas.Esta_Invirtiendo:
@@ -658,6 +809,7 @@ func Actualizar_Horario(minutos_a_procesar: int) -> bool:
 					Escribir_Examen_En_Matriz(c)
 				else:
 					# Sin dinero: cancelar prematrícula silenciosamente
+					Limpiar_Examen_De_Matriz(c)
 					c.prematriculado = false
 					c.hora_examen_dia = -1
 

@@ -38,7 +38,8 @@ Tu objetivo es **planificar, diseñar y especificar al 100 % nuevas funcionalida
 6. **Claves ASCII estables:** Sin tildes ni espacios en claves de `Catalogo_Actividades`, `Catalogo_Objetos` o diccionarios de guardado.
 7. **Rendimiento O(1) por minuto:** Nada de escaneos completos de `Matriz_Jugador` ni trabajo pesado en `_process`.
 8. **Compatibilidad hacia atrás en saves:** Cualquier campo nuevo en `Variables_Dinamicas` debe tener fallback seguro en `Guardar_Variables_Dinamicas.load_game()` usando `.get("clave", default)` o `if game_data.has(...)`.
-9. **Resolución 720×1280 portrait:** Toda UI nueva debe caber en 720px de ancho sin desbordarse ni cortarse.
+9. **Resolución 720×1280 portrait:** Toda UI nueva debe caber en 720px de ancho sin desbordarse ni cortarse. Con `stretch/aspect="expand"` el alto visible crece en móviles alargados (p. ej. 720×1600); los fondos, el dock inferior y las secciones deben usar `_Alto_Pantalla()` (alto real del viewport) en vez de 1280 fijo, y recolocarse en `get_viewport().size_changed`.
+10. **Orientación Android:** `display/window/handheld/orientation` debe ser el entero `1` (Portrait). El exportador hace `int()` del valor; el string `"portrait"` se convierte en `0` (Landscape).
 
 ---
 
@@ -53,9 +54,10 @@ Tu objetivo es **planificar, diseñar y especificar al 100 % nuevas funcionalida
 8. `Actividades_Necesidades_Basicas` (`Scripts/Logica/Escena_Principal/Actividades/Actividades_Necesidades_Basicas.gd`) — Aplicación de efectos a necesidades, multiplicadores de objetos y cap de bancarrota.
 9. `Sistema_Examenes` (`Scripts/Logica/Escena_Principal/Actividades/Carreras/Sistema_Examenes.gd`) — Progreso de carrera, matrículas y cálculo de exámenes semanales.
 10. `Actividades` (`Scripts/Logica/Escena_Principal/Actividades/Actividades.gd`) — Bucle principal minuto a minuto (`Actualizar_Horario`), ejecución de actividades, alquiler, tienda, bolsa y muerte.
-11. `Eventos_Aleatorios` (`Scripts/Logica/Escena_Principal/Actividades/Eventos_Aleatorios.gd`) — Despido por higiene y 20 eventos generales con franja horaria.
-12. `Gestionar_Visibilidad` (`Scripts/GUI/Escena_Principal/Gestionar_Visibilidad.gd`) — Control de pantallas/paneles en `Escena principal.tscn`.
-13. `Debug_Cargar_Guardado` (`Scripts/Otro/Debug/Debug_Cargar_Guardado.gd`) — Utilidades de debug.
+11. `Alimentacion` (`Scripts/Logica/Escena_Principal/Actividades/Alimentacion.gd`) — Cocina, tuppers, caducidad, intoxicación, comida rápida y selección de comida de la IA.
+12. `Eventos_Aleatorios` (`Scripts/Logica/Escena_Principal/Actividades/Eventos_Aleatorios.gd`) — Despido por higiene y 20 eventos generales con franja horaria.
+13. `Gestionar_Visibilidad` (`Scripts/GUI/Escena_Principal/Gestionar_Visibilidad.gd`) — Control de pantallas/paneles en `Escena principal.tscn`.
+14. `Debug_Cargar_Guardado` (`Scripts/Otro/Debug/Debug_Cargar_Guardado.gd`) — Utilidades de debug.
 
 ---
 
@@ -71,8 +73,8 @@ Tu objetivo es **planificar, diseñar y especificar al 100 % nuevas funcionalida
      - `Barra_Abajo` → `Boton_Habilidades`, `Boton_Progreso`, `Boton_Actividades`, `Boton_Necesidades_Basicas`.
      - `Fondo`, `Progreso` (oculto), `Necesidades_Basicas`, `Trabajo` (oculto), `Habilidades` (oculto).
      - `Actividades`: contiene `Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones/[Necesidades_Basicas_Opciones|Progreso_Opciones]`, `Horario_Semanal/[OPCIONES_CALENDARIO|Cabezal_horario|Mover_Vertical/Todo calendario/Dias]`, `Seleccionar_Horario/[Inicio|Final|Cancelar|Crear_Actividad]`.
-     - `Tienda` (instancia de `Tienda.tscn`): `Flecha_Atras`, `Categorias/[Tab_Dormir|Tab_Comer|Tab_Duchar]`, `Objetos_Dormir/...`, `Objetos_Comer/...`, `Objetos_Duchar/...`.
-     - `Pantalla_Mensajes` (instancia de `Pantalla_Mensajes.tscn`): `Tab_Bar/[Tab_Mensajes|Tab_Info|Tab_Apuntes]`, `Panel_Info`, `Panel_Apuntes`, `Lista_Mensajes`, `Contenido_Mensaje`.
+     - `Tienda` (instancia de `Tienda.tscn`): `Flecha_Atras`, `Categorias/[Tab_Dormir|Tab_Comer|Tab_Duchar]`, `Objetos_Dormir/...`, `Objetos_Comer/Mesa_Basica`, `Objetos_Duchar/...`.
+     - `Pantalla_Mensajes` (instancia de `Pantalla_Mensajes.tscn`): `Tab_Bar/[Tab_Mensajes|Tab_Info|Tab_Apuntes|Tab_Despensa]`, `Panel_Info`, `Panel_Apuntes`, `Panel_Despensa/Scroll_Tuppers/VBox_Tuppers`, `Lista_Mensajes`, `Contenido_Mensaje`.
    - **Modales dinámicos:** Creados/instanciados desde código (`Modal_Seleccionar_Carrera.gd`, `Modal_Seleccionar_Examen.gd`, `Modal_Examen.gd`, `Lector_Libros.gd`, `Lector_Libro.gd`, `Tutorial_Inicial.gd`).
    - **Escenario visual:** `Escenario_Actividad.gd`, `Personaje_Visual.gd`, `Apariencia_Personaje.gd`.
 
@@ -85,6 +87,13 @@ Tu objetivo es **planificar, diseñar y especificar al 100 % nuevas funcionalida
 - **Nuevo objeto en Tienda:** `Tienda.tscn` (copiar bloque existente), conexiones al final de `Escena principal.tscn`, registrar en `Variables_Estaticas._Inicializar_Catalogo_Objetos()`.
 - **Nueva actividad temporal:** botón en `Escena principal.tscn` dentro de `Necesidades_Basicas_Opciones` o `Progreso_Opciones`, registrar en `Variables_Estaticas._Inicializar_Catalogo()`, añadir subtítulo/icono en `Script_Principal.gd` / `Estilos_UI.gd` y handler de botón.
 - **Nuevo trabajo de nómina:** botón en `Trabajo/Actividades_Trabajo_Nomina_Opciones`, registrar `Actividad_Fija_Trabajo` en `Variables_Estaticas.gd`, helper en `Trabajo.gd` y verificación de requisitos en `Script_Principal._Cumple_Requisitos_Trabajo()`.
+
+### Build Android (APK)
+- **Compilar:** `./exportar_apk.sh` (debug) o `./exportar_apk.sh --release`; `--instalar` instala por ADB. Salida: `build/sims-0.33.apk` (arm64-v8a).
+- **Orientación:** `display/window/handheld/orientation=1` (int, Portrait). Un string `"portrait"` se interpreta como `0` (Landscape) al exportar.
+- **Pantalla completa:** `screen/immersive_mode=true` en `export_presets.cfg` → `--fullscreen` al arrancar. `screen/edge_to_edge=false`.
+- **Splash sin logo de Godot:** `application/boot_splash/show_image=false` + `splash_screen/disable_godot_boot_splash=true` en el preset.
+- **Iconos:** `Iconos_Android/` (192, adaptativo frente/fondo/monocromo 432, splash 512) generados desde `icon.svg` con `Scripts/Otro/Herramientas/Generar_Iconos_Android.gd`.
 
 ---
 
@@ -103,6 +112,10 @@ Tu objetivo es **planificar, diseñar y especificar al 100 % nuevas funcionalida
   - `[0]` Deporte
   - `[1]` Académico
   - `[2]` Manualidades
+- `Progreso_Cocina`: int (`1..100`), destreza culinaria; sube cocinando y no decae.
+- `Tuppers`: Array de diccionarios `{id, porcentaje_restante, calidad, minuto_creacion, minuto_caducidad}`. Un tupper completo = 30 min (3,333 %/min).
+- `Tupper_Seleccionado_Idx`: int (`-1` = automático).
+- `Minutos_Cocinando_Actuales`: int volátil (no se guarda).
 - `Habilidades_Mostradas`: Array de **7 ints** (`0..100`), uno por cada habilidad innata. Solo sube; se detiene al alcanzar `Variables_Estaticas.Habilidades[i]`.
 - `Dinero`: float.
 - `En_La_Calle`: bool (`true` si no pudo pagar alquiler).
@@ -114,14 +127,14 @@ Tu objetivo es **planificar, diseñar y especificar al 100 % nuevas funcionalida
 - `Carreras_Completadas`: Array de `Carrera`.
 - `Inicio_Semana_Carrera`: int (`-1` si no aplica).
 - `Mensajes`: Array de objetos `Mensaje` (`titulo`, `descripcion`, `leido`, `minuto`).
-- `Estados_Temporales`: Dictionary `{ "Euforia"|"Resacon": minutos_restantes }`. Son mutuamente excluyentes y duran 1440 min (480 de meseta + 960 de bajada).
+- `Estados_Temporales`: Dictionary `{ "Euforia"|"Resacon"|"Intoxicacion": minutos_restantes }`. Euforia y Resacón son mutuamente excluyentes; Intoxicación puede convivir con ellos. Todos duran 1440 min (480 de meseta + 960 de bajada).
 - `Fiesta_Evento_Ocurrido`: bool. `true` si ya ocurrió un evento (ligar o resacón) en el bloque de fiesta actual.
 - `Esta_Invirtiendo`: bool, `Dinero_Invertido`: float, `Valor_Inversion`: float, `Salud_Mental_Al_Invertir`: int (snapshot al invertir), `Progreso_Inversion`: int (`1..100`).
 - `Cooldown_Trabajos`: Dictionary `{nombre_trabajo: minuto_fin_cooldown}`.
 - `Muerto`: bool, `Edad_Muerte`: int, `Prob_Supervivencia_Acumulada`: float.
 
 ### `Variables_Estaticas` (`user://guardado/variables/Guardar_Variables_Estaticas.dat`)
-- Constantes: `ALQUILER_SEMANAL = 200`, `BANCARROTA_MAX_NECESIDAD = 20`.
+- Constantes: `ALQUILER_SEMANAL = 200`, `BANCARROTA_MAX_NECESIDAD = 20`, `COSTE_COCINAR_BASE = 2.0`, `COSTE_COMIDA_BASURA_BASE = 2.0`, `DIAS_CADUCIDAD_TUPPER = 3`, `MINUTOS_POR_TUPPER = 15`, `MINUTOS_COMIDOS_POR_TUPPER = 30`.
 - `First_Time`: bool, `Modo_Rapido`: bool, `Tutorial_Completado`: bool.
 - `First_Time_Minute`, `First_Time_Minute_Day`, `First_Time_Minute_Minute`, `First_Time_Year`, `First_Time_Month`, `First_Time_Day_Of_Month`.
 - `Personalidad`: `"Trabajador_Compulsivo"` | `"Deportista"` | `"Culo_Del_Sofa"`.
@@ -135,8 +148,8 @@ Tu objetivo es **planificar, diseñar y especificar al 100 % nuevas funcionalida
   - `[5]` Paciencia
   - `[6]` **Sangre Fría** (usada en exámenes académicos y auto-venta por pánico en bolsa).
 - `Catalogo_Actividades`: Dictionary `{nombre: Actividad}` (no se guarda, se reconstruye en `_ready()`).
-- `Estados_Temporales`: Dictionary con las definiciones de `Euforia` y `Resacon` (duración, meseta, curvas, índices y mensajes de inicio/fin).
-- `Actividades`: Array de 7 actividades elegibles para relleno aleatorio cuando una celda está vacía.
+- `Estados_Temporales`: Dictionary con las definiciones de `Euforia`, `Resacon` e `Intoxicacion` (duración, meseta, curvas, índices, títulos y mensajes de inicio/fin).
+- `Actividades`: Array de 6 actividades elegibles para relleno aleatorio cuando una celda está vacía. `Cocinar`, `Comer_Tupper` y `Comer_Basura` quedan fuera del pool.
 - `Catalogo_Objetos`: Dictionary `{clave: Objeto}`.
 
 ---
@@ -152,7 +165,7 @@ Por cada minuto transcurrido:
    - Si es un objeto `Actividad`: ejecuta `Ejecutar_Actividad(celda, false)`.
 3. **Fiesta:** si la celda es `Salir_De_Fiesta`, comprueba `Es_Primer_Minuto_Del_Bloque`; si es el primero, `Fiesta_Evento_Ocurrido = false`. Tras aplicar los efectos del minuto, si no ha ocurrido un evento, `Resolver_Evento_Fiesta()` tira ligar (primero) y resacón.
 4. **Actividad aleatoria (`Crear_Actividad_Aleatoria`):**
-   - Busca la necesidad básica más baja. Si `< 30`, elige la actividad que la recupera (`0→Salir_A_Correr`, `1→Ver_La_Television`, `2→Comer`, `3→Dormir`, `4→Duchar`).
+   - Busca la necesidad básica más baja. Si `< 30`, elige la actividad que la recupera (`0→Salir_A_Correr`, `1→Ver_La_Television`, `2→Alimentacion.Elegir_Comida_IA()`, `3→Dormir`, `4→Duchar`). Para Hambre, la IA usa tupper vigente, comida rápida si hay dinero, tupper caducado como último recurso o `Ver_La_Television` si no puede comer.
    - Si todas `>= 30`, tiene 50 % de probabilidad de elegir la actividad favorita de `Personalidad` (`Trabajador_Compulsivo→Estudiar`, `Deportista→Salir_A_Correr`, `Culo_Del_Sofa→Ver_La_Television`) y 50 % de elegir una al azar de `Variables_Estaticas.Actividades`.
    - **Importante:** cuando `es_aleatoria == true`, **solo** aplica Necesidades Básicas; **no** da Progreso, **no** revela Habilidades y **no** avanza la Carrera.
 5. Llama a `Eventos_Aleatorios.Tick_Eventos(celda)`.
@@ -167,7 +180,7 @@ Por cada minuto transcurrido:
 - Frecuencias base por índice: `[30, 30, 12, 15, 20]` (Salud Física 30, Salud Mental 30, Hambre 12, Descanso 15, Higiene 20).
 - Para cada necesidad cuyo efecto `por_cuanto != 0`:
   - `valor_maximo = floor(frecuencia / abs(por_cuanto))`
-  - Si `por_cuanto > 0` y la actividad es `"Dormir"`, `"Comer"` o `"Duchar"`, se divide por el `multiplicador` del objeto seleccionado: `valor_maximo = max(1, floor(valor_maximo / multiplicador))`.
+  - Si `por_cuanto > 0` y la actividad es `"Dormir"` o `"Duchar"`, se divide por el `multiplicador` del objeto seleccionado: `valor_maximo = max(1, floor(valor_maximo / multiplicador))`. Las mesas ya no afectan a comer.
   - Con probabilidad `1 / valor_maximo` (cuando `randi() % valor_maximo == 0`), suma o resta `1` a `Necesidades_Basicas[indice]` (rango `1..100`).
 - **Penalización de calle / bancarrota:** si `En_La_Calle == true` o `Dinero < 0`, cualquier necesidad por encima de `BANCARROTA_MAX_NECESIDAD` (`20`) se recorta a `20`.
 
@@ -190,7 +203,9 @@ Clases en `Scripts/Logica/Escena_Principal/Actividades/Herencia/`:
 - `Actividad` (Prioridad **P1**): base.
 - `Actividad_Temporal` (P1):
   - `Dormir`: NB `[1, 1, -1, 4, -1]`, Prog `[0,0,0]`
-  - `Comer`: NB `[-1, 2, 20, -1, -1]`, Prog `[0,0,0]`
+  - `Cocinar`: NB `[-1, 1, -2, -2, -2]`, Prog `[0,0,0]` (produce tuppers y sube `Progreso_Cocina`; ver D3)
+  - `Comer_Tupper`: NB `[1, 2, 20, -1, -1]`, Prog `[0,0,0]` (física/mental moduladas por calidad)
+  - `Comer_Basura`: NB `[-2, 2, 20, -1, -1]`, Prog `[0,0,0]`
   - `Duchar`: NB `[1, 1, -1, -1, 20]`, Prog `[0,0,0]`
   - `Ver_La_Television`: NB `[-1, 5, -1, 2, -1]`, Prog `[0,0,0]`
   - `Estudiar`: NB `[-1, -2, -1, -2, -1]`, Prog `[0, 4, 0]` (también avanza `Carrera_Actual` si hay una activa)
@@ -207,6 +222,10 @@ Clases en `Scripts/Logica/Escena_Principal/Actividades/Herencia/`:
   - `Trabajar_De_Abogado`: 9–17h, `30.0€/h`, Académico ≥ 50, carrera `Derecho`.
   - `Trabajar_De_Medico`: 9–17h, `35.0€/h`, Académico ≥ 60, carrera `Medicina`.
   - `Trabajar_De_Artista`: 9–17h, `25.0€/h`, Manualidades ≥ 50, carrera `Bellas_Artes`.
+  - `Trabajar_De_Ayudante_Cocina`: 11–19h, `17.0€/h`, `requisito_cocina = 30`.
+  - `Trabajar_De_Cocinero_Partida`: 12–20h, `24.0€/h`, `requisito_cocina = 60`.
+  - `Trabajar_De_Chef_Ejecutivo`: 13–21h, `36.0€/h`, `requisito_cocina = 85`.
+  - `Actividad_Fija_Trabajo` incorpora `requisito_cocina: int = 0`, validado en `Script_Principal._Cumple_Requisitos_Trabajo()`.
 
 ### D2. Salir de Fiesta (`Salir_De_Fiesta`)
 - Actividad `Actividad_Temporal` P1, color `Color(0.85, 0.15, 0.45)`, NB `[0, 9, -3, -4, -2]`, Prog `[0, 0, 0]`. **No** está en `Variables_Estaticas.Actividades`.
@@ -225,10 +244,31 @@ Clases en `Scripts/Logica/Escena_Principal/Actividades/Herencia/`:
 - Vista previa pura `Simular_Preview_Fiesta`: proyecta NB con `delta = signo(efecto) * min(1, abs(efecto)/frecuencia)` y acumula riesgos competitivos. `p_ligar + p_resacon + p_nada = 1`.
 - UI: botón `Necesidades_Basicas_Opciones/Salir_De_Fiesta` (`party-popper`, `Noche · 2–12 h · Prob. según estado`), flujo de dos pasos para reabrir `Seleccionar_Horario` con preview, panel `Preview_Fiesta` (688×584 en y=174) y label `Estado_Temporal_Label` en `Resumen_Necesidades`.
 - Persistencia: `Estados_Temporales` y `Fiesta_Evento_Ocurrido` en el save dinámico, con fallback `{}`/`false`, filtrado de claves y saneado de ambos estados.
-- Tests: `Funcionalidades/Actividades/Actividades_Temporales/Tests/test_salir_de_fiesta.gd` (63 tests propios; suite completa 100/100).
+- Tests: `Funcionalidades/Actividades/Actividades_Temporales/Tests/test_salir_de_fiesta.gd` y `test_cocina_y_alimentacion.gd` (suite de Actividades Temporales).
+
+### D3. Cocina, Tuppers y Alimentación Dual (`Alimentacion.gd`)
+- **Actividades:** `Cocinar`, `Comer_Tupper`, `Comer_Basura` (P1, fuera del pool aleatorio). La antigua `Comer` gratuita se elimina del catálogo; las celdas `"Comer"` de saves antiguos se migran a `"Comer_Basura"` al cargar.
+- **Costes:** `2 € * Multiplicador_Precios()` por ciclo de 15 min de cocina y por cada cobro de 5 min de comida rápida. Caducidad: 3 días (normal) / 1 día (rápido).
+- **Cocinar:**
+  - Requiere `En_La_Calle == false` y ≥ 15 min. Si el bloque ya estaba programado y el personaje se queda en la calle, se cancela al ejecutar.
+  - Cada minuto: `suma = 40*Destreza + 25*Paciencia + 20*Sangre_Fría + 15*Memoria`; `max_val = floor(20 * (8^((30+Progreso_Cocina)/100))^(15000/(5000+suma)))`; con probabilidad `1/max_val`, `Progreso_Cocina += 1` (tope 100). También descubre habilidades con pesos 40/25/20/15.
+  - Cada 15 min: descuenta el coste y crea un tupper al 100 % con `calidad = Progreso_Cocina`, `minuto_creacion = Minute` y `minuto_caducidad = Minute + dias*1440`.
+  - Si `Dinero < coste` o `En_La_Calle`, se limpia el bloque actual y las celdas contiguas futuras, se resetea el contador y se envía un mensaje.
+  - `Minutos_Cocinando_Actuales` se resetea en cualquier minuto que no sea `Cocinar`.
+- **Comer_Tupper:**
+  - 1 tupper = 30 min; `porcentaje_restante -= 100/30` por minuto.
+  - Selección manual (`Tupper_Seleccionado_Idx`) o automática: vigentes primero (ya empezados y caducidad más cercana), luego el menos caducado.
+  - Efectos: física `+1/+2/+3` según calidad `1–30/31–70/71–100`; mental `+2` (`+3` si calidad > 60); hambre `20` (frecuencia 12); descanso/higiene `-1`.
+  - Al agotarse se elimina y se reinicia la selección. Si quedan tuppers, encadena; si no, el resto del bloque pasa a `Comer_Basura` (cobrando). Si empieza sin tuppers, también pasa a basura.
+- **Intoxicación:** si `Minute > minuto_caducidad`, `p30 = clamp(horas_caducado/48, 0.05, 1.0)`; `p_min = 1 - (1-p30)^(1/30)`. Si dispara y no está activo, `Estados_Temporales["Intoxicacion"] = 1440` (techo 30→100 a índices 0 y 1; 20 en calle/bancarrota).
+- **Comer_Basura:** cobra cada 5 min (`Minute_Minute % 5 == 0`); si no hay saldo, cancela y limpia el bloque. Efectos `[-2, 2, 20, -1, -1]`.
+- **IA:** tupper vigente → `Comer_Tupper`; si no, basura si hay dinero; si solo hay caducados y no hay dinero, tupper (riesgo); si no, `Ver_La_Television`. Nunca comida gratis.
+- **UI:** botón `🍳 COCINAR` en Necesidades; el reloj de `Comer` tiene pestañas `📦 Comida casera` / `🍔 Comida rápida` con vista previa de coste/calidad/caducidad; pestaña `Despensa` en el Perfil; modal `Modal_Tuppers.gd`; indicador `🍱 N` junto a Hambre; `Progreso_Cocina` en Perfil/Info y cuarta barra del panel Progreso.
+- **Persistencia:** `Progreso_Cocina`, `Tuppers` y `Tupper_Seleccionado_Idx`; `Minutos_Cocinando_Actuales = 0` al cargar. Saves antiguos usan `1`, `[]`, `-1`.
+- **Tests:** `Funcionalidades/Actividades/Actividades_Temporales/Tests/test_cocina_y_alimentacion.gd` (TC-01 a TC-11 + integración UI).
 
 ### E. Tienda y Objetos (`Variables_Estaticas.gd` / `Actividades.gd`)
-- Categorías: `Dormir` (`Cama_Basica` 0€/×1.0, `Cama_Premium` 200€/×1.05, `Cama_Lujo` 800€/×1.10), `Comer` (`Mesa_Basica`, `Mesa_Premium`, `Mesa_Lujo`), `Duchar` (`Ducha_Basica`, `Ducha_Premium`, `Ducha_Lujo`).
+- Categorías: `Dormir` (`Cama_Basica` 0€/×1.0, `Cama_Premium` 200€/×1.05, `Cama_Lujo` 800€/×1.10), `Comer` (`Mesa_Basica`, sin multiplicador), `Duchar` (`Ducha_Basica`, `Ducha_Premium`, `Ducha_Lujo`). `Mesa_Premium` fue retirada.
 - Venta: devuelve el **50 %** del precio actual (`precio * 0.5`). No se puede vender si es el único objeto poseído de su categoría ni si está seleccionado actualmente.
 
 ### F. Inversión en Bolsa (`Actividades._Tick_Inversion`)
@@ -262,13 +302,21 @@ Clases en `Scripts/Logica/Escena_Principal/Actividades/Herencia/`:
   - `max_valor = max(1, int((1_875_000.0 * factor_nec / factor_edad) / factor_modo))`
   - Muere si `randi() % max_valor == 0`.
 
+### J. Marca y Logo Dinámico (`Logo_Juego.gd`)
+- `Logo_Juego` (HBoxContainer) = insignia circular con la cara real del Sim + wordmark `SIMS` + pastilla `LIFE`.
+- La insignia usa `Personaje_Visual` en modo `retrato_cercano` y `Variables_Estaticas.Apariencia`; el logo local cambia con el personaje creado.
+- Se usa en el menú principal (`Scripts/Globales/Menu.gd`).
+- **Fijo (no dinámico):** icono de Play Store (`Imagenes/Marca/logo_play_store_512.png`) e icono del lanzador/APK (`icon.svg` → `Iconos_Android/`). Android no permite generar un icono de lanzador arbitrario en runtime; solo `activity-alias` predefinidos.
+- Herramientas: `Generar_Iconos_Android.gd` (iconos APK) y `Exportar_Logo_Marca.gd` (lockup + feature graphic 1024×500).
+- Documentación: `Documentacion/Marca/README.md`.
+
 ---
 
 ## 7. Roadmap Pendiente (por prioridad)
 1. **Minijuego genérico aplicado a actividades** (+20 % efecto base, 1 mecánica reutilizable con skins por actividad; evitar hacer un minijuego distinto por cada actividad).
 2. **Relaciones simples (NPCs)** (2–3 NPCs base: amigo, pareja potencial, familiar; `afinidad` 0–100; actividad "Quedar con X"; eventos por umbral).
 3. **Hitos por edad** (25 casarse, 30 hijos, 50 reflexión, 65 jubilación, 80+ conectar muerte con edad).
-4. **Avatar visual completo** (post-MVP, alto coste de assets).
+4. ~~**Avatar visual completo** (post-MVP, alto coste de assets).~~ Implementado: creador de personaje, `Personaje_Visual` y logo dinámico (ver J).
 
 ---
 

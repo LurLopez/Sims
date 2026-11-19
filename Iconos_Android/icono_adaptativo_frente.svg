@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <!-- Primer plano adaptativo: insignia con la cara del Sim, sin el fondo rojo del lanzador -->
+  <g transform="translate(64 64) scale(0.72) translate(-64 -63)">
+  <!-- Insignia circular -->
+  <circle cx="64" cy="63" r="55" fill="#FFFFFF" stroke="#111827" stroke-width="3.4"/>
+  <circle cx="64" cy="63" r="48" fill="#D62828" stroke="#111827" stroke-width="2.2"/>
+
+  <defs>
+    <clipPath id="aro">
+      <circle cx="64" cy="63" r="42"/>
+    </clipPath>
+  </defs>
+
+  <g clip-path="url(#aro)">
+    <circle cx="64" cy="63" r="42" fill="#BAE6FD"/>
+    <g fill="#7DD3FC">
+      <path d="M64 63 L57 21 L67 20 Z"/>
+      <path d="M64 63 L57 21 L67 20 Z" transform="rotate(25.7 64 63)"/>
+      <path d="M64 63 L57 21 L67 20 Z" transform="rotate(51.4 64 63)"/>
+      <path d="M64 63 L57 21 L67 20 Z" transform="rotate(77.1 64 63)"/>
+      <path d="M64 63 L57 21 L67 20 Z" transform="rotate(102.8 64 63)"/>
+      <path d="M64 63 L57 21 L67 20 Z" transform="rotate(128.5 64 63)"/>
+      <path d="M64 63 L57 21 L67 20 Z" transform="rotate(154.2 64 63)"/>
+      <path d="M64 63 L57 21 L67 20 Z" transform="rotate(179.9 64 63)"/>
+      <path d="M64 63 L57 21 L67 20 Z" transform="rotate(205.6 64 63)"/>
+      <path d="M64 63 L57 21 L67 20 Z" transform="rotate(231.3 64 63)"/>
+      <path d="M64 63 L57 21 L67 20 Z" transform="rotate(257 64 63)"/>
+      <path d="M64 63 L57 21 L67 20 Z" transform="rotate(282.7 64 63)"/>
+      <path d="M64 63 L57 21 L67 20 Z" transform="rotate(308.4 64 63)"/>
+      <path d="M64 63 L57 21 L67 20 Z" transform="rotate(334.1 64 63)"/>
+    </g>
+
+    <!-- Hombros / sudadera -->
+    <path d="M27 108 C30 93 42 85 64 85 C86 85 98 93 101 108 Z" fill="#2563EB" stroke="#111827" stroke-width="2.6"/>
+    <path d="M43 94 C48 90 56 88 63 88 C57 94 53 101 52 107 L41 107 C41 102 42 97 43 94 Z" fill="#1D4ED8" opacity="0.55"/>
+    <path d="M55 86 L64 98 L73 86 L69 84 L64 88 L59 84 Z" fill="#FFFFFF" stroke="#111827" stroke-width="1.8"/>
+
+    <!-- Cuello -->
+    <path d="M58 80 L70 80 L71 90 L57 90 Z" fill="#F8CFB4" stroke="#111827" stroke-width="2"/>
+
+    <!-- Orejas -->
+    <circle cx="37.5" cy="61" r="7.2" fill="#F8CFB4" stroke="#111827" stroke-width="2.3"/>
+    <circle cx="90.5" cy="61" r="7.2" fill="#F8CFB4" stroke="#111827" stroke-width="2.3"/>
+    <path d="M35.5 59 C37 56 40 57 40 60 C40 63 37 64 35.5 62" fill="none" stroke="#E1A274" stroke-width="1.8" stroke-linecap="round"/>
+    <path d="M92.5 59 C91 56 88 57 88 60 C88 63 91 64 92.5 62" fill="none" stroke="#E1A274" stroke-width="1.8" stroke-linecap="round"/>
+
+    <!-- Cara -->
+    <path d="M38 57 C38 39 49 31 64 31 C79 31 90 39 90 57 C90 76 80 88 64 88 C48 88 38 76 38 57 Z" fill="#F8CFB4" stroke="#111827" stroke-width="2.8"/>
+    <path d="M77 50 C84 54 86 64 82 73 C79 80 73 84 67 86 C76 83 81 75 82 66 C83 59 81 53 77 50 Z" fill="#E1A274" opacity="0.55"/>
+
+    <!-- Pelo -->
+    <path d="M35 63 C30 48 34 35 44 30 C48 22 54 20 58 24 L57 12 L64 22 L69 9 L74 23 L84 15 L82 28 L92 24 C98 32 99 46 94 57 L88 50 C87 55 84 58 80 56 C83 47 78 40 70 39 C70 47 64 51 58 48 C53 54 45 56 39 65 Z" fill="#7C4728" stroke="#111827" stroke-width="2.8"/>
+    <path d="M40 49 C47 44 55 43 60 46 C54 49 47 53 42 59 Z" fill="#6B3A1F" stroke="#111827" stroke-width="2.2" stroke-linejoin="round"/>
+    <path d="M45 30 C40 36 38 44 38 51 C42 43 47 37 54 33 Z" fill="#9A5A33" opacity="0.9"/>
+    <path d="M68 27 C76 26 84 31 88 38 C84 33 78 31 72 32 Z" fill="#5C341C" opacity="0.55"/>
+    <path d="M60 35 C65 33 70 34 73 39" fill="none" stroke="#5C341C" stroke-width="1.8" opacity="0.55" stroke-linecap="round"/>
+    <path d="M51 30 C55 27 61 28 64 32" fill="none" stroke="#9A5A33" stroke-width="2" opacity="0.75" stroke-linecap="round"/>
+
+    <!-- Cejas -->
+    <path d="M46 50 C49 47 55 47 58 50" fill="none" stroke="#432818" stroke-width="3.4" stroke-linecap="round"/>
+    <path d="M70 50 C73 47 79 47 82 50" fill="none" stroke="#432818" stroke-width="3.4" stroke-linecap="round"/>
+
+    <!-- Ojos -->
+    <ellipse cx="53" cy="59" rx="7.2" ry="9" fill="#FFFFFF" stroke="#111827" stroke-width="2.3"/>
+    <ellipse cx="75" cy="59" rx="7.2" ry="9" fill="#FFFFFF" stroke="#111827" stroke-width="2.3"/>
+    <circle cx="54" cy="60.5" r="3.9" fill="#251C17"/>
+    <circle cx="76" cy="60.5" r="3.9" fill="#251C17"/>
+    <circle cx="52.7" cy="58.8" r="1.4" fill="#FFFFFF"/>
+    <circle cx="74.7" cy="58.8" r="1.4" fill="#FFFFFF"/>
+    <path d="M46 55 C49 51 57 51 60 55" fill="none" stroke="#111827" stroke-width="1.6" stroke-linecap="round"/>
+    <path d="M68 55 C71 51 79 51 82 55" fill="none" stroke="#111827" stroke-width="1.6" stroke-linecap="round"/>
+
+    <!-- Nariz -->
+    <path d="M62 65 C61 69 61 71 64 72" fill="none" stroke="#D18A63" stroke-width="2" stroke-linecap="round"/>
+    <path d="M64 72 C65 73 67 73 68 72" fill="none" stroke="#111827" stroke-width="1.5" stroke-linecap="round"/>
+
+    <!-- Mejillas -->
+    <ellipse cx="44" cy="70" rx="6" ry="3.4" fill="#FB7185" opacity="0.4"/>
+    <ellipse cx="84" cy="70" rx="6" ry="3.4" fill="#FB7185" opacity="0.4"/>
+
+    <!-- Sonrisa -->
+    <path d="M47 73 C50 88 78 88 82 72 C75 78 55 78 47 73 Z" fill="#4C0519" stroke="#111827" stroke-width="2.4" stroke-linejoin="round"/>
+    <path d="M50 74 C56 79 72 79 79 73 C76 80 55 80 50 74 Z" fill="#FFFFFF"/>
+    <ellipse cx="64" cy="83" rx="7" ry="3.2" fill="#FB7185"/>
+    <path d="M47 73 C54 76 74 76 82 72" fill="none" stroke="#111827" stroke-width="2.2" stroke-linecap="round"/>
+  </g>
+  </g>
+</svg>

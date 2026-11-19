@@ -623,6 +623,36 @@ theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
 theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
 text = "🎨  ARTISTA"
 
+[node name="AYUDANTE_COCINA" type="Button" parent="Trabajo/Actividades_Trabajo_Nomina_Opciones"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_fonts/font = ExtResource("10_m1ee0")
+theme_override_font_sizes/font_size = 45
+theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
+text = "🍳  AYUDANTE DE COCINA"
+
+[node name="COCINERO_PARTIDA" type="Button" parent="Trabajo/Actividades_Trabajo_Nomina_Opciones"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_fonts/font = ExtResource("10_m1ee0")
+theme_override_font_sizes/font_size = 45
+theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
+text = "🔥  COCINERO DE PARTIDA"
+
+[node name="CHEF_EJECUTIVO" type="Button" parent="Trabajo/Actividades_Trabajo_Nomina_Opciones"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_fonts/font = ExtResource("10_m1ee0")
+theme_override_font_sizes/font_size = 45
+theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
+text = "⭐  CHEF EJECUTIVO"
+
 [node name="Habilidades" type="Control" parent="."]
 visible = false
 layout_mode = 3
@@ -820,6 +850,17 @@ theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
 theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
 text = "📋  FIJAS"
 
+[node name="Especiales" type="Button" parent="Actividades/Elegir_Actividad/Tipos_De_Actividades"]
+visible = false
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_fonts/font = ExtResource("10_m1ee0")
+theme_override_font_sizes/font_size = 45
+theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
+text = "✨  ESPECIALES"
+
 [node name="Temporales_Opciones" type="VBoxContainer" parent="Actividades/Elegir_Actividad/Tipos_De_Actividades"]
 custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
@@ -917,6 +958,16 @@ theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
 theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
 text = "🍽️  COMER"
 
+[node name="Cocinar" type="Button" parent="Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones/Necesidades_Basicas_Opciones"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_fonts/font = ExtResource("10_m1ee0")
+theme_override_font_sizes/font_size = 45
+theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
+text = "🍳  COCINAR"
+
 [node name="Ver_La_Television" type="Button" parent="Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones/Necesidades_Basicas_Opciones"]
 layout_mode = 2
 size_flags_vertical = 3
@@ -927,7 +978,13 @@ theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
 theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
 text = "📺  VER LA TV"
 
-[node name="Salir_De_Fiesta" type="Button" parent="Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones/Necesidades_Basicas_Opciones"]
+[node name="Especiales_Opciones" type="VBoxContainer" parent="Actividades/Elegir_Actividad/Tipos_De_Actividades"]
+visible = false
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+theme_override_constants/separation = 57
+
+[node name="Salir_De_Fiesta" type="Button" parent="Actividades/Elegir_Actividad/Tipos_De_Actividades/Especiales_Opciones"]
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_colors/font_color = Color(1, 1, 1, 1)
@@ -1018,6 +1075,36 @@ theme_override_font_sizes/font_size = 45
 theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
 theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
 text = "🎨  ARTISTA"
+
+[node name="Ayudante_Cocina" type="Button" parent="Actividades/Elegir_Actividad/Tipos_De_Actividades/Fijas_Opciones/Trabajo_Opciones"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_fonts/font = ExtResource("10_m1ee0")
+theme_override_font_sizes/font_size = 45
+theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
+text = "🍳  AYUDANTE DE COCINA"
+
+[node name="Cocinero_Partida" type="Button" parent="Actividades/Elegir_Actividad/Tipos_De_Actividades/Fijas_Opciones/Trabajo_Opciones"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_fonts/font = ExtResource("10_m1ee0")
+theme_override_font_sizes/font_size = 45
+theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
+text = "🔥  COCINERO DE PARTIDA"
+
+[node name="Chef_Ejecutivo" type="Button" parent="Actividades/Elegir_Actividad/Tipos_De_Actividades/Fijas_Opciones/Trabajo_Opciones"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_fonts/font = ExtResource("10_m1ee0")
+theme_override_font_sizes/font_size = 45
+theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
+text = "⭐  CHEF EJECUTIVO"
 
 [node name="Horario_Semanal" type="Control" parent="Actividades"]
 layout_mode = 3
@@ -1640,6 +1727,7 @@ z_index = 5
 [connection signal="pressed" from="Actividades/Elegir_Actividad/Flecha_Atras" to="." method="Pulsar_Flecha_Atras"]
 [connection signal="pressed" from="Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales" to="." method="_on_temporales_pressed"]
 [connection signal="pressed" from="Actividades/Elegir_Actividad/Tipos_De_Actividades/Fijas" to="." method="Opciones_Actividades_Fijas"]
+[connection signal="pressed" from="Actividades/Elegir_Actividad/Tipos_De_Actividades/Especiales" to="." method="_on_especiales_pressed"]
 [connection signal="pressed" from="Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones/Necesidades_Basicas" to="." method="Opciones_Actividades_Necesidades_Basicas"]
 [connection signal="pressed" from="Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones/Progreso" to="." method="Opciones_Actividades_Progreso"]
 [connection signal="pressed" from="Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones/Progreso_Opciones/Salir_A_Correr" to="." method="Actividad_Terminada_Salir_A_Correr"]
@@ -1648,8 +1736,9 @@ z_index = 5
 [connection signal="pressed" from="Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones/Necesidades_Basicas_Opciones/Duchar" to="." method="Actividad_Terminada_Duchar"]
 [connection signal="pressed" from="Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones/Necesidades_Basicas_Opciones/Dormir" to="." method="Actividad_Terminada_Dormir"]
 [connection signal="pressed" from="Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones/Necesidades_Basicas_Opciones/Comer" to="." method="Actividad_Terminada_Comer"]
+[connection signal="pressed" from="Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones/Necesidades_Basicas_Opciones/Cocinar" to="." method="Actividad_Terminada_Cocinar"]
 [connection signal="pressed" from="Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones/Necesidades_Basicas_Opciones/Ver_La_Television" to="." method="Actividad_Terminada_Ver_La_Television"]
-[connection signal="pressed" from="Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones/Necesidades_Basicas_Opciones/Salir_De_Fiesta" to="." method="Actividad_Terminada_Salir_De_Fiesta"]
+[connection signal="pressed" from="Actividades/Elegir_Actividad/Tipos_De_Actividades/Especiales_Opciones/Salir_De_Fiesta" to="." method="Actividad_Terminada_Salir_De_Fiesta"]
 [connection signal="pressed" from="Actividades/Elegir_Actividad/Tipos_De_Actividades/Fijas_Opciones/Trabajo" to="." method="Opciones_Actividades_Trabajo"]
 [connection signal="pressed" from="Actividades/Elegir_Actividad/Tipos_De_Actividades/Fijas_Opciones/Trabajo_Opciones/Comida_Rapida" to="." method="_on_comida_rapida_pressed"]
 [connection signal="pressed" from="Actividades/Elegir_Actividad/Tipos_De_Actividades/Fijas_Opciones/Trabajo_Opciones/Carpintero" to="." method="_on_carpintero_pressed"]
@@ -1657,6 +1746,12 @@ z_index = 5
 [connection signal="pressed" from="Actividades/Elegir_Actividad/Tipos_De_Actividades/Fijas_Opciones/Trabajo_Opciones/Abogado" to="." method="_on_abogado_pressed"]
 [connection signal="pressed" from="Actividades/Elegir_Actividad/Tipos_De_Actividades/Fijas_Opciones/Trabajo_Opciones/Medico" to="." method="_on_medico_pressed"]
 [connection signal="pressed" from="Actividades/Elegir_Actividad/Tipos_De_Actividades/Fijas_Opciones/Trabajo_Opciones/Artista" to="." method="_on_artista_pressed"]
+[connection signal="pressed" from="Actividades/Elegir_Actividad/Tipos_De_Actividades/Fijas_Opciones/Trabajo_Opciones/Ayudante_Cocina" to="." method="_on_ayudante_cocina_pressed"]
+[connection signal="pressed" from="Actividades/Elegir_Actividad/Tipos_De_Actividades/Fijas_Opciones/Trabajo_Opciones/Cocinero_Partida" to="." method="_on_cocinero_partida_pressed"]
+[connection signal="pressed" from="Actividades/Elegir_Actividad/Tipos_De_Actividades/Fijas_Opciones/Trabajo_Opciones/Chef_Ejecutivo" to="." method="_on_chef_ejecutivo_pressed"]
+[connection signal="pressed" from="Trabajo/Actividades_Trabajo_Nomina_Opciones/AYUDANTE_COCINA" to="." method="_on_ayudante_cocina_pressed"]
+[connection signal="pressed" from="Trabajo/Actividades_Trabajo_Nomina_Opciones/COCINERO_PARTIDA" to="." method="_on_cocinero_partida_pressed"]
+[connection signal="pressed" from="Trabajo/Actividades_Trabajo_Nomina_Opciones/CHEF_EJECUTIVO" to="." method="_on_chef_ejecutivo_pressed"]
 [connection signal="pressed" from="Actividades/Horario_Semanal/OPCIONES_CALENDARIO/SIGUIENTE SEMANA" to="." method="_on_siguiente_semana_pressed"]
 [connection signal="pressed" from="Actividades/Horario_Semanal/OPCIONES_CALENDARIO/ANTERIOR SEMANA" to="." method="_on_anterior_semana_pressed"]
 [connection signal="pressed" from="Actividades/Horario_Semanal/OPCIONES_CALENDARIO/OCUPAR_ACTIVIDAD" to="." method="_on_ocupar_actividad_pressed"]

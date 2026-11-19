@@ -5,6 +5,13 @@ const ALQUILER_SEMANAL: int = 200
 # Bancarrota: cuando Dinero < 0, las necesidades básicas no pueden superar este valor.
 const BANCARROTA_MAX_NECESIDAD: int = 20
 
+# Cocina y alimentación
+const COSTE_COCINAR_BASE: float = 2.0
+const COSTE_COMIDA_BASURA_BASE: float = 2.0
+const DIAS_CADUCIDAD_TUPPER: int = 3
+const MINUTOS_POR_TUPPER: int = 15
+const MINUTOS_COMIDOS_POR_TUPPER: int = 30
+
 var First_Time = true
 var Modo_Rapido: bool = false
 var Tutorial_Completado = false
@@ -27,6 +34,8 @@ var Estados_Temporales: Dictionary = {
 		"indice": 1,
 		"valor_inicial": 100,
 		"valor_final": 50,
+		"titulo_inicio": "Has ligado",
+		"titulo_fin": "Fin de la euforia",
 		"mensaje_inicio": "Has ligado. Euforia durante 24 h.",
 		"mensaje_fin": "La euforia ha terminado."
 	},
@@ -37,8 +46,22 @@ var Estados_Temporales: Dictionary = {
 		"indices": [0, 1],
 		"cap_inicial": 30,
 		"cap_final": 100,
+		"titulo_inicio": "Resacón",
+		"titulo_fin": "Fin del resacón",
 		"mensaje_inicio": "Te has pasado con la bebida. Resacón durante 24 h.",
 		"mensaje_fin": "El resacón ha terminado."
+	},
+	"Intoxicacion": {
+		"duracion": 1440,
+		"meseta": 480,
+		"tipo": "cap_gradual",
+		"indices": [0, 1],
+		"cap_inicial": 30,
+		"cap_final": 100,
+		"titulo_inicio": "Intoxicación alimentaria",
+		"titulo_fin": "Fin de la intoxicación",
+		"mensaje_inicio": "Has comido un tupper en mal estado. Intoxicación alimentaria durante 24 h.",
+		"mensaje_fin": "Te has recuperado de la intoxicación alimentaria."
 	}
 }
 var First_Time_Minute_Day = 0
@@ -58,6 +81,15 @@ func Calcular_Edad(dia_actual: int = -1) -> int:
 
 func Multiplicador_Precios() -> float:
 	return 0.1 if Modo_Rapido else 1.0
+
+func Obtener_Coste_Cocinar() -> float:
+	return round(COSTE_COCINAR_BASE * Multiplicador_Precios() * 100.0) / 100.0
+
+func Obtener_Coste_Comida_Basura() -> float:
+	return round(COSTE_COMIDA_BASURA_BASE * Multiplicador_Precios() * 100.0) / 100.0
+
+func Obtener_Minutos_Caducidad_Tupper() -> int:
+	return (1 if Modo_Rapido else DIAS_CADUCIDAD_TUPPER) * 1440
 
 func Multiplicador_Salario() -> float:
 	# En modo rápido: lo que se gana en una semana (40h) / 7 * 2 por cada día (8h) => 10/7 por hora.
@@ -93,11 +125,26 @@ func _Inicializar_Catalogo():
 	dormir.efectos_necesidades_basicas = [1, 1, -1, 4, -1]
 	Catalogo_Actividades["Dormir"] = dormir
 
-	var comer = Actividad_Temporal.new()
-	comer.nombre = "Comer"
-	comer.color = Color(0.85, 0.45, 0.10)
-	comer.efectos_necesidades_basicas = [-1, 2, 20, -1, -1]
-	Catalogo_Actividades["Comer"] = comer
+	var cocinar = Actividad_Temporal.new()
+	cocinar.nombre = "Cocinar"
+	cocinar.color = Color(0.95, 0.55, 0.20)
+	cocinar.efectos_necesidades_basicas = [-1, 1, -2, -2, -2]
+	cocinar.efectos_progreso = [0, 0, 0]
+	Catalogo_Actividades["Cocinar"] = cocinar
+
+	var comer_tupper = Actividad_Temporal.new()
+	comer_tupper.nombre = "Comer_Tupper"
+	comer_tupper.color = Color(0.25, 0.75, 0.45)
+	comer_tupper.efectos_necesidades_basicas = [1, 2, 20, -1, -1]
+	comer_tupper.efectos_progreso = [0, 0, 0]
+	Catalogo_Actividades["Comer_Tupper"] = comer_tupper
+
+	var comer_basura = Actividad_Temporal.new()
+	comer_basura.nombre = "Comer_Basura"
+	comer_basura.color = Color(0.85, 0.30, 0.25)
+	comer_basura.efectos_necesidades_basicas = [-2, 2, 20, -1, -1]
+	comer_basura.efectos_progreso = [0, 0, 0]
+	Catalogo_Actividades["Comer_Basura"] = comer_basura
 
 	var duchar = Actividad_Temporal.new()
 	duchar.nombre = "Duchar"
@@ -162,6 +209,14 @@ func _Inicializar_Catalogo():
 	examen.efectos_progreso = [0, 0, 0]
 	Catalogo_Actividades["Examen_Carrera"] = examen
 
+	# Actividad carrera deportiva: bloque de 60 min en fin de semana con prioridad P3.
+	var carrera_deportiva = preload("res://Scripts/Logica/Escena_Principal/Actividades/Actividad_Carrera_Deportiva.gd").new()
+	carrera_deportiva.nombre = "Carrera_Deportiva"
+	carrera_deportiva.color = Color(0.92, 0.35, 0.05)
+	carrera_deportiva.efectos_necesidades_basicas = [4, 2, -3, -3, -4]
+	carrera_deportiva.efectos_progreso = [4, 0, 0]
+	Catalogo_Actividades["Carrera_Deportiva"] = carrera_deportiva
+
 	var carpintero = Actividad_Fija_Trabajo.new()
 	carpintero.nombre = "Trabajar_De_Carpintero"
 	carpintero.color = Color(0.45, 0.28, 0.05)
@@ -222,6 +277,46 @@ func _Inicializar_Catalogo():
 	artista.dias_laborales = [0, 1, 2, 3, 4]
 	Catalogo_Actividades["Trabajar_De_Artista"] = artista
 
+	# Hostelería: solo exige Progreso_Cocina (sin requisitos innatos ni carrera).
+	var ayudante_cocina = Actividad_Fija_Trabajo.new()
+	ayudante_cocina.nombre = "Trabajar_De_Ayudante_Cocina"
+	ayudante_cocina.color = Color(0.90, 0.50, 0.15)
+	ayudante_cocina.efectos_necesidades_basicas = [-1, -1, -1, -2, -1]
+	ayudante_cocina.hora_inicio = 660
+	ayudante_cocina.hora_final = 1140
+	ayudante_cocina.salario = 17.0
+	ayudante_cocina.requisito_progreso = [0, 0, 0]
+	ayudante_cocina.requisito_cocina = 30
+	ayudante_cocina.requisito_carrera = []
+	ayudante_cocina.dias_laborales = [0, 1, 2, 3, 4]
+	Catalogo_Actividades["Trabajar_De_Ayudante_Cocina"] = ayudante_cocina
+
+	var cocinero_partida = Actividad_Fija_Trabajo.new()
+	cocinero_partida.nombre = "Trabajar_De_Cocinero_Partida"
+	cocinero_partida.color = Color(0.82, 0.35, 0.18)
+	cocinero_partida.efectos_necesidades_basicas = [-1, -1, -1, -2, -1]
+	cocinero_partida.hora_inicio = 720
+	cocinero_partida.hora_final = 1200
+	cocinero_partida.salario = 24.0
+	cocinero_partida.requisito_progreso = [0, 0, 0]
+	cocinero_partida.requisito_cocina = 60
+	cocinero_partida.requisito_carrera = []
+	cocinero_partida.dias_laborales = [0, 1, 2, 3, 4]
+	Catalogo_Actividades["Trabajar_De_Cocinero_Partida"] = cocinero_partida
+
+	var chef_ejecutivo = Actividad_Fija_Trabajo.new()
+	chef_ejecutivo.nombre = "Trabajar_De_Chef_Ejecutivo"
+	chef_ejecutivo.color = Color(0.65, 0.18, 0.12)
+	chef_ejecutivo.efectos_necesidades_basicas = [-1, -2, -1, -2, -1]
+	chef_ejecutivo.hora_inicio = 780
+	chef_ejecutivo.hora_final = 1260
+	chef_ejecutivo.salario = 36.0
+	chef_ejecutivo.requisito_progreso = [0, 0, 0]
+	chef_ejecutivo.requisito_cocina = 85
+	chef_ejecutivo.requisito_carrera = []
+	chef_ejecutivo.dias_laborales = [0, 1, 2, 3, 4]
+	Catalogo_Actividades["Trabajar_De_Chef_Ejecutivo"] = chef_ejecutivo
+
 	var salir_de_fiesta = Actividad_Temporal.new()
 	salir_de_fiesta.nombre = "Salir_De_Fiesta"
 	salir_de_fiesta.color = Color(0.85, 0.15, 0.45)
@@ -237,7 +332,6 @@ func _Inicializar_Catalogo():
 		Catalogo_Actividades["Practicar_Manualidades"],
 		Catalogo_Actividades["Duchar"],
 		Catalogo_Actividades["Dormir"],
-		Catalogo_Actividades["Comer"],
 		Catalogo_Actividades["Ver_La_Television"],
 	]
 
@@ -267,7 +361,7 @@ func _Inicializar_Catalogo_Objetos():
 	cama_lujo.es_basico = false
 	Catalogo_Objetos["Cama_Lujo"] = cama_lujo
 
-	# Mesas (afectan a Comer)
+	# Mesa básica (objeto inicial decorativo: comer ya no depende de mesas)
 	var mesa_basica = Objeto_Comer.new()
 	mesa_basica.nombre = "Mesa_Basica"
 	mesa_basica.precio = 0.0
@@ -275,14 +369,6 @@ func _Inicializar_Catalogo_Objetos():
 	mesa_basica.afecta_a = "Comer"
 	mesa_basica.es_basico = true
 	Catalogo_Objetos["Mesa_Basica"] = mesa_basica
-
-	var mesa_premium = Objeto_Comer.new()
-	mesa_premium.nombre = "Mesa_Premium"
-	mesa_premium.precio = 200.0
-	mesa_premium.multiplicador = 1.05
-	mesa_premium.afecta_a = "Comer"
-	mesa_premium.es_basico = false
-	Catalogo_Objetos["Mesa_Premium"] = mesa_premium
 
 	# Duchas (afectan a Duchar)
 	var ducha_basica = Objeto_Duchar.new()

@@ -3,6 +3,8 @@ extends Node
 const DEBUG_LOGS_MATRIZ := false
 
 func Guardar_Matriz():
+	if not OS.is_debug_build():
+		return
 	if not DEBUG_LOGS_MATRIZ:
 		return
 	var filas =1439 

@@ -19,6 +19,7 @@
 | `Funciones_Globales` | `Scripts/Globales/Funciones_Globales.gd` |
 | `Trabajo` | `Scripts/Logica/Escena_Principal/Actividades/Trabajo/Trabajo.gd` |
 | `Actividades` | `Scripts/Logica/Escena_Principal/Actividades/Actividades.gd` |
+| `Alimentacion` | `Scripts/Logica/Escena_Principal/Actividades/Alimentacion.gd` |
 | `Actividades_Habilidades` | `Scripts/Logica/Escena_Principal/Actividades/Actividades_Habilidades.gd` |
 | `Actividades_Necesidades_Basicas` | `Scripts/Logica/Escena_Principal/Actividades/Actividades_Necesidades_Basicas.gd` |
 | `Gestionar_Visibilidad` | `Scripts/GUI/Escena_Principal/Gestionar_Visibilidad.gd` |
@@ -54,13 +55,14 @@ Node2D (root, Script_Principal.gd)
 ├── Tienda [instancia Tienda.tscn]
 │   ├── Flecha_Atras · Titulo · Categorias/[Tab_Dormir|Tab_Comer|Tab_Duchar]
 │   ├── Objetos_Dormir/[Cama_Basica|Cama_Premium]/[Imagen_Placeholder|Nombre|Precio|Multiplicador|En_Uso|Comprar|Vender|Elegir]
-│   ├── Objetos_Comer/[Mesa_Basica|Mesa_Premium]/[...]
+│   ├── Objetos_Comer/[Mesa_Basica]/[...]
 │   └── Objetos_Duchar/[Ducha_Basica|Ducha_Premium]/[...]
 └── Pantalla_Mensajes [instancia Pantalla_Mensajes.tscn]
     ├── Fondo_Mensajes · Header_Bar · Titulo · Boton_Cerrar
-    ├── Tab_Bar/[Tab_Mensajes|Tab_Info|Tab_Apuntes]
+    ├── Tab_Bar/[Tab_Mensajes|Tab_Info|Tab_Apuntes|Tab_Despensa]
     ├── Panel_Info/Scroll_Info/VBox_Info
     ├── Panel_Apuntes/[Tabs_Libros|Texto_Apuntes|Sin_Apuntes_Label]
+    ├── Panel_Despensa/Scroll_Tuppers/VBox_Tuppers
     ├── Lista_Mensajes/VBoxContainer
     └── Contenido_Mensaje/[Mensaje_Card|Boton_Volver|Hora_Mensaje_Label|Titulo_Mensaje_Label|Descripcion_Mensaje_Label]
 ```
@@ -70,7 +72,8 @@ Node2D (root, Script_Principal.gd)
 - **Nuevo objeto en Tienda** → `Tienda.tscn`. Copiar bloque `Cama_Basica`/`Cama_Premium`, ajustar nombre/precio/emoji/multiplicador. Añadir conexiones al final de `Escena principal.tscn`. Registrar en `Variables_Estaticas.gd`.
 - **Nueva actividad temporal** → botón en `Escena principal.tscn` dentro de `Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones/Necesidades_Basicas_Opciones` o `Progreso_Opciones`. Añadir al catálogo en `Variables_Estaticas.gd` y handler en `Script_Principal.gd`.
 - **Nueva pestaña en Perfil** → `Pantalla_Mensajes.tscn`: botón en `Tab_Bar` + panel hijo del root.
-- **Nuevo trabajo de nómina** → botón en `Escena principal.tscn` > `Trabajo/Actividades_Trabajo_Nomina_Opciones`. Registrar como `Actividad_Fija_Trabajo` en `Variables_Estaticas.gd`. Lógica en `Trabajo.gd`.
+- **Nuevo trabajo de nómina** → botón en `Escena principal.tscn` > `Actividades/Elegir_Actividad/Tipos_De_Actividades/Fijas_Opciones/Trabajo_Opciones` (y en `Trabajo/Actividades_Trabajo_Nomina_Opciones` por compatibilidad). Registrar como `Actividad_Fija_Trabajo` en `Variables_Estaticas.gd`. Si exige cocina, usar `requisito_cocina`. Lógica en `Trabajo.gd`.
+- **Nueva pestaña de Despensa/Tuppers** → la lógica de filas reutilizables está en `Scripts/GUI/Escena_Principal/Tuppers/Tupper_UI.gd`; la despensa del Perfil en `Pantalla_Mensajes.tscn` y el selector modal en `Modal_Tuppers.gd`.
 
 ---
 
@@ -109,26 +112,37 @@ GUI: verde ≥50, naranja 30–49, rojo <30.
 
 Array de 3 valores (1–100): `[0]`=Deporte · `[1]`=Académico · `[2]`=Manualidades.
 
+### Cocina y tuppers
+
+- `Progreso_Cocina` (1–100): destreza culinaria; sube cocinando y no decae.
+- `Tuppers`: Array de diccionarios individuales `{id, porcentaje_restante, calidad, minuto_creacion, minuto_caducidad}`. Un tupper completo = 30 min de comida (3.333 % por minuto); cocinar produce 1 tupper al 100 % cada 15 min.
+- `Tupper_Seleccionado_Idx`: índice manual elegido en la Despensa (`-1` = automático).
+- `Minutos_Cocinando_Actuales`: contador volátil de minutos consecutivos cocinando (no se guarda).
+- Costes: `2,00 €` por ciclo de 15 min de cocina y `2,00 €` cada 5 min de comida rápida (`Multiplicador_Precios()` reduce a `0,20 €` en modo rápido).
+- Caducidad: 3 días en modo normal, 1 día en modo rápido. Los tuppers caducados permanecen en el inventario y pueden comerse con riesgo de `Intoxicacion`.
+- La lógica pura vive en el autoload `Alimentacion` (`Ejecutar_Minuto_Cocinar`, `Ejecutar_Minuto_Comer_Tupper`, `Ejecutar_Minuto_Comer_Basura`).
+
 ---
 
 ## Estados temporales (`Variables_Dinamicas.Estados_Temporales`)
 
-Dictionary `{ "Euforia": minutos_restantes }` o `{ "Resacon": minutos_restantes }`. Son mutuamente excluyentes y duran 1440 min (480 de meseta + 960 de bajada). `Euforia` impone un suelo gradual a Salud Mental (100→50); `Resacon` un techo gradual a Salud Física/Mental (30→100). En calle/bancarrota el efecto efectivo se limita a 20. `Variables_Dinamicas.Fiesta_Evento_Ocurrido` impide más de un evento por bloque de `Salir_De_Fiesta`.
+Dictionary `{ "Euforia"|"Resacon"|"Intoxicacion": minutos_restantes }`. `Euforia` y `Resacon` son mutuamente excluyentes y duran 1440 min (480 de meseta + 960 de bajada). `Euforia` impone un suelo gradual a Salud Mental (100→50); `Resacon` e `Intoxicacion` imponen un techo gradual a Salud Física/Mental (30→100). `Intoxicacion` puede convivir con Euforia/Resacón; si ambos techos coinciden, prevalece el más bajo. En calle/bancarrota el efecto efectivo se limita a 20. `Variables_Dinamicas.Fiesta_Evento_Ocurrido` impide más de un evento por bloque de `Salir_De_Fiesta`.
 
 ---
 
 ## Habilidades innatas (`Variables_Estaticas.Habilidades`)
 
-Array de 6 valores (1–100) aleatorios al inicio:
+Array de 7 valores (1–100) aleatorios al inicio:
 
 | Índice | Habilidad | Contribuye a (en `Actividades_Habilidades.gd`) |
 |---|---|---|
 | `[0]` | Deporte | Deportivo: `50*D + 40*L + 10*M` |
 | `[1]` | Inteligencia | Académico: `50*I + 20*P + 30*M` |
-| `[2]` | Destreza manual | Manualidades: `50*De + 30*P + 10*M + 10*L` |
-| `[3]` | Memoria (M) | Todos los progresos |
+| `[2]` | Destreza manual | Manualidades: `50*De + 30*P + 10*M + 10*L` · Cocina (peso 40) |
+| `[3]` | Memoria (M) | Todos los progresos · Cocina (peso 15) |
 | `[4]` | Liderazgo (L) | Deporte + Manualidades |
-| `[5]` | Paciencia (P) | Académico + Manualidades |
+| `[5]` | Paciencia (P) | Académico + Manualidades · Cocina (peso 25) |
+| `[6]` | Sangre fría | Exámenes, auto-venta de bolsa · Cocina (peso 20) |
 
 ---
 
@@ -149,7 +163,9 @@ Jerarquía de clases (en `Scripts/Logica/Escena_Principal/Actividades/Herencia/`
 | Nombre | Clase | efectos_nb `[fís,men,ham,des,hig]` | efectos_prog `[dep,aca,man]` |
 |---|---|---|---|
 | `Dormir` | Actividad_Temporal | `[1, 1, -1, 4, -1]` | `[0,0,0]` |
-| `Comer` | Actividad_Temporal | `[-1, 2, 20, -1, -1]` | `[0,0,0]` |
+| `Cocinar` | Actividad_Temporal | `[-1, 1, -2, -2, -2]` | `[0,0,0]` · produce tuppers y sube `Progreso_Cocina` |
+| `Comer_Tupper` | Actividad_Temporal | `[1, 2, 20, -1, -1]` | `[0,0,0]` · modulado por calidad del tupper |
+| `Comer_Basura` | Actividad_Temporal | `[-2, 2, 20, -1, -1]` | `[0,0,0]` · cobra cada 5 min |
 | `Duchar` | Actividad_Temporal | `[1, 1, -1, -1, 20]` | `[0,0,0]` |
 | `Ver_La_Television` | Actividad_Temporal | `[-1, 5, -1, 2, -1]` | `[0,0,0]` |
 | `Estudiar` | Actividad_Temporal | `[-1, -2, -1, -2, -1]` | `[0,4,0]` |
@@ -162,18 +178,43 @@ Jerarquía de clases (en `Scripts/Logica/Escena_Principal/Actividades/Herencia/`
 | `Trabajar_De_Abogado` | Actividad_Fija_Trabajo | `[-1,-2,-1,-2,-1]` | `[0,0,0]` · hora 9–17 · salario 30.0 · requisito_progreso Académico≥50 · requisito_carrera `Derecho` |
 | `Trabajar_De_Medico` | Actividad_Fija_Trabajo | `[-1,-2,-1,-2,-1]` | `[0,0,0]` · hora 9–17 · salario 35.0 · requisito_progreso Académico≥60 · requisito_carrera `Medicina` |
 | `Trabajar_De_Artista` | Actividad_Fija_Trabajo | `[-1,-2,-1,-2,-1]` | `[0,0,0]` · hora 9–17 · salario 25.0 · requisito_progreso Manualidades≥50 · requisito_carrera `Bellas_Artes` |
+| `Trabajar_De_Ayudante_Cocina` | Actividad_Fija_Trabajo | `[-1,-1,-1,-2,-1]` | `[0,0,0]` · hora 11–19 · salario 17.0 · requisito_cocina 30 |
+| `Trabajar_De_Cocinero_Partida` | Actividad_Fija_Trabajo | `[-1,-1,-1,-2,-1]` | `[0,0,0]` · hora 12–20 · salario 24.0 · requisito_cocina 60 |
+| `Trabajar_De_Chef_Ejecutivo` | Actividad_Fija_Trabajo | `[-1,-2,-1,-2,-1]` | `[0,0,0]` · hora 13–21 · salario 36.0 · requisito_cocina 85 |
 
 Cada carrera universitaria completada (`Variables_Dinamicas.Carreras_Completadas`) desbloquea exactamente uno de estos trabajos de alto salario vía `requisito_carrera` (comprobado en `Script_Principal._Cumple_Requisitos_Trabajo()`). Las carreras jugables son: Ingeniería Informática (4 años), Derecho (4 años), Bellas Artes (4 años) y **Medicina (5 años, la única con duración distinta)**. El selector de carrera (`Carreras/UI/Modal_Seleccionar_Carrera.gd`) excluye las carreras ya presentes en `Carreras_Completadas`.
 
-`Salir_De_Fiesta` es la única actividad temporal que **no** entra en `Variables_Estaticas.Actividades`: solo se ejecuta si el jugador la programa dentro de su ventana 18:00–06:00. Sus estados `Euforia`/`Resacon` se guardan en `Variables_Dinamicas.Estados_Temporales` y su flag de evento por bloque en `Variables_Dinamicas.Fiesta_Evento_Ocurrido`.
+`Salir_De_Fiesta`, `Cocinar`, `Comer_Tupper` y `Comer_Basura` **no** entran en `Variables_Estaticas.Actividades` (pool aleatorio). `Salir_De_Fiesta` solo se ejecuta si el jugador la programa dentro de su ventana 18:00–06:00; sus estados `Euforia`/`Resacon` se guardan en `Variables_Dinamicas.Estados_Temporales` y su flag de evento por bloque en `Variables_Dinamicas.Fiesta_Evento_Ocurrido`. La IA pasiva solo come usando tuppers vigentes o pagando comida rápida; nunca comida gratis.
+
+---
+
+## Marca y logo
+
+- **Logo dinámico in-game:** `Scripts/GUI/Menu/Logo_Juego.gd` compone insignia circular + `SIMS` + `LIFE`. La insignia usa `Personaje_Visual` en modo `retrato_cercano` con `Variables_Estaticas.Apariencia`, así que muestra la cara del Sim creado. Se usa en el menú principal (`Menu.gd`).
+- **Icono fijo Play Store:** `Imagenes/Marca/logo_play_store_512.png` (subir a Play Console); maestro `logo_play_store_1024.png`; `feature_graphic_1024x500.png` y lockups `logo_horizontal_*.png` para marketing. El icono de la ficha y el del lanzador Android son fijos: Android no permite generar un icono de lanzador arbitrario en runtime (solo `activity-alias` predefinidos).
+- **Iconos del APK:** `icon.svg` + `Iconos_Android/` generados con `Scripts/Otro/Herramientas/Generar_Iconos_Android.gd`. El lockup de marca se exporta con `Exportar_Logo_Marca.gd`.
+- Documentación completa en `Documentacion/Marca/README.md`.
 
 ---
 
 ## Sistema de guardado
 
-- **Dinámicas** (`Guardar_Variables_Dinamicas.dat`): al guardar, objetos `Actividad` → string `nombre`; al cargar, string → referencia del catálogo. Campos: `Matriz_Jugador`, `Progreso`, `Necesidades_Basicas`, `Dinero`, `Minute`, `Minute_Day`, `Minute_Minute`.
+- **Dinámicas** (`Guardar_Variables_Dinamicas.dat`): al guardar, objetos `Actividad` → string `nombre`; al cargar, string → referencia del catálogo. Campos: `Matriz_Jugador`, `Progreso`, `Necesidades_Basicas`, `Dinero`, `Minute`, `Minute_Day`, `Minute_Minute`, `Progreso_Cocina`, `Tuppers`, `Tupper_Seleccionado_Idx`.
+  - Compatibilidad: las celdas antiguas `"Comer"` se migran a `"Comer_Basura"` al cargar. Los saves sin campos de cocina usan `Progreso_Cocina=1`, `Tuppers=[]`, `Tupper_Seleccionado_Idx=-1`; `Minutos_Cocinando_Actuales` siempre empieza en 0.
 - **Estáticas** (`Guardar_Variables_Estaticas.dat`): `Catalogo_Actividades` y `Actividades` **no se guardan** — se reconstruyen en `Variables_Estaticas._ready()`.
 - **Logs debug** (no saves): `user://guardado/otros/Guardar_Matriz.txt` y `Matriz_Dia.txt`. Desactivar en producción.
+
+---
+
+## Build Android (APK)
+
+- **Orientación (crítico):** `display/window/handheld/orientation=1` (entero). El exportador Android hace `int()` del valor; un string como `"portrait"` se convierte en `0` (**Landscape**). Valores: `0` landscape, `1` portrait.
+- **Pantalla completa:** `screen/immersive_mode=true` en `export_presets.cfg` añade `--fullscreen` al arranque (oculta barras del sistema). `screen/edge_to_edge=false`.
+- **Splash sin logo de Godot:** `application/boot_splash/show_image=false` en `project.godot` y `splash_screen/disable_godot_boot_splash=true` en el preset. El splash del sistema Android 12+ usa los iconos de `Iconos_Android/`.
+- **Iconos Android:** `Iconos_Android/icono_192.png`, `icono_adaptativo_frente_432.png`, `icono_adaptativo_fondo_432.png`, `icono_monocromo_432.png` y `splash_icon_512.png`. Se regeneran desde `icon.svg` con:
+  `godot --headless --path . --script res://Scripts/Otro/Herramientas/Generar_Iconos_Android.gd`
+- **Compilar:** `./exportar_apk.sh` (debug) o `./exportar_apk.sh --release`; `--instalar` instala por ADB. Salida: `build/sims-0.33.apk` (arm64-v8a).
+- **Verificar orientación:** `aapt2 dump xmltree --file AndroidManifest.xml build/sims-0.33.apk | grep screenOrientation` debe devolver `1`.
 
 ---
 
@@ -181,7 +222,7 @@ Cada carrera universitaria completada (`Variables_Dinamicas.Carreras_Completadas
 
 - Nombres en `PascalCase_Con_Guiones` (estilo del proyecto).
 - Días: Lunes=0 … Domingo=6.
-- Resolución: 720×1280 portrait.
+- Resolución: 720×1280 portrait. Con `stretch/aspect="expand"` el alto visible puede crecer (p. ej. 720×1600): usa `_Alto_Pantalla()` y recoloca en `get_viewport().size_changed`; no ancles nada a `y=1280` fijo.
 
 ---
 
@@ -204,7 +245,7 @@ Documentación detallada en `Funcionalidades/<ruta>/Documentacion/`.
 |---|---|---|
 | Cobrar_Alquiler | `Economia/Cobrar_Alquiler` | 200€/semana; sin dinero → calle; necesidades cap 20 en calle |
 | Ver_Calendario | `Ver Calendario` | Botón horario: calendario en solo lectura (`calendario_solo_lectura`) |
-| Perfil/Informacion | `Perfil/Informacion` | Pantalla perfil 3 pestañas (Info, Mensajes, Apuntes); datos en tiempo real |
+| Perfil/Informacion | `Perfil/Informacion` | Pantalla perfil 4 pestañas (Info, Mensajes, Apuntes, Despensa); datos en tiempo real |
 | Perfil/Mensajes | `Perfil/Mensajes` | Tab Mensajes dentro del perfil |
 | Perfil/Inventario | `Perfil/Inventario` | Tab Apuntes: libros desbloqueados por carrera |
 | Invertir_En_Bolsa | `Economia/Invertir_En_Bolsa` | Inversión pasiva; ~3 eventos/día; auto-venta si pánico (Sangre_Fría<30) |
@@ -213,7 +254,9 @@ Documentación detallada en `Funcionalidades/<ruta>/Documentacion/`.
 | Muerte | `Muerte` | Condiciones de muerte del personaje |
 | Jerarquia_Actividades | `Actividades/Jerarquia` | Prioridades P1/P2/P3 (Normal/Trabajo/Examen) |
 | Salir_De_Fiesta | `Actividades/Actividades_Temporales` | Fiesta 18:00–06:00 (2–12 h), ligar/resacón por minuto y estados Euforia/Resacón de 24 h |
+| Cocina_Y_Alimentacion | `Actividades/Cocina_Y_Alimentacion` | Cocinar, tuppers individuales, caducidad, intoxicación, comer tupper/basura y hostelería |
 | Eventos_Aleatorios | `Actividades/Eventos_Aleatorios` | Despido por higiene (cooldown 5 días) + 20 eventos generales con franja horaria |
+| Marca/Logo | `Documentacion/Marca` | Logo dinámico con la cara del Sim + icono fijo de Play Store/lanzador |
 
 ---
 

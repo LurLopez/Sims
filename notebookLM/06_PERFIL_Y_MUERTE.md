@@ -18,7 +18,8 @@ Pantalla_Mensajes (Control, 720×1280, z_index=5)   ← nombre histórico, es la
 ├── Tab_Bar (HBoxContainer, y:132–205)
 │   ├── Tab_Info (Button, "Info")
 │   ├── Tab_Mensajes (Button, "Mensajes")
-│   └── Tab_Apuntes (Button, "Apuntes")
+│   ├── Tab_Apuntes (Button, "Apuntes")
+│   └── Tab_Despensa (Button, "Despensa")
 ├── Panel_Info (Control, y:210–1280)            ← Tab Info
 │   └── Scroll_Info (ScrollContainer)
 │       └── VBox_Info (VBoxContainer, sep=16)
@@ -33,6 +34,10 @@ Pantalla_Mensajes (Control, 720×1280, z_index=5)   ← nombre histórico, es la
 └── Panel_Apuntes (Control, y:210–1280)         ← Tab Apuntes (ver Inventario)
     ├── Tabs_Libros (HBoxContainer)
     ├── Texto_Apuntes (TextEdit, editable=false)
+└── Panel_Despensa (Control, y:210–1280)        ← Tab Despensa (tuppers)
+    ├── Sin_Tuppers_Label (Label)
+    └── Scroll_Tuppers/VBox_Tuppers (filas de Tupper_UI.crear_fila)
+```
     └── Sin_Apuntes_Label (Label, hidden si hay libros)
 ```
 
@@ -197,6 +202,7 @@ Esta funcionalidad no persiste estado propio. El panel visible al abrir siempre 
 | Pestaña Info | `Tab_Info` → `_on_perfil_tab_info_pressed()` |
 | Pestaña Mensajes | `Tab_Mensajes` → `_on_perfil_tab_mensajes_pressed()` |
 | Pestaña Apuntes | `Tab_Apuntes` → `_on_perfil_tab_apuntes_pressed()` |
+| Pestaña Despensa | `Tab_Despensa` → `_on_perfil_tab_despensa_pressed()` |
 | Panel Info | `Panel_Info` |
 | Scroll Info | `Scroll_Info / VBox_Info` |
 | Función visibilidad | `Gestionar_Visibilidad.Visibilizar_Perfil(raiz)` |
@@ -205,7 +211,7 @@ Esta funcionalidad no persiste estado propio. El panel visible al abrir siempre 
 
 ## Checklist de Implementación
 
-- [x] Nodo `Tab_Bar` con `Tab_Info`, `Tab_Mensajes`, `Tab_Apuntes` en escena
+- [x] Nodo `Tab_Bar` con `Tab_Info`, `Tab_Mensajes`, `Tab_Apuntes`, `Tab_Despensa` en escena
 - [x] Nodo `Panel_Info` con `Scroll_Info/VBox_Info` en escena
 - [x] Nodo `Panel_Apuntes` con `Tabs_Libros`, `Texto_Apuntes`, `Sin_Apuntes_Label`
 - [x] `Lista_Mensajes` y `Contenido_Mensaje` desplazados a y:210
@@ -407,6 +413,18 @@ Los libros desbloqueados forman parte del objeto `Carrera`, que se guarda dentro
 - [x] `_Mostrar_Apunte(carrera, año)` lee el archivo .txt y lo vuelca en `Texto_Apuntes`
 - [x] Signal `Tab_Apuntes.pressed` conectado a `_on_perfil_tab_apuntes_pressed`
 - [ ] Generalizar ruta de archivos si se añaden carreras con nombres distintos
+
+---
+
+## Tab Despensa (tuppers) — implementado
+
+- [x] `Tab_Despensa` + `Panel_Despensa` en `Pantalla_Mensajes.tscn`
+- [x] `_on_perfil_tab_despensa_pressed()` y `_Renderizar_Despensa()`
+- [x] Filas reutilizables `Tupper_UI.crear_fila()`: porcentaje, calidad, caducidad, elegir y tirar
+- [x] `Modal_Tuppers.gd` para elegir/descartar desde el reloj de Comer
+- [x] `Tupper_Seleccionado_Idx` persistido en el save dinámico
+- [x] Indicador `🍱 N` junto a Hambre en `Necesidades_Basicas_GUI`
+- [x] `Progreso_Cocina` visible en Perfil/Info y en el panel Progreso
 # Sistema de Mensajes / Notificaciones
 
 ## Descripción General

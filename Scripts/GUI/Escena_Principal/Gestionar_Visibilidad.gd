@@ -114,6 +114,8 @@ func Comprobar_Flecha_Atras(raiz):
 			sub.text = "Fijas · Empleo"
 		elif raiz_path.ends_with("Fijas_Opciones"):
 			sub.text = "Actividades fijas"
+		elif raiz_path.ends_with("Especiales_Opciones"):
+			sub.text = "Actividades especiales"
 		elif raiz_path.ends_with("Progreso_Opciones"):
 			sub.text = "Temporales · Progreso"
 		elif raiz_path.ends_with("Necesidades_Basicas_Opciones"):
@@ -177,6 +179,7 @@ func Visibilizar_Perfil(raiz):
 	pantalla.get_node("Panel_Info").visible = false
 	pantalla.get_node("Lista_Mensajes").visible = false
 	pantalla.get_node("Panel_Apuntes").visible = false
+	pantalla.get_node("Panel_Despensa").visible = false
 
 
 func devolver_boton_ocupar_actividad(raiz):

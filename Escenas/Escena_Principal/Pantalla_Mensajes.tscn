@@ -113,6 +113,14 @@ theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
 theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
 text = "Inventario"
 
+[node name="Tab_Despensa" type="Button" parent="Tab_Bar"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 22
+theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
+text = "Despensa"
+
 [node name="Panel_Info" type="Control" parent="."]
 visible = false
 anchors_preset = 0
@@ -136,6 +144,37 @@ anchors_preset = 0
 offset_top = 210.0
 offset_right = 720.0
 offset_bottom = 1280.0
+
+[node name="Panel_Despensa" type="Control" parent="."]
+visible = false
+anchors_preset = 0
+offset_top = 210.0
+offset_right = 720.0
+offset_bottom = 1280.0
+
+[node name="Sin_Tuppers_Label" type="Label" parent="Panel_Despensa"]
+visible = false
+layout_mode = 0
+offset_left = 30.0
+offset_top = 100.0
+offset_right = 690.0
+offset_bottom = 260.0
+theme_override_colors/font_color = Color(0.55, 0.62, 0.78, 1)
+theme_override_font_sizes/font_size = 20
+text = "No tienes tuppers.
+Cocina para preparar raciones caseras."
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="Scroll_Tuppers" type="ScrollContainer" parent="Panel_Despensa"]
+layout_mode = 0
+offset_right = 720.0
+offset_bottom = 1070.0
+
+[node name="VBox_Tuppers" type="VBoxContainer" parent="Panel_Despensa/Scroll_Tuppers"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
 
 [node name="Sin_Apuntes_Label" type="Label" parent="Panel_Apuntes"]
 visible = false

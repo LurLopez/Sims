@@ -18,6 +18,8 @@ config/name="Sims"
 run/main_scene="res://Escenas/Menu/Menu.tscn"
 config/features=PackedStringArray("4.7", "Mobile")
 config/icon="res://icon.svg"
+boot_splash/show_image=false
+boot_splash/bg_color=Color(0.953, 0.961, 0.973, 1)
 
 [autoload]
 
@@ -30,7 +32,10 @@ Trabajo="*res://Scripts/Logica/Escena_Principal/Actividades/Trabajo/Trabajo.gd"
 Actividades_Habilidades="*res://Scripts/Logica/Escena_Principal/Actividades/Actividades_Habilidades.gd"
 Actividades_Necesidades_Basicas="*res://Scripts/Logica/Escena_Principal/Actividades/Actividades_Necesidades_Basicas.gd"
 Sistema_Examenes="*res://Scripts/Logica/Escena_Principal/Actividades/Carreras/Sistema_Examenes.gd"
+Sistema_Carreras_Deportivas="*res://Scripts/Logica/Escena_Principal/Actividades/Sistema_Carreras_Deportivas.gd"
+Sistema_Notificaciones="*res://Scripts/Globales/Sistema_Notificaciones.gd"
 Actividades="*res://Scripts/Logica/Escena_Principal/Actividades/Actividades.gd"
+Alimentacion="*res://Scripts/Logica/Escena_Principal/Actividades/Alimentacion.gd"
 Eventos_Aleatorios="*res://Scripts/Logica/Escena_Principal/Actividades/Eventos_Aleatorios.gd"
 Gestionar_Visibilidad="*res://Scripts/GUI/Escena_Principal/Gestionar_Visibilidad.gd"
 Debug_Cargar_Guardado="*res://Scripts/Otro/Debug/Debug_Cargar_Guardado.gd"
@@ -41,7 +46,7 @@ window/size/viewport_width=720
 window/size/viewport_height=1280
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
-window/handheld/orientation="portrait"
+window/handheld/orientation=1
 
 [gui]
 

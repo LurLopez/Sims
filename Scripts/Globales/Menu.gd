@@ -17,9 +17,22 @@ func _ready() -> void:
 	Guardar_Variables_Dinamicas.load_game()
 	_construir_menu()
 	_animar_entrada()
+	get_viewport().size_changed.connect(_Ajustar_Pie)
 
 	if Variables_Dinamicas.Muerto:
 		_Mostrar_Game_Over()
+
+
+# Alto visible en coordenadas de diseño; crece en pantallas más alargadas que 16:9.
+func _Alto_Pantalla() -> float:
+	var alto: float = get_viewport().get_visible_rect().size.y
+	return alto if alto >= 1280.0 else 1280.0
+
+
+func _Ajustar_Pie() -> void:
+	var pie := contenido.get_node_or_null("Pie_Menu") as Control
+	if pie != null:
+		pie.position = Vector2(24, _Alto_Pantalla() - 64.0)
 
 
 func _construir_menu() -> void:
@@ -32,34 +45,24 @@ func _construir_menu() -> void:
 	banda.size = Vector2(720, 296)
 	contenido.add_child(banda)
 
-	# --- Marca ---
+	# --- Marca: insignia con la cara real del Sim + wordmark ---
 	var header := HBoxContainer.new()
-	header.position = Vector2(26, 72)
-	header.size = Vector2(668, 74)
-	header.add_theme_constant_override("separation", 16)
+	header.position = Vector2(22, 62)
+	header.size = Vector2(676, 112)
+	header.add_theme_constant_override("separation", 12)
 	header.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	contenido.add_child(header)
 
-	var marca := Estilos_UI.avatar_personaje(64, Color.WHITE, 3)
+	var marca := Logo_Juego.new()
+	marca.name = "Logo_Juego"
+	marca.tamano_insignia = 92
+	marca.animar_retrato = true
+	marca.subtitulo = "Simulador de vida en tiempo real"
+	marca.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.add_child(marca)
 
-	var titulo_col := VBoxContainer.new()
-	titulo_col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	titulo_col.alignment = BoxContainer.ALIGNMENT_CENTER
-	titulo_col.add_theme_constant_override("separation", 2)
-	header.add_child(titulo_col)
-
-	var logo := Estilos_UI.titulo("Sims Life", 36, Color.WHITE)
-	logo.add_theme_font_override("font", Estilos_UI.fuente_logo())
-	logo.add_theme_color_override("font_shadow_color", Color(0.35, 0.04, 0.04, 0.55))
-	logo.add_theme_constant_override("shadow_offset_x", 0)
-	logo.add_theme_constant_override("shadow_offset_y", 2)
-	titulo_col.add_child(logo)
-
-	var sub_logo := Estilos_UI.texto("Simulador de vida en tiempo real", 14, Color("#fee2e2"), 600)
-	titulo_col.add_child(sub_logo)
-
 	var version_pill := Estilos_UI.pill_estado("v0.33", Color(0, 0, 0, 0.24), Color.WHITE)
+	version_pill.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	header.add_child(version_pill)
 
 	# --- Tarjeta principal ---
@@ -87,7 +90,8 @@ func _construir_menu() -> void:
 		_construir_tarjeta_partida_activa(v)
 
 	var pie := Estilos_UI.texto("Partida guardada localmente en el dispositivo", 12, Estilos_UI.TINTA_FANTASMA)
-	pie.position = Vector2(24, 1216)
+	pie.name = "Pie_Menu"
+	pie.position = Vector2(24, _Alto_Pantalla() - 64.0)
 	pie.size = Vector2(672, 24)
 	pie.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	contenido.add_child(pie)
@@ -509,7 +513,15 @@ func _reiniciar_partida_desde_cero() -> void:
 	Variables_Dinamicas.Matriz_Jugador = []
 	Variables_Dinamicas.Progreso = []
 	Variables_Dinamicas.Necesidades_Basicas = []
+	Variables_Dinamicas.Progreso_Cocina = 1
+	Variables_Dinamicas.Tuppers = []
+	Variables_Dinamicas.Tupper_Seleccionado_Idx = -1
+	Variables_Dinamicas.Minutos_Cocinando_Actuales = 0
 	Variables_Dinamicas.Habilidades_Mostradas = []
+	Variables_Dinamicas.Habilidades_Cap_Notificado = [false, false, false, false, false, false, false]
+	Variables_Dinamicas.Ultimo_Uso_Progreso = [-1, -1, -1]
+	Variables_Dinamicas.Ultimo_Check_Decadencia = [-1, -1, -1]
+	Variables_Dinamicas.Ultimas_Pistas_Progreso = []
 	Variables_Dinamicas.Dinero = 0
 	Variables_Dinamicas.En_La_Calle = false
 	Variables_Dinamicas.Ultima_Fecha_Alquiler = -1
@@ -522,6 +534,11 @@ func _reiniciar_partida_desde_cero() -> void:
 	Variables_Dinamicas.Carrera_Actual = null
 	Variables_Dinamicas.Carreras_Completadas = []
 	Variables_Dinamicas.Inicio_Semana_Carrera = -1
+	Variables_Dinamicas.Carrera_Deportiva_Pendiente = {
+		"inscrito": false, "dia": -1, "hora_inicio": -1,
+		"semana_inscripcion": -1, "total_inscritos": 0,
+		"resultado_puesto": -1, "resultado_procesado": false
+	}
 	Variables_Dinamicas.Mensajes = []
 	Variables_Dinamicas.Esta_Invirtiendo = false
 	Variables_Dinamicas.Dinero_Invertido = 0.0

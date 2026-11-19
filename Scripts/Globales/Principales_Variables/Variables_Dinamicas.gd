@@ -1,12 +1,30 @@
 extends Node
 #Variables Principales
 var Matriz_Jugador=[]
+var Matriz_Sucia: bool = true
 var Progreso=[]
 var Necesidades_Basicas=[]
+# Nivel de destreza culinaria (rango 1..100). Se sube cocinando y no decae.
+var Progreso_Cocina: int = 1
+# Inventario individualizado de raciones caseras.
+# Cada elemento: {id:int, porcentaje_restante:float, calidad:int,
+#                 minuto_creacion:int, minuto_caducidad:int}
+var Tuppers: Array = []
+# Índice del tupper elegido manualmente por el jugador (-1 = automático).
+var Tupper_Seleccionado_Idx: int = -1
+# Contador volátil de minutos consecutivos cocinados (no se guarda).
+var Minutos_Cocinando_Actuales: int = 0
 # Conocimiento descubierto sobre cada habilidad innata (6 ints, 0-100).
 # Solo sube. Capped at Variables_Estaticas.Habilidades[i].
 # Cuando alcanza el valor innato, se "revela" el cap al jugador.
 var Habilidades_Mostradas=[]
+var Habilidades_Cap_Notificado: Array = [false, false, false, false, false, false, false]
+
+# Decadencia del Progreso y pistas contextuales
+# Timestamps en minutos (Variables_Dinamicas.Minute) por área: [Deporte, Académico, Manualidades]
+var Ultimo_Uso_Progreso: Array = [-1, -1, -1]
+var Ultimo_Check_Decadencia: Array = [-1, -1, -1]
+var Ultimas_Pistas_Progreso: Array = []
 
 #Variables Relacionadas con la gestion del dinero
 var Dinero=0
@@ -38,6 +56,17 @@ var Carreras_Completadas: Array = []
 # Minuto absoluto del inicio de la semana actual de carrera. Se usa para detectar
 # el fin de semana y procesar el examen (cada 7*1440 minutos desde matriculación).
 var Inicio_Semana_Carrera: int = -1
+
+# Sistema de Carreras Deportivas
+var Carrera_Deportiva_Pendiente: Dictionary = {
+	"inscrito": false,
+	"dia": -1,
+	"hora_inicio": -1,
+	"semana_inscripcion": -1,
+	"total_inscritos": 0,
+	"resultado_puesto": -1,
+	"resultado_procesado": false
+}
 
 # Sistema de Mensajes/Notificaciones
 var Mensajes: Array = []

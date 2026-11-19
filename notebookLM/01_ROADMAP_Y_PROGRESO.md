@@ -7,22 +7,23 @@ El bucle de juego ya funciona end-to-end. La GUI tiene cuatro pantallas accesibl
 | Botón | Estado | Notas |
 |---|---|---|
 | **Necesidades Básicas** | ✅ Hecho | 5 barras (Salud Física, Salud Mental, Hambre, Descanso, Higiene) que cambian con el tiempo y la actividad. |
-| **Progreso** | ✅ Hecho | 3 barras (Deporte, Académico, Manualidades) que aumentan al hacer actividades relacionadas. |
+| **Progreso** | ✅ Hecho | 4 barras (Deporte, Académico, Manualidades, Cocina) que aumentan al hacer actividades relacionadas. |
 | **Actividades** | ✅ Hecho | Calendario semanal, selección de bloques, mini calendario con preview blink, cancelar/crear actividad. |
-| **Habilidades / Talentos** | ✅ Hecho | 6 barras de habilidades innatas visibles. Descubrimiento progresivo pendiente. |
+| **Habilidades / Talentos** | ✅ Hecho | 7 barras de habilidades innatas (incluye Sangre fría) con descubrimiento progresivo. |
 
 ### Funcionalidades adicionales implementadas
 
 | Funcionalidad | Estado | Notas |
 |---|---|---|
 | **Economía / Alquiler** | ✅ Hecho | 200€/semana; sin dinero → calle; necesidades capeadas a 20 en calle. |
-| **Trabajos** | ✅ Hecho | Comida rápida, carpintero, científico. Salario al final del turno. Jerarquía P1/P2/P3. |
+| **Trabajos** | ✅ Hecho | Comida rápida, carpintero, científico, abogado, médico, artista y hostelería (ayudante, cocinero, chef). Salario al final del turno. Jerarquía P1/P2/P3. |
 | **Invertir en bolsa** | ✅ Hecho | Inversión pasiva; ~3 eventos/día; auto-venta si pánico (Sangre_Fría < 30). |
-| **Sistema de objetos / Tienda** | ✅ Hecho | Compra/venta de camas, mesas, duchas con multiplicadores de efectos. |
+| **Cocina y alimentación** | ✅ Hecho | `Cocinar`, tuppers con caducidad, intoxicación, `Comer_Tupper`/`Comer_Basura` y hostelería por `Progreso_Cocina`. |
+| **Sistema de objetos / Tienda** | ✅ Hecho | Compra/venta de camas y duchas con multiplicadores; `Mesa_Premium` retirada y comer ya no depende de mesas. |
 | **Carreras universitarias** | ✅ Hecho | Sistema de carreras; libros desbloqueados por carrera visibles en Apuntes. |
 | **Muerte** | ✅ Hecho | Condiciones de muerte del personaje implementadas. |
 | **Eventos aleatorios** | ✅ Hecho | Despido por higiene (cooldown 5 días) + 20 eventos generales con franja horaria. |
-| **Perfil** | ✅ Hecho | 3 pestañas: Info (datos en tiempo real), Mensajes, Apuntes. |
+| **Perfil** | ✅ Hecho | 4 pestañas: Info (datos en tiempo real), Mensajes, Apuntes y Despensa. |
 | **Calendario solo lectura** | ✅ Hecho | Botón horario abre el calendario en modo consulta (`calendario_solo_lectura`). |
 | **Jerarquía de actividades** | ✅ Hecho | Prioridades P1 (Normal) / P2 (Trabajo) / P3 (Examen). |
 | **Refactorización de escenas** | ✅ Hecho | Escenas reorganizadas; mejoras de UI e iconos. |

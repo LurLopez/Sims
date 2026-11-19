@@ -11,9 +11,27 @@ var _busy: bool = false
 var _touch_start: Vector2 = Vector2.ZERO
 var _touch_active: bool = false
 
+var _base: Control = null
 var _book_container: Control = null
 var _indicador: Label = null
 var _boton_volver: Button = null
+
+
+func _Alto_Pantalla() -> float:
+	var alto: float = get_viewport().get_visible_rect().size.y
+	return alto if alto >= 1280.0 else 1280.0
+
+
+func _Ajustar_Alto() -> void:
+	if _base == null:
+		return
+	var alto := _Alto_Pantalla()
+	_base.offset_bottom = alto
+	if _book_container != null:
+		_book_container.offset_bottom = alto - 84.0
+	if _indicador != null:
+		_indicador.offset_top = alto - 70.0
+		_indicador.offset_bottom = alto - 28.0
 
 
 func configurar(paginas: Array, carrera_nombre: String, año: int, emoji: String = "📘"):
@@ -22,16 +40,19 @@ func configurar(paginas: Array, carrera_nombre: String, año: int, emoji: String
 	_año = año
 	_emoji = emoji
 	_pagina_actual = 0
-	_Renderizar_Pagina()
+	if _book_container != null:
+		_Renderizar_Pagina()
 
 
 func _ready():
 	layer = 100
+	var alto := _Alto_Pantalla()
 
-	var base = Control.new()
-	base.offset_right = 720.0
-	base.offset_bottom = 1280.0
-	add_child(base)
+	_base = Control.new()
+	_base.offset_right = 720.0
+	_base.offset_bottom = alto
+	add_child(_base)
+	var base := _base
 
 	var fondo = ColorRect.new()
 	fondo.anchor_right = 1.0
@@ -60,14 +81,14 @@ func _ready():
 	_book_container.offset_left = 24.0
 	_book_container.offset_top = 86.0
 	_book_container.offset_right = 696.0
-	_book_container.offset_bottom = 1196.0
+	_book_container.offset_bottom = alto - 84.0
 	base.add_child(_book_container)
 
 	_indicador = Label.new()
 	_indicador.offset_left = 24.0
-	_indicador.offset_top = 1210.0
+	_indicador.offset_top = alto - 70.0
 	_indicador.offset_right = 210.0
-	_indicador.offset_bottom = 1252.0
+	_indicador.offset_bottom = alto - 28.0
 	_indicador.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_indicador.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_indicador.add_theme_font_override("font", Estilos_UI.fuente_ui(600))
@@ -80,6 +101,9 @@ func _ready():
 	pill.content_margin_bottom = 6
 	_indicador.add_theme_stylebox_override("normal", pill)
 	base.add_child(_indicador)
+	get_viewport().size_changed.connect(_Ajustar_Alto)
+	if not _paginas.is_empty():
+		_Renderizar_Pagina()
 
 
 func _on_volver():

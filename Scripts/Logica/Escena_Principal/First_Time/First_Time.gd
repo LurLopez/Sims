@@ -68,6 +68,10 @@ func Crear_Progreso():
 	for i in range(0,3):
 		Variables_Dinamicas.Progreso.append(1)
 	Variables_Dinamicas.Progreso_Inversion = 1
+	Variables_Dinamicas.Progreso_Cocina = 1
+	Variables_Dinamicas.Tuppers = []
+	Variables_Dinamicas.Tupper_Seleccionado_Idx = -1
+	Variables_Dinamicas.Minutos_Cocinando_Actuales = 0
 
 func Crear_Necesidades_Basicas():
 	for i in range(0,5):

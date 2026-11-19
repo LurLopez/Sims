@@ -86,7 +86,8 @@ func _Construir_UI():
 		txt_col.add_child(lbl_n)
 
 		var costo_mat := int(Variables_Estaticas.Obtener_Costo_Matricula(carrera))
-		var sub_txt := "Ya completada" if ya_completada else "%d años · %d €/año" % [carrera.años_totales, costo_mat]
+		var dif_txt := _Etiqueta_Dificultad(carrera.ajuste_dificultad)
+		var sub_txt := "Ya completada" if ya_completada else "%d años · %d €/año · %s" % [carrera.años_totales, costo_mat, dif_txt]
 		var lbl_s := Estilos_UI.texto(sub_txt, 13, Estilos_UI.EXITO if ya_completada else Estilos_UI.TINTA_SUAVE, 500)
 		lbl_s.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		txt_col.add_child(lbl_s)
@@ -101,6 +102,16 @@ func _Construir_UI():
 			row.add_child(chev)
 
 		vbox.add_child(btn)
+
+
+func _Etiqueta_Dificultad(ajuste: float) -> String:
+	if ajuste >= 5.0:
+		return "Fácil"
+	elif ajuste <= -10.0:
+		return "Muy difícil"
+	elif ajuste < 0.0:
+		return "Difícil"
+	return "Media"
 
 
 func _Esta_Completada(nombre_carrera: String) -> bool:

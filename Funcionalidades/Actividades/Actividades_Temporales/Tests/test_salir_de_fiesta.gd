@@ -84,18 +84,20 @@ func test_catalogo_fiesta_existe_como_temporal_p1():
 func test_fiesta_no_entra_en_el_pool_aleatorio():
 	for act in Variables_Estaticas.Actividades:
 		assert_ne(act.nombre, NOMBRE, "Salir_De_Fiesta no debe estar en el pool aleatorio")
-	assert_eq(Variables_Estaticas.Actividades.size(), 7, "El pool debe conservar sus 7 actividades")
+	assert_eq(Variables_Estaticas.Actividades.size(), 6, "El pool debe conservar sus 6 actividades")
 
 
 func test_no_regresion_efectos_actividades_existentes():
 	var esperados := {
 		"Dormir": [1, 1, -1, 4, -1],
-		"Comer": [-1, 2, 20, -1, -1],
 		"Duchar": [1, 1, -1, -1, 20],
 		"Ver_La_Television": [-1, 5, -1, 2, -1],
 		"Estudiar": [-1, -2, -1, -2, -1],
 		"Salir_A_Correr": [4, 2, -3, -3, -4],
 		"Practicar_Manualidades": [-2, -1, -1, -2, -1],
+		"Cocinar": [-1, 1, -2, -2, -2],
+		"Comer_Tupper": [1, 2, 20, -1, -1],
+		"Comer_Basura": [-2, 2, 20, -1, -1],
 	}
 	for nombre in esperados:
 		var act = Variables_Estaticas.Catalogo_Actividades[nombre]
@@ -110,7 +112,7 @@ func test_boton_fiesta_en_escena_y_conectado():
 	var packed = load("res://Escenas/Escena_Principal/Escena principal.tscn")
 	var raiz = packed.instantiate()
 	var boton = raiz.get_node_or_null(
-		"Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones/Necesidades_Basicas_Opciones/Salir_De_Fiesta")
+		"Actividades/Elegir_Actividad/Tipos_De_Actividades/Especiales_Opciones/Salir_De_Fiesta")
 	assert_not_null(boton, "El botón Salir_De_Fiesta debe existir en la escena")
 	assert_true(boton is Button)
 	assert_true(boton.pressed.is_connected(Callable(raiz, "Actividad_Terminada_Salir_De_Fiesta")),
@@ -137,6 +139,9 @@ func test_contenedor_necesidades_tiene_cinco_botones():
 	var contenedor = raiz.get_node(
 		"Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones/Necesidades_Basicas_Opciones")
 	assert_eq(contenedor.get_child_count(), 5)
+	var especiales = raiz.get_node(
+		"Actividades/Elegir_Actividad/Tipos_De_Actividades/Especiales_Opciones")
+	assert_true(especiales.has_node("Salir_De_Fiesta"))
 	raiz.free()
 
 
@@ -146,11 +151,11 @@ func test_layout_cinco_botones_cabe_sin_scroll():
 	raiz._Redisenar_Actividades()
 	var tipos = raiz.get_node("Actividades/Elegir_Actividad/Tipos_De_Actividades")
 	var contenedor = raiz.get_node(
-		"Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones/Necesidades_Basicas_Opciones")
+		"Actividades/Elegir_Actividad/Tipos_De_Actividades/Especiales_Opciones")
 	assert_eq(tipos.size.y, 960.0)
 	assert_eq(contenedor.get_theme_constant("separation"), 10)
-	var alto_total: int = 5 * 78 + 4 * 10
-	assert_lte(float(alto_total), tipos.size.y, "Los 5 botones deben caber en el contenedor")
+	var alto_total: int = 2 * 78 + 1 * 10
+	assert_lte(float(alto_total), tipos.size.y, "Los botones especiales deben caber en el contenedor")
 	raiz.free()
 
 

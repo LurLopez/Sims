@@ -26,7 +26,7 @@ Sistema de prioridades que regula qué actividades pueden coexistir o reemplazar
 |---|---|---|
 | 3 | Examen (verificación dinámica vía `Carrera_Actual`) | Hora del examen universitario |
 | 2 | `Actividad_Fija` / `Actividad_Fija_Trabajo` | Trabajar_En_Comida_Rapida, Trabajar_De_Carpintero |
-| 1 | `Actividad_Temporal` / `Actividad_Carrera` | Dormir, Comer, Estudiar, Estudiar_Carrera… |
+| 1 | `Actividad_Temporal` / `Actividad_Carrera` | Dormir, Cocinar, Comer_Tupper, Comer_Basura, Estudiar, Estudiar_Carrera… |
 | 0 | Celda vacía (`""` o `"Actividad_Aleatoria"`) | — |
 
 ---
@@ -874,3 +874,21 @@ Actividad temporal P1 `Salir_De_Fiesta` con ventana 18:00–06:00, duración 2�
 - **Persistencia:** `Estados_Temporales` y `Fiesta_Evento_Ocurrido` con fallback `{}`/`false`, filtrado y saneado.
 - **Tests:** `Funcionalidades/Actividades/Actividades_Temporales/Tests/test_salir_de_fiesta.gd`; suite GUT 100/100.
 - **Ficha completa:** `Funcionalidades/Actividades/Actividades_Temporales/Documentacion/SALIR_DE_FIESTA.md`.
+
+---
+
+# Cocina y Alimentación Dual — IMPLEMENTADO
+
+Sustituye la antigua actividad gratuita `Comer` por `Cocinar`, `Comer_Tupper` y `Comer_Basura`. La lógica vive en el autoload `Alimentacion` y en `Variables_Dinamicas.Progreso_Cocina/Tuppers`.
+
+- **Catálogo:** `Cocinar` NB `[-1,1,-2,-2,-2]`; `Comer_Tupper` NB `[1,2,20,-1,-1]`; `Comer_Basura` NB `[-2,2,20,-1,-1]`. Ninguna entra en el pool aleatorio. `Comer` se elimina y las celdas antiguas se migran a `Comer_Basura`.
+- **Cocinar:** mínimo 15 min y vivienda. Cada minuto sube `Progreso_Cocina` con `max_val = floor(20 * (8^((30+n)/100))^(15000/(5000+suma)))`, `suma = 40*Destreza + 25*Paciencia + 20*Sangre_fría + 15*Memoria`. Cada 15 min cobra `2€*Multiplicador_Precios()` y crea un tupper al 100 % de calidad `n`. Sin saldo/calle: cancela y limpia el bloque.
+- **Tuppers:** 1 = 30 min (3,333 %/min); caducidad 3 días normal / 1 día rápido. Efectos de física `+1/+2/+3` y mental `+2/+3` según calidad. Al agotarse encadena al siguiente; si no quedan, el resto del bloque pasa a `Comer_Basura` (cobrando).
+- **Intoxicación:** `p30 = clamp(horas_caducado/48, 0.05, 1.0)`; `p_min = 1 - (1-p30)^(1/30)`. Estado `Intoxicacion` de 1440 min con techo 30→100 a Física/Mental (20 en calle/bancarrota).
+- **Comer_Basura:** `2€*Multiplicador_Precios()` cada 5 min; sin saldo cancela. Efectos `[-2,2,20,-1,-1]`.
+- **IA:** tupper vigente → basura si hay dinero → tupper caducado como último recurso → `Ver_La_Television`. Nunca comida gratis.
+- **Hostelería:** `Trabajar_De_Ayudante_Cocina` (30), `Trabajar_De_Cocinero_Partida` (60), `Trabajar_De_Chef_Ejecutivo` (85); solo exigen `requisito_cocina`.
+- **UI:** botón `🍳 COCINAR`, pestañas Tupper/Basura en el reloj, pestaña `Despensa` en Perfil, modal `Modal_Tuppers.gd`, indicador `🍱 N` junto a Hambre y `Progreso_Cocina` en Perfil/Progreso.
+- **Persistencia:** `Progreso_Cocina`, `Tuppers`, `Tupper_Seleccionado_Idx`; `Minutos_Cocinando_Actuales` volátil. Fallbacks `1`, `[]`, `-1`.
+- **Tests:** `Funcionalidades/Actividades/Actividades_Temporales/Tests/test_cocina_y_alimentacion.gd` (TC-01 a TC-11 + UI).
+- **Ficha completa:** `Funcionalidades/Actividades/Cocina_Y_Alimentacion/Documentacion/COCINA_Y_ALIMENTACION.md`.
