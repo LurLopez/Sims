@@ -1,6 +1,8 @@
 extends Node
 
 func First_Time_Function():
+		Variables_Estaticas.Tutorial_Completado = false
+		Variables_Estaticas.Apariencia = Apariencia_Personaje.normalizar(Variables_Estaticas.Apariencia)
 		Crear_Matriz()
 		Crear_Personalidad()
 		Crear_Habilidades()
@@ -8,7 +10,7 @@ func First_Time_Function():
 		Crear_Necesidades_Basicas()
 		Crear_Progreso()
 		Crear_First_Time_Minute()
-		Variables_Dinamicas.Dinero=1000
+		Variables_Dinamicas.Dinero = Variables_Estaticas.Obtener_Capital_Inicial()
 		Crear_Alquiler()
 		Crear_Objetos_Iniciales()
 

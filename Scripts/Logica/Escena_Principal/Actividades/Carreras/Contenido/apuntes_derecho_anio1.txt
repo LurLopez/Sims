@@ -1,0 +1,65 @@
+DERECHO - AÑO 1: FUNDAMENTOS DEL DERECHO
+
+1. LA NORMA JURÍDICA
+El Derecho es el conjunto de normas que regulan la convivencia social y cuyo cumplimiento puede ser exigido de forma coactiva por el Estado. La norma jurídica es el elemento básico de ese conjunto y se diferencia de otras normas sociales (morales, religiosas, de trato social) por su carácter coercitivo.
+
+Toda norma jurídica tiene una estructura lógica compuesta por:
+- Supuesto de hecho: la situación o conducta que la norma prevé.
+- Consecuencia jurídica: el efecto que se produce si se realiza el supuesto de hecho.
+
+Características principales de la norma jurídica:
+- Generalidad: se dirige a todos los ciudadanos o a un colectivo indeterminado.
+- Abstracción: regula supuestos de hecho tipo, no casos concretos.
+- Obligatoriedad: su cumplimiento es exigible, no voluntario.
+- Coercibilidad: el Estado puede imponer su cumplimiento mediante la fuerza si es necesario.
+
+2. FUENTES DEL DERECHO
+Las fuentes del Derecho son los modos de creación y manifestación de las normas jurídicas. En el ordenamiento español (art. 1 del Código Civil) son, por este orden de prelación:
+
+- La ley: norma escrita emanada de los órganos con potestad legislativa (Cortes Generales, Parlamentos autonómicos). Es la fuente principal.
+- La costumbre: norma no escrita que surge de la repetición constante de una conducta con convicción de obligatoriedad (opinio iuris). Solo se aplica en defecto de ley aplicable y siempre que no sea contraria a la moral o al orden público.
+- Los principios generales del Derecho: ideas fundamentales que inspiran el ordenamiento (buena fe, no abuso de derecho). Se aplican en defecto de ley y costumbre, y además tienen carácter informador de todo el ordenamiento.
+
+La jurisprudencia (doctrina reiterada del Tribunal Supremo) no es fuente del Derecho en sentido estricto, sino que "complementa" el ordenamiento jurídico, sirviendo de criterio interpretativo.
+
+3. RAMAS DEL DERECHO
+La clasificación clásica divide el Derecho en dos grandes bloques según el interés protegido y la posición de las partes:
+
+Derecho Público: regula las relaciones entre el Estado (u otros entes públicos) y los particulares, o entre distintos poderes públicos, en una posición de superioridad del ente público. Incluye:
+- Derecho Constitucional
+- Derecho Administrativo
+- Derecho Penal
+- Derecho Procesal
+- Derecho Internacional Público
+
+Derecho Privado: regula las relaciones entre particulares en un plano de igualdad. Incluye:
+- Derecho Civil
+- Derecho Mercantil
+- Derecho Internacional Privado
+
+Existen además ramas mixtas, como el Derecho Laboral, que combinan elementos de ambos bloques.
+
+4. JERARQUÍA NORMATIVA
+El ordenamiento jurídico se organiza de forma escalonada, de manera que cada norma debe respetar a las de rango superior. Esta idea se representa gráficamente mediante la llamada pirámide de Kelsen:
+
+- En la cúspide se sitúa la Constitución, norma suprema que fundamenta la validez de todas las demás y a la que ninguna otra puede contradecir.
+- En un segundo nivel se encuentran las leyes (orgánicas y ordinarias), así como los tratados internacionales ratificados.
+- Por debajo se sitúan los reglamentos, normas de rango inferior a la ley dictadas por el poder ejecutivo para desarrollarla y ejecutarla.
+
+Una norma de rango inferior que contradiga a una de rango superior es nula o inaplicable. Este principio se conoce como principio de jerarquía normativa, y se combina con el principio de competencia, que atribuye a cada órgano la potestad de regular determinadas materias con independencia del rango formal de la norma.
+
+5. SUJETOS DE DERECHO
+Sujeto de derecho es todo ente capaz de ser titular de derechos y obligaciones. Existen dos tipos:
+
+- Persona física: todo ser humano, desde su nacimiento hasta su muerte. Adquiere personalidad jurídica con el nacimiento.
+- Persona jurídica: entidad creada por el Derecho (asociaciones, sociedades, fundaciones) a la que se le reconoce personalidad propia, distinta de la de sus miembros.
+
+Dentro de la capacidad de las personas se distingue:
+- Capacidad jurídica: aptitud para ser titular de derechos y obligaciones. La tienen todas las personas por el mero hecho de serlo, y no admite grados.
+- Capacidad de obrar: aptitud para ejercitar por sí mismo esos derechos y obligaciones, celebrando actos y contratos válidos. Sí admite grados y depende de factores como la edad o el estado civil (por ejemplo, los menores de edad tienen capacidad jurídica pero capacidad de obrar limitada).
+
+6. CONSEJOS DE EXAMEN
+- Diferencia siempre capacidad jurídica (todos la tienen) de capacidad de obrar (puede estar limitada).
+- Recuerda el orden de prelación de fuentes: ley, costumbre, principios generales.
+- No confundas jerarquía normativa (rango) con reparto de competencias (materia).
+- Ante un caso práctico, identifica primero si la relación es de Derecho público o privado antes de razonar la respuesta.

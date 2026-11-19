@@ -1,0 +1,43 @@
+MEDICINA - AÑO 3: DIAGNÓSTICO CLÍNICO
+
+1. ANAMNESIS
+La anamnesis es la entrevista clínica en la que el médico recoge la historia del paciente: motivo de consulta, antecedentes personales y familiares, hábitos, alergias y medicación habitual.
+
+Una buena anamnesis sigue habitualmente este orden:
+- Motivo de consulta: qué le pasa al paciente en sus propias palabras.
+- Historia de la enfermedad actual: cuándo empezó, cómo ha evolucionado, qué lo mejora o empeora.
+- Antecedentes personales y familiares relevantes.
+
+La anamnesis es, junto con la exploración física, la herramienta diagnóstica más importante y la que orienta el resto del proceso.
+
+2. EXPLORACIÓN FÍSICA
+La exploración física clásica se basa en cuatro técnicas, aplicadas generalmente en este orden:
+- Inspección: observación visual del paciente (color de piel, postura, respiración).
+- Palpación: exploración mediante el tacto (temperatura, masas, dolor a la presión).
+- Percusión: golpeo suave sobre una zona para valorar el sonido producido (mate, timpánico) y deducir si hay líquido, aire o consistencia sólida.
+- Auscultación: escucha de sonidos internos, habitualmente con estetoscopio (corazón, pulmones, abdomen).
+
+3. PRUEBAS COMPLEMENTARIAS
+Cuando la anamnesis y la exploración no bastan para confirmar un diagnóstico, se recurre a pruebas complementarias:
+- Analítica: análisis de sangre, orina u otros fluidos (hemograma, bioquímica, marcadores).
+- Pruebas de imagen: radiografía, ecografía, tomografía computarizada (TC) y resonancia magnética (RM), entre otras.
+
+Estas pruebas deben solicitarse de forma orientada según la sospecha clínica, no de manera indiscriminada.
+
+4. DIAGNÓSTICO DIFERENCIAL
+El diagnóstico diferencial es el proceso de considerar varias enfermedades posibles que podrían explicar los síntomas de un paciente, e ir descartándolas mediante datos clínicos y pruebas complementarias hasta llegar al diagnóstico más probable.
+
+Un mismo síntoma (por ejemplo, dolor torácico) puede tener causas muy diferentes, desde una contractura muscular hasta un infarto, por lo que el diagnóstico diferencial es esencial para no pasar por alto causas graves.
+
+5. SEMIOLOGÍA BÁSICA DE SÍNTOMAS COMUNES
+- Fiebre: elevación de la temperatura corporal por encima de lo normal, habitualmente respuesta a una infección u otro proceso inflamatorio.
+- Dolor: síntoma subjetivo que se valora según localización, intensidad, tipo (punzante, opresivo, cólico) e irradiación.
+- Disnea: sensación subjetiva de falta de aire o dificultad para respirar, puede tener origen respiratorio, cardíaco o de otro tipo.
+
+Describir bien un síntoma (inicio, duración, factores que lo modifican) es tan importante como detectarlo.
+
+6. CONSEJOS DE EXAMEN
+- Recuerda el orden de la exploración física: inspección, palpación, percusión, auscultación.
+- No olvides que la anamnesis sigue siendo la herramienta diagnóstica más importante.
+- Ante un síntoma inespecífico, piensa en diagnóstico diferencial antes de decidirte por una única causa.
+- Relaciona cada prueba complementaria con el tipo de información que aporta (analítica vs imagen).

@@ -1,0 +1,16 @@
+[gd_resource type="Theme" load_steps=2 format=3]
+
+[ext_resource type="FontFile" path="res://Fuentes/UI/DMSans-500.ttf" id="1_font"]
+
+[resource]
+default_font = ExtResource("1_font")
+default_font_size = 16
+CheckBox/colors/font_color = Color(0.067, 0.094, 0.153, 1)
+CheckBox/colors/font_focus_color = Color(0.067, 0.094, 0.153, 1)
+CheckBox/colors/font_hover_color = Color(0.067, 0.094, 0.153, 1)
+CheckBox/colors/font_hover_pressed_color = Color(0.839, 0.157, 0.157, 1)
+CheckBox/colors/font_pressed_color = Color(0.839, 0.157, 0.157, 1)
+Label/colors/font_color = Color(0.067, 0.094, 0.153, 1)
+LineEdit/colors/font_color = Color(0.067, 0.094, 0.153, 1)
+LineEdit/colors/font_placeholder_color = Color(0.486, 0.529, 0.596, 1)
+LineEdit/colors/caret_color = Color(0.839, 0.157, 0.157, 1)

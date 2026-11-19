@@ -22,23 +22,24 @@
 
 ## Visión General
 
-El sistema de carreras universitarias es una **mecánica híbrida de 4 semanas reales** (= 4 años de juego) donde:
+El sistema de carreras universitarias es una **mecánica híbrida** (1 semana real = 1 año de juego) donde:
 
 - El **personaje estudia automáticamente** progresando aleatoriamente
 - El **personaje hace exámenes automáticos** a hora programada
 - El **jugador real puede hacer exámenes** para sumar +10% bonus a la nota final
 - **Matriculación y prematriculación** crean estructura y compromiso
 
-**Objetivo final:** Completar 4 años de carrera en ~4 semanas reales de juego
+**Carreras disponibles:** Ingeniería Informática, Derecho y Bellas Artes duran 4 años; **Medicina dura 5 años** (la única con duración distinta, para ser más difícil). Solo se puede cursar una carrera a la vez (`Variables_Dinamicas.Carrera_Actual`) y no se puede repetir una carrera que ya esté en `Carreras_Completadas`.
+
+**Objetivo final:** Completar todos los años de la carrera elegida en ~N semanas reales de juego (N = `carrera.años_totales`)
 
 ---
 
 ## Duración Total
 
-- **4 semanas reales = 4 años de juego**
-- **1 semana real = 1 año académico**
-- **4 exámenes total** (1 por semana)
-- Una carrera se completa en ~1 mes real
+- **1 semana real = 1 año académico**, para cualquier carrera
+- **`carrera.años_totales` exámenes en total** (1 por semana): 4 para Ingeniería Informática/Derecho/Bellas Artes, **5 para Medicina**
+- Una carrera se completa en ~1 mes real (~5 semanas en el caso de Medicina)
 
 ---
 
@@ -154,12 +155,14 @@ Inmediatamente después del examen:
   → Dinero: 500€ de nuevo para reintentar
 ```
 
-**Al completar Año 4:**
+**Al completar el último año (Año 4, o Año 5 en Medicina):**
 ```
-Después de aprobar Año 4:
+Después de aprobar el último año:
   → 🎓 CARRERA COMPLETADA
-  → Bonus económico (a definir)
-  → Se guarda en historial de carreras
+  → Bonus económico: +2000€ (Sistema_Examenes.BONUS_DINERO_CARRERA_COMPLETADA)
+  → Se guarda en Carreras_Completadas (historial de carreras)
+  → Aparece un diploma/certificado en la pestaña Apuntes del Perfil
+  → Se desbloquea el trabajo de nómina asociado a esa carrera (ver tabla más abajo)
 ```
 
 ---
@@ -267,16 +270,18 @@ PASO 4: Resultado
 ### Flujo D: COMPLETAR LA CARRERA
 
 ```
-AÑOS 1-3: Repites Flujo A/B/C
+AÑOS 1 a (años_totales - 1): Repites Flujo A/B/C
 
-AÑO 4 - Examen final:
+ÚLTIMO AÑO - Examen final (Año 4, o Año 5 en Medicina):
   Viernes 14:00 → APROBADO (≥50)
   
   RESULTADO: 🎓 CARRERA COMPLETADA
     ✅ No aparece "Prematricularse"
     ✅ Botón cambia a "Carrera Completada"
-    ✅ Bonus económico guardado
-    ✅ Entra en historial de carreras del perfil
+    ✅ Bonus económico +2000€ guardado
+    ✅ Entra en Carreras_Completadas (historial de carreras del perfil)
+    ✅ Aparece un diploma/certificado en la pestaña Apuntes del Perfil
+    ✅ Se desbloquea el trabajo de nómina de esa carrera
     ✅ Variables_Dinamicas.Carrera_Actual = null
 ```
 
@@ -461,14 +466,15 @@ Ejemplo:
 
 ### Contenido
 
-Se define por año y carrera. **Ejemplo Ing. Informática:**
+Se define por año y carrera, a partir de `carrera.slug_contenido` (`"ing_informatica"`, `"derecho"`, `"medicina"`, `"bellas_artes"`). Las rutas de apuntes y preguntas se construyen genéricamente:
+`.../Contenido/apuntes_<slug_contenido>_anio<N>.txt` y `.../Contenido/preguntas_<slug_contenido>.json`.
 
-| Año | Temas |
-|-----|-------|
-| 1 | Bucles, If-Else, Variables |
-| 2 | Arrays, Funciones, Scope |
-| 3 | POO, Clases, Herencia |
-| 4 | Patrones, Diseño, Buenas Prácticas |
+| Carrera | Años | Temas por año |
+|---|---|---|
+| Ingeniería Informática | 4 | 1: Variables/If-Else/Bucles · 2: Arrays/Funciones/Scope · 3: POO/Clases/Herencia · 4: Patrones/Diseño/Buenas Prácticas |
+| Derecho | 4 | 1: Fundamentos del Derecho · 2: Derecho Civil · 3: Derecho Penal · 4: Derecho Procesal y Deontología |
+| Medicina | **5** | 1: Anatomía y Fisiología · 2: Patología General · 3: Diagnóstico Clínico · 4: Farmacología · 5: Ética Médica y Práctica Clínica |
+| Bellas Artes | 4 | 1: Color y Dibujo · 2: Técnicas de Pintura · 3: Historia del Arte · 4: Composición y Crítica de Arte |
 
 ---
 
@@ -550,11 +556,12 @@ Es la habilidad de mayor peso en el examen. Representa compostura bajo presión.
 
 ## Expansión Futura
 
-1. **Más carreras:** Derecho, Medicina, Bellas Artes
+1. ~~Más carreras: Derecho, Medicina, Bellas Artes~~ — **implementado**, ver [PLAN_EXPANSION_CARRERAS.md](PLAN_EXPANSION_CARRERAS.md).
 2. **Matrícula de honor:** Nota ≥ 90 → descuento en matrícula del año siguiente
 3. **Sangre Fría:** Reutilizar en otras mecánicas de estrés o presión
 4. **Becas:** Sistema de descuentos por rendimiento
 5. **Multiplicadores de objeto:** Escritorio premium → +% progreso de carrera
+6. **Dificultad por carrera:** de momento solo Medicina varía (5 años en vez de 4); ajustar coste de matrícula o fórmula de nota por carrera queda pendiente.
 
 ---
 
@@ -563,6 +570,8 @@ Es la habilidad de mayor peso en el examen. Representa compostura bajo presión.
 ```gdscript
 # Carrera.gd (class_name Carrera, extends Resource)
 @export var nombre: String
+@export var slug_contenido: String = ""   # "ing_informatica" | "derecho" | "medicina" | "bellas_artes"
+@export var emoji: String = "📘"          # icono en miniatura de Inventario, portada de libro y diploma
 @export var años_totales: int = 4
 @export var costo_matricula_anual: float = 500.0
 @export var año_actual: int = 1
@@ -600,17 +609,22 @@ var Inicio_Semana_Carrera: int = -1            # minuto absoluto (legacy, no cr�
 
 | Archivo | Responsabilidad |
 |---|---|
-| `Scripts/Logica/Escena_Principal/Actividades/Carreras/Carrera.gd` | Modelo de datos |
-| `Scripts/Logica/Escena_Principal/Actividades/Carreras/Carrera_Ingenieria_Informatica.gd` | Carrera concreta |
+| `Scripts/Logica/Escena_Principal/Actividades/Carreras/Carrera.gd` | Modelo de datos (incluye `slug_contenido` y `emoji`) |
+| `Scripts/Logica/Escena_Principal/Actividades/Carreras/Carrera_Ingenieria_Informatica.gd` | Carrera concreta (4 años) |
+| `Scripts/Logica/Escena_Principal/Actividades/Carreras/Carrera_Derecho.gd` | Carrera concreta (4 años) |
+| `Scripts/Logica/Escena_Principal/Actividades/Carreras/Carrera_Medicina.gd` | Carrera concreta (**5 años**) |
+| `Scripts/Logica/Escena_Principal/Actividades/Carreras/Carrera_Bellas_Artes.gd` | Carrera concreta (4 años) |
 | `Scripts/Logica/Escena_Principal/Actividades/Carreras/Sistema_Examenes.gd` | Autoload: cálculo de notas, progreso |
 | `Scripts/Logica/Escena_Principal/Actividades/Actividades.gd` | Conversión Lunes 00:00, disparo examen automático |
-| `Scripts/Globales/Script_Principal.gd` | Botón único, máquina de estados, modales |
+| `Scripts/Globales/Script_Principal.gd` | Botón único, máquina de estados, modales, diploma |
+| `Scripts/Logica/Escena_Principal/Actividades/Carreras/UI/Modal_Seleccionar_Carrera.gd` | Selector de carrera (excluye completadas) al no tener carrera activa |
 | `Scripts/Logica/Escena_Principal/Actividades/Carreras/UI/Modal_Seleccionar_Examen.gd` | Elige día (solo Mi-V) y hora |
-| `Scripts/Logica/Escena_Principal/Actividades/Carreras/UI/Modal_Examen.gd` | Test 10 preguntas |
-| `Scripts/Logica/Escena_Principal/Actividades/Carreras/UI/Lector_Libros.gd` | Apuntes por año |
-| `Scripts/Logica/Escena_Principal/Actividades/Carreras/Contenido/preguntas_ing_informatica.json` | Banco de preguntas |
-| `Scripts/Logica/Escena_Principal/Actividades/Carreras/Contenido/apuntes_ing_informatica_anioN.txt` | Apuntes años 1-4 |
-| `Scripts/Otro/Guardar/Guardar_Variables_Dinamicas.gd` | Serialización de Carrera_Actual y Carreras_Completadas |
+| `Scripts/Logica/Escena_Principal/Actividades/Carreras/UI/Modal_Examen.gd` | Test 10 preguntas (ruta genérica vía `carrera.slug_contenido`) |
+| `Scripts/Logica/Escena_Principal/Actividades/Carreras/UI/Lector_Libros.gd` | Modal "Leer Apuntes" con pestañas por año (ruta genérica) |
+| `Scripts/GUI/Escena_Principal/Lector_Libro.gd` | Lector tipo libro de la pestaña Inventario; también renderiza la página `"diploma"` |
+| `Scripts/Logica/Escena_Principal/Actividades/Carreras/Contenido/preguntas_<slug>.json` | Banco de preguntas por carrera (`ing_informatica`, `derecho`, `medicina`, `bellas_artes`) |
+| `Scripts/Logica/Escena_Principal/Actividades/Carreras/Contenido/apuntes_<slug>_anioN.txt` | Apuntes por año y carrera |
+| `Scripts/Otro/Guardar/Guardar_Variables_Dinamicas.gd` | Serialización de Carrera_Actual y Carreras_Completadas (reconstruye por `script_path`, sin cambios) |
 
 ---
 

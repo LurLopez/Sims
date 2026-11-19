@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expansión de Carreras Universitarias - Plan de Implementación</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; line-height: 1.6; max-width: 900px; margin: 0 auto; padding: 20px; background: #f5f5f5; color: #333; }
+        .container { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { color: #2c3e50; border-bottom: 3px solid #e67e22; padding-bottom: 10px; }
+        h2 { color: #34495e; margin-top: 30px; padding-top: 15px; border-top: 1px solid #ecf0f1; }
+        h3 { color: #7f8c8d; }
+        .section { margin: 20px 0; padding: 15px; background: #ecf0f1; border-left: 4px solid #e67e22; border-radius: 4px; }
+        .critical { background: #fadbd8; border-left-color: #e74c3c; color: #c0392b; font-weight: bold; }
+        .info { background: #d6eaf8; border-left-color: #2980b9; }
+        .success { background: #d5f4e6; border-left-color: #27ae60; }
+        .warning { background: #fef9e7; border-left-color: #f39c12; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; background: white; border-radius: 4px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        th { background: #e67e22; color: white; padding: 12px; text-align: left; }
+        td { padding: 10px 12px; border-bottom: 1px solid #ecf0f1; }
+        tr:last-child td { border-bottom: none; }
+        code { background: #f8f9fa; padding: 2px 6px; border-radius: 3px; font-family: monospace; font-size: 0.9em; }
+        pre { background: #2c3e50; color: #ecf0f1; padding: 15px; border-radius: 6px; overflow-x: auto; }
+        pre code { background: none; color: inherit; padding: 0; }
+        .flow-step { display: flex; align-items: flex-start; margin: 10px 0; }
+        .step-number { background: #e67e22; color: white; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 12px; flex-shrink: 0; }
+        .checklist li { margin: 8px 0; }
+        .checklist li::before { content: "☐ "; color: #7f8c8d; }
+        .status-badge { display: inline-block; background: #f39c12; color: white; padding: 4px 12px; border-radius: 12px; font-size: 0.8em; font-weight: bold; letter-spacing: 0.05em; text-transform: uppercase; }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <p><span class="status-badge">⏳ Pendiente de implementación</span></p>
+    <h1>Expansión de Carreras Universitarias</h1>
+    <p><strong>Añade Derecho, Medicina y Bellas Artes al sistema de carreras.</strong> Hoy solo existe Ingeniería Informática. Este documento es el plan aprobado antes de tocar código — no describe comportamiento ya implementado. Versión técnica: <code>PLAN_EXPANSION_CARRERAS.md</code>. Sistema ya implementado: <code>SISTEMA_CARRERAS.md</code> / <code>SISTEMA_CARRERAS.html</code>.</p>
+
+    <div class="section info">
+        <strong>Descripción general:</strong> Se generaliza el sistema de carreras (hoy hardcodeado a una sola carrera) para soportar un catálogo de 4, cada una con su propio contenido educativo, examen y un trabajo de nómina exclusivo que se desbloquea al completarla. Se mantiene el diseño de "una carrera activa a la vez". Al graduarse, aparece un diploma en la pestaña Inventario del Perfil.
+    </div>
+
+    <h2>Decisiones ya tomadas</h2>
+    <table>
+        <tr><th>Decisión</th><th>Detalle</th></tr>
+        <tr><td>Simultaneidad</td><td>Una única carrera activa (<code>Variables_Dinamicas.Carrera_Actual</code> sigue siendo una referencia única, no un array)</td></tr>
+        <tr><td>Ventaja por carrera</td><td>Desbloquea un trabajo de nómina de alto salario (reutiliza <code>requisito_carrera</code>, ya usado por "Científico")</td></tr>
+        <tr><td>Duración</td><td>Medicina: <strong>5 años</strong> (más difícil). Derecho y Bellas Artes: 4 años, igual que Ingeniería</td></tr>
+        <tr><td>Al graduarse</td><td>Diploma/certificado visible en Inventario, además de los libros por año</td></tr>
+        <tr><td>Repetición</td><td>Una carrera ya completada no se puede volver a empezar: el selector la excluye</td></tr>
+    </table>
+
+    <div class="section warning">
+        <strong>Hallazgos de la exploración previa (para no romper nada existente):</strong>
+        <ul>
+            <li><code>Guardar_Variables_Dinamicas._Dict_A_Carrera</code> reconstruye la carrera cargando <code>dict["script_path"]</code> con <code>load(...).new()</code> — no hay un <code>match</code> por nombre. Basta con crear las clases nuevas para que el guardado/carga funcione sin tocar ese archivo.</li>
+            <li>El avance de año en <code>Sistema_Examenes.gd</code> (líneas 76-86) ya usa <code>carrera.años_totales</code> de forma genérica — Medicina a 5 años no exige tocar esa lógica.</li>
+            <li>El bug conocido #4 de <code>CLAUDE.md</code> ("Carpintero/Científico referencian catálogo inexistente") está desactualizado: ambas entradas existen en <code>Variables_Estaticas.gd</code> y el requisito de carrera ya se comprueba en <code>_Cumple_Requisitos_Trabajo()</code>. Se corrige en el paso 7.</li>
+            <li>Hay <strong>tres</strong> rutas de contenido hardcodeadas a <code>ing_informatica</code> (no dos) y <strong>dos</strong> lectores de libro distintos — ambos deben generalizarse (ver paso 2).</li>
+        </ul>
+    </div>
+
+    <h2>Catálogo de carreras</h2>
+    <table>
+        <tr><th>Carrera</th><th>slug_contenido</th><th>emoji</th><th>Años</th><th>Estado</th></tr>
+        <tr><td>Ingeniería Informática</td><td><code>ing_informatica</code></td><td>💻</td><td>4</td><td>Ya implementada</td></tr>
+        <tr><td>Derecho</td><td><code>derecho</code></td><td>⚖️</td><td>4</td><td>Nueva</td></tr>
+        <tr><td>Medicina</td><td><code>medicina</code></td><td>🩺</td><td><strong>5</strong></td><td>Nueva</td></tr>
+        <tr><td>Bellas Artes</td><td><code>bellas_artes</code></td><td>🎨</td><td>4</td><td>Nueva</td></tr>
+    </table>
+
+    <h2>Flujo de implementación</h2>
+
+    <div class="flow-step">
+        <div class="step-number">1</div>
+        <div><strong>Modelo de datos de carrera.</strong> Añadir <code>slug_contenido</code> y <code>emoji</code> a <code>Carrera.gd</code>. Crear <code>Carrera_Derecho.gd</code>, <code>Carrera_Medicina.gd</code> (<code>años_totales = 5</code>), <code>Carrera_Bellas_Artes.gd</code>, mismo patrón que <code>Carrera_Ingenieria_Informatica.gd</code>.</div>
+    </div>
+
+    <div class="flow-step">
+        <div class="step-number">2</div>
+        <div><strong>Generalizar rutas de contenido y emoji.</strong> Tres sitios hardcodeados a "ing_informatica" pasan a usar <code>carrera.slug_contenido</code>: <code>Modal_Examen.gd</code> (preguntas), <code>Carreras/UI/Lector_Libros.gd</code> (apuntes, modal "Leer Apuntes"), y <code>Script_Principal._Parsear_Libro()</code> (lectura por página desde Inventario — hay que añadirle el parámetro <code>carrera</code>). El emoji de portada (<code>Lector_Libro.gd:250</code>) y el de la miniatura del Inventario pasan a leer <code>carrera.emoji</code>.</div>
+    </div>
+
+    <div class="flow-step">
+        <div class="step-number">3</div>
+        <div><strong>Contenido educativo nuevo.</strong> Mismo formato que el existente (apuntes numerados + "Consejos de examen"; 10 preguntas de opción múltiple por año). Derecho: Fundamentos → Civil → Penal → Procesal y Deontología (40 preguntas). Medicina: Anatomía → Patología → Diagnóstico → Farmacología → Ética y Práctica Clínica (50 preguntas, 5 años). Bellas Artes: Color y Dibujo → Técnicas de Pintura → Historia del Arte → Composición y Crítica (40 preguntas).</div>
+    </div>
+
+    <div class="flow-step">
+        <div class="step-number">4</div>
+        <div><strong>Selector de carrera.</strong> Nuevo <code>Modal_Seleccionar_Carrera.gd</code> (mismo patrón por código que <code>Modal_Seleccionar_Examen.gd</code>): un botón por carrera, señal <code>carrera_elegida(script_path)</code>. <code>_on_carrera_accion_pressed()</code> lo abre cuando no hay carrera activa, en vez de instanciar Ingeniería directamente. Las carreras cuyo <code>nombre</code> ya está en <code>Carreras_Completadas</code> se excluyen (o se muestran deshabilitadas) — no se puede repetir una carrera ya sacada.</div>
+    </div>
+
+    <div class="flow-step">
+        <div class="step-number">5</div>
+        <div><strong>Trabajos desbloqueados por carrera.</strong> Replica el patrón de "Científico" (<code>requisito_carrera</code>). Nuevas entradas en <code>Catalogo_Actividades</code>, funciones en <code>Trabajo.gd</code>, handlers en <code>Script_Principal.gd</code>, botones + conexiones en <code>Escena principal.tscn</code> (tabla abajo).</div>
+    </div>
+
+    <div class="flow-step">
+        <div class="step-number">6</div>
+        <div><strong>Diploma en el Inventario.</strong> Nuevo tipo de página <code>"diploma"</code> en <code>Lector_Libro.gd</code> (dorado, nombre de carrera, nota media desde <code>historial_notas</code>). Nueva miniatura en <code>_Renderizar_Apuntes()</code> por cada carrera en <code>Carreras_Completadas</code>, junto a sus libros — no los sustituye.</div>
+    </div>
+
+    <div class="flow-step">
+        <div class="step-number">7</div>
+        <div><strong>Documentación.</strong> Corregir bug #4 en <code>CLAUDE.md</code> (ya no aplica). Actualizar <code>SISTEMA_CARRERAS.md</code>: mover las 3 carreras de "Expansión Futura" a implementado, corregir "Bonus económico (a definir)" → ya son +2000€ (<code>Sistema_Examenes.gd:9</code>), documentar diploma y trabajo desbloqueado.</div>
+    </div>
+
+    <h2>Trabajos desbloqueados (ventaja de cada carrera)</h2>
+    <table>
+        <tr><th>Carrera</th><th>Trabajo nuevo</th><th>Salario</th><th>requisito_progreso</th><th>requisito_carrera</th></tr>
+        <tr><td>Derecho</td><td>Abogado</td><td>30.0</td><td><code>[0, 50, 0]</code></td><td><code>["Derecho"]</code></td></tr>
+        <tr><td>Medicina</td><td>Médico</td><td>35.0</td><td><code>[0, 60, 0]</code></td><td><code>["Medicina"]</code></td></tr>
+        <tr><td>Bellas Artes</td><td>Artista</td><td>25.0</td><td><code>[0, 0, 50]</code></td><td><code>["Bellas_Artes"]</code></td></tr>
+    </table>
+
+    <div class="section critical">
+        Fuera de alcance (a menos que se pida lo contrario): no varía el coste de matrícula por carrera (las 4 cuestan 500€/año, solo cambia la duración de Medicina); no se ajusta más la dificultad por carrera todavía; no se permite cursar varias carreras a la vez; no se toca <code>Guardar_Variables_Dinamicas.gd</code> — ya es compatible gracias a la reconstrucción por <code>script_path</code>.
+    </div>
+
+    <h2>Checklist de implementación</h2>
+    <ul class="checklist">
+        <li>Campos <code>slug_contenido</code> y <code>emoji</code> añadidos a <code>Carrera.gd</code></li>
+        <li><code>Carrera_Derecho.gd</code>, <code>Carrera_Medicina.gd</code> (5 años), <code>Carrera_Bellas_Artes.gd</code> creadas</li>
+        <li>Rutas de <code>Modal_Examen.gd</code>, <code>Lector_Libros.gd</code> y <code>_Parsear_Libro()</code> generalizadas por <code>slug_contenido</code></li>
+        <li>Emoji de portada y de miniatura generalizados por <code>carrera.emoji</code></li>
+        <li>12 archivos <code>apuntes_*.txt</code> + 3 bancos <code>preguntas_*.json</code> escritos</li>
+        <li><code>Modal_Seleccionar_Carrera.gd</code> creado y conectado en <code>_on_carrera_accion_pressed()</code>, excluyendo carreras ya en <code>Carreras_Completadas</code></li>
+        <li>3 trabajos nuevos registrados en <code>Variables_Estaticas.gd</code>, <code>Trabajo.gd</code>, <code>Script_Principal.gd</code> y en <code>Escena principal.tscn</code> (botones + conexiones)</li>
+        <li>Tipo de página <code>"diploma"</code> en <code>Lector_Libro.gd</code> + miniatura de diploma en Inventario</li>
+        <li><code>CLAUDE.md</code> y <code>SISTEMA_CARRERAS.md</code> actualizados</li>
+    </ul>
+
+</div>
+</body>
+</html>

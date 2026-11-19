@@ -45,3 +45,8 @@ func Cambiar_Necesidades_Basicas(valor,indice):
 	if (Variables_Dinamicas.En_La_Calle or Variables_Dinamicas.Dinero < 0):
 		if Variables_Dinamicas.Necesidades_Basicas[indice] > Variables_Estaticas.BANCARROTA_MAX_NECESIDAD:
 			Variables_Dinamicas.Necesidades_Basicas[indice] = Variables_Estaticas.BANCARROTA_MAX_NECESIDAD
+	# Resacón: Salud Física y Mental no pueden superar el techo gradual actual.
+	if indice in [0, 1] and Variables_Dinamicas.Estados_Temporales.has("Resacon"):
+		var cap_resacon: int = Actividades.Obtener_Cap_Resacon()
+		if Variables_Dinamicas.Necesidades_Basicas[indice] > cap_resacon:
+			Variables_Dinamicas.Necesidades_Basicas[indice] = cap_resacon

@@ -1,0 +1,57 @@
+DERECHO - AÑO 3: DERECHO PENAL
+
+1. CONCEPTO DE DELITO
+El Derecho Penal es la rama del Derecho público que regula el ejercicio del ius puniendi (potestad punitiva) del Estado, estableciendo qué conductas constituyen delito y qué penas o medidas de seguridad les corresponden.
+
+El delito se define como la acción u omisión típica, antijurídica, culpable y punible. Se distingue tradicionalmente entre:
+- Delitos de acción: consisten en hacer algo prohibido por la ley (por ejemplo, apoderarse de un bien ajeno).
+- Delitos de omisión: consisten en no hacer algo que la ley obliga a hacer (por ejemplo, omitir el deber de socorro).
+
+El Código Penal clasifica las infracciones según su gravedad en delitos graves, menos graves y leves, en función de la pena prevista.
+
+2. ELEMENTOS DEL DELITO
+La teoría jurídica del delito exige la concurrencia de varios elementos, analizados de forma escalonada:
+
+- Tipicidad: la conducta debe estar descrita exactamente en la ley penal como delito. Si un hecho no encaja en ningún tipo penal, no puede castigarse por analogía.
+- Antijuridicidad: la conducta típica debe ser contraria al ordenamiento jurídico. Se excluye cuando concurre una causa de justificación, como la legítima defensa o el estado de necesidad.
+- Culpabilidad: exige que el autor sea imputable (capaz de comprender la ilicitud del hecho y de actuar conforme a esa comprensión) y que haya actuado con dolo (intención) o imprudencia (falta del deber de cuidado).
+
+Solo cuando concurren los tres elementos anteriores puede hablarse de delito en sentido técnico, y además debe ser punible, es decir, no debe concurrir una excusa absolutoria.
+
+3. PRINCIPIO DE LEGALIDAD Y PRESUNCIÓN DE INOCENCIA
+El principio de legalidad penal se resume en el aforismo "nullum crimen, nulla poena sine lege" (no hay delito ni pena sin ley previa). Sus manifestaciones son:
+
+- Reserva de ley: solo una ley orgánica puede definir delitos y penas.
+- Irretroactividad: la ley penal no puede aplicarse a hechos anteriores a su entrada en vigor, salvo que sea más favorable al reo.
+- Prohibición de la analogía: no se puede castigar una conducta por parecerse a otra tipificada, si ella misma no lo está.
+- Taxatividad: los tipos penales deben describir la conducta con precisión, evitando definiciones vagas.
+
+La presunción de inocencia es un derecho fundamental (art. 24.2 CE) según el cual toda persona acusada se considera inocente hasta que se demuestre su culpabilidad mediante prueba de cargo suficiente obtenida con todas las garantías. La carga de la prueba corresponde a la acusación, nunca al acusado.
+
+4. CLASIFICACIÓN DE PENAS
+Las penas son las consecuencias jurídicas que el juez impone al responsable de un delito. Se clasifican principalmente por el bien jurídico que restringen:
+
+- Penas privativas de libertad: prisión, localización permanente, responsabilidad personal subsidiaria por impago de multa.
+- Penas privativas de otros derechos: inhabilitación, suspensión de empleo o cargo público, privación del derecho a conducir, privación de la patria potestad.
+- Pena de multa: obligación de pagar una cantidad de dinero, que puede fijarse por el sistema de días-multa.
+
+Además de las penas, el Código Penal prevé medidas de seguridad, aplicables a sujetos inimputables o semiimputables peligrosos, con una finalidad no retributiva sino de tratamiento y prevención.
+
+5. AUTORÍA, PARTICIPACIÓN Y EXENCIÓN DE RESPONSABILIDAD
+En la comisión de un delito pueden intervenir varias personas con distinto grado de responsabilidad:
+
+- Autor: quien realiza el hecho por sí solo, conjuntamente con otros (coautoría) o sirviéndose de otro como instrumento (autoría mediata).
+- Cómplice: quien coopera en la ejecución del hecho con actos anteriores o simultáneos, sin ser autor directo; su pena es inferior a la del autor.
+- Inductor: quien determina a otro a cometer el delito.
+
+El Código Penal también recoge causas que eximen de responsabilidad criminal aunque el hecho sea típico, entre ellas:
+- Legítima defensa: repeler una agresión ilegítima, actual y no provocada, con medios racionalmente necesarios.
+- Estado de necesidad: causar un mal para evitar otro mayor.
+- Trastorno mental que impide comprender la ilicitud del hecho.
+- Miedo insuperable.
+
+6. CONSEJOS DE EXAMEN
+- Recuerda el orden de análisis del delito: primero tipicidad, después antijuridicidad, y por último culpabilidad.
+- No confundas causas de justificación (excluyen la antijuridicidad, como la legítima defensa) con causas de inimputabilidad (excluyen la culpabilidad).
+- Ante cualquier pregunta sobre retroactividad, recuerda que la ley penal más favorable sí se aplica retroactivamente.
+- Distingue con claridad autor, cómplice e inductor: la pena del cómplice siempre es inferior a la del autor.

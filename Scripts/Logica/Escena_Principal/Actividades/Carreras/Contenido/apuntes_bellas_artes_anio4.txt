@@ -1,0 +1,39 @@
+BELLAS ARTES - AÑO 4: COMPOSICIÓN Y CRÍTICA DE ARTE
+
+1. LA REGLA DE LOS TERCIOS
+Es una técnica compositiva que consiste en dividir el formato de la obra mediante dos líneas horizontales y dos verticales equidistantes, formando una cuadrícula de nueve secciones iguales.
+- Los elementos principales de la composición se colocan preferentemente sobre estas líneas o en sus puntos de intersección, en lugar de centrarlos.
+- Esta distribución genera composiciones más dinámicas y naturales que el centrado estricto, que puede resultar visualmente estático.
+- Aunque es una regla orientativa (no una ley fija), es una de las herramientas más usadas tanto en pintura como en fotografía y diseño.
+
+2. PUNTO FOCAL Y JERARQUÍA VISUAL
+El punto focal es el elemento o zona de la obra hacia el que se dirige primero la mirada del espectador.
+- Se puede reforzar mediante contraste de color, de valor (claro-oscuro), nitidez de detalle o la propia dirección de las líneas compositivas.
+- La jerarquía visual es el orden en que el ojo recorre los distintos elementos de la obra, de mayor a menor importancia; una buena composición controla ese recorrido de forma intencionada.
+- Una obra sin un punto focal claro puede resultar confusa, mientras que varios puntos focales compitiendo entre sí puede diluir la atención del espectador.
+
+3. RITMO Y EQUILIBRIO COMPOSITIVO
+El ritmo es la repetición o alternancia de elementos (formas, colores, líneas) que genera una sensación de movimiento y guía el recorrido visual por la obra.
+El equilibrio es la distribución del "peso visual" de los elementos dentro del formato:
+- Equilibrio simétrico: los elementos se distribuyen de forma especular respecto a un eje, transmitiendo estabilidad y formalidad.
+- Equilibrio asimétrico: los elementos se distribuyen de forma desigual pero compensada (por ejemplo, una forma grande a un lado equilibrada por varias formas pequeñas al otro), generando composiciones más dinámicas.
+
+4. ELEMENTOS DEL ANÁLISIS FORMAL DE UNA OBRA
+El análisis formal estudia los aspectos puramente visuales de una obra, independientemente de su significado o contexto histórico. Sus elementos principales son:
+- Forma: la configuración de las figuras y objetos representados, ya sean geométricas u orgánicas.
+- Color: el uso del tono, la saturación y el valor, y las relaciones cromáticas (armonías, contrastes) presentes en la obra.
+- Textura: la calidad superficial, real (relieve físico de la pintura) o simulada (representación visual de una textura, como la piel o la madera).
+- Espacio: cómo se organiza la profundidad y la relación entre los elementos y el fondo, mediante perspectiva, superposición o escala.
+
+5. METODOLOGÍA BÁSICA DE LA CRÍTICA DE ARTE
+La crítica de arte académica suele seguir un proceso estructurado en varias fases:
+- Descripción: identificar de forma objetiva qué se representa en la obra, sin interpretarlo todavía.
+- Análisis formal: estudiar cómo están organizados los elementos visuales (forma, color, textura, espacio, composición).
+- Interpretación: proponer el posible significado o mensaje de la obra, apoyándose en el análisis formal y en el contexto.
+- Juicio o valoración: emitir una opinión fundamentada sobre el logro artístico de la obra, justificada con argumentos basados en los pasos anteriores.
+
+6. CONSEJOS DE EXAMEN
+- Recuerda que la regla de los tercios coloca los puntos de interés en las intersecciones de la cuadrícula, no en el centro.
+- No confundas equilibrio simétrico (especular) con equilibrio asimétrico (compensado pero desigual).
+- Memoriza los cuatro elementos del análisis formal: forma, color, textura y espacio.
+- Sigue siempre el orden de la crítica de arte: descripción, análisis formal, interpretación y juicio.

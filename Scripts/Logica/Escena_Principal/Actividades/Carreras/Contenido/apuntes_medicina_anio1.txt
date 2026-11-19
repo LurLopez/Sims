@@ -1,0 +1,47 @@
+MEDICINA - AÑO 1: ANATOMÍA Y FISIOLOGÍA BÁSICA
+
+1. NIVELES DE ORGANIZACIÓN DEL CUERPO
+El cuerpo humano se organiza en niveles crecientes de complejidad:
+- Célula: unidad estructural y funcional básica de todo ser vivo.
+- Tejido: conjunto de células similares que realizan una función común (epitelial, conectivo, muscular, nervioso).
+- Órgano: dos o más tejidos que trabajan juntos para una función concreta (corazón, pulmón, hígado).
+- Sistema: conjunto de órganos que colaboran en una función global (sistema circulatorio, sistema nervioso).
+
+El organismo completo es la suma coordinada de todos los sistemas trabajando en conjunto.
+
+2. SISTEMA ÓSEO Y MUSCULAR
+El esqueleto humano adulto tiene 206 huesos y cumple funciones de sostén, protección de órganos internos, producción de células sanguíneas (médula ósea) y reserva de minerales como calcio y fósforo.
+
+Los músculos se dividen en tres tipos:
+- Músculo esquelético: voluntario, une huesos mediante tendones y permite el movimiento.
+- Músculo liso: involuntario, presente en paredes de órganos internos (intestino, vasos sanguíneos).
+- Músculo cardíaco: involuntario, exclusivo del corazón, con contracción rítmica y automática.
+
+Las articulaciones son los puntos de unión entre huesos y permiten distintos grados de movilidad según su tipo (fijas, semimóviles o móviles).
+
+3. SISTEMA CIRCULATORIO
+El corazón es una bomba muscular de cuatro cavidades: dos aurículas (superiores) y dos ventrículos (inferiores). Se distinguen dos circuitos:
+- Circulación menor (pulmonar): el ventrículo derecho envía sangre pobre en oxígeno a los pulmones, donde se oxigena y regresa a la aurícula izquierda.
+- Circulación mayor (sistémica): el ventrículo izquierdo bombea sangre oxigenada a todo el cuerpo, que regresa desoxigenada a la aurícula derecha.
+
+Los vasos sanguíneos son arterias (llevan sangre desde el corazón, generalmente oxigenada), venas (llevan sangre hacia el corazón, generalmente desoxigenada) y capilares (intercambio de gases y nutrientes con los tejidos).
+
+4. SISTEMA RESPIRATORIO
+El aire entra por las fosas nasales o la boca, pasa por la faringe, laringe y tráquea, y se divide en los bronquios hasta llegar a los alvéolos pulmonares. En los alvéolos se produce el intercambio gaseoso: el oxígeno pasa a la sangre y el dióxido de carbono sale de ella.
+
+El diafragma es el principal músculo respiratorio: al contraerse desciende y aumenta el volumen torácico, permitiendo la inspiración; al relajarse sube y facilita la espiración.
+
+5. SISTEMA NERVIOSO Y HOMEOSTASIS
+El sistema nervioso se divide en:
+- Sistema nervioso central (SNC): encéfalo y médula espinal, centro de procesamiento e integración.
+- Sistema nervioso periférico (SNP): nervios craneales y espinales que conectan el SNC con el resto del cuerpo.
+
+La neurona es la unidad funcional del sistema nervioso y transmite impulsos eléctricos (potenciales de acción) mediante sinapsis.
+
+La homeostasis es la capacidad del organismo de mantener constante su medio interno (temperatura, pH, glucosa, presión arterial) pese a los cambios externos, mediante mecanismos de retroalimentación, principalmente negativa.
+
+6. CONSEJOS DE EXAMEN
+- Aprende bien la diferencia entre circulación mayor y menor: es una pregunta clásica.
+- Relaciona cada sistema con su función principal antes de memorizar detalles.
+- Recuerda que la homeostasis casi siempre se mantiene por retroalimentación negativa, no positiva.
+- Distingue con claridad los tres tipos de músculo y dónde se localiza cada uno.

@@ -1,0 +1,63 @@
+DERECHO - AÑO 2: DERECHO CIVIL
+
+1. OBLIGACIONES Y CONTRATOS
+Una obligación es el vínculo jurídico por el cual una persona (deudor) queda constreñida a dar, hacer o no hacer algo a favor de otra (acreedor). Las obligaciones pueden nacer de la ley, de los contratos, de los actos u omisiones ilícitos (responsabilidad extracontractual) o de aquellos en que intervenga cualquier género de culpa o negligencia.
+
+El contrato es la principal fuente de obligaciones y se define como el acuerdo de voluntades entre dos o más partes destinado a crear, modificar o extinguir relaciones jurídicas patrimoniales. Para que exista un contrato válido son necesarios tres elementos esenciales (art. 1261 CC):
+
+- Consentimiento: la voluntad de las partes debe manifestarse libremente y coincidir (oferta y aceptación). Si el consentimiento está viciado por error, dolo, violencia o intimidación, el contrato es anulable.
+- Objeto: la prestación sobre la que recae el contrato (cosa o servicio). Debe ser posible, lícito y determinado o determinable.
+- Causa: el fin económico-social que justifica el contrato. En los contratos onerosos, la causa es la contraprestación de la otra parte; en los gratuitos, la mera liberalidad del que da.
+
+La falta de cualquiera de estos elementos determina la nulidad del contrato.
+
+2. TIPOS DE CONTRATOS
+Los contratos se clasifican según distintos criterios:
+
+Según las obligaciones que generan:
+- Unilaterales: solo obligan a una de las partes (donación).
+- Bilaterales o sinalagmáticos: generan obligaciones recíprocas (compraventa, arrendamiento).
+
+Según la existencia de contraprestación:
+- Onerosos: ambas partes obtienen una ventaja a cambio de un sacrificio (compraventa).
+- Gratuitos: una parte se beneficia sin contraprestación (donación).
+
+Ejemplos habituales de contratos típicos: compraventa (intercambio de cosa por precio), arrendamiento (cesión de uso a cambio de renta), préstamo (mutuo o comodato), depósito y mandato. También existen contratos atípicos, no regulados expresamente, amparados por el principio de autonomía de la voluntad (art. 1255 CC).
+
+3. DERECHOS REALES Y PROPIEDAD
+Los derechos reales otorgan a su titular un poder directo e inmediato sobre una cosa, oponible frente a todos (erga omnes), a diferencia de los derechos de crédito, que solo se pueden exigir frente a una persona determinada.
+
+El derecho real por excelencia es la propiedad, que otorga a su titular las facultades de:
+- Uso: utilizar la cosa.
+- Disfrute: percibir sus frutos y rendimientos.
+- Disposición: vender, donar o gravar la cosa.
+
+Junto a la propiedad existen otros derechos reales limitados, que recaen sobre cosa ajena:
+- Usufructo: derecho a usar y disfrutar de un bien ajeno sin alterar su forma ni sustancia.
+- Servidumbre: gravamen impuesto sobre una finca en beneficio de otra.
+- Hipoteca y prenda: derechos reales de garantía que aseguran el cumplimiento de una obligación.
+
+4. DERECHO DE FAMILIA
+El Derecho de familia regula las relaciones personales y patrimoniales derivadas del matrimonio, la filiación y el parentesco.
+
+El matrimonio es la institución que da origen a la familia matrimonial y genera derechos y deberes recíprocos entre los cónyuges (respeto, ayuda mutua, actuación en interés de la familia). Su régimen económico por defecto en el Código Civil es la sociedad de gananciales, salvo pacto en capitulaciones matrimoniales.
+
+La filiación es la relación jurídica entre progenitores e hijos, que puede ser:
+- Por naturaleza: matrimonial o no matrimonial.
+- Por adopción.
+
+De la filiación deriva la patria potestad, conjunto de derechos y deberes que corresponden a los progenitores respecto de los hijos menores no emancipados, incluyendo velar por ellos, alimentarlos, educarlos y representarlos legalmente.
+
+5. DERECHO DE SUCESIONES
+El Derecho de sucesiones regula la transmisión del patrimonio de una persona tras su fallecimiento. La sucesión puede producirse:
+
+- Por testamento (sucesión testada): documento en el que una persona (testador) dispone de sus bienes para después de su muerte. Debe respetar las formalidades legales para ser válido.
+- Sin testamento (sucesión intestada o abintestato): cuando no hay testamento válido, la ley establece un orden de llamamiento a los herederos (descendientes, ascendientes, cónyuge, colaterales).
+
+Un límite importante a la libertad de testar es la legítima: la porción de la herencia de la que el testador no puede disponer libremente porque la ley la reserva a determinados herederos forzosos (hijos y descendientes, en su defecto ascendientes, y el cónyuge viudo).
+
+6. CONSEJOS DE EXAMEN
+- Memoriza los tres elementos esenciales del contrato: consentimiento, objeto y causa; la falta de uno anula el contrato.
+- Distingue derechos reales (sobre la cosa, erga omnes) de derechos de crédito (frente a una persona).
+- En los casos de familia, identifica primero el régimen económico matrimonial aplicable.
+- En sucesiones, comprueba siempre si existe testamento antes de aplicar las reglas de la sucesión intestada.

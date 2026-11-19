@@ -14,7 +14,11 @@ func load_game():
 	if FileAccess.file_exists(save_path):
 		var save_file = FileAccess.open(save_path, FileAccess.READ)
 		game_data = save_file.get_var()
-		Variables_Dinamicas.Matriz_Jugador = _Strings_A_Matriz(game_data["Matriz_Jugador"])
+		var matriz_guardada = game_data["Matriz_Jugador"]
+		if matriz_guardada is Dictionary and matriz_guardada.get("formato", "") == "rle":
+			Variables_Dinamicas.Matriz_Jugador = _RLE_A_Matriz(matriz_guardada)
+		else:
+			Variables_Dinamicas.Matriz_Jugador = _Strings_A_Matriz(matriz_guardada)
 		Variables_Dinamicas.Progreso = game_data["Progreso"]
 		Variables_Dinamicas.Necesidades_Basicas = game_data["Necesidades_Basicas"]
 		for i in range(Variables_Dinamicas.Necesidades_Basicas.size()):
@@ -72,6 +76,8 @@ func load_game():
 			Variables_Dinamicas.Mensajes = _Array_A_Mensajes(game_data["Mensajes"])
 		else:
 			Variables_Dinamicas.Mensajes = []
+		_Cargar_Estados_Temporales(game_data)
+		Variables_Dinamicas.Fiesta_Evento_Ocurrido = bool(game_data.get("Fiesta_Evento_Ocurrido", false))
 		var trabajo_nombre = game_data.get("Trabajo_Actual", "")
 		if trabajo_nombre != "" and Variables_Estaticas.Catalogo_Actividades.has(trabajo_nombre):
 			Variables_Dinamicas.Trabajo_Actual = Variables_Estaticas.Catalogo_Actividades[trabajo_nombre]
@@ -92,7 +98,7 @@ func load_game():
 
 func game_data_func():
 	var game_data : Dictionary = {
-		"Matriz_Jugador": _Matriz_A_Strings(),
+		"Matriz_Jugador": _Matriz_A_RLE(),
 		"Progreso": Variables_Dinamicas.Progreso,
 		"Necesidades_Basicas": Variables_Dinamicas.Necesidades_Basicas,
 		"Dinero": Variables_Dinamicas.Dinero,
@@ -118,8 +124,44 @@ func game_data_func():
 		"Salud_Mental_Al_Invertir": Variables_Dinamicas.Salud_Mental_Al_Invertir,
 		"Progreso_Inversion": Variables_Dinamicas.Progreso_Inversion,
 		"Cooldown_Trabajos": Variables_Dinamicas.Cooldown_Trabajos,
+		"Estados_Temporales": _Estados_Temporales_Serializables(),
+		"Fiesta_Evento_Ocurrido": Variables_Dinamicas.Fiesta_Evento_Ocurrido,
 	}
 	return game_data
+
+
+func _Estados_Temporales_Serializables() -> Dictionary:
+	var resultado: Dictionary = {}
+	for clave in Variables_Dinamicas.Estados_Temporales:
+		resultado[str(clave)] = int(Variables_Dinamicas.Estados_Temporales[clave])
+	return resultado
+
+
+func _Cargar_Estados_Temporales(game_data: Dictionary) -> void:
+	Variables_Dinamicas.Estados_Temporales = {}
+	if not game_data.has("Estados_Temporales"):
+		return
+	var datos = game_data["Estados_Temporales"]
+	if not (datos is Dictionary):
+		return
+	# Filtrar claves desconocidas y valores corruptos; aceptar solo estados del catálogo.
+	for clave in datos:
+		var nombre := str(clave)
+		if not Variables_Estaticas.Estados_Temporales.has(nombre):
+			continue
+		var valor = datos[clave]
+		if typeof(valor) != TYPE_INT and typeof(valor) != TYPE_FLOAT:
+			continue
+		Variables_Dinamicas.Estados_Temporales[nombre] = clampi(int(valor), 0, 1440)
+	# Compatibilidad defensiva: Euforia y Resacon son mutuamente excluyentes.
+	# Si un save antiguo/corrupto trae ambos, conservar el que tenga más tiempo restante.
+	if Variables_Dinamicas.Estados_Temporales.has("Euforia") and Variables_Dinamicas.Estados_Temporales.has("Resacon"):
+		var rest_euforia: int = int(Variables_Dinamicas.Estados_Temporales["Euforia"])
+		var rest_resacon: int = int(Variables_Dinamicas.Estados_Temporales["Resacon"])
+		if rest_euforia > rest_resacon:
+			Variables_Dinamicas.Estados_Temporales.erase("Resacon")
+		else:
+			Variables_Dinamicas.Estados_Temporales.erase("Euforia")
 
 
 func _Carrera_A_Dict(carrera) -> Dictionary:
@@ -201,6 +243,76 @@ func _Inicializar_Objetos_Por_Defecto():
 		"Comer": "Mesa_Basica",
 		"Duchar": "Ducha_Basica"
 	}
+
+func _Matriz_A_RLE() -> Dictionary:
+	var filas: int = Variables_Dinamicas.Matriz_Jugador.size()
+	var columnas: int = Variables_Dinamicas.Matriz_Jugador[0].size() if filas > 0 else 0
+	var datos: Array = []
+	var tiene_actual := false
+	var actual = null
+	var actual_str: String = ""
+	var contador: int = 0
+	for fila in Variables_Dinamicas.Matriz_Jugador:
+		for celda in fila:
+			if tiene_actual and typeof(celda) == typeof(actual) and celda == actual:
+				contador += 1
+			else:
+				if tiene_actual:
+					datos.append(actual_str)
+					datos.append(contador)
+				actual = celda
+				tiene_actual = true
+				contador = 1
+				if celda is Actividad:
+					actual_str = celda.nombre
+				elif celda is String:
+					actual_str = celda
+				else:
+					actual_str = ""
+	if tiene_actual:
+		datos.append(actual_str)
+		datos.append(contador)
+	return {
+		"formato": "rle",
+		"filas": filas,
+		"columnas": columnas,
+		"datos": datos
+	}
+
+
+func _RLE_A_Matriz(rle: Dictionary) -> Array:
+	var filas: int = rle.get("filas", 1440)
+	var columnas: int = rle.get("columnas", 574)
+	var datos: Array = rle.get("datos", [])
+	var catalogo = Variables_Estaticas.Catalogo_Actividades
+	var resultado: Array = []
+	resultado.resize(filas)
+	for f in range(filas):
+		var nueva_fila: Array = []
+		nueva_fila.resize(columnas)
+		resultado[f] = nueva_fila
+
+	var idx_celda: int = 0
+	var total_celdas: int = filas * columnas
+	var i: int = 0
+	while i + 1 < datos.size() and idx_celda < total_celdas:
+		var val_str: String = datos[i]
+		var count: int = datos[i + 1]
+		i += 2
+		var valor
+		if val_str != "" and val_str != "Actividad_Aleatoria":
+			valor = catalogo.get(val_str, null)
+		else:
+			valor = val_str
+		for _k in range(count):
+			if idx_celda >= total_celdas:
+				break
+			var f: int = idx_celda / columnas
+			var c: int = idx_celda % columnas
+			resultado[f][c] = valor
+			idx_celda += 1
+	return resultado
+
 
 func _Matriz_A_Strings() -> Array:
 	var resultado = []

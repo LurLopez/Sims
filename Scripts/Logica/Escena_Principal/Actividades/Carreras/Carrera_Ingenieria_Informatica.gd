@@ -3,6 +3,8 @@ extends Carrera
 
 func _init():
 	nombre = "Ingenieria_Informatica"
+	slug_contenido = "ing_informatica"
+	emoji = "💻"
 	años_totales = 4
 	costo_matricula_anual = 500.0
 	año_actual = 1

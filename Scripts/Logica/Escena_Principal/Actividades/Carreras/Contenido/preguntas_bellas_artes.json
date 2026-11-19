@@ -1,0 +1,290 @@
+{
+  "Anio_1": [
+    {
+      "pregunta": "¿Cuáles son los colores primarios?",
+      "opciones": ["Rojo, verde y azul", "Rojo, amarillo y azul", "Naranja, verde y violeta", "Amarillo, verde y violeta"],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Cómo se obtiene el color verde?",
+      "opciones": ["Rojo + azul", "Rojo + amarillo", "Amarillo + azul", "Azul + violeta"],
+      "respuesta_correcta": 2
+    },
+    {
+      "pregunta": "¿Qué son los colores complementarios?",
+      "opciones": [
+        "Los que están adyacentes en el círculo cromático",
+        "Los que están enfrentados en el círculo cromático",
+        "Los tres colores primarios",
+        "Los colores sin saturación"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Qué propiedad del color indica su pureza o intensidad?",
+      "opciones": ["Tono", "Valor", "Saturación", "Perspectiva"],
+      "respuesta_correcta": 2
+    },
+    {
+      "pregunta": "¿Qué propiedad del color se controla añadiendo blanco o negro?",
+      "opciones": ["Tono", "Valor", "Saturación", "Matiz"],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Qué técnica de dibujo consiste en representar el objeto con formas geométricas simples antes del detalle?",
+      "opciones": ["Claroscuro", "Encaje", "Veladura", "Perspectiva cónica"],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Qué es el punto de fuga?",
+      "opciones": [
+        "El punto más iluminado de una escena",
+        "El punto donde convergen las líneas paralelas que se alejan del espectador",
+        "El punto central de una composición",
+        "El punto de mayor saturación de color"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Cuántos puntos de fuga tiene la perspectiva cónica de 2 puntos?",
+      "opciones": ["1", "2", "3", "4"],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Cuándo se usa habitualmente la perspectiva de 3 puntos?",
+      "opciones": [
+        "Al dibujar un objeto de frente",
+        "Al dibujar una esquina de un edificio en ángulo",
+        "Para vistas muy elevadas o muy bajas",
+        "Solo para bodegones"
+      ],
+      "respuesta_correcta": 2
+    },
+    {
+      "pregunta": "En el claroscuro, ¿qué es la sombra proyectada?",
+      "opciones": [
+        "La parte del objeto que no recibe luz directa",
+        "La sombra que el objeto arroja sobre otras superficies",
+        "El reflejo de luz en la sombra propia",
+        "La zona más iluminada del objeto"
+      ],
+      "respuesta_correcta": 1
+    }
+  ],
+  "Anio_2": [
+    {
+      "pregunta": "¿Qué característica define principalmente a la pintura al óleo?",
+      "opciones": ["Secado muy rápido", "Secado lento", "Es soluble solo en agua", "No admite veladuras"],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Qué es una veladura?",
+      "opciones": [
+        "Una capa espesa y opaca de pintura",
+        "Una capa fina y transparente de pintura sobre una capa ya seca",
+        "Una técnica exclusiva de la acuarela",
+        "Una mezcla de pigmento con agua únicamente"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Qué ventaja principal tiene la pintura acrílica frente al óleo?",
+      "opciones": ["Secado mucho más rápido", "Mayor transparencia", "Solo se usa sobre papel", "Necesita disolventes tóxicos"],
+      "respuesta_correcta": 0
+    },
+    {
+      "pregunta": "¿Qué ocurre con el acrílico una vez seco?",
+      "opciones": [
+        "Sigue siendo soluble en agua",
+        "Se vuelve resistente al agua",
+        "Se vuelve transparente",
+        "Puede repintarse como si estuviera fresco"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Cuál es la característica principal de la acuarela?",
+      "opciones": ["Opacidad total", "Secado muy lento", "Transparencia", "Se aplica solo sobre madera"],
+      "respuesta_correcta": 2
+    },
+    {
+      "pregunta": "En acuarela, ¿cómo se suele conseguir el blanco?",
+      "opciones": [
+        "Añadiendo pintura blanca",
+        "Dejando el papel sin pintar",
+        "Mezclando todos los colores",
+        "Usando una veladura muy espesa"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Qué efecto produce la técnica húmedo sobre húmedo en acuarela?",
+      "opciones": ["Bordes muy nítidos y definidos", "Bordes difuminados y mezclas suaves", "Colores completamente opacos", "Ausencia total de mezcla"],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Qué soporte es el más habitual para el óleo y el acrílico?",
+      "opciones": ["Papel de acuarela", "Lienzo", "Cartulina fina", "Metacrilato"],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Qué son las técnicas mixtas?",
+      "opciones": [
+        "El uso exclusivo de acuarela",
+        "La combinación de distintos materiales y medios en una misma obra",
+        "Una técnica solo para dibujo a lápiz",
+        "El uso de un único color"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "En composición pictórica básica, ¿qué se busca al distribuir masas de color y zonas claras/oscuras?",
+      "opciones": ["El caos visual", "Un equilibrio visual", "Eliminar todo punto de interés", "Repetir siempre el centro exacto"],
+      "respuesta_correcta": 1
+    }
+  ],
+  "Anio_3": [
+    {
+      "pregunta": "¿Qué aportación clave introduce el Renacimiento en la representación del espacio?",
+      "opciones": ["El claroscuro dramático", "La perspectiva lineal con punto de fuga", "La pincelada suelta", "La fragmentación cubista"],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Qué corriente de pensamiento sitúa al ser humano como centro de interés en el Renacimiento?",
+      "opciones": ["El humanismo", "El impresionismo", "El barroco", "El surrealismo"],
+      "respuesta_correcta": 0
+    },
+    {
+      "pregunta": "¿Cuál de estos autores es representativo del Renacimiento?",
+      "opciones": ["Caravaggio", "Claude Monet", "Leonardo da Vinci", "Pablo Picasso"],
+      "respuesta_correcta": 2
+    },
+    {
+      "pregunta": "¿Qué técnica es característica del Barroco?",
+      "opciones": ["La perspectiva de un punto", "El claroscuro dramático", "La pincelada suelta impresionista", "El collage cubista"],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Qué pintor es el gran referente del claroscuro barroco?",
+      "opciones": ["Caravaggio", "Monet", "Braque", "Rafael"],
+      "respuesta_correcta": 0
+    },
+    {
+      "pregunta": "¿Qué buscaban capturar principalmente los pintores impresionistas?",
+      "opciones": ["La geometría de las formas", "La impresión momentánea de la luz natural", "El dramatismo religioso", "La ruptura total de la perspectiva"],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Qué obra se asocia habitualmente al nacimiento del impresionismo?",
+      "opciones": ["Las señoritas de Avignon", "Impresión, sol naciente", "La última cena", "Las Meninas"],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿En qué consiste principalmente el Cubismo?",
+      "opciones": [
+        "En capturar la luz natural con pinceladas sueltas",
+        "En representar objetos desde varios puntos de vista simultáneamente",
+        "En el uso del claroscuro dramático",
+        "En la recuperación de la cultura clásica"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Qué dos artistas son los principales creadores del Cubismo?",
+      "opciones": ["Monet y Renoir", "Dalí y Warhol", "Picasso y Braque", "Miguel Ángel y Rafael"],
+      "respuesta_correcta": 2
+    },
+    {
+      "pregunta": "¿Cuál de los siguientes es un movimiento encuadrado dentro del arte contemporáneo?",
+      "opciones": ["Renacimiento", "Barroco", "Pop art", "Impresionismo"],
+      "respuesta_correcta": 2
+    }
+  ],
+  "Anio_4": [
+    {
+      "pregunta": "¿En cuántas secciones divide la imagen la regla de los tercios?",
+      "opciones": ["Cuatro", "Seis", "Nueve", "Doce"],
+      "respuesta_correcta": 2
+    },
+    {
+      "pregunta": "Según la regla de los tercios, ¿dónde se recomienda colocar los elementos principales?",
+      "opciones": [
+        "Siempre en el centro exacto",
+        "En las líneas o intersecciones de la cuadrícula",
+        "En las esquinas del formato",
+        "Fuera del encuadre"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Qué es el punto focal de una obra?",
+      "opciones": [
+        "El color más saturado",
+        "El elemento o zona hacia donde se dirige primero la mirada",
+        "El marco de la obra",
+        "El punto de fuga de la perspectiva"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Qué describe la jerarquía visual?",
+      "opciones": [
+        "El precio de la obra",
+        "El orden en que el ojo recorre los elementos de la obra",
+        "El tamaño del lienzo",
+        "La técnica pictórica empleada"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Qué caracteriza al equilibrio simétrico?",
+      "opciones": [
+        "Distribución especular respecto a un eje",
+        "Distribución desigual pero compensada",
+        "Ausencia total de organización",
+        "Uso exclusivo de colores complementarios"
+      ],
+      "respuesta_correcta": 0
+    },
+    {
+      "pregunta": "¿Qué es el equilibrio asimétrico?",
+      "opciones": [
+        "Una distribución especular perfecta",
+        "Una distribución desigual pero visualmente compensada",
+        "La ausencia de punto focal",
+        "Un tipo de perspectiva cónica"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Cuáles son los cuatro elementos del análisis formal de una obra?",
+      "opciones": [
+        "Forma, color, textura y espacio",
+        "Tono, saturación, valor y matiz",
+        "Descripción, análisis, interpretación y juicio",
+        "Línea, proporción, encaje y sombra"
+      ],
+      "respuesta_correcta": 0
+    },
+    {
+      "pregunta": "En el análisis formal, ¿qué se entiende por textura simulada?",
+      "opciones": [
+        "El relieve físico real de la pintura",
+        "La representación visual de una textura, como la piel o la madera",
+        "El color predominante de la obra",
+        "La profundidad del espacio representado"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Cuál es la primera fase de la metodología básica de la crítica de arte?",
+      "opciones": ["Juicio o valoración", "Interpretación", "Descripción", "Análisis formal"],
+      "respuesta_correcta": 2
+    },
+    {
+      "pregunta": "¿Qué fase de la crítica de arte consiste en proponer el posible significado de la obra?",
+      "opciones": ["Descripción", "Análisis formal", "Interpretación", "Juicio o valoración"],
+      "respuesta_correcta": 2
+    }
+  ]
+}

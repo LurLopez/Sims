@@ -1,0 +1,42 @@
+MEDICINA - AÑO 5: ÉTICA MÉDICA Y PRÁCTICA CLÍNICA
+
+1. PRINCIPIOS BIOÉTICOS
+La bioética médica se apoya clásicamente en cuatro principios fundamentales:
+- Autonomía: derecho del paciente a tomar sus propias decisiones sobre su salud, siempre que esté informado y sea competente para decidir.
+- Beneficencia: obligación del profesional de actuar buscando el mayor bien para el paciente.
+- No maleficencia: obligación de no causar daño innecesario ("primum non nocere", ante todo no hacer daño).
+- Justicia: obligación de distribuir los recursos y tratamientos de forma equitativa entre los pacientes.
+
+Estos cuatro principios pueden entrar en conflicto entre sí, y gran parte de la ética médica consiste en encontrar el equilibrio adecuado según el caso concreto.
+
+2. CONSENTIMIENTO INFORMADO
+El consentimiento informado es el proceso por el cual el paciente autoriza un procedimiento o tratamiento después de haber recibido información suficiente y comprensible sobre:
+- En qué consiste el procedimiento.
+- Los riesgos y beneficios esperados.
+- Las alternativas posibles, incluida la de no tratar.
+
+El consentimiento informado es una expresión directa del principio de autonomía, y debe ser voluntario, sin coacción, y revocable en cualquier momento por el paciente.
+
+3. SECRETO MÉDICO Y CONFIDENCIALIDAD
+El secreto médico obliga al profesional a no revelar información sobre el paciente obtenida en el ejercicio de su profesión, salvo excepciones justificadas (riesgo grave para terceros, obligación legal, o autorización expresa del propio paciente).
+
+La confidencialidad es un pilar de la confianza en la relación médico-paciente: sin ella, el paciente podría ocultar información relevante para su diagnóstico y tratamiento por miedo a que se divulgue.
+
+4. RELACIÓN MÉDICO-PACIENTE
+La relación médico-paciente ha evolucionado históricamente desde un modelo paternalista (el médico decide por el paciente "por su bien") hacia un modelo basado en la autonomía y la decisión compartida, donde el paciente participa activamente en las decisiones sobre su propia salud.
+
+Una buena relación médico-paciente se basa en la comunicación clara, la escucha activa, el respeto y la confianza mutua, y es un factor que influye directamente en la adherencia al tratamiento.
+
+5. TOMA DE DECISIONES AL FINAL DE LA VIDA
+En situaciones de enfermedad terminal o irreversible surgen decisiones éticas complejas:
+- Limitación del esfuerzo terapéutico: retirar o no iniciar tratamientos que solo prolongarían el proceso de morir sin beneficio real para el paciente.
+- Cuidados paliativos: atención centrada en aliviar el dolor y el sufrimiento cuando ya no es posible curar la enfermedad.
+- Voluntades anticipadas: documento en el que una persona expresa, con antelación, sus deseos sobre los cuidados que desea o no recibir si en el futuro no puede decidir por sí misma.
+
+Estas decisiones deben tomarse siempre respetando la dignidad y, en la medida de lo posible, la voluntad del paciente.
+
+6. CONSEJOS DE EXAMEN
+- Aprende bien los cuatro principios bioéticos y sepáralos claramente: autonomía, beneficencia, no maleficencia, justicia.
+- Recuerda que el consentimiento informado es una manifestación del principio de autonomía.
+- No confundas limitación del esfuerzo terapéutico con eutanasia: son conceptos distintos.
+- Ante un dilema ético en el examen, identifica primero qué principios entran en conflicto.

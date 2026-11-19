@@ -1,0 +1,402 @@
+{
+  "Anio_1": [
+    {
+      "pregunta": "¿Cuál es la unidad estructural y funcional básica de todo ser vivo?",
+      "opciones": ["El tejido", "El órgano", "La célula", "El sistema"],
+      "respuesta_correcta": 2
+    },
+    {
+      "pregunta": "¿Cuántos huesos tiene el esqueleto humano adulto aproximadamente?",
+      "opciones": ["106", "150", "206", "300"],
+      "respuesta_correcta": 2
+    },
+    {
+      "pregunta": "¿Qué tipo de músculo es voluntario y mueve el esqueleto?",
+      "opciones": ["Músculo liso", "Músculo cardíaco", "Músculo esquelético", "Músculo involuntario"],
+      "respuesta_correcta": 2
+    },
+    {
+      "pregunta": "En la circulación mayor (sistémica), ¿desde qué cavidad del corazón se bombea la sangre oxigenada al cuerpo?",
+      "opciones": ["Aurícula derecha", "Ventrículo derecho", "Aurícula izquierda", "Ventrículo izquierdo"],
+      "respuesta_correcta": 3
+    },
+    {
+      "pregunta": "¿Dónde se produce el intercambio de gases en el sistema respiratorio?",
+      "opciones": ["En la tráquea", "En los bronquios", "En los alvéolos pulmonares", "En la laringe"],
+      "respuesta_correcta": 2
+    },
+    {
+      "pregunta": "¿Qué ocurre con el diafragma durante la inspiración?",
+      "opciones": ["Se contrae y desciende", "Se relaja y sube", "Permanece inmóvil", "Se contrae y sube"],
+      "respuesta_correcta": 0
+    },
+    {
+      "pregunta": "¿Qué compone el sistema nervioso central (SNC)?",
+      "opciones": [
+        "Nervios craneales y espinales",
+        "Encéfalo y médula espinal",
+        "Solo el encéfalo",
+        "Ganglios periféricos"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Cuál es la unidad funcional del sistema nervioso?",
+      "opciones": ["La sinapsis", "La neurona", "El axón", "El ganglio"],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Qué es la homeostasis?",
+      "opciones": [
+        "El crecimiento descontrolado de células",
+        "La capacidad del organismo de mantener constante su medio interno",
+        "La transmisión de impulsos nerviosos",
+        "El proceso de digestión de alimentos"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Qué tipo de retroalimentación mantiene principalmente la homeostasis?",
+      "opciones": ["Positiva", "Negativa", "Neutra", "Ninguna, es un proceso pasivo"],
+      "respuesta_correcta": 1
+    }
+  ],
+  "Anio_2": [
+    {
+      "pregunta": "¿Qué estudia la etiología de una enfermedad?",
+      "opciones": [
+        "Sus síntomas",
+        "Sus causas",
+        "Su tratamiento",
+        "Su pronóstico"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Cuáles son los cinco signos cardinales de la inflamación?",
+      "opciones": [
+        "Fiebre, tos, fatiga, náuseas, mareo",
+        "Rubor, calor, tumor, dolor, pérdida de función",
+        "Palidez, frío, atrofia, entumecimiento, rigidez",
+        "Hinchazón, sudor, escalofríos, vómitos, debilidad"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "En la inflamación aguda, ¿qué tipo de células predominan principalmente?",
+      "opciones": ["Linfocitos", "Macrófagos", "Neutrófilos", "Eosinófilos"],
+      "respuesta_correcta": 2
+    },
+    {
+      "pregunta": "¿Qué tipo de agente patógeno necesita infectar una célula huésped para replicarse?",
+      "opciones": ["Bacteria", "Virus", "Hongo", "Parásito"],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Qué es la virulencia?",
+      "opciones": [
+        "El tamaño del microorganismo",
+        "La capacidad de un agente patógeno de producir enfermedad",
+        "El tipo de célula infectada",
+        "La duración de la infección"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Qué caracteriza a una neoplasia maligna frente a una benigna?",
+      "opciones": [
+        "Crecimiento lento y bien delimitado",
+        "No invade tejidos vecinos",
+        "Invade tejidos cercanos y puede producir metástasis",
+        "Nunca requiere tratamiento"
+      ],
+      "respuesta_correcta": 2
+    },
+    {
+      "pregunta": "¿Cómo se confirma el diagnóstico definitivo de una neoplasia?",
+      "opciones": [
+        "Con una radiografía simple",
+        "Mediante biopsia y estudio anatomopatológico",
+        "Con un análisis de orina",
+        "Con la exploración física únicamente"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Qué estudia la fisiopatología?",
+      "opciones": [
+        "La estructura anatómica normal del cuerpo",
+        "Cómo responde el organismo ante una lesión o alteración funcional",
+        "Los principios éticos de la medicina",
+        "Las vías de administración de fármacos"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Qué tipo de causas son las genéticas o hereditarias de una enfermedad?",
+      "opciones": ["Extrínsecas", "Intrínsecas", "Ambientales", "Iatrogénicas"],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Qué ocurre clínicamente cuando los mecanismos de compensación del organismo se agotan?",
+      "opciones": [
+        "El paciente se cura espontáneamente",
+        "Aparecen los signos y síntomas clínicos de la enfermedad",
+        "La homeostasis mejora",
+        "No ocurre ningún cambio"
+      ],
+      "respuesta_correcta": 1
+    }
+  ],
+  "Anio_3": [
+    {
+      "pregunta": "¿Qué es la anamnesis?",
+      "opciones": [
+        "Una prueba de imagen",
+        "La entrevista clínica donde se recoge la historia del paciente",
+        "Un análisis de sangre",
+        "Una técnica de auscultación"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Cuál es el orden clásico de la exploración física?",
+      "opciones": [
+        "Palpación, inspección, auscultación, percusión",
+        "Inspección, palpación, percusión, auscultación",
+        "Auscultación, percusión, palpación, inspección",
+        "Percusión, auscultación, inspección, palpación"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Qué técnica de exploración física usa el estetoscopio para escuchar sonidos internos?",
+      "opciones": ["Inspección", "Palpación", "Percusión", "Auscultación"],
+      "respuesta_correcta": 3
+    },
+    {
+      "pregunta": "¿Qué técnica consiste en golpear suavemente una zona para valorar el sonido producido?",
+      "opciones": ["Inspección", "Percusión", "Auscultación", "Anamnesis"],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Qué tipo de prueba complementaria incluye la radiografía, ecografía, TC y RM?",
+      "opciones": ["Analítica", "Pruebas de imagen", "Anamnesis", "Exploración física"],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Qué es el diagnóstico diferencial?",
+      "opciones": [
+        "El único diagnóstico posible de un síntoma",
+        "El proceso de considerar y descartar varias enfermedades posibles hasta llegar al diagnóstico más probable",
+        "Una prueba de laboratorio específica",
+        "El tratamiento definitivo de una enfermedad"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Qué es la disnea?",
+      "opciones": [
+        "Elevación de la temperatura corporal",
+        "Sensación subjetiva de falta de aire o dificultad para respirar",
+        "Dolor abdominal intenso",
+        "Pérdida de conciencia"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿A qué se debe habitualmente la fiebre?",
+      "opciones": [
+        "A una respuesta a una infección u otro proceso inflamatorio",
+        "A una bajada de la temperatura corporal",
+        "A un exceso de ejercicio únicamente",
+        "A la deshidratación exclusivamente"
+      ],
+      "respuesta_correcta": 0
+    },
+    {
+      "pregunta": "¿Qué herramienta diagnóstica se considera, junto con la exploración física, la más importante?",
+      "opciones": ["La tomografía computarizada", "La anamnesis", "La biopsia", "La ecografía"],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Cómo se debe valorar el dolor como síntoma?",
+      "opciones": [
+        "Solo por su intensidad",
+        "Según localización, intensidad, tipo e irradiación",
+        "Únicamente por su duración",
+        "No se puede valorar de forma objetiva"
+      ],
+      "respuesta_correcta": 1
+    }
+  ],
+  "Anio_4": [
+    {
+      "pregunta": "¿Qué estudia la farmacocinética?",
+      "opciones": [
+        "El mecanismo de acción del fármaco sobre el cuerpo",
+        "Qué le hace el cuerpo al fármaco (absorción, distribución, metabolismo, excreción)",
+        "El precio de los medicamentos",
+        "Los efectos secundarios exclusivamente"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿En qué órgano se produce principalmente el metabolismo de los fármacos?",
+      "opciones": ["Riñón", "Hígado", "Pulmón", "Bazo"],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Por qué vía se elimina principalmente un fármaco o sus metabolitos?",
+      "opciones": ["Respiratoria", "Renal (orina)", "Cutánea", "Digestiva exclusivamente"],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Qué estudia la farmacodinamia?",
+      "opciones": [
+        "Qué le hace el fármaco al cuerpo, es decir, su mecanismo de acción",
+        "La absorción del fármaco",
+        "La excreción renal",
+        "El coste del tratamiento"
+      ],
+      "respuesta_correcta": 0
+    },
+    {
+      "pregunta": "¿Qué hace un fármaco antagonista al unirse a su receptor?",
+      "opciones": [
+        "Produce una respuesta similar a la sustancia natural",
+        "Bloquea o impide la respuesta",
+        "Aumenta siempre la absorción",
+        "Se metaboliza más rápido"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Qué vía de administración produce un efecto más inmediato?",
+      "opciones": ["Oral", "Tópica", "Intravenosa", "Subcutánea"],
+      "respuesta_correcta": 2
+    },
+    {
+      "pregunta": "¿Qué es la sinergia farmacológica?",
+      "opciones": [
+        "Cuando un fármaco anula el efecto de otro",
+        "Cuando el efecto combinado de dos fármacos es mayor que la suma de los efectos individuales",
+        "Cuando un fármaco no tiene ningún efecto",
+        "Cuando dos fármacos no interactúan entre sí"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Qué es el margen terapéutico de un fármaco?",
+      "opciones": [
+        "El precio de mercado del fármaco",
+        "La diferencia entre la dosis eficaz y la dosis tóxica",
+        "El tiempo que tarda en absorberse",
+        "La vía de administración recomendada"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Qué implica que un fármaco tenga un margen terapéutico estrecho?",
+      "opciones": [
+        "Que es muy seguro y no requiere control",
+        "Que la dosis tóxica está muy cerca de la eficaz y requiere monitorización cuidadosa",
+        "Que no tiene efectos adversos",
+        "Que solo se administra por vía tópica"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Qué son los efectos adversos de un fármaco?",
+      "opciones": [
+        "El objetivo terapéutico principal del fármaco",
+        "Reacciones no deseadas además del efecto terapéutico buscado",
+        "La dosis mínima eficaz",
+        "El proceso de eliminación renal"
+      ],
+      "respuesta_correcta": 1
+    }
+  ],
+  "Anio_5": [
+    {
+      "pregunta": "¿Cuáles son los cuatro principios bioéticos clásicos?",
+      "opciones": [
+        "Autonomía, beneficencia, no maleficencia, justicia",
+        "Honestidad, rapidez, eficacia, economía",
+        "Diagnóstico, tratamiento, pronóstico, prevención",
+        "Confidencialidad, rapidez, autonomía, beneficencia"
+      ],
+      "respuesta_correcta": 0
+    },
+    {
+      "pregunta": "¿Qué principio bioético se resume en la frase 'primum non nocere' (ante todo no hacer daño)?",
+      "opciones": ["Autonomía", "Beneficencia", "No maleficencia", "Justicia"],
+      "respuesta_correcta": 2
+    },
+    {
+      "pregunta": "¿Qué principio bioético hace referencia al derecho del paciente a tomar sus propias decisiones sobre su salud?",
+      "opciones": ["Justicia", "Autonomía", "No maleficencia", "Beneficencia"],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Qué principio obliga a distribuir los recursos y tratamientos de forma equitativa entre los pacientes?",
+      "opciones": ["Autonomía", "Beneficencia", "No maleficencia", "Justicia"],
+      "respuesta_correcta": 3
+    },
+    {
+      "pregunta": "¿Qué es el consentimiento informado?",
+      "opciones": [
+        "Un documento legal sin relación con la ética médica",
+        "El proceso por el que el paciente autoriza un procedimiento tras recibir información suficiente y comprensible",
+        "La obligación del médico de decidir por el paciente",
+        "Un registro exclusivamente administrativo"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿De qué principio bioético es una expresión directa el consentimiento informado?",
+      "opciones": ["Justicia", "No maleficencia", "Autonomía", "Beneficencia"],
+      "respuesta_correcta": 2
+    },
+    {
+      "pregunta": "¿Qué es el secreto médico?",
+      "opciones": [
+        "La obligación de no revelar información del paciente obtenida en el ejercicio profesional, salvo excepciones justificadas",
+        "El derecho del médico a ocultar errores propios",
+        "Un privilegio exclusivo de los hospitales privados",
+        "La obligación de informar a la familia sin consentimiento del paciente"
+      ],
+      "respuesta_correcta": 0
+    },
+    {
+      "pregunta": "¿Cómo ha evolucionado históricamente la relación médico-paciente?",
+      "opciones": [
+        "De un modelo basado en autonomía hacia uno paternalista",
+        "De un modelo paternalista hacia uno basado en autonomía y decisión compartida",
+        "No ha cambiado a lo largo de la historia",
+        "Ha eliminado por completo la comunicación entre médico y paciente"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Qué son los cuidados paliativos?",
+      "opciones": [
+        "Tratamientos destinados a curar cualquier enfermedad",
+        "Atención centrada en aliviar el dolor y el sufrimiento cuando ya no es posible curar la enfermedad",
+        "Una técnica quirúrgica avanzada",
+        "Un tipo de consentimiento informado"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Qué son las voluntades anticipadas?",
+      "opciones": [
+        "Un documento donde una persona expresa con antelación los cuidados que desea o no recibir si no puede decidir en el futuro",
+        "Una receta médica preventiva",
+        "El historial clínico completo del paciente",
+        "Un consentimiento verbal dado en urgencias"
+      ],
+      "respuesta_correcta": 0
+    }
+  ]
+}

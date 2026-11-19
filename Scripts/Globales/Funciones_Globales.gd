@@ -1,6 +1,10 @@
 extends Node
 
+const DEBUG_LOGS_MATRIZ := false
+
 func Guardar_Matriz():
+	if not DEBUG_LOGS_MATRIZ:
+		return
 	var filas =1439 
 	var columnas = 574
 	Crear_Todas_Las_Carpetas()
@@ -19,6 +23,8 @@ func Guardar_Matriz():
 			column=[]
 
 func Guardar_Matriz_Dia(dia):
+	if not DEBUG_LOGS_MATRIZ:
+		return []
 	var filas =1439 
 	Crear_Carpeta("user://guardado//otros")
 	var file = FileAccess.open("user://guardado//otros//Matriz_Dia.txt", FileAccess.ModeFlags.WRITE)

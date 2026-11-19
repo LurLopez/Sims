@@ -1,0 +1,365 @@
+{
+  "Anio_1": [
+    {
+      "pregunta": "¿Cuál es el orden de prelación de fuentes del Derecho según el Código Civil español?",
+      "opciones": [
+        "Costumbre, ley, principios generales",
+        "Ley, costumbre, principios generales del Derecho",
+        "Jurisprudencia, ley, costumbre",
+        "Principios generales, ley, costumbre"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Qué es la costumbre como fuente del Derecho?",
+      "opciones": [
+        "Una norma escrita aprobada por el Parlamento",
+        "Una norma no escrita que surge de la repetición de una conducta con convicción de obligatoriedad",
+        "Una sentencia reiterada del Tribunal Supremo",
+        "Un reglamento del poder ejecutivo"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Qué papel cumple la jurisprudencia en el ordenamiento jurídico español?",
+      "opciones": [
+        "Es la fuente principal del Derecho",
+        "Complementa el ordenamiento jurídico como criterio interpretativo",
+        "Sustituye a la ley cuando esta es ambigua",
+        "Tiene el mismo rango que la Constitución"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Qué rama del Derecho regula las relaciones entre particulares en un plano de igualdad?",
+      "opciones": [
+        "Derecho Público",
+        "Derecho Constitucional",
+        "Derecho Privado",
+        "Derecho Administrativo"
+      ],
+      "respuesta_correcta": 2
+    },
+    {
+      "pregunta": "¿Cuál de las siguientes ramas pertenece al Derecho Público?",
+      "opciones": ["Derecho Civil", "Derecho Mercantil", "Derecho Penal", "Derecho Internacional Privado"],
+      "respuesta_correcta": 2
+    },
+    {
+      "pregunta": "Según la pirámide de Kelsen, ¿qué norma ocupa la posición más alta?",
+      "opciones": ["El reglamento", "La ley ordinaria", "La Constitución", "La costumbre"],
+      "respuesta_correcta": 2
+    },
+    {
+      "pregunta": "¿Qué ocurre cuando un reglamento contradice una ley de rango superior?",
+      "opciones": [
+        "El reglamento prevalece por ser más reciente",
+        "El reglamento es nulo o inaplicable",
+        "Ambos se aplican simultáneamente",
+        "Se aplica la costumbre"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Qué es la capacidad jurídica?",
+      "opciones": [
+        "La aptitud para ejercitar por sí mismo derechos y obligaciones",
+        "La aptitud para ser titular de derechos y obligaciones, que tienen todas las personas",
+        "La capacidad exclusiva de las personas jurídicas",
+        "Un requisito que solo se adquiere a los 18 años"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Qué es la capacidad de obrar?",
+      "opciones": [
+        "La aptitud para ejercitar por sí mismo derechos y obligaciones, que admite grados",
+        "Un sinónimo de capacidad jurídica",
+        "La capacidad que tienen exclusivamente las personas jurídicas",
+        "Un concepto que no existe en Derecho español"
+      ],
+      "respuesta_correcta": 0
+    },
+    {
+      "pregunta": "¿Cuándo adquiere una persona física personalidad jurídica?",
+      "opciones": [
+        "Al cumplir 18 años",
+        "Con el nacimiento",
+        "Al casarse",
+        "Al inscribirse en el Registro Civil, con carácter constitutivo obligatorio"
+      ],
+      "respuesta_correcta": 1
+    }
+  ],
+  "Anio_2": [
+    {
+      "pregunta": "¿Cuáles son los tres elementos esenciales del contrato según el artículo 1261 del Código Civil?",
+      "opciones": [
+        "Consentimiento, objeto y causa",
+        "Oferta, aceptación y firma",
+        "Precio, cosa y forma",
+        "Capacidad, forma y registro"
+      ],
+      "respuesta_correcta": 0
+    },
+    {
+      "pregunta": "¿Qué ocurre si el consentimiento de una parte está viciado por dolo o violencia?",
+      "opciones": [
+        "El contrato es plenamente válido",
+        "El contrato es anulable",
+        "El contrato se convierte automáticamente en gratuito",
+        "No afecta a la validez del contrato"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Qué diferencia a un contrato oneroso de uno gratuito?",
+      "opciones": [
+        "El oneroso implica contraprestación para ambas partes; el gratuito beneficia a una sin contraprestación",
+        "El oneroso es siempre nulo",
+        "El gratuito exige forma notarial obligatoria",
+        "No hay ninguna diferencia jurídica relevante"
+      ],
+      "respuesta_correcta": 0
+    },
+    {
+      "pregunta": "¿Qué es un derecho real?",
+      "opciones": [
+        "Un derecho que solo se puede exigir frente a una persona determinada",
+        "Un poder directo e inmediato sobre una cosa, oponible frente a todos",
+        "Un sinónimo de derecho de crédito",
+        "Un derecho exclusivo de las personas jurídicas"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Qué facultades otorga la propiedad a su titular?",
+      "opciones": [
+        "Solo el uso de la cosa",
+        "Uso, disfrute y disposición",
+        "Solo la disposición",
+        "Únicamente el disfrute de los frutos"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Qué es el usufructo?",
+      "opciones": [
+        "El derecho a usar y disfrutar de un bien ajeno sin alterar su forma ni sustancia",
+        "Un contrato de compraventa especial",
+        "Un derecho de crédito frente al arrendador",
+        "La transmisión definitiva de la propiedad"
+      ],
+      "respuesta_correcta": 0
+    },
+    {
+      "pregunta": "¿Cuál es el régimen económico matrimonial por defecto en el Código Civil español?",
+      "opciones": ["Separación de bienes", "Sociedad de gananciales", "Participación en ganancias", "Comunidad universal"],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Qué es la patria potestad?",
+      "opciones": [
+        "El conjunto de derechos y deberes de los progenitores respecto de los hijos menores no emancipados",
+        "Un derecho exclusivo de los abuelos",
+        "Un régimen económico matrimonial",
+        "Un tipo de contrato de familia"
+      ],
+      "respuesta_correcta": 0
+    },
+    {
+      "pregunta": "¿Qué es la legítima en el Derecho de sucesiones?",
+      "opciones": [
+        "La totalidad de la herencia",
+        "La porción de la herencia reservada legalmente a ciertos herederos forzosos",
+        "Un impuesto sobre la herencia",
+        "El documento donde se otorga testamento"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Qué ocurre cuando una persona fallece sin haber otorgado testamento válido?",
+      "opciones": [
+        "Sus bienes pasan automáticamente al Estado",
+        "Se abre la sucesión intestada y la ley establece el orden de herederos",
+        "No se produce ninguna sucesión",
+        "Los bienes quedan sin dueño de forma permanente"
+      ],
+      "respuesta_correcta": 1
+    }
+  ],
+  "Anio_3": [
+    {
+      "pregunta": "¿Cómo se define el delito en la teoría jurídica del delito?",
+      "opciones": [
+        "Cualquier conducta que cause un daño",
+        "Acción u omisión típica, antijurídica, culpable y punible",
+        "Solo las conductas realizadas con intención",
+        "Cualquier infracción administrativa"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Qué es la tipicidad de una conducta delictiva?",
+      "opciones": [
+        "Que la conducta esté descrita exactamente en la ley penal como delito",
+        "Que la conducta sea moralmente reprochable",
+        "Que el autor sea mayor de edad",
+        "Que exista una víctima identificada"
+      ],
+      "respuesta_correcta": 0
+    },
+    {
+      "pregunta": "¿Qué causa excluye la antijuridicidad de una conducta típica?",
+      "opciones": ["La minoría de edad", "El trastorno mental", "La legítima defensa", "El desconocimiento de la ley"],
+      "respuesta_correcta": 2
+    },
+    {
+      "pregunta": "¿Qué significa el principio de legalidad penal ('nullum crimen, nulla poena sine lege')?",
+      "opciones": [
+        "Que cualquier juez puede crear delitos por analogía",
+        "Que no hay delito ni pena sin ley previa que los establezca",
+        "Que las penas pueden aplicarse retroactivamente siempre",
+        "Que la ley penal no necesita ser precisa"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿En qué caso se aplica retroactivamente una ley penal?",
+      "opciones": [
+        "Nunca, bajo ninguna circunstancia",
+        "Siempre que lo pida la acusación",
+        "Cuando la nueva ley es más favorable para el reo",
+        "Solo en delitos leves"
+      ],
+      "respuesta_correcta": 2
+    },
+    {
+      "pregunta": "¿A quién corresponde la carga de la prueba en un proceso penal, según la presunción de inocencia?",
+      "opciones": ["Al acusado", "A la acusación", "Al juez de oficio", "Al abogado defensor"],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Qué tipo de pena es la inhabilitación?",
+      "opciones": [
+        "Una pena privativa de libertad",
+        "Una pena privativa de otros derechos",
+        "Una medida de seguridad",
+        "Un tipo de multa"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿A quién se aplican las medidas de seguridad en Derecho Penal?",
+      "opciones": [
+        "A cualquier condenado en lugar de la pena",
+        "A sujetos inimputables o semiimputables peligrosos",
+        "Solo a los reincidentes",
+        "A las víctimas del delito"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Qué diferencia hay entre el autor y el cómplice de un delito?",
+      "opciones": [
+        "No hay ninguna diferencia en la pena",
+        "El cómplice coopera sin ser autor directo y su pena es inferior a la del autor",
+        "El cómplice siempre recibe una pena mayor",
+        "El autor nunca puede actuar junto a otros"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Cuál de las siguientes es una causa de exención de responsabilidad criminal?",
+      "opciones": ["La reincidencia", "El estado de necesidad", "La premeditación", "La alevosía"],
+      "respuesta_correcta": 1
+    }
+  ],
+  "Anio_4": [
+    {
+      "pregunta": "¿Qué fase del proceso judicial precede específicamente a la apertura del juicio oral en el proceso penal?",
+      "opciones": ["La fase de conclusiones", "La fase de instrucción", "La fase de sentencia", "La fase de ejecución"],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Qué es la jurisdicción?",
+      "opciones": [
+        "El reparto de asuntos entre juzgados del mismo tipo",
+        "La potestad de juzgar y hacer ejecutar lo juzgado, atribuida a Juzgados y Tribunales",
+        "Un recurso extraordinario ante el Tribunal Supremo",
+        "El territorio donde actúa un abogado"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Qué tipo de competencia determina qué juzgado concreto conoce del asunto según el lugar?",
+      "opciones": ["Competencia objetiva", "Competencia funcional", "Competencia territorial", "Competencia universal"],
+      "respuesta_correcta": 2
+    },
+    {
+      "pregunta": "¿Cuál de las siguientes competencias puede ser apreciada de oficio por el tribunal?",
+      "opciones": ["La competencia territorial, siempre", "La competencia objetiva", "Ninguna, todas son disponibles por las partes", "Solo la competencia funcional en apelación"],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Qué caracteriza al recurso de apelación?",
+      "opciones": [
+        "Es un recurso extraordinario limitado a cuestiones de derecho",
+        "Permite al tribunal superior revisar íntegramente hechos y derecho",
+        "Solo puede resolverlo el mismo órgano que dictó la resolución",
+        "No cabe contra sentencias de instancia"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Qué diferencia principal existe entre la casación y la apelación?",
+      "opciones": [
+        "La casación revisa los hechos igual que la apelación",
+        "La casación no constituye una tercera instancia y se limita al control de la aplicación de la ley",
+        "La casación siempre la resuelve el mismo juzgado de instancia",
+        "No existen diferencias relevantes"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Qué garantiza el principio de contradicción en el proceso?",
+      "opciones": [
+        "Que el juicio se celebre siempre por escrito",
+        "Que ninguna parte pueda ser condenada sin haber tenido oportunidad de ser oída y defenderse",
+        "Que las partes puedan disponer libremente del proceso penal",
+        "Que el juez no presencie la prueba"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Qué exige el principio de inmediación?",
+      "opciones": [
+        "Que el juez que dicta sentencia haya presenciado personalmente la práctica de la prueba",
+        "Que el proceso se resuelva en el menor tiempo posible",
+        "Que las partes tengan los mismos medios procesales",
+        "Que todo el proceso sea escrito"
+      ],
+      "respuesta_correcta": 0
+    },
+    {
+      "pregunta": "¿En qué consiste el secreto profesional del abogado?",
+      "opciones": [
+        "Solo se aplica mientras dura la relación con el cliente",
+        "Es la obligación de guardar reserva de los hechos conocidos por su actuación, incluso tras finalizar la relación con el cliente",
+        "Es un derecho que el abogado puede renunciar libremente si el cliente lo pide",
+        "Solo protege al cliente frente a terceros ajenos al proceso"
+      ],
+      "respuesta_correcta": 1
+    },
+    {
+      "pregunta": "¿Qué debe hacer un abogado ante un conflicto de interés insalvable con un cliente?",
+      "opciones": [
+        "Seguir representando a ambas partes con el mismo esfuerzo",
+        "Abstenerse de intervenir salvo consentimiento informado de todos los afectados",
+        "Delegar el caso en un compañero sin informar a nadie",
+        "Ignorarlo si el cliente no se queja"
+      ],
+      "respuesta_correcta": 1
+    }
+  ]
+}

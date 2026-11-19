@@ -111,6 +111,12 @@ Array de 3 valores (1–100): `[0]`=Deporte · `[1]`=Académico · `[2]`=Manuali
 
 ---
 
+## Estados temporales (`Variables_Dinamicas.Estados_Temporales`)
+
+Dictionary `{ "Euforia": minutos_restantes }` o `{ "Resacon": minutos_restantes }`. Son mutuamente excluyentes y duran 1440 min (480 de meseta + 960 de bajada). `Euforia` impone un suelo gradual a Salud Mental (100→50); `Resacon` un techo gradual a Salud Física/Mental (30→100). En calle/bancarrota el efecto efectivo se limita a 20. `Variables_Dinamicas.Fiesta_Evento_Ocurrido` impide más de un evento por bloque de `Salir_De_Fiesta`.
+
+---
+
 ## Habilidades innatas (`Variables_Estaticas.Habilidades`)
 
 Array de 6 valores (1–100) aleatorios al inicio:
@@ -149,7 +155,17 @@ Jerarquía de clases (en `Scripts/Logica/Escena_Principal/Actividades/Herencia/`
 | `Estudiar` | Actividad_Temporal | `[-1, -2, -1, -2, -1]` | `[0,4,0]` |
 | `Salir_A_Correr` | Actividad_Temporal | `[4, 2, -3, -3, -4]` | `[4,0,0]` |
 | `Practicar_Manualidades` | Actividad_Temporal | `[-2, -1, -1, -2, -1]` | `[0,0,4]` |
+| `Salir_De_Fiesta` | Actividad_Temporal | `[0, 9, -3, -4, -2]` | `[0,0,0]` |
 | `Trabajar_En_Comida_Rapida` | Actividad_Fija_Trabajo | `[-1,-1,-1,-2,-1]` | `[0,0,0]` · hora 8–16 · salario 10.0 |
+| `Trabajar_De_Carpintero` | Actividad_Fija_Trabajo | `[-1,-1,-1,-2,-2]` | `[0,0,0]` · hora 7–15 · salario 18.0 · requisito_progreso Manualidades≥30 |
+| `Trabajar_De_Cientifico` | Actividad_Fija_Trabajo | `[-1,-2,-1,-2,-1]` | `[0,0,0]` · hora 9–17 · salario 28.0 · requisito_progreso Académico≥65 · requisito_carrera `Ingenieria_Informatica` |
+| `Trabajar_De_Abogado` | Actividad_Fija_Trabajo | `[-1,-2,-1,-2,-1]` | `[0,0,0]` · hora 9–17 · salario 30.0 · requisito_progreso Académico≥50 · requisito_carrera `Derecho` |
+| `Trabajar_De_Medico` | Actividad_Fija_Trabajo | `[-1,-2,-1,-2,-1]` | `[0,0,0]` · hora 9–17 · salario 35.0 · requisito_progreso Académico≥60 · requisito_carrera `Medicina` |
+| `Trabajar_De_Artista` | Actividad_Fija_Trabajo | `[-1,-2,-1,-2,-1]` | `[0,0,0]` · hora 9–17 · salario 25.0 · requisito_progreso Manualidades≥50 · requisito_carrera `Bellas_Artes` |
+
+Cada carrera universitaria completada (`Variables_Dinamicas.Carreras_Completadas`) desbloquea exactamente uno de estos trabajos de alto salario vía `requisito_carrera` (comprobado en `Script_Principal._Cumple_Requisitos_Trabajo()`). Las carreras jugables son: Ingeniería Informática (4 años), Derecho (4 años), Bellas Artes (4 años) y **Medicina (5 años, la única con duración distinta)**. El selector de carrera (`Carreras/UI/Modal_Seleccionar_Carrera.gd`) excluye las carreras ya presentes en `Carreras_Completadas`.
+
+`Salir_De_Fiesta` es la única actividad temporal que **no** entra en `Variables_Estaticas.Actividades`: solo se ejecuta si el jugador la programa dentro de su ventana 18:00–06:00. Sus estados `Euforia`/`Resacon` se guardan en `Variables_Dinamicas.Estados_Temporales` y su flag de evento por bloque en `Variables_Dinamicas.Fiesta_Evento_Ocurrido`.
 
 ---
 
@@ -174,7 +190,7 @@ Jerarquía de clases (en `Scripts/Logica/Escena_Principal/Actividades/Herencia/`
 1. `Necesidades_Basicas_GUI`: llama `Inicializar(raiz)` cada frame — debería hacerse una sola vez.
 2. `Guardar_Variables_Dinamicas.save_game()`: convierte ~827K celdas a strings cada minuto — muy lento en móvil.
 3. `Funciones_Globales.Guardar_Matriz()`: escribe disco cada minuto — solo debug, desactivar en producción.
-4. `Trabajo.gd`: `Trabajar_De_Carpintero()` y `Trabajar_De_Cientifico()` referencian entradas del catálogo inexistentes — error de clave si se llaman.
+4. ~~`Trabajo.gd`: `Trabajar_De_Carpintero()` y `Trabajar_De_Cientifico()` referencian entradas del catálogo inexistentes~~ — desactualizado: ambas entradas existen en `Variables_Estaticas.gd` y el requisito de carrera se comprueba correctamente en `Script_Principal._Cumple_Requisitos_Trabajo()`.
 5. `ActividadesBloqueGUI.gd` y `Consultar_Y_Eliminar_Actividades.gd`: lógica de renderizado duplicada.
 6. `Guardar_Variables_Estaticas.gd`: typo `"First_TIme_Minute_Minute"` (I mayúscula) — consistente entre save/load, no rompe nada pero confunde.
 
@@ -196,4 +212,11 @@ Documentación detallada en `Funcionalidades/<ruta>/Documentacion/`.
 | Carreras | `Carreras` | Sistema de carreras universitarias |
 | Muerte | `Muerte` | Condiciones de muerte del personaje |
 | Jerarquia_Actividades | `Actividades/Jerarquia` | Prioridades P1/P2/P3 (Normal/Trabajo/Examen) |
+| Salir_De_Fiesta | `Actividades/Actividades_Temporales` | Fiesta 18:00–06:00 (2–12 h), ligar/resacón por minuto y estados Euforia/Resacón de 24 h |
 | Eventos_Aleatorios | `Actividades/Eventos_Aleatorios` | Despido por higiene (cooldown 5 días) + 20 eventos generales con franja horaria |
+
+---
+
+## Mantenimiento del Mega Prompt de Contexto
+
+Al implementar o documentar una nueva funcionalidad, actualizar también `Prompts/MEGA_PROMPT_CONTEXTO.md` y su copia en `notebookLM/00_CONTEXTO_MAESTRO_Y_ROL.md` (nuevos autoloads, variables de `Variables_Dinamicas` / `Variables_Estaticas`, actividades, sistemas implementados y estado en el roadmap), así como la fuente correspondiente en `notebookLM/`, para que NotebookLM y los chats externos dispongan siempre del contexto al 100 %.

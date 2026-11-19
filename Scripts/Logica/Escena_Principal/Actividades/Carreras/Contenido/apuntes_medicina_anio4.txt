@@ -1,0 +1,44 @@
+MEDICINA - AÑO 4: FARMACOLOGÍA
+
+1. FARMACOCINÉTICA
+La farmacocinética estudia qué le hace el cuerpo al fármaco, es decir, su recorrido desde que se administra hasta que se elimina. Comprende cuatro fases (LADME sin la liberación, o ADME):
+- Absorción: paso del fármaco desde el punto de administración a la sangre.
+- Distribución: reparto del fármaco por los distintos tejidos y órganos del cuerpo.
+- Metabolismo: transformación química del fármaco, principalmente en el hígado, para facilitar su eliminación.
+- Excreción: eliminación del fármaco o sus metabolitos del organismo, sobre todo por vía renal (orina).
+
+2. FARMACODINAMIA
+La farmacodinamia estudia qué le hace el fármaco al cuerpo, es decir, su mecanismo de acción. La mayoría de fármacos actúan uniéndose a receptores específicos en las células:
+- Agonista: se une al receptor y produce una respuesta similar a la sustancia natural.
+- Antagonista: se une al receptor pero bloquea o impide la respuesta.
+
+La afinidad es la capacidad de un fármaco de unirse a su receptor, y la eficacia es la capacidad de producir una respuesta una vez unido.
+
+3. VÍAS DE ADMINISTRACIÓN
+Existen distintas vías para administrar un fármaco, cada una con ventajas e inconvenientes:
+- Vía oral: cómoda y habitual, pero de absorción más lenta y variable.
+- Vía intravenosa: efecto inmediato, ya que el fármaco entra directamente al torrente sanguíneo.
+- Vía intramuscular y subcutánea: absorción más lenta que la intravenosa pero más rápida que la oral.
+- Vía tópica: aplicación local sobre piel o mucosas, con efecto principalmente local.
+
+La elección de la vía depende de la urgencia del tratamiento, las propiedades del fármaco y el estado del paciente.
+
+4. INTERACCIONES FARMACOLÓGICAS
+Una interacción farmacológica ocurre cuando el efecto de un fármaco se modifica por la presencia de otro fármaco, alimento o sustancia. Pueden producir:
+- Sinergia: el efecto combinado es mayor que la suma de los efectos individuales.
+- Antagonismo: un fármaco reduce o anula el efecto de otro.
+
+Las interacciones son especialmente relevantes en pacientes polimedicados, donde el riesgo de efectos no deseados aumenta considerablemente.
+
+5. EFECTOS ADVERSOS Y MARGEN TERAPÉUTICO
+Todo fármaco puede producir efectos adversos, es decir, reacciones no deseadas además de su efecto terapéutico buscado.
+
+El margen terapéutico (o índice terapéutico) es la diferencia entre la dosis eficaz y la dosis tóxica de un fármaco:
+- Margen terapéutico amplio: hay mucha diferencia entre dosis eficaz y tóxica, mayor seguridad.
+- Margen terapéutico estrecho: la dosis tóxica está muy cerca de la eficaz, requiere monitorización cuidadosa (por ejemplo, algunos anticoagulantes).
+
+6. CONSEJOS DE EXAMEN
+- No confundas farmacocinética (qué le hace el cuerpo al fármaco) con farmacodinamia (qué le hace el fármaco al cuerpo).
+- Recuerda el orden ADME: absorción, distribución, metabolismo, excreción.
+- Un fármaco con margen terapéutico estrecho requiere más vigilancia, no menos.
+- Diferencia bien entre agonista y antagonista según si activan o bloquean el receptor.

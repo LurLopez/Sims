@@ -1,11 +1,11 @@
 extends Node
 
-const COLOR_PASADO    = Color(0.22, 0.45, 0.75, 1)
-const COLOR_LIBRE     = Color(0.08, 0.65, 0.42, 1)
-const COLOR_OCUPADO   = Color(0.75, 0.18, 0.2,  1)
-const COLOR_PASADO_P  = Color(0.1,  0.22, 0.45, 1)
-const COLOR_LIBRE_P   = Color(0.04, 0.38, 0.24, 1)
-const COLOR_OCUPADO_P = Color(0.42, 0.08, 0.1,  1)
+const COLOR_PASADO    = Color("#f1f5f9")
+const COLOR_LIBRE     = Color("#ecfdf5")
+const COLOR_OCUPADO   = Color("#dbeafe")
+const COLOR_PASADO_P  = Color("#cbd5e1")
+const COLOR_LIBRE_P   = Color("#86efac")
+const COLOR_OCUPADO_P = Color("#93c5fd")
 
 var bloque_columna
 
@@ -35,7 +35,7 @@ func Añadir_Horas_Al_Horario():
 		var hora_final = total_minutos_final / 60
 		var minuto_final = total_minutos_final % 60
 
-		var texto = "%02d:%02d - %02d:%02d" % [hora_inicio, minuto_inicio, hora_final, minuto_final]
+		var texto = "%02d:%02d" % [hora_inicio, minuto_inicio]
 
 		var boton = Button.new()
 		boton.mouse_filter=Control.MOUSE_FILTER_PASS
@@ -44,98 +44,117 @@ func Añadir_Horas_Al_Horario():
 		
 		
 		var estilo = StyleBoxFlat.new()
-		estilo.bg_color = Color(0.42, 0.48, 0.56, 1)
+		estilo.bg_color = Color("#f8f9fb")
 		estilo.corner_radius_top_left = 0
 		estilo.corner_radius_top_right = 0
 		estilo.corner_radius_bottom_left = 0
 		estilo.corner_radius_bottom_right = 0
 		estilo.border_width_left = 0
 		estilo.border_width_right = 1
-		estilo.border_width_bottom = 1
+		estilo.border_width_bottom = 2
 		estilo.border_width_top = 0
-		estilo.border_color = Color(0.28, 0.33, 0.4, 1)
+		estilo.border_color = Color("#e2e6ed")
+		estilo.content_margin_right = 8
 		boton.add_theme_stylebox_override("normal", estilo)
 		boton.add_theme_stylebox_override("hover", estilo)
-		boton.add_theme_color_override("font_color", Color(0.95, 0.97, 1, 1))
-		boton.add_theme_font_size_override("font_size", 15)
-		boton.custom_minimum_size=Vector2(0,60)
+		boton.add_theme_font_override("font", Estilos_UI.fuente_ui(500))
+		boton.add_theme_color_override("font_color", Color("#6b7280"))
+		boton.add_theme_font_size_override("font_size", 11)
+		boton.alignment = HORIZONTAL_ALIGNMENT_RIGHT
+		boton.custom_minimum_size=Vector2(70,30)
 		bloque_columna.horario_columna.add_child(boton)
-func Agregar_Bloques(mirar_semana,raiz):
-	matriz_bloques=Funciones_Globales.Devolver_Bloque_Matriz_Semana_(mirar_semana)
-	excepcion=true
+func Agregar_Bloques(mirar_semana, raiz):
+	matriz_bloques = Funciones_Globales.Devolver_Bloque_Matriz_Semana_(mirar_semana)
+	var hoy = fecha.new()
+	hoy.Inicializar(Variables_Dinamicas.Minute_Day, Variables_Dinamicas.Minute_Minute)
 
-	
-	raiz=raiz
-	
-	for i in range (7):
-		
-		libre=matriz_bloques[0][i]
-		ultimo_diferente=false
-		var j=0
-		
-		while(j!=288):
-				
-				if(excepcion==true):
-					
-					AgregarBloquesPasados(i,j,mirar_semana)
-					if((excepcion==false and tamaño_bloque>0)or j==287):
-						CrearNuevosBotones(i,j,raiz,true)
-					elif(libre!=matriz_bloques[j][i]):
-						CrearNuevosBotones(i,j,raiz,true)
-						libre=matriz_bloques[j][i]
-						
-					
-						
-					else: tamaño_bloque+=1
-				else:
-					if(libre==null):
-						libre=matriz_bloques[j][i]
-					if(libre==matriz_bloques[j][i] and j!=287):
-						tamaño_bloque+=1
-					else:
-						CrearNuevosBotones(i,j,raiz,false)
-				j+=1
+	for i in range(7):
+		var j := 0
+		while j < 288:
+			var act_actual = matriz_bloques[j][i]
+			var es_pasado := _Es_Bloque_Pasado(hoy, mirar_semana, i, j)
+			var inicio := j
+			j += 1
+			while j < 288:
+				var sig_pasado := _Es_Bloque_Pasado(hoy, mirar_semana, i, j)
+				if sig_pasado != es_pasado or not _Misma_Actividad(matriz_bloques[j][i], act_actual):
+					break
+				j += 1
+			_Crear_Boton_Bloque(i, j - inicio, act_actual, raiz, es_pasado)
 
 
-func CrearNuevosBotones(i,j,raiz,crear_boton_del_pasado):
+func _Es_Bloque_Pasado(hoy: fecha, mirar_semana: int, dia_idx: int, slot_j: int) -> bool:
+	var mirar = fecha.new()
+	mirar.Inicializar(mirar_semana * 7 + dia_idx, (slot_j + 1) * 5)
+	return hoy.Comparar_Dos_Fechas(mirar)
+
+
+func _Misma_Actividad(a, b) -> bool:
+	return typeof(a) == typeof(b) and a == b
+
+
+func _Crear_Boton_Bloque(i: int, cantidad_slots: int, act_actual, raiz, crear_boton_del_pasado: bool):
 					var boton=Button.new()
 					boton.mouse_filter=Control.MOUSE_FILTER_PASS
 					boton.focus_mode=Control.FOCUS_NONE
-					boton.connect("button_up", Callable(self, "desactivar_todos_los_botones").bind(boton,raiz))  # clásico
 					boton.connect("pressed", Callable(self, "click_bloque").bind(boton,raiz))  # clásico
 					var estilo = StyleBoxFlat.new()
-					estilo.set_border_width_all(1)
-					estilo.border_color = Color(0.1, 0.1, 0.1)
+					estilo.set_border_width_all(0)
+					estilo.border_width_bottom = 1
+					estilo.border_width_left = 1
+					estilo.border_color = Color("#e2e6ed")
+					estilo.set_corner_radius_all(4)
+					estilo.content_margin_left = 4
+					estilo.content_margin_right = 4
+					estilo.content_margin_top = 0
+					estilo.content_margin_bottom = 0
 					
 					var estilo_pulsado= StyleBoxFlat.new()
-					estilo_pulsado.set_border_width_all(0)
-					estilo_pulsado.border_color = Color(0, 0, 0, 0)
+					estilo_pulsado.set_border_width_all(2)
+					estilo_pulsado.border_color = Estilos_UI.PRIMARIO
+					estilo_pulsado.set_corner_radius_all(4)
+					estilo_pulsado.content_margin_top = 0
+					estilo_pulsado.content_margin_bottom = 0
 					
+					var nombre_bloque: String = str(act_actual) if act_actual is String else str(act_actual.nombre)
 					if(crear_boton_del_pasado):
 						estilo.bg_color = COLOR_PASADO
 						estilo_pulsado.bg_color = COLOR_PASADO_P
+						estilo_pulsado.border_color = Color("#64748b")
 						boton.set_meta("estado", "pasado")
-					elif(libre==""):
+					elif(act_actual is String and act_actual == ""):
 						estilo.bg_color = COLOR_LIBRE
 						estilo_pulsado.bg_color = COLOR_LIBRE_P
+						estilo_pulsado.border_color = Color("#16a34a")
 						boton.set_meta("estado", "libre")
 					else:
-						estilo.bg_color = COLOR_OCUPADO
-						estilo_pulsado.bg_color = COLOR_OCUPADO_P
+						var act_cat = Variables_Estaticas.Catalogo_Actividades.get(nombre_bloque, null)
+						if act_cat != null and act_cat is Actividad:
+							var c_base: Color = act_cat.color.lerp(Color.WHITE, 0.78)
+							estilo.bg_color = c_base
+							estilo.border_width_left = 3
+							estilo.border_color = act_cat.color.lerp(Color.WHITE, 0.20)
+							estilo_pulsado.bg_color = act_cat.color.lerp(Color.WHITE, 0.35)
+							estilo_pulsado.border_color = act_cat.color
+						else:
+							estilo.bg_color = COLOR_OCUPADO
+							estilo.border_width_left = 3
+							estilo.border_color = Color("#3b82f6")
+							estilo_pulsado.bg_color = COLOR_OCUPADO_P
+							estilo_pulsado.border_color = Color("#2563eb")
 						boton.set_meta("estado", "ocupado")
 					boton.add_theme_stylebox_override("normal",estilo)
 					boton.add_theme_stylebox_override("pressed", estilo_pulsado)
 					
-					boton.set_meta("actividad", libre)   #crear un "atributo" llamado "actividad" al boton, y darle el valor de libre
-					
+					boton.set_meta("actividad", act_actual)   #crear un "atributo" llamado "actividad" al boton, y darle el valor de act_actual
 					
 					boton.add_theme_stylebox_override("hover", estilo)
 					boton.add_theme_stylebox_override("hover_pressed", estilo_pulsado)
 					boton.toggle_mode = true
 
-					if not (libre is String) and boton.get_meta("estado") == "ocupado" and libre.icono != null:
+					if not (act_actual is String) and boton.get_meta("estado") == "ocupado" and act_actual.icono != null:
 						var tex_rect = TextureRect.new()
-						tex_rect.texture = libre.icono
+						tex_rect.texture = act_actual.icono
 						tex_rect.stretch_mode = TextureRect.STRETCH_TILE
 						tex_rect.anchor_left = 0.0
 						tex_rect.anchor_top = 0.0
@@ -149,18 +168,23 @@ func CrearNuevosBotones(i,j,raiz,crear_boton_del_pasado):
 						boton.clip_contents = true
 						boton.add_child(tex_rect)
 
-					if(libre!=matriz_bloques[j][i] and crear_boton_del_pasado==false):
-						boton.custom_minimum_size=Vector2(0,10*(tamaño_bloque))
-						libre=matriz_bloques[j][i]
-						tamaño_bloque=1
-						if(ultimo_diferente==false and j==287):
-							ultimo_diferente=true
-							tamaño_bloque=0
-							CrearNuevosBotones(i,j,raiz,crear_boton_del_pasado)
-							
-					else:
-						boton.custom_minimum_size=Vector2(0,10*(1+tamaño_bloque)) 
-						tamaño_bloque=0
+					boton.custom_minimum_size = Vector2(0, cantidad_slots * 5.0)
+
+					if not crear_boton_del_pasado and nombre_bloque != "" and nombre_bloque != "Actividad_Aleatoria" and boton.custom_minimum_size.y >= 24.0:
+						var lbl_b := Label.new()
+						lbl_b.text = _Formatear_Nombre_Actividad(nombre_bloque)
+						lbl_b.add_theme_font_override("font", Estilos_UI.fuente_ui(600))
+						lbl_b.add_theme_font_size_override("font_size", 10)
+						lbl_b.add_theme_color_override("font_color", Estilos_UI.TINTA)
+						lbl_b.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+						lbl_b.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+						lbl_b.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+						lbl_b.set_anchors_preset(Control.PRESET_FULL_RECT)
+						lbl_b.offset_left = 3
+						lbl_b.offset_right = -3
+						lbl_b.mouse_filter = Control.MOUSE_FILTER_IGNORE
+						boton.clip_contents = true
+						boton.add_child(lbl_b)
 					
 					
 					match i:
@@ -190,6 +214,16 @@ func AgregarBloquesPasados(i,j,mirar_semana):
 	
 	
 
+func _Formatear_Nombre_Actividad(nombre: String) -> String:
+	if nombre == "":
+		return "Tiempo libre"
+	if nombre == "Actividad_Aleatoria":
+		return "Actividad aleatoria"
+	if nombre == "Examen_Carrera":
+		return "Examen"
+	return nombre.replace("Trabajar_En_", "").replace("Trabajar_De_", "").replace("_", " ")
+
+
 func click_bloque(boton,raiz):
 	bloque_columna.desactivar_todos_los_botones()
 	
@@ -200,10 +234,15 @@ func click_bloque(boton,raiz):
 	comprobar_izquierda(boton,raiz)
 	comprobar_derecha(boton,raiz)
 	var act_meta = boton.get_meta("actividad")
-	if act_meta is String:
-		raiz.get_node("Actividades/Horario_Semanal/OPCIONES_CALENDARIO/Actividad_Texto").text = act_meta
+	var estado = boton.get_meta("estado", "")
+	var texto_sel := ""
+	if estado == "pasado":
+		texto_sel = "Bloque pasado"
+	elif act_meta is String:
+		texto_sel = _Formatear_Nombre_Actividad(act_meta)
 	else:
-		raiz.get_node("Actividades/Horario_Semanal/OPCIONES_CALENDARIO/Actividad_Texto").text = act_meta.nombre
+		texto_sel = _Formatear_Nombre_Actividad(str(act_meta.nombre))
+	raiz.get_node("Actividades/Horario_Semanal/OPCIONES_CALENDARIO/Actividad_Texto").text = texto_sel
 func comprobar_izquierda(boton,raiz):
 	var comprobar_izq=true
 	var ver_dia=primer_dia_comprobar(boton,raiz)
@@ -225,7 +264,7 @@ func fusinar_botones(boton1,boton2):
 	var act2 = boton2.get_meta("actividad", null)
 	var est1 = boton1.get_meta("estado", "")
 	var est2 = boton2.get_meta("estado", "")
-	if act1 == act2 and est1 == est2:
+	if typeof(act1) == typeof(act2) and act1 == act2 and est1 == est2:
 		boton2.set_pressed(true)
 		boton2.set_toggle_mode(true)
 		return true
@@ -296,13 +335,22 @@ func devolver_boton_eliminar_actividad(raiz):
 ## on_ocupar_actividad_pressed
 func devolver_hora_desde_posiciones():
 	var dia_inicio_string=Funciones_Globales.Devolver_Dia(dia_inicio)
-	var dia_final_string=Funciones_Globales.Devolver_Dia(dia_final)
-	var cincominuto_inicio=int(posicion_minuto_inicio/10)
+	var cincominuto_inicio=roundi(posicion_minuto_inicio/5.0)
 	var hora_inicio=int(cincominuto_inicio/12)
 	var minuto_inicio=int(cincominuto_inicio%12)*5
-	var cincominuto_final=int(posicion_minuto_final/10)
+	var cincominuto_final=roundi(posicion_minuto_final/5.0)
+	var dia_final_res: int = dia_final
 	var hora_final=int(cincominuto_final/12)
 	var minuto_final=int(cincominuto_final%12)*5
+	if cincominuto_final >= 288:
+		if dia_final_res < 6:
+			dia_final_res += 1
+			hora_final = 0
+			minuto_final = 0
+		else:
+			hora_final = 24
+			minuto_final = 0
+	var dia_final_string=Funciones_Globales.Devolver_Dia(dia_final_res)
 	
 	var horariobloque=HorarioDesdeBloque.new()
 	horariobloque.Inicializar(dia_inicio_string,hora_inicio,minuto_inicio,dia_final_string,hora_final,minuto_final)

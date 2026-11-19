@@ -1,0 +1,47 @@
+BELLAS ARTES - AÑO 1: COLOR Y DIBUJO
+
+1. EL CÍRCULO CROMÁTICO
+El círculo cromático organiza los colores según su relación entre sí. Se construye a partir de tres grupos:
+- Colores primarios: rojo, amarillo y azul. No se pueden obtener mezclando otros colores.
+- Colores secundarios: se obtienen mezclando dos primarios a partes iguales. Rojo + amarillo = naranja. Amarillo + azul = verde. Azul + rojo = violeta.
+- Colores terciarios: mezcla de un primario con un secundario adyacente, como el rojo-anaranjado o el azul-verdoso.
+
+Los colores complementarios son aquellos que se sitúan enfrentados en el círculo cromático (por ejemplo rojo y verde, o azul y naranja). Al colocarlos juntos generan el máximo contraste visual, y al mezclarlos en pintura tienden a neutralizarse y producir grises o marrones.
+
+2. PROPIEDADES DEL COLOR
+Todo color se puede describir mediante tres propiedades:
+- Tono (o matiz): es el nombre del color en sí, lo que lo distingue en el círculo cromático (rojo, azul, verde...).
+- Saturación: es la pureza o intensidad del color. Un color muy saturado es vivo e intenso; al perder saturación se vuelve grisáceo o apagado.
+- Valor (o luminosidad): es el grado de claridad u oscuridad de un color, independientemente de su tono. Se controla añadiendo blanco (tinte) o negro (sombra).
+
+Comprender estas tres propiedades por separado permite modificar un color de forma controlada sin perder su identidad.
+
+3. FUNDAMENTOS DEL DIBUJO
+El dibujo se apoya en varios elementos básicos:
+- Línea: el trazo más simple, usado para definir contornos y direcciones.
+- Proporción: la relación de tamaño entre las distintas partes de un objeto o figura. Un error de proporción es uno de los fallos más comunes en dibujo observacional.
+- Encaje: técnica inicial que consiste en representar el objeto mediante formas geométricas simples (círculos, cuadrados, cilindros) antes de añadir el detalle, para asegurar proporciones y estructura correctas desde el principio.
+
+Dibujar por encaje ayuda a evitar que el dibujo se "descuadre" al ir añadiendo detalles progresivamente.
+
+4. PERSPECTIVA
+La perspectiva es el conjunto de técnicas que permiten representar la sensación de profundidad y volumen en una superficie plana.
+- Punto de fuga: punto imaginario en la línea del horizonte donde convergen las líneas paralelas que se alejan del espectador.
+- Perspectiva cónica de 1 punto: las líneas convergen en un único punto de fuga. Se usa cuando el objeto se observa de frente (por ejemplo, un pasillo).
+- Perspectiva cónica de 2 puntos: existen dos puntos de fuga, situados en extremos opuestos del horizonte. Es habitual al dibujar esquinas de edificios vistas en ángulo.
+- Perspectiva cónica de 3 puntos: añade un tercer punto de fuga (arriba o abajo), usado para representar vistas muy elevadas o muy bajas, acentuando la sensación de altura o vértigo.
+
+5. LUZ Y SOMBRA
+El claroscuro es la técnica que representa el volumen de los objetos mediante el contraste entre zonas iluminadas y zonas en sombra.
+- Luz directa: la zona del objeto que recibe la luz de forma más intensa.
+- Sombra propia: la parte del propio objeto que no recibe luz directa.
+- Sombra proyectada: la sombra que el objeto arroja sobre otras superficies.
+- Reflejo: pequeña zona de luz que rebota desde el entorno hacia la sombra propia, dando sensación de volumen.
+
+Un buen manejo del claroscuro es lo que hace que un dibujo plano parezca tridimensional.
+
+6. CONSEJOS DE EXAMEN
+- Practica identificar tono, saturación y valor por separado en distintas imágenes de referencia.
+- Antes de dibujar detalles, encaja siempre la figura completa con formas geométricas simples.
+- Memoriza cuántos puntos de fuga corresponden a cada tipo de perspectiva cónica.
+- Repasa los cuatro elementos del claroscuro (luz directa, sombra propia, sombra proyectada y reflejo) con ejemplos visuales.

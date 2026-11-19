@@ -79,7 +79,7 @@ func Procesar_Fin_De_Semana(carrera: Carrera) -> Dictionary:
 		if carrera.año_actual > carrera.años_totales:
 			carrera.completada = true
 			resultado["carrera_completada"] = true
-			Variables_Dinamicas.Dinero += BONUS_DINERO_CARRERA_COMPLETADA
+			Variables_Dinamicas.Dinero += Variables_Estaticas.Obtener_Bonus_Carrera(BONUS_DINERO_CARRERA_COMPLETADA)
 		else:
 			var libro_siguiente = "Anio_%d" % carrera.año_actual
 			if not carrera.libros_desbloqueados.has(libro_siguiente):
@@ -94,15 +94,16 @@ func Procesar_Fin_De_Semana(carrera: Carrera) -> Dictionary:
 func Puede_Matricularse(carrera_nombre: String) -> bool:
 	if Variables_Dinamicas.Carrera_Actual != null:
 		return false
-	return Variables_Dinamicas.Dinero >= 500.0
+	return Variables_Dinamicas.Dinero >= 500.0 * Variables_Estaticas.Multiplicador_Precios()
 
 func Matricular(carrera: Carrera) -> bool:
 	if Variables_Dinamicas.Carrera_Actual != null:
 		return false
-	if Variables_Dinamicas.Dinero < carrera.costo_matricula_anual:
+	var costo = Variables_Estaticas.Obtener_Costo_Matricula(carrera)
+	if Variables_Dinamicas.Dinero < costo:
 		return false
-	Variables_Dinamicas.Dinero -= carrera.costo_matricula_anual
-	carrera.dinero_matricula_gastado += carrera.costo_matricula_anual
+	Variables_Dinamicas.Dinero -= costo
+	carrera.dinero_matricula_gastado += costo
 	Variables_Dinamicas.Carrera_Actual = carrera
 	return true
 

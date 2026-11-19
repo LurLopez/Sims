@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Salir de Fiesta — Euforia y Resacón</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; line-height: 1.6; max-width: 980px; margin: 0 auto; padding: 20px; background: #f5f5f5; color: #333; }
+        .container { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { color: #2c3e50; border-bottom: 3px solid #d92673; padding-bottom: 10px; }
+        h2 { color: #34495e; margin-top: 30px; padding-top: 15px; border-top: 1px solid #ecf0f1; }
+        h3 { color: #7f8c8d; }
+        .section { margin: 20px 0; padding: 15px; background: #ecf0f1; border-left: 4px solid #2980b9; border-radius: 4px; }
+        .critical { background: #fadbd8; border-left-color: #e74c3c; color: #c0392b; font-weight: bold; }
+        .info { background: #fce7f3; border-left-color: #d92673; }
+        .success { background: #d5f4e6; border-left-color: #27ae60; }
+        .warning { background: #fef9e7; border-left-color: #f39c12; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; background: white; border-radius: 4px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        th { background: #d92673; color: white; padding: 12px; text-align: left; }
+        td { padding: 10px 12px; border-bottom: 1px solid #ecf0f1; }
+        tr:last-child td { border-bottom: none; }
+        code { background: #f8f9fa; padding: 2px 6px; border-radius: 3px; font-family: monospace; font-size: 0.9em; }
+        pre { background: #2c3e50; color: #ecf0f1; padding: 15px; border-radius: 6px; overflow-x: auto; }
+        pre code { background: none; color: inherit; padding: 0; }
+        .checklist { list-style: none; padding-left: 0; }
+        .checklist li { margin: 8px 0; }
+        .checklist li::before { content: "✅ "; }
+        .badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-weight: bold; font-size: 0.85em; color: white; margin-right: 6px; background: #d92673; }
+        .flow { display: flex; gap: 10px; flex-wrap: wrap; margin: 16px 0; }
+        .step { flex: 1; min-width: 180px; background: #fce7f3; border: 1px solid #f9a8d4; border-radius: 8px; padding: 14px; }
+        .step b { color: #d92673; }
+        .pill { display: inline-block; padding: 4px 10px; border-radius: 999px; background: #dcfce7; color: #157936; font-weight: bold; }
+        .pill.bad { background: #fee2e2; color: #a81c1c; }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <h1>Salir de Fiesta — Euforia y Resacón</h1>
+
+    <div class="section info">
+        Actividad temporal <span class="badge">P1</span> de alto riesgo y alta recompensa.
+        Se programa entre las <strong>18:00 y las 06:00</strong>, dura entre <strong>2 y 12 horas</strong>
+        y cada minuto calcula dos probabilidades independientes: <strong>ligar</strong> y <strong>resacón</strong>.
+        El primer evento que sale se resuelve una sola vez por bloque.
+    </div>
+
+    <h2>1. Catálogo y jerarquía</h2>
+    <table>
+        <tr><th>Campo</th><th>Valor</th></tr>
+        <tr><td>Clave</td><td><code>Salir_De_Fiesta</code></td></tr>
+        <tr><td>Clase</td><td><code>Actividad_Temporal</code></td></tr>
+        <tr><td>Prioridad</td><td><span class="badge">P1</span></td></tr>
+        <tr><td>Color</td><td><code>Color(0.85, 0.15, 0.45)</code></td></tr>
+        <tr><td>Efectos necesidades</td><td><code>[0, 9, -3, -4, -2]</code></td></tr>
+        <tr><td>Efectos progreso</td><td><code>[0, 0, 0]</code></td></tr>
+        <tr><td>Pool aleatorio</td><td>No. Solo se ejecuta si el jugador la programa.</td></tr>
+    </table>
+    <p>No puede pisar trabajo (P2) ni examen (P3): <code>Crear_Actividad_Especifica</code> bloquea toda la operación si alguna celda tiene prioridad mayor que 1.</p>
+
+    <h2>2. Ventana horaria</h2>
+    <p><code>Actividades.Validar_Horario_Fiesta(...)</code> es una función pura:</p>
+    <pre><code>{ "valido": true, "duracion_min": 720, "motivo": "" }
+{ "valido": false, "duracion_min": 0, "motivo": "..." }</code></pre>
+    <ul>
+        <li>Inicio permitido: <strong>18:00–04:00</strong> inclusive.</li>
+        <li>Fin permitido: <strong>20:00–06:00</strong> inclusive. Las 24:00 se tratan como 00:00 del día siguiente.</li>
+        <li>18:00–19:59 se rechaza por <strong>duración mínima</strong> (AC-04), no por el fin.</li>
+        <li>Cruce de medianoche: se deduce de las horas (<code>inicio &gt;= 18:00</code> y <code>fin &lt;= 06:00</code>).</li>
+        <li>Duración mínima <strong>120 min</strong>; máxima <strong>720 min</strong>.</li>
+        <li>En un cruce se acepta el mismo día (se normaliza al siguiente) o el día siguiente, incluido domingo(6) → lunes(0).</li>
+        <li>Con <code>semana</code> informada, el día final absoluto no puede superar <strong>573</strong>.</li>
+    </ul>
+    <table>
+        <tr><th>Caso</th><th>Motivo</th></tr>
+        <tr><td>Inicio fuera de 18:00–04:00</td><td><code>La fiesta debe empezar entre las 18:00 y las 04:00</code></td></tr>
+        <tr><td>Fin fuera de 20:00–06:00</td><td><code>La fiesta debe terminar como máximo a las 06:00</code></td></tr>
+        <tr><td>Menos de 2 h</td><td><code>La fiesta debe durar al menos 2 horas</code></td></tr>
+        <tr><td>Más de 12 h</td><td><code>La fiesta no puede durar más de 12 horas</code></td></tr>
+        <tr><td>Fin no posterior / días incoherentes</td><td><code>El horario de fin debe ser posterior al de inicio</code></td></tr>
+        <tr><td>Se sale de la matriz</td><td><code>El bloque se sale del calendario</code></td></tr>
+    </table>
+    <div class="section warning">
+        El selector trabaja con días 0–6. Para un cruce, <code>SeleccionarHorarioReloj</code> pasa a
+        <code>_Calcular_Rango</code> el día <code>dia_inicio + 1</code> (puede ser 7 = lunes siguiente).
+        No se modificó <code>_Calcular_Rango</code> para el resto de actividades.
+    </div>
+
+    <h2>3. Fórmulas</h2>
+
+    <h3>3.1. Ligar</h3>
+    <pre><code>mod_edad = clamp(10.0 - (edad - 20) * 0.625, -25.0, 12.0)
+
+puntaje_ligar = clamp(
+    50
+    + 0.30 * (NB[1] - 50)        # Salud Mental
+    + 0.25 * (NB[4] - 50)        # Higiene
+    + 0.20 * (Progreso[0] - 50)  # Deporte
+    + 0.15 * (Progreso[1] - 50)  # Académico
+    + 0.10 * (NB[3] - 50)        # Descanso
+    + mod_personalidad
+    + mod_edad,
+    0, 100
+)
+
+prob_ligar_min = (0.00001 + 0.00099 * puntaje_ligar / 100) * mult_dia</code></pre>
+    <p>Personalidad: <code>Deportista +10</code>, <code>Culo_Del_Sofa −10</code>, <code>Trabajador_Compulsivo −5</code>, resto <code>0</code>.</p>
+    <table>
+        <tr><th>Día de la noche</th><th>Multiplicador</th></tr>
+        <tr><td>Lunes–Miércoles (0–2)</td><td>0.70</td></tr>
+        <tr><td>Jueves (3)</td><td>1.00</td></tr>
+        <tr><td>Viernes (4)</td><td>1.25</td></tr>
+        <tr><td>Sábado (5)</td><td>1.45</td></tr>
+        <tr><td>Domingo (6)</td><td>0.80</td></tr>
+    </table>
+    <p>La noche pertenece al día en que empezó. <strong>El límite son las 06:00 inclusive</strong>: un domingo a las 06:00 todavía cuenta como noche del sábado.</p>
+
+    <h3>3.2. Resacón</h3>
+    <pre><code>aguante_resacon = clamp(
+    50
+    + 0.40 * (NB[2] - 50)        # Hambre
+    + 0.30 * (NB[3] - 50)        # Descanso
+    + 0.20 * (NB[0] - 50)        # Salud Física
+    + 0.10 * (Progreso[0] - 50)  # Deporte
+    + mod_edad,
+    0, 100
+)
+
+riesgo_resacon = (100 - aguante_resacon) / 100
+prob_resacon_min = 0.00001 + 0.00099 * riesgo_resacon</code></pre>
+    <p>El día de la semana y la personalidad <strong>no</strong> afectan al resacón.</p>
+
+    <h3>3.3. Tirada por minuto</h3>
+    <pre><code>if randf() &lt; prob_ligar_min:
+    activar Euforia
+elif randf() &lt; prob_resacon_min:
+    activar Resacon</code></pre>
+    <p>Máximo un evento por bloque. <code>Fiesta_Evento_Ocurrido</code> se resetea en el primer minuto de un bloque nuevo; dos bloques adyacentes cuentan como uno solo.</p>
+
+    <h2>4. Vista previa</h2>
+    <p><code>Actividades.Simular_Preview_Fiesta(...)</code> proyecta las necesidades minuto a minuto:</p>
+    <pre><code>delta = signo(efecto) * min(1, abs(efecto) / frecuencia)
+nb = clamp(nb + delta, 1, 100)</code></pre>
+    <p>Frecuencias: física/mental 30, hambre 12, descanso 15, higiene 20.</p>
+    <pre><code>p_ligar += supervivencia * pl
+p_resacon += supervivencia * pr * (1 - pl)
+supervivencia *= (1 - pl) * (1 - pr)
+p_nada = supervivencia</code></pre>
+    <p>Siempre se cumple <code>p_ligar + p_resacon + p_nada = 1</code>.</p>
+    <div class="section success">
+        <strong>Panel en Seleccionar_Horario</strong><br>
+        Rect <code>(16, 174)</code> · <code>688×584</code>. Termina en y=758, antes de los relojes (y=772).
+        Sustituye al mini calendario solo en modo Fiesta y se actualiza al cambiar día/hora/minuto.
+    </div>
+
+    <h2>5. Flujo de dos pasos</h2>
+    <div class="flow">
+        <div class="step"><b>1.</b> Calendario → Ocupar → ajustar horas → Crear Actividad → lista de actividades.</div>
+        <div class="step"><b>2.</b> Pulsar <b>Salir de fiesta</b> → se reabre el selector con el panel de preview.</div>
+        <div class="step"><b>3.</b> <b>Crear Actividad</b> valida con <code>Validar_Horario_Fiesta</code> y escribe en la matriz.</div>
+    </div>
+    <p>El resto de actividades conserva su flujo actual.</p>
+
+    <h2>6. Estados temporales</h2>
+
+    <h3>Euforia</h3>
+    <ul>
+        <li>Duración: 1440 min.</li>
+        <li>Primeras 8 h (480 min): suelo de Salud Mental = <strong>100</strong>.</li>
+        <li>Últimas 16 h (960 min): baja linealmente de 100 a 50.</li>
+        <li>Al activarse: Salud Mental sube a 100 (o 20 en calle/bancarrota).</li>
+        <li>Sustituye a <code>Resacon</code>.</li>
+    </ul>
+
+    <h3>Resacón</h3>
+    <ul>
+        <li>Duración: 1440 min.</li>
+        <li>Primeras 8 h: techo de Salud Física y Mental = <strong>30</strong>.</li>
+        <li>Últimas 16 h: sube linealmente de 30 a 100.</li>
+        <li>Al activarse: Salud Física y Mental se recortan a 30 (o 20 en calle/bancarrota).</li>
+        <li>Sustituye a <code>Euforia</code>.</li>
+        <li>Mientras está activo, ninguna actividad puede subir física o mental por encima del techo.</li>
+    </ul>
+
+    <table>
+        <tr><th>Minutos restantes</th><th>Tiempo restante</th><th>Techo Resacón</th><th>Suelo Euforia</th></tr>
+        <tr><td>1440–960</td><td>24–16 h</td><td>30</td><td>100</td></tr>
+        <tr><td>720</td><td>12 h</td><td>47</td><td>87</td></tr>
+        <tr><td>480</td><td>8 h</td><td>65</td><td>75</td></tr>
+        <tr><td>240</td><td>4 h</td><td>82</td><td>62</td></tr>
+        <tr><td>0</td><td>0 h</td><td>100</td><td>50</td></tr>
+    </table>
+    <p>La fórmula de Euforia usa <code>floor(100 - progreso * 50)</code> para que 720 → 87 y 240 → 62 coincidan con la tabla aprobada.</p>
+
+    <h3>Tick</h3>
+    <ol>
+        <li>Se aplica el efecto con el contador actual.</li>
+        <li>Se descuenta 1 minuto.</li>
+        <li>Si llega a 0, se elimina y se añade el mensaje de fin.</li>
+    </ol>
+    <p><code>Tick_Estados()</code> se ejecuta siempre, esté o no el personaje de fiesta.</p>
+
+    <h2>7. Notificaciones</h2>
+    <p>Al activar un estado se añade un <code>Mensaje</code> a <code>Variables_Dinamicas.Mensajes</code> con <code>leido = false</code>:</p>
+    <table>
+        <tr><th>Título</th><th>Descripción</th></tr>
+        <tr><td><code>Has ligado</code></td><td><code>Has ligado. Euforia durante 24 h.</code></td></tr>
+        <tr><td><code>Resacón</code></td><td><code>Te has pasado con la bebida. Resacón durante 24 h.</code></td></tr>
+        <tr><td><code>Fin de la euforia</code></td><td><code>La euforia ha terminado.</code></td></tr>
+        <tr><td><code>Fin del resacón</code></td><td><code>El resacón ha terminado.</code></td></tr>
+    </table>
+    <p>El badge de mensajes no leídos del perfil se actualiza automáticamente.</p>
+
+    <h2>8. Persistencia</h2>
+    <pre><code>var Estados_Temporales: Dictionary = {}   # { "Euforia": minutos } o { "Resacon": minutos }
+var Fiesta_Evento_Ocurrido: bool = false</code></pre>
+    <ul>
+        <li>Save antiguo sin campos → <code>{}</code> y <code>false</code>.</li>
+        <li>Valores convertidos a <code>int</code> y limitados a <code>0..1440</code>.</li>
+        <li>Claves desconocidas filtradas.</li>
+        <li>Si un save corrupto trae ambos estados, se conserva el que tenga más minutos restantes (empate → <code>Resacon</code>).</li>
+        <li><code>Menu._reiniciar_partida_desde_cero()</code> resetea ambos campos.</li>
+    </ul>
+
+    <h2>9. UI</h2>
+    <ul>
+        <li><strong>Botón</strong>: <code>Necesidades_Basicas_Opciones/Salir_De_Fiesta</code>, texto <code>🎉  SALIR DE FIESTA</code>, icono <code>party-popper</code>, subtítulo <code>Noche · 2–12 h · Prob. según estado</code>.</li>
+        <li><strong>Layout</strong>: 5 botones × 78 px + 4 separaciones × 10 px = 430 px en un contenedor de 960 px. Sin scroll.</li>
+        <li><strong>Preview</strong>: <code>Preview_Fiesta</code> dinámico, hijo de <code>Seleccionar_Horario</code>.</li>
+        <li><strong>Label de estado</strong>: <code>Estado_Temporal_Label</code> en <code>Resumen_Necesidades</code>; <code>Euforia · 23h 59m</code> en verde, <code>Resacón · 18h 20m · límite 45</code> en rojo; oculto sin estados.</li>
+    </ul>
+
+    <h2>10. Tests</h2>
+    <p>Archivo: <code>Funcionalidades/Actividades/Actividades_Temporales/Tests/test_salir_de_fiesta.gd</code>.</p>
+    <ul class="checklist">
+        <li>Catálogo, efectos, P1 y ausencia del pool aleatorio.</li>
+        <li>Botón, conexión, icono, subtítulo y layout de 5 botones.</li>
+        <li>Ventana 18:00–06:00, 2–12 h, cruce de medianoche, 24:00, domingo→lunes y límite de matriz.</li>
+        <li>Fórmulas independientes, edad, personalidad, día de la semana y tabla de 6 h.</li>
+        <li>Preview: suma 1, desgaste, valores por minuto y UI válida/inválida.</li>
+        <li>Primer minuto, bloques adyacentes y máximo un evento.</li>
+        <li>Activación, sustitución mutua, mensajes, curvas de cap/suelo, tick y cap en <code>Cambiar_Necesidades_Basicas</code>.</li>
+        <li>Persistencia, save antiguo, claves desconocidas y ambos estados.</li>
+        <li>Label de estado.</li>
+        <li>No regresión de jerarquía.</li>
+    </ul>
+    <div class="section success"><strong>Resultado actual: 100/100 tests GUT pasando</strong> (suite completa del proyecto).</div>
+
+    <h2>11. Correcciones aplicadas a la especificación v1.0</h2>
+    <table>
+        <tr><th>Punto</th><th>Spec v1.0</th><th>Implementado</th></tr>
+        <tr><td>AC-08, minuto 0, NB=80</td><td>Ligar 0,070 % · Resacón 0,031 %</td><td>Ligar 0,0698 % · Resacón 0,0239 %</td></tr>
+        <tr><td>AC-08, minuto 360, NB=80</td><td>Ligar 0,042 % · Resacón 0,059 %</td><td>Ligar 0,0590 % · Resacón 0,0785 %</td></tr>
+        <tr><td>AC-13, 720 min</td><td>Techo 65</td><td>720 → 47; 480 → 65</td></tr>
+        <tr><td>Curva Euforia</td><td>720 → 87; 240 → 62 con <code>100 - floor(p*50)</code> (daba 88/63)</td><td><code>floor(100 - p*50)</code> → 87/62</td></tr>
+        <tr><td>AC-04</td><td>18:00–19:59 → duración mínima</td><td>Se mantiene: el caso se evalúa antes que el fin</td></tr>
+        <tr><td>Límite 06:00</td><td><code>hora &lt; 6</code></td><td><code>hora &lt;= 6</code>: las 06:00 del domingo cuentan como sábado</td></tr>
+    </table>
+    <p>La tabla acumulada de 6 h (19,7 / 15,7 / 64,6 para NB=80) se mantiene exacta.</p>
+
+    <h2>12. Archivos</h2>
+    <table>
+        <tr><th>Archivo</th><th>Cambio</th></tr>
+        <tr><td><code>Scripts/Globales/Principales_Variables/Variables_Estaticas.gd</code></td><td>Actividad y <code>Estados_Temporales</code></td></tr>
+        <tr><td><code>Scripts/Globales/Principales_Variables/Variables_Dinamicas.gd</code></td><td><code>Estados_Temporales</code>, <code>Fiesta_Evento_Ocurrido</code></td></tr>
+        <tr><td><code>Scripts/Otro/Guardar/Guardar_Variables_Dinamicas.gd</code></td><td>Save/load con fallback y filtrado</td></tr>
+        <tr><td><code>Scripts/Globales/Menu.gd</code></td><td>Reset en partida nueva</td></tr>
+        <tr><td><code>Scripts/Logica/Escena_Principal/Actividades/Actividades.gd</code></td><td>Fórmulas, validación, estados, evento e integración</td></tr>
+        <tr><td><code>Scripts/Logica/Escena_Principal/Actividades/Actividades_Necesidades_Basicas.gd</code></td><td>Cap de Resacón</td></tr>
+        <tr><td><code>Escenas/Escena_Principal/Escena principal.tscn</code></td><td>Botón y conexión</td></tr>
+        <tr><td><code>Scripts/GUI/Escena_Principal/Estilos_UI.gd</code></td><td>Icono</td></tr>
+        <tr><td><code>Scripts/Globales/Script_Principal.gd</code></td><td>Handler, flujo de dos pasos, preview, diálogo y label</td></tr>
+        <tr><td><code>Scripts/GUI/Escena_Principal/Actividades/Reloj/Auxiliar/SeleccionarHorarioReloj.gd</code></td><td>Preview y normalización de día final</td></tr>
+        <tr><td><code>Scripts/GUI/Escena_Principal/Necesidades_Basicas/Necesidades_Basicas_GUI.gd</code></td><td>Label de estado</td></tr>
+        <tr><td><code>Funcionalidades/Actividades/Actividades_Temporales/Tests/test_salir_de_fiesta.gd</code></td><td>Tests GUT</td></tr>
+        <tr><td><code>Funcionalidades/Actividades/Jerarquia/Tests/test_jerarquia.gd</code></td><td>Bootstrap de matriz y examen como objeto real</td></tr>
+        <tr><td><code>Funcionalidades/Actividades/Eventos_Aleatorios/Tests/test_eventos_aleatorios.gd</code></td><td>Typo <code>Coolood_Trabajos</code> corregido</td></tr>
+        <tr><td><code>addons/gut/</code></td><td>GUT 9.7.1 vendorizado para ejecutar la suite</td></tr>
+        <tr><td><code>Funcionalidades/Actividades/Actividades_Temporales/Documentacion/SALIR_DE_FIESTA.md</code> / <code>.html</code></td><td>Esta ficha</td></tr>
+        <tr><td><code>Prompts/salir-de-fiesta/salir-de-fiesta.md</code> / <code>.html</code></td><td>Spec v1.1 con las correcciones numéricas</td></tr>
+        <tr><td><code>Prompts/MEGA_PROMPT_CONTEXTO.md</code>, <code>notebookLM/00_CONTEXTO_MAESTRO_Y_ROL.md</code></td><td>Contexto actualizado</td></tr>
+        <tr><td><code>CLAUDE.md</code></td><td>Contexto actualizado</td></tr>
+    </table>
+
+</div>
+</body>
+</html>

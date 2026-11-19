@@ -1,0 +1,53 @@
+DERECHO - AÑO 4: DERECHO PROCESAL Y DEONTOLOGÍA
+
+1. FASES DEL PROCESO JUDICIAL
+El proceso judicial es el conjunto ordenado de actos mediante los cuales se ejercita la función jurisdiccional para resolver un conflicto. Aunque varía según el orden jurisdiccional (civil, penal, laboral, contencioso-administrativo), de forma general puede distinguirse:
+
+- Fase de alegaciones: las partes exponen sus pretensiones y los hechos en que las fundan (demanda y contestación en el proceso civil; denuncia o querella e instrucción en el penal).
+- Fase probatoria: se practican los medios de prueba admitidos (documental, testifical, pericial, interrogatorio de partes) para acreditar los hechos alegados.
+- Fase de conclusiones: las partes valoran la prueba practicada y reiteran sus pretensiones ante el juzgador.
+- Fase de sentencia: el órgano judicial dicta resolución motivada resolviendo el litigio, que puede ser recurrida si la ley lo permite.
+
+En el proceso penal existe además una fase previa de instrucción, dirigida a investigar el hecho delictivo y determinar los indicios de responsabilidad antes de decidir si procede la apertura de juicio oral.
+
+2. JURISDICCIÓN Y COMPETENCIA
+La jurisdicción es la potestad, emanada de la soberanía del Estado, de juzgar y hacer ejecutar lo juzgado, atribuida en exclusiva a los Juzgados y Tribunales. Es única e indivisible, pero se organiza en distintos órdenes jurisdiccionales: civil, penal, contencioso-administrativo y social.
+
+La competencia es el reparto del ejercicio de la jurisdicción entre los distintos órganos judiciales, y se determina por varios criterios:
+
+- Competencia objetiva: qué tipo de órgano debe conocer del asunto según su naturaleza o cuantía (juzgado, audiencia provincial, tribunal superior).
+- Competencia funcional: qué órgano conoce de cada fase o recurso dentro de un mismo proceso.
+- Competencia territorial: qué juzgado concreto, entre los de igual clase, debe conocer del asunto según el lugar (domicilio del demandado, lugar del hecho, situación del bien).
+
+La falta de jurisdicción o de competencia objetiva puede apreciarse de oficio por el propio tribunal; la competencia territorial, en cambio, suele ser disponible por las partes.
+
+3. RECURSOS JUDICIALES
+Los recursos son los medios de impugnación que la ley concede a las partes para solicitar la revisión de una resolución judicial que consideran perjudicial o incorrecta. Los principales son:
+
+- Recurso de apelación: recurso ordinario mediante el cual un tribunal superior (segunda instancia) revisa íntegramente los hechos y el derecho aplicado por el juzgador de instancia, pudiendo confirmar, revocar o modificar la resolución.
+- Recurso de casación: recurso extraordinario ante el Tribunal Supremo (o los Tribunales Superiores de Justicia, según la materia) que no constituye una tercera instancia, ya que no se revisan los hechos, sino que se limita al control de la correcta aplicación e interpretación de la ley y a la unificación de doctrina.
+
+Existen también recursos no devolutivos, como el de reposición, que resuelve el mismo órgano que dictó la resolución impugnada, sin elevar el asunto a un tribunal superior.
+
+4. PRINCIPIOS PROCESALES
+El proceso se rige por una serie de principios que garantizan su correcto desarrollo y la tutela judicial efectiva:
+
+- Principio de contradicción: ninguna persona puede ser condenada o ver afectados sus derechos sin haber tenido la oportunidad de ser oída y de defenderse, aportando alegaciones y pruebas.
+- Principio de igualdad de armas: ambas partes deben disponer de medios procesales equivalentes para defender su posición.
+- Principio de oralidad: los actos procesales más relevantes (juicio, práctica de la prueba) se desarrollan de palabra ante el juez, frente al sistema puramente escrito.
+- Principio de inmediación: el juez que dicta la sentencia debe haber presenciado personalmente la práctica de la prueba.
+- Principio dispositivo: en el proceso civil, son las partes quienes delimitan el objeto del proceso y pueden disponer de él (allanamiento, renuncia, transacción).
+
+5. DEONTOLOGÍA DEL ABOGADO
+La deontología profesional es el conjunto de deberes éticos que rigen el ejercicio de la abogacía, recogidos en los Estatutos y Códigos Deontológicos de la Abogacía. Sus principios centrales son:
+
+- Secreto profesional: el abogado está obligado a guardar reserva de todos los hechos y noticias conocidos por razón de su actuación profesional, incluso una vez finalizada la relación con el cliente. Es un deber, no solo un derecho, y afecta también a las comunicaciones con otros abogados.
+- Independencia: el abogado debe actuar con libertad de criterio frente a cualquier presión externa, incluida la del propio cliente, rechazando instrucciones contrarias a la ley o a la deontología.
+- Conflicto de interés: el abogado no puede asumir la defensa de intereses contrapuestos a los de un cliente actual o anterior sin el consentimiento informado de todos los afectados, y debe abstenerse de intervenir cuando el conflicto sea insalvable.
+- Lealtad y confianza: el abogado debe actuar siempre en defensa de los intereses de su cliente con diligencia, sin comprometer nunca su buena fe frente a los tribunales.
+
+6. CONSEJOS DE EXAMEN
+- No confundas apelación (revisa hechos y derecho, segunda instancia) con casación (solo derecho, no es tercera instancia).
+- Recuerda que la competencia territorial es disponible por las partes, a diferencia de la objetiva y funcional.
+- Ante preguntas de deontología, ten presente que el secreto profesional se mantiene incluso tras finalizar la relación con el cliente.
+- Relaciona cada principio procesal con su finalidad: contradicción y defensa; inmediación y prueba; oralidad y agilidad.

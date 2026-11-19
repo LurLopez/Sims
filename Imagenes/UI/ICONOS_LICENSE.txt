@@ -1,0 +1,4 @@
+Iconos: Lucide (https://lucide.dev)
+Licencia: ISC
+Los SVG se han recoloreado a blanco para poder tintarlos desde Godot.
+Archivos descargados de lucide-static.

@@ -8,11 +8,15 @@
 
 config_version=5
 
+[animation]
+
+compatibility/default_parent_skeleton_in_mesh_instance_3d=true
+
 [application]
 
 config/name="Sims"
 run/main_scene="res://Escenas/Menu/Menu.tscn"
-config/features=PackedStringArray("4.4", "Mobile")
+config/features=PackedStringArray("4.7", "Mobile")
 config/icon="res://icon.svg"
 
 [autoload]
@@ -35,7 +39,13 @@ Debug_Cargar_Guardado="*res://Scripts/Otro/Debug/Debug_Cargar_Guardado.gd"
 
 window/size/viewport_width=720
 window/size/viewport_height=1280
-window/stretch/scale=0.77
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+window/handheld/orientation="portrait"
+
+[gui]
+
+theme/custom="res://UI/Tema_Principal.tres"
 
 [input_devices]
 

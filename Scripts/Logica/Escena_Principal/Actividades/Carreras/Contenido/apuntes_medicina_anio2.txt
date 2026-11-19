@@ -1,0 +1,49 @@
+MEDICINA - AÑO 2: PATOLOGÍA GENERAL
+
+1. CONCEPTO DE ENFERMEDAD Y ETIOLOGÍA
+La enfermedad es cualquier alteración del estado de salud que afecta a la estructura o función de un organismo. La etiología es el estudio de las causas que originan una enfermedad.
+
+Las causas pueden clasificarse en:
+- Causas intrínsecas: genéticas, hereditarias, congénitas.
+- Causas extrínsecas: agentes infecciosos, tóxicos, traumatismos, factores ambientales.
+
+Muchas enfermedades son multifactoriales, es decir, resultan de la combinación de varios factores de riesgo y no de una única causa.
+
+2. INFLAMACIÓN
+La inflamación es la respuesta del organismo frente a una agresión (infección, traumatismo, químico) con el objetivo de eliminar la causa y reparar el tejido dañado.
+
+Los signos cardinales de la inflamación son cinco:
+- Rubor (enrojecimiento) por aumento del flujo sanguíneo.
+- Calor por la misma vasodilatación local.
+- Tumor (hinchazón) por acumulación de líquido y células en el tejido.
+- Dolor por estimulación de terminaciones nerviosas.
+- Pérdida de función del área afectada.
+
+La inflamación puede ser aguda (rápida, de corta duración, predominan neutrófilos) o crónica (prolongada, predominan linfocitos y macrófagos).
+
+3. MECANISMOS DE INFECCIÓN
+Los agentes patógenos son microorganismos capaces de causar enfermedad. Se clasifican en:
+- Bacterias: microorganismos unicelulares, algunas causan enfermedad por toxinas o invasión directa.
+- Virus: partículas que necesitan infectar una célula huésped para replicarse.
+- Hongos: pueden causar infecciones superficiales o sistémicas, especialmente en personas inmunodeprimidas.
+- Parásitos: organismos que viven a expensas de un huésped, causándole daño.
+
+La virulencia es la capacidad de un agente patógeno de producir enfermedad, y depende tanto del microorganismo como de las defensas del huésped.
+
+4. NEOPLASIAS
+Una neoplasia es un crecimiento anormal y descontrolado de células. Se dividen en dos grandes grupos:
+- Benignas: crecimiento lento, bien delimitado, no invaden tejidos vecinos ni producen metástasis.
+- Malignas (cáncer): crecimiento rápido y desordenado, invaden tejidos cercanos y pueden diseminarse a otras partes del cuerpo (metástasis) a través de la sangre o el sistema linfático.
+
+El diagnóstico definitivo de una neoplasia se realiza mediante biopsia y estudio anatomopatológico del tejido.
+
+5. FISIOPATOLOGÍA GENERAL
+La fisiopatología estudia cómo responde el organismo ante una lesión o alteración de su funcionamiento normal. Ante una agresión, el cuerpo pone en marcha mecanismos de compensación (por ejemplo, aumento de la frecuencia cardíaca ante una hemorragia) que intentan mantener la homeostasis.
+
+Cuando estos mecanismos de compensación se agotan o son insuficientes, la alteración progresa y aparecen los signos y síntomas clínicos de la enfermedad.
+
+6. CONSEJOS DE EXAMEN
+- Memoriza los cinco signos cardinales de la inflamación en orden: rubor, calor, tumor, dolor, pérdida de función.
+- No confundas neoplasia benigna con maligna: la clave está en invasión y metástasis.
+- Diferencia claramente entre bacteria, virus, hongo y parásito antes del examen.
+- Piensa siempre en términos de causa (etiología) y respuesta del organismo (fisiopatología) al analizar un caso.

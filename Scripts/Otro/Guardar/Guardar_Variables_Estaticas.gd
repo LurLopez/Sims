@@ -20,14 +20,17 @@ func load_game():
 		var save_file = FileAccess.open(save_path,FileAccess.READ)
 		game_data=save_file.get_var()
 		Variables_Estaticas.First_Time=game_data["First_Time"]
+		Variables_Estaticas.Modo_Rapido = game_data.get("Modo_Rapido", false)
+		Variables_Estaticas.Tutorial_Completado = game_data.get("Tutorial_Completado", true)
 		Variables_Estaticas.First_Time_Minute=game_data["First_Time_Minute"]
 		Variables_Estaticas.Habilidades=game_data["Habilidades"]
 		# Fallback para saves antiguos con 6 habilidades: añadir Sangre_Fria (índice 6) aleatoriamente.
 		while Variables_Estaticas.Habilidades.size() < 7:
 			Variables_Estaticas.Habilidades.append(Funciones_Globales.Generar_Numero_Aleatorio_Entero(1,100))
 		Variables_Estaticas.Personalidad=game_data["Personalidad"]
+		Variables_Estaticas.Apariencia = Apariencia_Personaje.normalizar(game_data.get("Apariencia", {}))
 		Variables_Estaticas.First_Time_Minute_Day=game_data["First_Time_Minute_Day"]
-		Variables_Estaticas.First_Time_Minute_Minute=game_data["First_TIme_Minute_Minute"]
+		Variables_Estaticas.First_Time_Minute_Minute = game_data.get("First_Time_Minute_Minute", game_data.get("First_TIme_Minute_Minute", 0))
 		# Fallback para saves anteriores que no tenían fecha local: derivar de First_Time_Minute (Unix)
 		# usando la zona horaria ACTUAL del dispositivo. Habrá un pequeño desajuste si la zona ha
 		# cambiado desde el inicio, pero solo afecta a esta primera carga.
@@ -45,11 +48,14 @@ func load_game():
 func game_data_func():
 	var game_data : Dictionary = {
 	"First_Time" : Variables_Estaticas.First_Time,
+	"Modo_Rapido" : Variables_Estaticas.Modo_Rapido,
+	"Tutorial_Completado" : Variables_Estaticas.Tutorial_Completado,
 	"First_Time_Minute" : Variables_Estaticas.First_Time_Minute,
 	"Habilidades" : Variables_Estaticas.Habilidades,
 	"Personalidad" : Variables_Estaticas.Personalidad,
+	"Apariencia" : Apariencia_Personaje.normalizar(Variables_Estaticas.Apariencia),
 	"First_Time_Minute_Day": Variables_Estaticas.First_Time_Minute_Day,
-	"First_TIme_Minute_Minute": Variables_Estaticas.First_Time_Minute_Minute,
+	"First_Time_Minute_Minute": Variables_Estaticas.First_Time_Minute_Minute,
 	"First_Time_Year": Variables_Estaticas.First_Time_Year,
 	"First_Time_Month": Variables_Estaticas.First_Time_Month,
 	"First_Time_Day_Of_Month": Variables_Estaticas.First_Time_Day_Of_Month

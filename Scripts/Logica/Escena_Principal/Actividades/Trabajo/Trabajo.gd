@@ -9,13 +9,28 @@ func Trabajar_De_Carpintero():
 func Trabajar_De_Cientifico():
 	Trabajar(Variables_Estaticas.Catalogo_Actividades["Trabajar_De_Cientifico"])
 
+func Trabajar_De_Abogado():
+	Trabajar(Variables_Estaticas.Catalogo_Actividades["Trabajar_De_Abogado"])
+
+func Trabajar_De_Medico():
+	Trabajar(Variables_Estaticas.Catalogo_Actividades["Trabajar_De_Medico"])
+
+func Trabajar_De_Artista():
+	Trabajar(Variables_Estaticas.Catalogo_Actividades["Trabajar_De_Artista"])
+
 
 func Trabajar(actividad: Actividad_Fija_Trabajo):
-	var Numero_De_Semana = floor(Variables_Dinamicas.Minute_Day / 7)
-	for i in range((Numero_De_Semana + 1) * 7, 573):
-		var dia_semana = i % 7
-		if dia_semana not in actividad.dias_laborales:
-			continue
+	var dia_inicio: int
+	if Variables_Estaticas.Modo_Rapido:
+		dia_inicio = Variables_Dinamicas.Minute_Day + 1
+	else:
+		var Numero_De_Semana = floor(Variables_Dinamicas.Minute_Day / 7)
+		dia_inicio = (Numero_De_Semana + 1) * 7
+	for i in range(dia_inicio, 573):
+		if not Variables_Estaticas.Modo_Rapido:
+			var dia_semana = i % 7
+			if dia_semana not in actividad.dias_laborales:
+				continue
 		for j in range(actividad.hora_inicio, actividad.hora_final):
 			Actividades.Crear_Actividad(i, j, actividad)
 	Variables_Dinamicas.Trabajo_Actual = actividad

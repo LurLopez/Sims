@@ -44,7 +44,7 @@ func test_limpiar_cooldowns_expirados_elimina_entradas_viejas():
 	Variables_Dinamicas.Cooldown_Trabajos["Trabajar_De_Carpintero"] = Variables_Dinamicas.Minute + 500
 	get_node("/root/Eventos_Aleatorios").Limpiar_Cooldowns_Expirados()
 	assert_false(Variables_Dinamicas.Cooldown_Trabajos.has("Trabajar_En_Comida_Rapida"))
-	assert_true(Variables_Dinamicas.Coolood_Trabajos.has("Trabajar_De_Carpintero") if Variables_Dinamicas.Cooldown_Trabajos.has("Trabajar_De_Carpintero") else true)
+	assert_true(Variables_Dinamicas.Cooldown_Trabajos.has("Trabajar_De_Carpintero"))
 
 
 # ---- FILTRO HORARIO ----

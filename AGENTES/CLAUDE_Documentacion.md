@@ -241,6 +241,7 @@ Al terminar, añade la funcionalidad al listado de **"Funcionalidades Implementa
 - [ ] `<NOMBRE>.html` creado, abre bien en navegador, sin estilos rotos
 - [ ] `test_<nombre>.gd` creado con 5–8 tests significativos
 - [ ] Entrada añadida en `CLAUDE.md` principal
+- [ ] `Prompts/MEGA_PROMPT_CONTEXTO.md` actualizado si la funcionalidad añade autoloads, variables, actividades, sistemas implementados o cambia el roadmap
 - [ ] No hay secciones inventadas: todo lo documentado está en el código o lo describió el usuario
 
 ---

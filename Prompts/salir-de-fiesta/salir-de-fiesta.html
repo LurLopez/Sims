@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Salir de fiesta — Euforia y Resacón</title>
+<style>
+body { font-family: 'Segoe UI', sans-serif; line-height: 1.6; max-width: 980px; margin: 0 auto; padding: 20px; background: #f5f5f5; color: #333; }
+.container { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+h1 { color: #2c3e50; border-bottom: 3px solid #d92673; padding-bottom: 10px; }
+h2 { color: #34495e; margin-top: 30px; padding-top: 15px; border-top: 1px solid #ecf0f1; }
+h3 { color: #7f8c8d; }
+blockquote { margin: 20px 0; padding: 12px 18px; background: #fce7f3; border-left: 4px solid #d92673; border-radius: 4px; color: #831843; }
+table { width: 100%; border-collapse: collapse; margin: 20px 0; background: white; border-radius: 4px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+th { background: #d92673; color: white; padding: 10px 12px; text-align: left; }
+td { padding: 9px 12px; border-bottom: 1px solid #ecf0f1; vertical-align: top; }
+tr:last-child td { border-bottom: none; }
+code { background: #f8f9fa; padding: 2px 6px; border-radius: 3px; font-family: monospace; font-size: 0.9em; }
+pre { background: #2c3e50; color: #ecf0f1; padding: 15px; border-radius: 6px; overflow-x: auto; }
+pre code { background: none; color: inherit; padding: 0; }
+li { margin: 6px 0; }
+hr { border: 0; border-top: 1px solid #ecf0f1; margin: 28px 0; }
+</style>
+</head>
+<body>
+<div class="container">
+<h1>Salir de fiesta: ligue, euforia y resacón</h1>
+<blockquote>
+<p>Versión v1.1 · 2026-11-19 · Estado: Aprobada e implementada</p>
+</blockquote>
+<h2>1. Resumen</h2>
+<p><code>Salir_De_Fiesta</code> es una actividad temporal de alto riesgo y alta recompensa. Se programa entre las 18:00 y las 06:00, con una duración mínima de 2 horas y máxima de 12. Cada minuto del bloque calcula dos probabilidades separadas con las necesidades básicas actuales, el progreso y la personalidad: ligar (sube cuando el estado es bueno) y pasarse con la bebida (sube cuando el estado empeora). El primer evento que salga se resuelve una sola vez por fiesta: ligar activa <code>Euforia</code> durante 24 h; pasarse activa <code>Resacon</code> durante 24 h. La fiesta continúa después del evento y el estado se aplica durante el resto del bloque y las horas siguientes.</p>
+<h2>2. Contexto y problema</h2>
+<p>El juego tiene siete actividades temporales con perfiles de efecto muy parecidos. <code>Salir_De_Fiesta</code> debe ser distinta: una actividad de decisiones, no otra barra que sube y baja. El jugador elige cuánto tiempo se queda, sabiendo que las necesidades se desgastan y que cada minuto es menos probable ligar, pero que una fiesta más larga acumula más oportunidades de que ocurra algo.</p>
+<p>El motor actual ya aplica los efectos de las actividades por minuto con una probabilidad basada en una frecuencia (<code>Actividades_Necesidades_Basicas.gd</code>). Esta funcionalidad reutiliza ese mismo patrón para los eventos especiales: probabilidad por minuto, calculada con el estado actual del personaje.</p>
+<h2>3. Objetivo y métricas de éxito</h2>
+<p><strong>Objetivo:</strong> añadir una actividad de fiesta que cree una decisión real entre duración, desgaste y probabilidad de un estado temporal.</p>
+<p><strong>Métricas de éxito:</strong></p>
+<ul>
+<li>El jugador puede programar bloques de 2 a 12 horas dentro de la ventana 18:00–06:00.</li>
+<li>La vista previa muestra la probabilidad acumulada de ligar, resacón y noche normal antes de confirmar.</li>
+<li>Cada fiesta programada activa como máximo un estado especial.</li>
+<li>Los estados <code>Euforia</code> y <code>Resacon</code> son visibles, persistentes y se eliminan mutuamente.</li>
+<li>Ninguna actividad existente cambia de efectos, prioridad ni comportamiento.</li>
+<li>Los tests GUT de la funcionalidad pasan.</li>
+</ul>
+<h2>4. Alcance</h2>
+<h3>Dentro</h3>
+<ul>
+<li>Entrada <code>Salir_De_Fiesta</code> en <code>Variables_Estaticas.Catalogo_Actividades</code>.</li>
+<li>Botón en <code>Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones/Necesidades_Basicas_Opciones</code>, conexión y handler.</li>
+<li>Ventana horaria 18:00–06:00, duración mínima 2 h y máxima 12 h.</li>
+<li>Probabilidad por minuto de evento especial basada en necesidades, progreso y personalidad.</li>
+<li>Dos probabilidades separadas por minuto: ligar crece con el estado y resacón decrece. El primer evento que salga se resuelve una sola vez por fiesta programada.</li>
+<li>Estados <code>Euforia</code> y <code>Resacon</code>: duración, tick, cap, mensajes, UI y persistencia.</li>
+<li>Vista previa de duración y probabilidades en <code>Seleccionar_Horario</code>.</li>
+<li>Label de estado activo en el panel de Necesidades Básicas.</li>
+<li>Tests GUT y documentación de la funcionalidad.</li>
+</ul>
+<h3>Fuera (y por qué)</h3>
+<ul>
+<li><strong>Las otras cinco actividades del lote anterior</strong> (<code>Ordenar_La_Casa</code>, <code>Meditar</code>, <code>Leer_Un_Libro</code>, <code>Entrenar_En_El_Gimnasio</code>, <code>Montar_Un_Taller_De_Manualidades</code>): esta especificación se centra solo en <code>Salir_De_Fiesta</code>.</li>
+<li><strong>Otros estados temporales</strong> (<code>Lesion</code>, <code>Inspiracion</code>, <code>Corte</code>): el sistema queda preparado, pero v1 solo registra <code>Euforia</code> y <code>Resacon</code>.</li>
+<li><strong>Coste o ingreso de dinero</strong>: la actividad no cobra entrada ni gana dinero.</li>
+<li><strong>Requisitos de objetos o libros</strong>: no se añaden.</li>
+<li><strong>Nueva pestaña o categoría</strong>: se reutiliza Necesidades Básicas.</li>
+<li><strong>Fiesta en el pool aleatorio</strong>: en v1 <code>Salir_De_Fiesta</code> no entra en <code>Variables_Estaticas.Actividades</code>; solo se ejecuta cuando el jugador la programa. Así se respeta la ventana 18:00–06:00 y no hay estados mientras el jugador no mira.</li>
+<li><strong>Animaciones nuevas o assets de iconos</strong>: se usa <code>party-popper</code>, ya existente en <code>Imagenes/UI/Iconos/</code>.</li>
+<li><strong>Cambios en el selector aleatorio global</strong>: se mantiene el comportamiento actual para las demás actividades.</li>
+</ul>
+<h2>5. Actores y permisos</h2>
+<table>
+<thead>
+<tr>
+<th>Actor</th>
+<th>Permiso</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Jugador</td>
+<td>Programa, cancela y consulta la fiesta; ve la vista previa y el estado activo.</td>
+</tr>
+<tr>
+<td>Sistema</td>
+<td>Ejecuta los efectos por minuto, calcula la probabilidad, resuelve el evento, tickea los estados y genera mensajes.</td>
+</tr>
+<tr>
+<td>Guardado</td>
+<td>Persiste <code>Estados_Temporales</code> y el flag de evento de la fiesta en curso.</td>
+</tr>
+</tbody>
+</table>
+<p>No hay multijugador ni permisos adicionales.</p>
+<h2>6. Flujo principal</h2>
+<ol>
+<li>El jugador abre <strong>Actividades → Temporales → Necesidades → Salir de fiesta</strong>.</li>
+<li>El sistema abre <code>Seleccionar_Horario</code> con el día, hora y minuto de inicio y fin.</li>
+<li>El sistema valida: inicio entre 18:00 y 04:00; fin entre 20:00 y 06:00; duración entre 120 y 720 minutos; que el bloque no se salga de la matriz; y prioridad P1/P2/P3 (no puede pisar trabajo P2 ni examen P3).</li>
+<li>Si es válido, la vista previa muestra duración, probabilidad por minuto al inicio y al final, y probabilidad acumulada de ligar, resacón y nada.</li>
+<li>Al confirmar, el bloque se escribe en <code>Variables_Dinamicas.Matriz_Jugador</code>.</li>
+<li>En el primer minuto del bloque se resetea <code>Fiesta_Evento_Ocurrido = false</code>.</li>
+<li>Cada minuto del bloque programado: (1) se aplican los efectos base; (2) si <code>Fiesta_Evento_Ocurrido</code> es falso, se calcula el puntaje con las necesidades actuales y se tiran las dos probabilidades; (3) si el evento ocurre, se marca el flag, se activa el estado correspondiente y se genera un mensaje; ligar y resacón se tiran por separado y gana el primero que salga; (4) se tickean los estados activos; (5) se comprueba la muerte con el estado ya aplicado.</li>
+<li>La fiesta continúa después del evento. El estado sigue activo durante el resto del bloque y las horas que le queden.</li>
+<li>Al terminar la duración del estado, se elimina y se genera el mensaje de fin.</li>
+<li>Al cancelar o terminar la fiesta sin evento, no se activa ningún estado.</li>
+</ol>
+<p><strong>Puntos de decisión:</strong></p>
+<ul>
+<li>¿El bloque está dentro de la ventana y dura al menos 2 h?</li>
+<li>¿Hay trabajo o examen en alguna celda?</li>
+<li>¿Ya ocurrió un evento en esta fiesta?</li>
+<li>¿La tirada por minuto activa ligar o resacón?</li>
+<li>¿El estado activo es el opuesto de otro? En ese caso, el nuevo sustituye al anterior.</li>
+<li>¿El personaje está en la calle o en bancarrota? El cap de necesidades se reduce a 20.</li>
+</ul>
+<h2>7. Requisitos funcionales</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Requisito</th>
+<th>Detalle</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>RF-01</td>
+<td>Registrar la actividad</td>
+<td><code>Salir_De_Fiesta</code> es una <code>Actividad_Temporal</code> en <code>Catalogo_Actividades</code>, con <code>color = Color(0.85, 0.15, 0.45)</code>, <code>efectos_necesidades_basicas = [0, 9, -3, -4, -2]</code>, <code>efectos_progreso = [0, 0, 0]</code> y prioridad P1.</td>
+</tr>
+<tr>
+<td>RF-02</td>
+<td>Integrar en la UI</td>
+<td>Botón en <code>Necesidades_Basicas_Opciones</code>, texto <code>🎉  SALIR DE FIESTA</code>, conexión <code>pressed</code> al método <code>Actividad_Terminada_Salir_De_Fiesta</code> y handler que llama a <code>Crear_Actividad("Salir_De_Fiesta")</code>.</td>
+</tr>
+<tr>
+<td>RF-03</td>
+<td>Ventana horaria</td>
+<td>El bloque debe empezar entre las 18:00 y las 04:00, terminar entre las 20:00 y las 06:00 y durar entre 120 y 720 minutos. El fin debe ser posterior al inicio; si cruza medianoche, el día final es el siguiente. Si no cumple, se rechaza con el motivo concreto.</td>
+</tr>
+<tr>
+<td>RF-04</td>
+<td>Probabilidad por minuto</td>
+<td>Cada minuto se calcula un puntaje con necesidades, progreso y personalidad; se traducen a dos probabilidades separadas (ligar y resacón) y se tiran.</td>
+</tr>
+<tr>
+<td>RF-05</td>
+<td>Un evento por fiesta</td>
+<td><code>Fiesta_Evento_Ocurrido</code> impide más tiradas en el mismo bloque. Se resetea en el primer minuto de un bloque nuevo. Cada minuto se tira primero ligar y después resacón, con probabilidades separadas; el primero que salga activa su estado y detiene las tiradas de esa fiesta.</td>
+</tr>
+<tr>
+<td>RF-06</td>
+<td>Estado Euforia</td>
+<td>Al ligar, se activa <code>Euforia</code> durante 1440 minutos, se fija la salud mental al máximo permitido, se elimina <code>Resacon</code> y se genera mensaje.</td>
+</tr>
+<tr>
+<td>RF-07</td>
+<td>Estado Resacon</td>
+<td>Al pasarse con la bebida, se activa <code>Resacon</code> durante 1440 minutos, se recortan física y mental a 30, se elimina <code>Euforia</code> y se genera mensaje.</td>
+</tr>
+<tr>
+<td>RF-08</td>
+<td>Cap del resacón</td>
+<td>Mientras <code>Resacon</code> esté activo, física y mental no pueden superar el techo calculado. El techo sube linealmente de 30 a 100 en 1440 minutos. En la calle o en bancarrota, el techo efectivo es el mínimo entre el del resacón y 20.</td>
+</tr>
+<tr>
+<td>RF-09</td>
+<td>Tick de estados</td>
+<td>En cada minuto se aplica primero el efecto del estado con el valor actual del contador y después se descuenta 1. Al llegar a 0 se elimina y se genera el mensaje de fin.</td>
+</tr>
+<tr>
+<td>RF-10</td>
+<td>Vista previa</td>
+<td>En <code>Seleccionar_Horario</code>, cuando la actividad es <code>Salir_De_Fiesta</code>, se muestra un panel con duración, probabilidad por minuto al inicio y al final, y acumuladas de ligar, resacón y nada. Se oculta para las demás actividades.</td>
+</tr>
+<tr>
+<td>RF-11</td>
+<td>Label de estado</td>
+<td>En el panel de Necesidades Básicas se muestra el estado activo: <code>Euforia · 23h 59m</code> o <code>Resacon · 18h 20m · límite 45</code>.</td>
+</tr>
+<tr>
+<td>RF-12</td>
+<td>Persistencia</td>
+<td><code>Variables_Dinamicas.Estados_Temporales</code> y <code>Variables_Dinamicas.Fiesta_Evento_Ocurrido</code> se guardan y cargan. Los saves antiguos cargan con <code>{}</code> y <code>false</code>.</td>
+</tr>
+<tr>
+<td>RF-13</td>
+<td>Mensajes</td>
+<td>Se generan mensajes al activar y al terminar cada estado. Se reutiliza <code>Variables_Dinamicas.Mensajes</code> y la pantalla de perfil.</td>
+</tr>
+<tr>
+<td>RF-14</td>
+<td>No regresión</td>
+<td>Las actividades existentes, la jerarquía P1/P2/P3, los trabajos, la tienda, las carreras y el guardado actual no cambian.</td>
+</tr>
+<tr>
+<td>RF-15</td>
+<td>Tests y documentación</td>
+<td>Se añaden tests GUT y una ficha de la funcionalidad en <code>Funcionalidades/Actividades/Actividades_Temporales/Documentacion/</code>.</td>
+</tr>
+</tbody>
+</table>
+<h2>8. Requisitos no funcionales</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Requisito</th>
+<th>Valor objetivo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>RNF-01</td>
+<td>Rendimiento</td>
+<td>La lógica de la fiesta y los estados cuesta O(1) por minuto; no se añade trabajo por frame ni escaneos nuevos de la matriz.</td>
+</tr>
+<tr>
+<td>RNF-02</td>
+<td>Compatibilidad</td>
+<td>Godot 4.4; los saves antiguos cargan sin migración manual; nombres de catálogo ASCII y estables.</td>
+</tr>
+<tr>
+<td>RNF-03</td>
+<td>Testabilidad</td>
+<td>Funciones puras para puntaje, probabilidades y acumulada con riesgos competitivos; el RNG solo se usa en la tirada final.</td>
+</tr>
+<tr>
+<td>RNF-04</td>
+<td>UI</td>
+<td>A 720×1280 la vista previa y el label de estado se leen sin desbordes; no se depende solo del color.</td>
+</tr>
+</tbody>
+</table>
+<h2>9. Datos</h2>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Tipo</th>
+<th>Rango/Valores</th>
+<th>Default</th>
+<th>Persistencia</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Salir_De_Fiesta.nombre</code></td>
+<td>String</td>
+<td><code>"Salir_De_Fiesta"</code></td>
+<td>—</td>
+<td>Catálogo, no save</td>
+</tr>
+<tr>
+<td><code>Salir_De_Fiesta.color</code></td>
+<td>Color</td>
+<td><code>Color(0.85, 0.15, 0.45)</code></td>
+<td>—</td>
+<td>Catálogo, no save</td>
+</tr>
+<tr>
+<td><code>Salir_De_Fiesta.efectos_necesidades_basicas</code></td>
+<td>Array[5]</td>
+<td><code>[0, 9, -3, -4, -2]</code></td>
+<td>—</td>
+<td>Catálogo, no save</td>
+</tr>
+<tr>
+<td><code>Salir_De_Fiesta.efectos_progreso</code></td>
+<td>Array[3]</td>
+<td><code>[0, 0, 0]</code></td>
+<td>—</td>
+<td>Catálogo, no save</td>
+</tr>
+<tr>
+<td><code>Variables_Dinamicas.Estados_Temporales</code></td>
+<td>Dictionary</td>
+<td><code>{nombre_estado: minutos_restantes}</code></td>
+<td><code>{}</code></td>
+<td>Save dinámico</td>
+</tr>
+<tr>
+<td><code>Variables_Dinamicas.Fiesta_Evento_Ocurrido</code></td>
+<td>bool</td>
+<td><code>true</code>/<code>false</code></td>
+<td><code>false</code></td>
+<td>Save dinámico</td>
+</tr>
+<tr>
+<td><code>Variables_Estaticas.Estados_Temporales["Euforia"]</code></td>
+<td>Dictionary</td>
+<td><code>duracion=1440</code>, <code>meseta=480</code>, <code>tipo="suelo_gradual"</code>, <code>valor_inicial=100</code>, <code>valor_final=50</code></td>
+<td>—</td>
+<td>Catálogo estático</td>
+</tr>
+<tr>
+<td><code>Variables_Estaticas.Estados_Temporales["Resacon"]</code></td>
+<td>Dictionary</td>
+<td><code>duracion=1440</code>, <code>meseta=480</code>, <code>tipo="cap_gradual"</code>, <code>indices=[0,1]</code>, <code>cap_inicial=30</code>, <code>cap_final=100</code></td>
+<td>—</td>
+<td>Catálogo estático</td>
+</tr>
+</tbody>
+</table>
+<h3>Fórmulas independientes por minuto</h3>
+<p>Ligar y resacón tienen <strong>dos fórmulas y dos tiradas independientes</strong>:</p>
+<h4>1. Probabilidad de Ligar (carisma, ánimo, presencia, edad y día)</h4>
+<pre><code>mod_edad = clamp(10.0 - (edad - 20) * 0.625, -25.0, 12.0)   # 20 años: +10 · 36: 0 · 60: -15 · 76+: -25
+
+puntaje_ligar = clamp(
+    50
+    + 0.30 * (NB[1] - 50)        # Salud Mental
+    + 0.25 * (NB[4] - 50)        # Higiene
+    + 0.20 * (Progreso[0] - 50)  # Deporte
+    + 0.15 * (Progreso[1] - 50)  # Académico
+    + 0.10 * (NB[3] - 50)        # Descanso
+    + mod_personalidad
+    + mod_edad,
+    0, 100
+)
+
+prob_ligar_min = (0.00001 + 0.00099 * (puntaje_ligar / 100.0)) * mult_dia
+</code></pre>
+<p>Multiplicador por día de la semana de la noche (<code>dia_noche = dia</code> si <code>hora &gt;= 18</code>, o <code>dia - 1</code> si <code>hora &lt; 6</code>, con <code>dia_noche % 7</code>):</p>
+<table>
+<thead>
+<tr>
+<th>Día (<code>dia_noche % 7</code>)</th>
+<th><code>mult_dia</code> (solo Ligar)</th>
+<th>Motivo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>0, 1, 2</code> (Lunes–Miércoles)</td>
+<td><code>0,70</code></td>
+<td>Poca gente en los bares</td>
+</tr>
+<tr>
+<td><code>3</code> (Jueves)</td>
+<td><code>1,00</code></td>
+<td>Ambiente universitario / neutro</td>
+</tr>
+<tr>
+<td><code>4</code> (Viernes)</td>
+<td><code>1,25</code></td>
+<td>Inicio de fin de semana</td>
+</tr>
+<tr>
+<td><code>5</code> (Sábado)</td>
+<td><code>1,45</code></td>
+<td>Noche pico, locales llenos</td>
+</tr>
+<tr>
+<td><code>6</code> (Domingo)</td>
+<td><code>0,80</code></td>
+<td>Noche tranquila antes del lunes</td>
+</tr>
+</tbody>
+</table>
+<h4>2. Probabilidad de Resacón (aguante físico y edad)</h4>
+<pre><code>aguante_resacon = clamp(
+    50
+    + 0.40 * (NB[2] - 50)        # Hambre
+    + 0.30 * (NB[3] - 50)        # Descanso
+    + 0.20 * (NB[0] - 50)        # Salud Física
+    + 0.10 * (Progreso[0] - 50)  # Deporte
+    + mod_edad,                  # 20 años: +10 aguante · 60 años: -15 aguante
+    0, 100
+)
+
+riesgo_resacon = (100.0 - aguante_resacon) / 100.0
+prob_resacon_min = 0.00001 + 0.00099 * riesgo_resacon          # 0,001 %/min .. 0,100 %/min
+</code></pre>
+<p><em>(El día de la semana solo afecta a Ligar por la afluencia de gente; el Resacón depende del cuerpo, las necesidades y la edad).</em></p>
+<table>
+<thead>
+<tr>
+<th>Personalidad</th>
+<th><code>mod_personalidad</code> (solo en Ligar)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Deportista</code></td>
+<td>+10</td>
+</tr>
+<tr>
+<td><code>Culo_Del_Sofa</code></td>
+<td>−10</td>
+</tr>
+<tr>
+<td><code>Trabajador_Compulsivo</code></td>
+<td>−5</td>
+</tr>
+<tr>
+<td>Otra / vacía</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Las probabilidades se calculan <strong>después</strong> de aplicar los efectos del minuto.</li>
+<li>La suma <code>prob_ligar_min + prob_resacon_min</code> <strong>no es constante</strong>: cada evento depende de sus propias necesidades.</li>
+<li>Tirada independiente por minuto: primero <code>if randf() &lt; prob_ligar_min:</code> → ligar; si no, <code>if randf() &lt; prob_resacon_min:</code> → resacón; si no, nada.</li>
+</ul>
+<h3>Efecto de las necesidades en la probabilidad</h3>
+<p>Para el perfil estándar (Deporte 50, Académico 50, sin personalidad) y todas las necesidades al mismo valor (fiesta de 6 h con desgaste):</p>
+<table>
+<thead>
+<tr>
+<th>Necesidades iniciales</th>
+<th>Ligar/min (inicio)</th>
+<th>Resacón/min (inicio)</th>
+<th>Ligar (6 h)</th>
+<th>Resacón (6 h)</th>
+<th>Nada (6 h)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>100</td>
+<td>0,0827 %</td>
+<td>0,0060 %</td>
+<td>22,3 %</td>
+<td>10,8 %</td>
+<td>66,9 %</td>
+</tr>
+<tr>
+<td>80</td>
+<td>0,0698 %</td>
+<td>0,0238 %</td>
+<td>19,7 %</td>
+<td>15,7 %</td>
+<td>64,6 %</td>
+</tr>
+<tr>
+<td>60</td>
+<td>0,0569 %</td>
+<td>0,0416 %</td>
+<td>17,0 %</td>
+<td>19,8 %</td>
+<td>63,2 %</td>
+</tr>
+<tr>
+<td>50</td>
+<td>0,0505 %</td>
+<td>0,0505 %</td>
+<td>15,7 %</td>
+<td>21,6 %</td>
+<td>62,8 %</td>
+</tr>
+<tr>
+<td>40</td>
+<td>0,0441 %</td>
+<td>0,0594 %</td>
+<td>14,3 %</td>
+<td>23,2 %</td>
+<td>62,6 %</td>
+</tr>
+<tr>
+<td>20</td>
+<td>0,0312 %</td>
+<td>0,0772 %</td>
+<td>11,7 %</td>
+<td>25,7 %</td>
+<td>62,6 %</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Con necesidades altas, ligar domina claramente sobre el resacón.</li>
+<li>Con necesidades bajas (o sin cenar/dormir), el resacón domina sobre ligar.</li>
+<li>La higiene, la salud mental y lo académico ayudan a ligar pero no protegen del resacón; el hambre y el descanso protegen del resacón.</li>
+</ul>
+<h3>Curva de los estados (8 h a tope + 16 h bajada gradual)</h3>
+<p>Ambos estados duran 1440 min (24 h) con una <strong>meseta inicial de 480 min (8 h)</strong> al máximo efecto, y luego bajan gradualmente durante los <strong>960 min (16 h)</strong> restantes:</p>
+<ul>
+<li><strong>Resacón (<code>cap</code> máximo de Salud Física y Mental):</strong></li>
+</ul>
+<pre><code>si minutos_restantes &gt; 960: cap = 30
+si no: cap = 30 + floor((960 - minutos_restantes) * 70 / 960)
+</code></pre>
+<ul>
+<li><strong>Euforia (<code>suelo</code> mínimo de Salud Mental):</strong></li>
+</ul>
+<pre><code>si minutos_restantes &gt; 960: suelo = 100
+si no: suelo = floor(100 - (960 - minutos_restantes) * 50 / 960)
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Minutos restantes</th>
+<th>Tiempo transcurrido</th>
+<th>Techo Resacón</th>
+<th>Suelo Euforia</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1440–960</td>
+<td>0–8 h</td>
+<td>30</td>
+<td>100</td>
+</tr>
+<tr>
+<td>720</td>
+<td>12 h</td>
+<td>47</td>
+<td>87</td>
+</tr>
+<tr>
+<td>480</td>
+<td>16 h</td>
+<td>65</td>
+<td>75</td>
+</tr>
+<tr>
+<td>240</td>
+<td>20 h</td>
+<td>82</td>
+<td>62</td>
+</tr>
+<tr>
+<td>0</td>
+<td>24 h</td>
+<td>100</td>
+<td>50</td>
+</tr>
+</tbody>
+</table>
+<h3>Proyección para la vista previa</h3>
+<p>La vista previa simula el bloque minuto a minuto con el valor esperado de los efectos:</p>
+<pre><code>delta = signo(efecto) * min(1.0, abs(efecto) / frecuencia)
+necesidad_proyectada = clamp(necesidad_proyectada + delta, 1, 100)
+</code></pre>
+<p>Frecuencias: salud física y mental 30; hambre 12; descanso 15; higiene 20. Con esas necesidades proyectadas se calcula el puntaje y, en cada minuto, <code>prob_ligar_min</code> y <code>prob_resacon_min</code>. La simulación usa riesgos competitivos, porque solo puede ocurrir un evento por fiesta:</p>
+<pre><code>supervivencia = 1.0
+p_ligar = 0.0
+p_resacon = 0.0
+para cada minuto:
+    p_ligar += supervivencia * prob_ligar_min
+    p_resacon += supervivencia * prob_resacon_min * (1.0 - prob_ligar_min)
+    supervivencia *= (1.0 - prob_ligar_min) * (1.0 - prob_resacon_min)
+p_nada = supervivencia
+</code></pre>
+<p>Al final, <code>p_ligar + p_resacon + p_nada = 1</code>. La etiqueta indica que es una estimación.</p>
+<h2>10. Integración con el código existente</h2>
+<table>
+<thead>
+<tr>
+<th>Archivo</th>
+<th>Cambio</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Scripts/Globales/Principales_Variables/Variables_Estaticas.gd</code></td>
+<td>Añadir <code>Salir_De_Fiesta</code> en <code>_Inicializar_Catalogo()</code>. No añadir al array <code>Actividades</code> en v1. Añadir <code>Estados_Temporales</code> con <code>Euforia</code> y <code>Resacon</code>.</td>
+</tr>
+<tr>
+<td><code>Escenas/Escena_Principal/Escena principal.tscn</code></td>
+<td>Añadir el <code>Button</code> en <code>Necesidades_Basicas_Opciones</code> y la conexión <code>pressed</code>.</td>
+</tr>
+<tr>
+<td><code>Scripts/Globales/Script_Principal.gd</code></td>
+<td>Handler <code>Actividad_Terminada_Salir_De_Fiesta</code>, entrada en <code>_SUBTITULOS_ACTIVIDADES</code>, diálogo de error de ventana/duración.</td>
+</tr>
+<tr>
+<td><code>Scripts/GUI/Escena_Principal/Estilos_UI.gd</code></td>
+<td>Entrada <code>Salir_De_Fiesta</code> en <code>ICONOS_BOTONES</code> con <code>party-popper</code>.</td>
+</tr>
+<tr>
+<td><code>Scripts/Logica/Escena_Principal/Actividades/Actividades.gd</code></td>
+<td><code>Resolver_Evento_Fiesta</code>, <code>Tick_Estados</code>, <code>Activar_Estado</code>, <code>Obtener_Cap_Resacon</code>, <code>Es_Primer_Minuto_Del_Bloque</code>, validación de la ventana.</td>
+</tr>
+<tr>
+<td><code>Scripts/Logica/Escena_Principal/Actividades/Actividades_Necesidades_Basicas.gd</code></td>
+<td>Aplicar el cap de <code>Resacon</code> después del cap de bancarrota.</td>
+</tr>
+<tr>
+<td><code>Scripts/Globales/Principales_Variables/Variables_Dinamicas.gd</code></td>
+<td>Nuevos campos <code>Estados_Temporales</code> y <code>Fiesta_Evento_Ocurrido</code>.</td>
+</tr>
+<tr>
+<td><code>Scripts/Otro/Guardar/Guardar_Variables_Dinamicas.gd</code></td>
+<td>Guardar/cargar los dos campos nuevos con fallback.</td>
+</tr>
+<tr>
+<td><code>Scripts/Globales/Menu.gd</code></td>
+<td>Resetear los dos campos en partida nueva.</td>
+</tr>
+<tr>
+<td><code>Scripts/GUI/Escena_Principal/Necesidades_Basicas/Necesidades_Basicas_GUI.gd</code></td>
+<td>Label de estado activo y actualización del texto/techo.</td>
+</tr>
+<tr>
+<td><code>Scripts/GUI/Escena_Principal/Actividades/Reloj/Auxiliar/SeleccionarHorarioReloj.gd</code></td>
+<td>Panel de vista previa de Fiesta y actualización al cambiar hora/minuto.</td>
+</tr>
+<tr>
+<td><code>Funcionalidades/Actividades/Actividades_Temporales/Tests/</code></td>
+<td>Tests GUT de fórmula, ventana, estados, cap, persistencia y no regresión.</td>
+</tr>
+<tr>
+<td><code>Funcionalidades/Actividades/Actividades_Temporales/Documentacion/</code></td>
+<td>Ficha <code>SALIR_DE_FIESTA.md</code> y <code>.html</code>.</td>
+</tr>
+</tbody>
+</table>
+<h2>11. Casos borde y errores</h2>
+<table>
+<thead>
+<tr>
+<th>Escenario</th>
+<th>Comportamiento esperado</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Inicio a las 17:59</td>
+<td>Rechazo: "La fiesta debe empezar entre las 18:00 y las 04:00".</td>
+</tr>
+<tr>
+<td>Inicio a las 04:01</td>
+<td>Rechazo por el mismo motivo.</td>
+</tr>
+<tr>
+<td>Fin a las 06:01</td>
+<td>Rechazo: "La fiesta debe terminar como máximo a las 06:00".</td>
+</tr>
+<tr>
+<td>Duración 1 h 59 min</td>
+<td>Rechazo: "La fiesta debe durar al menos 2 horas".</td>
+</tr>
+<tr>
+<td>Duración 12 h exactas (18:00–06:00)</td>
+<td>Aceptado.</td>
+</tr>
+<tr>
+<td>Bloque 22:00–02:00</td>
+<td>Aceptado; cruza medianoche.</td>
+</tr>
+<tr>
+<td>Bloque 02:00–06:00</td>
+<td>Aceptado; empieza de madrugada.</td>
+</tr>
+<tr>
+<td>Bloque que se sale de la matriz</td>
+<td>Rechazo: "El bloque se sale del calendario".</td>
+</tr>
+<tr>
+<td>Solape con trabajo o examen</td>
+<td>Rechazo con el diálogo de prioridad existente.</td>
+</tr>
+<tr>
+<td>Evento en el primer minuto</td>
+<td>Se activa el estado; la fiesta continúa.</td>
+</tr>
+<tr>
+<td>Evento en el último minuto</td>
+<td>Se activa el estado; la fiesta termina y el estado sigue.</td>
+</tr>
+<tr>
+<td>Sin evento</td>
+<td>No se activa ningún estado.</td>
+</tr>
+<tr>
+<td><code>Euforia</code> activa y ocurre <code>Resacon</code></td>
+<td><code>Resacon</code> sustituye a <code>Euforia</code>.</td>
+</tr>
+<tr>
+<td><code>Resacon</code> activo y ocurre <code>Euforia</code></td>
+<td><code>Euforia</code> sustituye a <code>Resacon</code>.</td>
+</tr>
+<tr>
+<td>Resacón con 480 min restantes</td>
+<td>Techo 65.</td>
+</tr>
+<tr>
+<td>Resacón en bancarrota o calle</td>
+<td>Techo efectivo 20.</td>
+</tr>
+<tr>
+<td>Guardado a mitad de fiesta</td>
+<td>El flag y los estados se conservan; no se repite el evento.</td>
+</tr>
+<tr>
+<td>Save antiguo sin los campos nuevos</td>
+<td>Carga con <code>{}</code> y <code>false</code>.</td>
+</tr>
+<tr>
+<td>Dos bloques de Fiesta adyacentes</td>
+<td>Se consideran un solo bloque; como máximo un evento.</td>
+</tr>
+</tbody>
+</table>
+<h2>12. UI/UX</h2>
+<h3>Tarjeta de actividad</h3>
+<ul>
+<li>Icono: <code>party-popper</code>.</li>
+<li>Título: <code>Salir de fiesta</code>.</li>
+<li>Subtítulo: <code>Noche · 2–12 h · Prob. según estado</code>.</li>
+<li>Color de badge: rosa/magenta.</li>
+</ul>
+<h3>Vista previa en <code>Seleccionar_Horario</code></h3>
+<pre><code>Salir de fiesta
+Duración: 6h 00m
+Por minuto: ligar 0,070 % al empezar · 0,059 % al terminar
+Por minuto: resacón 0,024 % al empezar · 0,079 % al terminar
+Ligar: 19,7 % · Resacón: 15,7 % · Nada: 64,6 %
+Estimación según tus necesidades actuales y el desgaste previsto.
+</code></pre>
+<ul>
+<li>Si el bloque no es válido, se muestra el motivo y no se muestran probabilidades.</li>
+<li>El panel se oculta para cualquier otra actividad.</li>
+<li>La estimación usa las necesidades proyectadas; la tirada real usa las necesidades reales.</li>
+</ul>
+<h3>Label de estado</h3>
+<ul>
+<li><code>Euforia · 23h 59m</code> en color positivo.</li>
+<li><code>Resacon · 18h 20m · límite 45</code> en color negativo.</li>
+<li>Se actualiza una vez por minuto; no se añade trabajo por frame.</li>
+</ul>
+<h3>Mensajes</h3>
+<ul>
+<li><code>Has ligado. Euforia durante 24 h.</code></li>
+<li><code>Te has pasado con la bebida. Resacón durante 24 h.</code></li>
+<li><code>La euforia ha terminado.</code></li>
+<li><code>El resacón ha terminado.</code></li>
+</ul>
+<h2>13. Criterios de aceptación</h2>
+<ul>
+<li>[x] AC-01 — Dado el catálogo inicializado, cuando se consulta, entonces existe <code>Salir_De_Fiesta</code> como <code>Actividad_Temporal</code> con <code>[0, 9, -3, -4, -2]</code>, <code>[0, 0, 0]</code> y prioridad P1.</li>
+<li>[x] AC-02 — Dado el menú de actividades temporales, cuando se abre Necesidades, entonces aparece el botón de Fiesta con icono y subtítulo, y su conexión llama al handler correcto.</li>
+<li>[x] AC-03 — Dado el selector de horario, cuando se intenta 17:59–06:00, entonces se rechaza con el motivo de inicio; cuando se intenta 18:00–06:00, entonces se acepta.</li>
+<li>[x] AC-04 — Dado el selector, cuando se intenta 18:00–19:59, entonces se rechaza por duración mínima; cuando se intenta 18:00–20:00, entonces se acepta.</li>
+<li>[x] AC-05 — Dado el selector, cuando se intenta 18:00–06:01, entonces se rechaza por fin; cuando se intenta 18:00–05:59, entonces se acepta.</li>
+<li>[x] AC-06 — Dado el selector, cuando se intenta 22:00–02:00, entonces se acepta el cruce de medianoche; cuando se intenta 02:00–06:00, entonces se acepta el inicio de madrugada.</li>
+<li>[x] AC-07 — Dado el selector con Fiesta, cuando se elige un bloque válido, entonces se muestra duración, probabilidad por minuto y acumuladas; cuando se elige otra actividad, el panel se oculta.</li>
+<li>[x] AC-08 — Dado el perfil estándar (Deporte 50, Académico 50, sin personalidad, necesidades 80), cuando se simula el primer minuto, entonces ligar es 0,070 % y resacón 0,024 %; en el minuto 360, ligar es 0,059 % y resacón 0,079 %.</li>
+<li>[x] AC-09 — Dado el mismo perfil con necesidades 40, cuando se calcula, entonces la probabilidad es menor que con 80; con Deporte y Académico 100 es mayor que con 20.</li>
+<li>[x] AC-10 — Dado un bloque programado, cuando se ejecutan sus minutos, entonces se activa como máximo un evento nuevo por bloque.</li>
+<li>[x] AC-11 — Dado que el evento es ligar, cuando se activa, entonces <code>Euforia</code> dura 1440 min, la salud mental queda al máximo permitido y se elimina <code>Resacon</code>.</li>
+<li>[x] AC-12 — Dado que el evento es resacón, cuando se activa, entonces <code>Resacon</code> dura 1440 min, física y mental se recortan a 30 y se elimina <code>Euforia</code>.</li>
+<li>[x] AC-13 — Dado <code>Resacon</code> activo, cuando quedan 480 min, entonces el techo es 65; cuando quedan 0, el techo es 100; en bancarrota el techo efectivo es 20.</li>
+<li>[x] AC-14 — Dado un guardado con estados y flag, cuando se carga, entonces se restauran; un save antiguo carga con <code>{}</code> y <code>false</code>.</li>
+<li>[x] AC-15 — Dado un estado activo, cuando se abre Necesidades, entonces se muestra el label con tiempo restante y, en resacón, el techo actual.</li>
+<li>[x] AC-16 — Dado el juego existente, cuando se ejecutan las demás actividades, entonces sus efectos, prioridades y guardados no cambian; los tests GUT pasan.</li>
+<li>[x] AC-17 — Dado el mismo perfil y duración, cuando las necesidades suben de 40 a 80, entonces la probabilidad de ligar sube y la de resacón baja; cuando bajan de 80 a 40, ocurre lo contrario.</li>
+</ul>
+<h2>14. Supuestos y decisiones</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Supuesto</th>
+<th>Motivo</th>
+<th>Confirmado</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SUP-01</td>
+<td>La probabilidad se resuelve por minuto, sin término directo de duración.</td>
+<td>El desgaste de necesidades es el que hace más difícil ligar con el tiempo.</td>
+<td>Sí</td>
+</tr>
+<tr>
+<td>SUP-02</td>
+<td>Ligar y resacón tienen dos fórmulas y tiradas independientes (sin suma constante): ligar depende de ánimo/higiene/progreso/descanso/personalidad; resacón depende de hambre/descanso/física/deporte invertidos.</td>
+<td>El usuario pidió explícitamente dos probabilidades independientes según las necesidades de cada evento.</td>
+<td>Sí</td>
+</tr>
+<tr>
+<td>SUP-03</td>
+<td>Constantes aprobadas: Ligar (Mental 0,30, Higiene 0,25, Deporte 0,20, Académico 0,15, Descanso 0,10, pers. ±10/−5); Resacón (Hambre 0,40, Descanso 0,30, Física 0,20, Deporte 0,10 invertido); rango <code>0,001 %–0,100 %/min</code> en ambas.</td>
+<td>Confirmado por el usuario en la revisión de v1.0.</td>
+<td>Sí</td>
+</tr>
+<tr>
+<td>SUP-04</td>
+<td>Ventana: inicio 18:00–04:00, fin 20:00–06:00, duración 2–12 h.</td>
+<td>La fiesta debe caber entre las 18:00 y las 06:00.</td>
+<td>Sí</td>
+</tr>
+<tr>
+<td>SUP-05</td>
+<td><code>Salir_De_Fiesta</code> no entra en el pool aleatorio en v1; solo se ejecuta programada.</td>
+<td>La ventana 18:00–06:00 y los estados especiales no encajan con la selección aleatoria actual, que no filtra por hora.</td>
+<td>Sí</td>
+</tr>
+<tr>
+<td>SUP-06</td>
+<td>Como máximo un evento por fiesta programada.</td>
+<td>Evita estados contradictorios y mensajes duplicados.</td>
+<td>Sí</td>
+</tr>
+<tr>
+<td>SUP-07</td>
+<td><code>Euforia</code> y <code>Resacon</code> son opuestos; el último sustituye al anterior.</td>
+<td>No tiene sentido estar eufórico y con resacón a la vez.</td>
+<td>Sí</td>
+</tr>
+<tr>
+<td>SUP-08</td>
+<td>El techo del resacón sube linealmente de 30 a 100 en 1440 min; en bancarrota se aplica el mínimo con 20.</td>
+<td>Recuperación gradual y respeto a la regla de bancarrota existente.</td>
+<td>Sí</td>
+</tr>
+<tr>
+<td>SUP-09</td>
+<td>Los estados duran 1440 minutos de juego.</td>
+<td>El usuario pidió “un día”.</td>
+<td>Sí</td>
+</tr>
+<tr>
+<td>SUP-10</td>
+<td>La vista previa usa necesidades proyectadas; la tirada real usa las reales.</td>
+<td>Da información útil sin prometer el resultado exacto.</td>
+<td>Sí</td>
+</tr>
+<tr>
+<td>SUP-11</td>
+<td>Solo se especifica <code>Salir_De_Fiesta</code>; las otras actividades quedan fuera.</td>
+<td>El usuario pidió centrarse solo en esta actividad.</td>
+<td>Sí</td>
+</tr>
+<tr>
+<td>SUP-12</td>
+<td>Se usa <code>party-popper</code>, ya existente.</td>
+<td>No se añaden assets nuevos.</td>
+<td>Sí</td>
+</tr>
+<tr>
+<td>SUP-13</td>
+<td>1 minuto de juego = 1 minuto real.</td>
+<td>Comportamiento actual del reloj.</td>
+<td>Sí</td>
+</tr>
+<tr>
+<td>SUP-14</td>
+<td>El label de estado vive en el panel de Necesidades Básicas.</td>
+<td>Es donde el jugador consulta el estado del personaje.</td>
+<td>Sí</td>
+</tr>
+<tr>
+<td>SUP-15</td>
+<td>Los tests siguen el patrón GUT de <code>test_jerarquia.gd</code>.</td>
+<td>Convención del proyecto.</td>
+<td>Sí</td>
+</tr>
+</tbody>
+</table>
+<h2>15. Preguntas abiertas</h2>
+<p>Todas las preguntas abiertas (<code>PA-01</code> a <code>PA-05</code>) han sido resueltas y aprobadas en la versión <code>v1.0</code>.</p>
+<h2>16. Historial de versiones</h2>
+<table>
+<thead>
+<tr>
+<th>Versión</th>
+<th>Fecha</th>
+<th>Cambio</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>v0.1</td>
+<td>2026-11-19</td>
+<td>Borrador inicial: actividad, ventana 18:00–06:00, mínimo 2 h, probabilidad por minuto, Euforia/Resacón, vista previa, persistencia y tests.</td>
+</tr>
+<tr>
+<td>v0.2</td>
+<td>2026-11-19</td>
+<td>Añadida tabla de efecto de las necesidades en la probabilidad y aclaración de que ligar y resacón comparten tirada.</td>
+</tr>
+<tr>
+<td>v0.3</td>
+<td>2026-11-19</td>
+<td>Separadas las probabilidades de ligar y resacón: ligar sube con el estado y resacón baja. Actualizadas tablas, vista previa y criterios de aceptación.</td>
+</tr>
+<tr>
+<td>v1.0</td>
+<td>2026-11-19</td>
+<td>Aprobada: dos fórmulas y tiradas independientes para Ligar y Resacón, cerradas PA-01..PA-05.</td>
+</tr>
+<tr>
+<td>v1.1</td>
+<td>2026-11-19</td>
+<td>Implementada. Corregidos AC-08, AC-13, el ejemplo de §12 y la fórmula de Euforia (87/62); las 06:00 cuentan como noche del día anterior.</td>
+</tr>
+</tbody>
+</table>
+</div>
+</body>
+</html>

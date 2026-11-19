@@ -6,12 +6,41 @@ const ALQUILER_SEMANAL: int = 200
 const BANCARROTA_MAX_NECESIDAD: int = 20
 
 var First_Time = true
+var Modo_Rapido: bool = false
+var Tutorial_Completado = false
 var First_Time_Minute = 0
 var Personalidad = ""
+var Apariencia: Dictionary = {}
 var Habilidades = []
 var Actividades = []
 var Catalogo_Actividades: Dictionary = {}
 var Catalogo_Objetos: Dictionary = {}
+
+# Estados temporales persistentes (el valor en Variables_Dinamicas son minutos restantes).
+# "Euforia" impone un suelo gradual a la salud mental; "Resacon" un techo gradual
+# a la salud física y mental. Ambos duran 1440 min: 480 min de meseta + 960 de bajada.
+var Estados_Temporales: Dictionary = {
+	"Euforia": {
+		"duracion": 1440,
+		"meseta": 480,
+		"tipo": "suelo_gradual",
+		"indice": 1,
+		"valor_inicial": 100,
+		"valor_final": 50,
+		"mensaje_inicio": "Has ligado. Euforia durante 24 h.",
+		"mensaje_fin": "La euforia ha terminado."
+	},
+	"Resacon": {
+		"duracion": 1440,
+		"meseta": 480,
+		"tipo": "cap_gradual",
+		"indices": [0, 1],
+		"cap_inicial": 30,
+		"cap_final": 100,
+		"mensaje_inicio": "Te has pasado con la bebida. Resacón durante 24 h.",
+		"mensaje_fin": "El resacón ha terminado."
+	}
+}
 var First_Time_Minute_Day = 0
 var First_Time_Minute_Minute = 0
 # Fecha local (año/mes/día) al crear el personaje. Se usan para calcular cuántos
@@ -20,7 +49,40 @@ var First_Time_Year = 0
 var First_Time_Month = 0
 var First_Time_Day_Of_Month = 0
 
+func Dias_Por_Anio() -> int:
+	return 1 if Modo_Rapido else 7
+
+func Calcular_Edad(dia_actual: int = -1) -> int:
+	var dia: int = dia_actual if dia_actual >= 0 else Variables_Dinamicas.Minute_Day
+	return 18 + int(maxi(0, dia - First_Time_Minute_Day) / float(Dias_Por_Anio()))
+
+func Multiplicador_Precios() -> float:
+	return 0.1 if Modo_Rapido else 1.0
+
+func Multiplicador_Salario() -> float:
+	# En modo rápido: lo que se gana en una semana (40h) / 7 * 2 por cada día (8h) => 10/7 por hora.
+	return (10.0 / 7.0) if Modo_Rapido else 1.0
+
+func Obtener_Alquiler() -> int:
+	return int(round(ALQUILER_SEMANAL * Multiplicador_Precios()))
+
+func Obtener_Capital_Inicial() -> int:
+	return 100 if Modo_Rapido else 1000
+
+func Obtener_Precio_Objeto(objeto: Objeto) -> float:
+	return round(objeto.precio * Multiplicador_Precios())
+
+func Obtener_Costo_Matricula(carrera: Carrera) -> float:
+	return round(carrera.costo_matricula_anual * Multiplicador_Precios())
+
+func Obtener_Bonus_Carrera(bonus_base: float) -> float:
+	return round(bonus_base * Multiplicador_Precios())
+
+func Obtener_Salario_Hora(actividad: Actividad_Fija_Trabajo) -> float:
+	return actividad.salario * Multiplicador_Salario()
+
 func _ready():
+	Apariencia = Apariencia_Personaje.por_defecto()
 	_Inicializar_Catalogo()
 	_Inicializar_Catalogo_Objetos()
 
@@ -124,6 +186,51 @@ func _Inicializar_Catalogo():
 	cientifico.dias_laborales = [0, 1, 2, 3, 4]
 	Catalogo_Actividades["Trabajar_De_Cientifico"] = cientifico
 
+	var abogado = Actividad_Fija_Trabajo.new()
+	abogado.nombre = "Trabajar_De_Abogado"
+	abogado.color = Color(0.30, 0.30, 0.35)
+	abogado.efectos_necesidades_basicas = [-1, -2, -1, -2, -1]
+	abogado.hora_inicio = 540
+	abogado.hora_final = 1020
+	abogado.salario = 30.0
+	abogado.requisito_progreso = [0, 50, 0]
+	abogado.requisito_carrera = ["Derecho"]
+	abogado.dias_laborales = [0, 1, 2, 3, 4]
+	Catalogo_Actividades["Trabajar_De_Abogado"] = abogado
+
+	var medico = Actividad_Fija_Trabajo.new()
+	medico.nombre = "Trabajar_De_Medico"
+	medico.color = Color(0.10, 0.60, 0.70)
+	medico.efectos_necesidades_basicas = [-1, -2, -1, -2, -1]
+	medico.hora_inicio = 540
+	medico.hora_final = 1020
+	medico.salario = 35.0
+	medico.requisito_progreso = [0, 60, 0]
+	medico.requisito_carrera = ["Medicina"]
+	medico.dias_laborales = [0, 1, 2, 3, 4]
+	Catalogo_Actividades["Trabajar_De_Medico"] = medico
+
+	var artista = Actividad_Fija_Trabajo.new()
+	artista.nombre = "Trabajar_De_Artista"
+	artista.color = Color(0.75, 0.20, 0.55)
+	artista.efectos_necesidades_basicas = [-1, -2, -1, -2, -1]
+	artista.hora_inicio = 540
+	artista.hora_final = 1020
+	artista.salario = 25.0
+	artista.requisito_progreso = [0, 0, 50]
+	artista.requisito_carrera = ["Bellas_Artes"]
+	artista.dias_laborales = [0, 1, 2, 3, 4]
+	Catalogo_Actividades["Trabajar_De_Artista"] = artista
+
+	var salir_de_fiesta = Actividad_Temporal.new()
+	salir_de_fiesta.nombre = "Salir_De_Fiesta"
+	salir_de_fiesta.color = Color(0.85, 0.15, 0.45)
+	salir_de_fiesta.efectos_necesidades_basicas = [0, 9, -3, -4, -2]
+	salir_de_fiesta.efectos_progreso = [0, 0, 0]
+	Catalogo_Actividades["Salir_De_Fiesta"] = salir_de_fiesta
+
+	# Salir_De_Fiesta NO entra en el pool aleatorio: solo se ejecuta si el jugador
+	# la programa dentro de su ventana horaria 18:00-06:00.
 	Actividades = [
 		Catalogo_Actividades["Estudiar"],
 		Catalogo_Actividades["Salir_A_Correr"],

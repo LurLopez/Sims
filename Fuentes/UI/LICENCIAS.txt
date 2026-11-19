@@ -1,0 +1,6 @@
+Fuentes usadas actualmente:
+- Bricolage Grotesque (logotipo y títulos): SIL Open Font License 1.1, Google Fonts / Fontsource.
+- Manrope (texto e interfaz): SIL Open Font License 1.1, Google Fonts / Fontsource.
+
+Fuentes de versiones anteriores conservadas por compatibilidad:
+- Mulish, Russo One, Titan One, DM Sans, Fraunces: SIL Open Font License 1.1.

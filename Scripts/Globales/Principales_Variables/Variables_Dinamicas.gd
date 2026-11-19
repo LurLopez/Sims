@@ -42,6 +42,13 @@ var Inicio_Semana_Carrera: int = -1
 # Sistema de Mensajes/Notificaciones
 var Mensajes: Array = []
 
+# Sistema de estados temporales (Euforia / Resacon)
+# Dictionary {nombre_estado: minutos_restantes}. Los estados duran 1440 min.
+var Estados_Temporales: Dictionary = {}
+# True si ya ha ocurrido un evento (ligar o resacón) en el bloque de fiesta actual.
+# Se resetea en el primer minuto de cada bloque nuevo de Salir_De_Fiesta.
+var Fiesta_Evento_Ocurrido: bool = false
+
 # Sistema de Inversiones en Bolsa
 var Esta_Invirtiendo: bool = false
 var Dinero_Invertido: float = 0.0

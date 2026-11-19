@@ -2,6 +2,8 @@ class_name Carrera
 extends Resource
 
 @export var nombre: String = ""
+@export var slug_contenido: String = ""
+@export var emoji: String = "📘"
 @export var años_totales: int = 4
 @export var costo_matricula_anual: float = 500.0
 
