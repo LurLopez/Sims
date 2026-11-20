@@ -39,6 +39,9 @@ func Ejecutar_Actividad_Progreso(sum_habilidades,indice_progreso,por_cuanto_ecua
 	if(por_cuanto_efecto!=0):
 		var max= Calcular_Max_Para_Numero_Aleatorio_Especifico(sum_habilidades,indice_progreso,por_cuanto_ecuacion)
 		var max_ajustado= floor(max/por_cuanto_efecto)
+		# Maestría Culinaria Rango >= 5: +15% de eficiencia en Manualidades (indice 2).
+		if indice_progreso == 2 and Sistema_Cocina.Obtener_Rango_Logro() >= 5:
+			max_ajustado = maxi(1, int(floor(float(max_ajustado) / 1.15)))
 		if(Funciones_Globales.Generar_Numero_Aleatorio_Entero_Es_Cero(max_ajustado)):
 			Cambiar_Progreso(indice_progreso)
 
@@ -76,6 +79,9 @@ func Calcular_Max_Progreso_Cocina() -> int:
 	var suma_habilidad: int = 40 * destreza + 25 * paciencia + 20 * sangre_fria + 15 * memoria
 	var maximo: int = Calcular_Max_Numero_Aleatorio(
 		Variables_Dinamicas.Progreso_Cocina, suma_habilidad, POR_CUANTO_ECUACION_PROGRESO)
+	# Maestría Culinaria Rango >= 5: +15% de eficiencia en Progreso_Cocina.
+	if Sistema_Cocina.Obtener_Rango_Logro() >= 5:
+		maximo = maxi(1, int(floor(float(maximo) / 1.15)))
 	return maxi(1, maximo)
 
 

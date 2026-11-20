@@ -176,6 +176,22 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 10
 
+[node name="SubTab_Bar" type="HBoxContainer" parent="Panel_Apuntes"]
+layout_mode = 0
+offset_right = 680.0
+offset_bottom = 40.0
+theme_override_constants/separation = 8
+
+[node name="SubTab_Apuntes" type="Button" parent="Panel_Apuntes/SubTab_Bar"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Apuntes"
+
+[node name="SubTab_Ropa" type="Button" parent="Panel_Apuntes/SubTab_Bar"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Ropa"
+
 [node name="Sin_Apuntes_Label" type="Label" parent="Panel_Apuntes"]
 visible = false
 layout_mode = 0
@@ -192,6 +208,7 @@ autowrap_mode = 3
 
 [node name="Scroll_Inventario" type="ScrollContainer" parent="Panel_Apuntes"]
 layout_mode = 0
+offset_top = 50.0
 offset_right = 720.0
 offset_bottom = 1070.0
 
@@ -201,6 +218,18 @@ size_flags_horizontal = 3
 columns = 2
 theme_override_constants/h_separation = 16
 theme_override_constants/v_separation = 20
+
+[node name="Scroll_Ropa" type="ScrollContainer" parent="Panel_Apuntes"]
+visible = false
+layout_mode = 0
+offset_top = 50.0
+offset_right = 720.0
+offset_bottom = 1070.0
+
+[node name="VBox_Ropa" type="VBoxContainer" parent="Panel_Apuntes/Scroll_Ropa"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
 
 [node name="Lista_Mensajes" type="ScrollContainer" parent="."]
 layout_mode = 0

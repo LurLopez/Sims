@@ -1,0 +1,978 @@
+[gd_scene load_steps=47 format=3]
+
+[ext_resource type="Texture2D" path="res://Imagenes/Minijuego_Cocina/Fondo_Restaurante.png" id="tex_1"]
+[ext_resource type="Texture2D" path="res://Imagenes/Minijuego_Cocina/Clientes/Cliente_01_Nino.png" id="tex_2"]
+[ext_resource type="Texture2D" path="res://Imagenes/Minijuego_Cocina/Clientes/Cliente_02_Mujer.png" id="tex_3"]
+[ext_resource type="Texture2D" path="res://Imagenes/Minijuego_Cocina/Clientes/Cliente_03_Mayor.png" id="tex_4"]
+[ext_resource type="Texture2D" path="res://Imagenes/Minijuego_Cocina/Clientes/Cliente_04_Nina.png" id="tex_5"]
+[ext_resource type="Texture2D" path="res://Imagenes/Minijuego_Cocina/Mostrador/Vitrina_Exposicion.png" id="tex_6"]
+[ext_resource type="Texture2D" path="res://Imagenes/Minijuego_Cocina/Comida/Platos/Hamburguesa_Sola.png" id="tex_7"]
+[ext_resource type="Texture2D" path="res://Imagenes/Minijuego_Cocina/Comida/Platos/Perrito_Caliente.png" id="tex_8"]
+[ext_resource type="Texture2D" path="res://Imagenes/Minijuego_Cocina/Comida/Platos/Cupcake.png" id="tex_9"]
+[ext_resource type="Texture2D" path="res://Imagenes/Minijuego_Cocina/Comida/Platos/Refresco_Cola.png" id="tex_10"]
+[ext_resource type="Texture2D" path="res://Imagenes/Minijuego_Cocina/Chef/Chef_Michelle.png" id="tex_11"]
+[ext_resource type="Texture2D" path="res://Imagenes/Minijuego_Cocina/UI/Ticket_Verde.png" id="tex_12"]
+[ext_resource type="Texture2D" path="res://Imagenes/Minijuego_Cocina/UI/Ticket_Rojo.png" id="tex_13"]
+[ext_resource type="Texture2D" path="res://Imagenes/Minijuego_Cocina/Comida/Platos/Patatas_Fritas.png" id="tex_14"]
+[ext_resource type="Texture2D" path="res://Imagenes/Minijuego_Cocina/Mostrador/Modulo_Recto.png" id="tex_15"]
+[ext_resource type="Texture2D" path="res://Imagenes/Minijuego_Cocina/Mostrador/Frente_Mostrador.png" id="tex_16"]
+[ext_resource type="Texture2D" path="res://Imagenes/Minijuego_Cocina/Estaciones/Plancha.png" id="tex_17"]
+[ext_resource type="Texture2D" path="res://Imagenes/Minijuego_Cocina/Estaciones/Freidora.png" id="tex_18"]
+[ext_resource type="Texture2D" path="res://Imagenes/Minijuego_Cocina/Estaciones/Dispensador_Refrescos.png" id="tex_19"]
+[ext_resource type="Texture2D" path="res://Imagenes/Minijuego_Cocina/Estaciones/Calentador_Comida.png" id="tex_20"]
+[ext_resource type="Texture2D" path="res://Imagenes/Minijuego_Cocina/Estaciones/Tostador_Panes.png" id="tex_21"]
+[ext_resource type="Texture2D" path="res://Imagenes/Minijuego_Cocina/Mostrador/Caja_Registradora.png" id="tex_22"]
+[ext_resource type="Texture2D" path="res://Imagenes/Minijuego_Cocina/Emplatado/Pila_Platos.png" id="tex_23"]
+[ext_resource type="Texture2D" path="res://Imagenes/Minijuego_Cocina/Comida/Platos/Hamburguesa_Doble.png" id="tex_24"]
+[ext_resource type="Texture2D" path="res://Imagenes/Minijuego_Cocina/Emplatado/Plato_Vacio.png" id="tex_25"]
+[ext_resource type="Texture2D" path="res://Imagenes/Minijuego_Cocina/Comida/Platos/Batido.png" id="tex_26"]
+[ext_resource type="Texture2D" path="res://Imagenes/Minijuego_Cocina/Emplatado/Mostaza.png" id="tex_27"]
+[ext_resource type="Texture2D" path="res://Imagenes/Minijuego_Cocina/Emplatado/Ketchup.png" id="tex_28"]
+[ext_resource type="Texture2D" path="res://Imagenes/Minijuego_Cocina/Emplatado/Sal_Pimienta.png" id="tex_29"]
+[ext_resource type="Texture2D" path="res://Imagenes/Minijuego_Cocina/Emplatado/Servilletero.png" id="tex_30"]
+[ext_resource type="Texture2D" path="res://Imagenes/Minijuego_Cocina/Emplatado/Bol_Lechuga.png" id="tex_31"]
+[ext_resource type="Texture2D" path="res://Imagenes/Minijuego_Cocina/Emplatado/Bandejas_Apiladas.png" id="tex_32"]
+[ext_resource type="Texture2D" path="res://Imagenes/Minijuego_Cocina/UI/Bote_Propinas.png" id="tex_33"]
+[ext_resource type="Texture2D" path="res://Imagenes/Minijuego_Cocina/UI/Pila_Monedas.png" id="tex_34"]
+[ext_resource type="Texture2D" path="res://Imagenes/Minijuego_Cocina/UI/Moneda.png" id="tex_35"]
+[ext_resource type="Texture2D" path="res://Imagenes/Minijuego_Cocina/Efectos/Vapor.png" id="tex_36"]
+[ext_resource type="Texture2D" path="res://Imagenes/Minijuego_Cocina/Efectos/Chispas.png" id="tex_37"]
+[ext_resource type="Texture2D" path="res://Imagenes/Minijuego_Cocina/Decoracion/Toldo_Verde.png" id="tex_38"]
+[ext_resource type="Texture2D" path="res://Imagenes/Minijuego_Cocina/UI/Gema.png" id="tex_39"]
+[ext_resource type="Texture2D" path="res://Imagenes/Minijuego_Cocina/UI/Reloj.png" id="tex_40"]
+[ext_resource type="Texture2D" path="res://Imagenes/Minijuego_Cocina/UI/Estrella_Dorada.png" id="tex_41"]
+[ext_resource type="Texture2D" path="res://Imagenes/Minijuego_Cocina/UI/Engranaje.png" id="tex_42"]
+[ext_resource type="Texture2D" path="res://Imagenes/Minijuego_Cocina/UI/Flecha.png" id="tex_43"]
+[ext_resource type="FontFile" path="res://Fuentes/UI/Bricolage-800.ttf" id="font_tit"]
+[ext_resource type="FontFile" path="res://Fuentes/UI/DMSans-700.ttf" id="font_ui"]
+[ext_resource type="Script" path="res://Scripts/GUI/Minijuego_Cocina/Escenario_Cooking_Fever.gd" id="script"]
+
+[node name="Escenario_Cooking_Fever" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("script")
+
+[node name="Fondo_Ventana" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.055, 0.078, 0.11, 1)
+z_index = -100
+
+[node name="Lienzo" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -640.0
+offset_top = -360.0
+offset_right = 640.0
+offset_bottom = 360.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Fondo" type="TextureRect" parent="Lienzo"]
+layout_mode = 0
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 1280.0
+offset_bottom = 720.0
+mouse_filter = 2
+texture = ExtResource("tex_1")
+expand_mode = 1
+stretch_mode = 0
+z_index = 0
+
+[node name="HUD_Barra" type="ColorRect" parent="Lienzo"]
+layout_mode = 0
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 1280.0
+offset_bottom = 58.0
+mouse_filter = 2
+color = Color(0.055, 0.098, 0.165, 1)
+
+[node name="HUD_Linea" type="ColorRect" parent="Lienzo"]
+layout_mode = 0
+offset_left = 0.0
+offset_top = 58.0
+offset_right = 1280.0
+offset_bottom = 62.0
+mouse_filter = 2
+color = Color(0.961, 0.62, 0.043, 1)
+
+[node name="Cliente_01_Nino" type="TextureRect" parent="Lienzo"]
+layout_mode = 0
+offset_left = 323.0
+offset_top = 192.0
+offset_right = 481.0
+offset_bottom = 392.0
+mouse_filter = 2
+texture = ExtResource("tex_2")
+expand_mode = 1
+stretch_mode = 0
+z_index = 12
+
+[node name="Cliente_02_Mujer" type="TextureRect" parent="Lienzo"]
+layout_mode = 0
+offset_left = 550.0
+offset_top = 187.0
+offset_right = 722.0
+offset_bottom = 392.0
+mouse_filter = 2
+texture = ExtResource("tex_3")
+expand_mode = 1
+stretch_mode = 0
+z_index = 14
+
+[node name="Cliente_03_Mayor" type="TextureRect" parent="Lienzo"]
+layout_mode = 0
+offset_left = 768.0
+offset_top = 192.0
+offset_right = 972.0
+offset_bottom = 392.0
+mouse_filter = 2
+texture = ExtResource("tex_4")
+expand_mode = 1
+stretch_mode = 0
+z_index = 16
+
+[node name="Cliente_04_Nina" type="TextureRect" parent="Lienzo"]
+layout_mode = 0
+offset_left = 1020.0
+offset_top = 196.0
+offset_right = 1187.0
+offset_bottom = 392.0
+mouse_filter = 2
+texture = ExtResource("tex_5")
+expand_mode = 1
+stretch_mode = 0
+z_index = 18
+
+[node name="Vitrina_Exposicion" type="TextureRect" parent="Lienzo"]
+layout_mode = 0
+offset_left = 633.0
+offset_top = 328.0
+offset_right = 887.0
+offset_bottom = 533.0
+mouse_filter = 2
+texture = ExtResource("tex_6")
+expand_mode = 1
+stretch_mode = 0
+z_index = 20
+
+[node name="Hamburguesa_Sola" type="TextureRect" parent="Lienzo"]
+layout_mode = 0
+offset_left = 661.0
+offset_top = 412.0
+offset_right = 727.0
+offset_bottom = 470.0
+mouse_filter = 2
+texture = ExtResource("tex_7")
+expand_mode = 1
+stretch_mode = 0
+z_index = 22
+
+[node name="Perrito_Caliente" type="TextureRect" parent="Lienzo"]
+layout_mode = 0
+offset_left = 724.0
+offset_top = 413.0
+offset_right = 796.0
+offset_bottom = 465.0
+mouse_filter = 2
+texture = ExtResource("tex_8")
+expand_mode = 1
+stretch_mode = 0
+z_index = 24
+
+[node name="Cupcake" type="TextureRect" parent="Lienzo"]
+layout_mode = 0
+offset_left = 794.0
+offset_top = 420.0
+offset_right = 847.0
+offset_bottom = 474.0
+mouse_filter = 2
+texture = ExtResource("tex_9")
+expand_mode = 1
+stretch_mode = 0
+z_index = 26
+
+[node name="Refresco_Cola" type="TextureRect" parent="Lienzo"]
+layout_mode = 0
+offset_left = 841.0
+offset_top = 416.0
+offset_right = 873.0
+offset_bottom = 474.0
+mouse_filter = 2
+texture = ExtResource("tex_10")
+expand_mode = 1
+stretch_mode = 0
+z_index = 28
+
+[node name="Chef_Michelle" type="TextureRect" parent="Lienzo" groups=["chef"]]
+layout_mode = 0
+offset_left = 0.0
+offset_top = 115.0
+offset_right = 256.0
+offset_bottom = 660.0
+mouse_filter = 2
+texture = ExtResource("tex_11")
+expand_mode = 1
+stretch_mode = 0
+z_index = 30
+
+[node name="Ticket_Verde" type="TextureRect" parent="Lienzo" groups=["ticket"]]
+layout_mode = 0
+offset_left = 338.0
+offset_top = 64.0
+offset_right = 466.0
+offset_bottom = 232.0
+mouse_filter = 2
+texture = ExtResource("tex_12")
+expand_mode = 1
+stretch_mode = 0
+z_index = 32
+
+[node name="Hamburguesa_Sola_2" type="TextureRect" parent="Lienzo"]
+layout_mode = 0
+offset_left = 375.0
+offset_top = 117.0
+offset_right = 429.0
+offset_bottom = 165.0
+mouse_filter = 2
+texture = ExtResource("tex_7")
+expand_mode = 1
+stretch_mode = 0
+z_index = 34
+
+[node name="Ticket_Verde_2" type="TextureRect" parent="Lienzo" groups=["ticket"]]
+layout_mode = 0
+offset_left = 572.0
+offset_top = 64.0
+offset_right = 700.0
+offset_bottom = 232.0
+mouse_filter = 2
+texture = ExtResource("tex_12")
+expand_mode = 1
+stretch_mode = 0
+z_index = 36
+
+[node name="Perrito_Caliente_2" type="TextureRect" parent="Lienzo"]
+layout_mode = 0
+offset_left = 602.0
+offset_top = 117.0
+offset_right = 669.0
+offset_bottom = 165.0
+mouse_filter = 2
+texture = ExtResource("tex_8")
+expand_mode = 1
+stretch_mode = 0
+z_index = 38
+
+[node name="Ticket_Rojo" type="TextureRect" parent="Lienzo" groups=["ticket"]]
+layout_mode = 0
+offset_left = 809.0
+offset_top = 64.0
+offset_right = 931.0
+offset_bottom = 232.0
+mouse_filter = 2
+texture = ExtResource("tex_13")
+expand_mode = 1
+stretch_mode = 0
+z_index = 40
+
+[node name="Patatas_Fritas" type="TextureRect" parent="Lienzo"]
+layout_mode = 0
+offset_left = 850.0
+offset_top = 117.0
+offset_right = 891.0
+offset_bottom = 165.0
+mouse_filter = 2
+texture = ExtResource("tex_14")
+expand_mode = 1
+stretch_mode = 0
+z_index = 42
+
+[node name="Ticket_Verde_3" type="TextureRect" parent="Lienzo" groups=["ticket"]]
+layout_mode = 0
+offset_left = 1040.0
+offset_top = 64.0
+offset_right = 1168.0
+offset_bottom = 232.0
+mouse_filter = 2
+texture = ExtResource("tex_12")
+expand_mode = 1
+stretch_mode = 0
+z_index = 44
+
+[node name="Refresco_Cola_2" type="TextureRect" parent="Lienzo"]
+layout_mode = 0
+offset_left = 1091.0
+offset_top = 117.0
+offset_right = 1117.0
+offset_bottom = 165.0
+mouse_filter = 2
+texture = ExtResource("tex_10")
+expand_mode = 1
+stretch_mode = 0
+z_index = 46
+
+[node name="Modulo_Recto" type="TextureRect" parent="Lienzo"]
+layout_mode = 0
+offset_left = 43.0
+offset_top = 440.0
+offset_right = 377.0
+offset_bottom = 660.0
+mouse_filter = 2
+texture = ExtResource("tex_15")
+expand_mode = 1
+stretch_mode = 0
+z_index = 48
+
+[node name="Modulo_Recto_2" type="TextureRect" parent="Lienzo"]
+layout_mode = 0
+offset_left = 473.0
+offset_top = 440.0
+offset_right = 807.0
+offset_bottom = 660.0
+mouse_filter = 2
+texture = ExtResource("tex_15")
+expand_mode = 1
+stretch_mode = 0
+z_index = 50
+
+[node name="Modulo_Recto_3" type="TextureRect" parent="Lienzo"]
+layout_mode = 0
+offset_left = 903.0
+offset_top = 440.0
+offset_right = 1237.0
+offset_bottom = 660.0
+mouse_filter = 2
+texture = ExtResource("tex_15")
+expand_mode = 1
+stretch_mode = 0
+z_index = 52
+
+[node name="Frente_Mostrador" type="TextureRect" parent="Lienzo"]
+layout_mode = 0
+offset_left = 0.0
+offset_top = 520.0
+offset_right = 1280.0
+offset_bottom = 720.0
+mouse_filter = 2
+texture = ExtResource("tex_16")
+expand_mode = 1
+stretch_mode = 0
+z_index = 54
+
+[node name="Estante_Linea_A" type="ColorRect" parent="Lienzo"]
+layout_mode = 0
+offset_left = 0.0
+offset_top = 628.0
+offset_right = 1280.0
+offset_bottom = 636.0
+mouse_filter = 2
+color = Color(0.07, 0.086, 0.118, 1)
+z_index = 55
+
+[node name="Estante_Linea_B" type="ColorRect" parent="Lienzo"]
+layout_mode = 0
+offset_left = 0.0
+offset_top = 636.0
+offset_right = 1280.0
+offset_bottom = 642.0
+mouse_filter = 2
+color = Color(0.71, 0.745, 0.8, 1)
+z_index = 55
+
+[node name="Estante_Linea_C" type="ColorRect" parent="Lienzo"]
+layout_mode = 0
+offset_left = 0.0
+offset_top = 642.0
+offset_right = 1280.0
+offset_bottom = 648.0
+mouse_filter = 2
+color = Color(0.275, 0.306, 0.361, 0.7)
+z_index = 55
+
+[node name="Plancha" type="TextureRect" parent="Lienzo"]
+layout_mode = 0
+offset_left = 196.0
+offset_top = 335.0
+offset_right = 443.0
+offset_bottom = 520.0
+mouse_filter = 2
+texture = ExtResource("tex_17")
+expand_mode = 1
+stretch_mode = 0
+z_index = 56
+
+[node name="Freidora" type="TextureRect" parent="Lienzo"]
+layout_mode = 0
+offset_left = 428.0
+offset_top = 345.0
+offset_right = 612.0
+offset_bottom = 520.0
+mouse_filter = 2
+texture = ExtResource("tex_18")
+expand_mode = 1
+stretch_mode = 0
+z_index = 58
+
+[node name="Dispensador_Refrescos" type="TextureRect" parent="Lienzo"]
+layout_mode = 0
+offset_left = 638.0
+offset_top = 345.0
+offset_right = 763.0
+offset_bottom = 495.0
+mouse_filter = 2
+texture = ExtResource("tex_19")
+expand_mode = 1
+stretch_mode = 0
+z_index = 60
+
+[node name="Calentador_Comida" type="TextureRect" parent="Lienzo"]
+layout_mode = 0
+offset_left = 768.0
+offset_top = 355.0
+offset_right = 941.0
+offset_bottom = 520.0
+mouse_filter = 2
+texture = ExtResource("tex_20")
+expand_mode = 1
+stretch_mode = 0
+z_index = 62
+
+[node name="Tostador_Panes" type="TextureRect" parent="Lienzo"]
+layout_mode = 0
+offset_left = 947.0
+offset_top = 370.0
+offset_right = 1083.0
+offset_bottom = 520.0
+mouse_filter = 2
+texture = ExtResource("tex_21")
+expand_mode = 1
+stretch_mode = 0
+z_index = 64
+
+[node name="Caja_Registradora" type="TextureRect" parent="Lienzo"]
+layout_mode = 0
+offset_left = 1088.0
+offset_top = 375.0
+offset_right = 1262.0
+offset_bottom = 530.0
+mouse_filter = 2
+texture = ExtResource("tex_22")
+expand_mode = 1
+stretch_mode = 0
+z_index = 66
+
+[node name="Pila_Platos" type="TextureRect" parent="Lienzo"]
+layout_mode = 0
+offset_left = 200.0
+offset_top = 448.0
+offset_right = 289.0
+offset_bottom = 518.0
+mouse_filter = 2
+texture = ExtResource("tex_23")
+expand_mode = 1
+stretch_mode = 0
+z_index = 68
+
+[node name="Hamburguesa_Doble" type="TextureRect" parent="Lienzo"]
+layout_mode = 0
+offset_left = 210.0
+offset_top = 414.0
+offset_right = 279.0
+offset_bottom = 480.0
+mouse_filter = 2
+texture = ExtResource("tex_24")
+expand_mode = 1
+stretch_mode = 0
+z_index = 70
+
+[node name="Plato_Vacio" type="TextureRect" parent="Lienzo"]
+layout_mode = 0
+offset_left = 320.0
+offset_top = 462.0
+offset_right = 379.0
+offset_bottom = 522.0
+mouse_filter = 2
+texture = ExtResource("tex_25")
+expand_mode = 1
+stretch_mode = 0
+z_index = 72
+
+[node name="Perrito_Caliente_3" type="TextureRect" parent="Lienzo"]
+layout_mode = 0
+offset_left = 316.0
+offset_top = 436.0
+offset_right = 385.0
+offset_bottom = 486.0
+mouse_filter = 2
+texture = ExtResource("tex_8")
+expand_mode = 1
+stretch_mode = 0
+z_index = 74
+
+[node name="Patatas_Fritas_2" type="TextureRect" parent="Lienzo"]
+layout_mode = 0
+offset_left = 668.0
+offset_top = 443.0
+offset_right = 733.0
+offset_bottom = 519.0
+mouse_filter = 2
+texture = ExtResource("tex_14")
+expand_mode = 1
+stretch_mode = 0
+z_index = 76
+
+[node name="Refresco_Cola_3" type="TextureRect" parent="Lienzo"]
+layout_mode = 0
+offset_left = 880.0
+offset_top = 443.0
+offset_right = 920.0
+offset_bottom = 515.0
+mouse_filter = 2
+texture = ExtResource("tex_10")
+expand_mode = 1
+stretch_mode = 0
+z_index = 78
+
+[node name="Batido" type="TextureRect" parent="Lienzo"]
+layout_mode = 0
+offset_left = 940.0
+offset_top = 424.0
+offset_right = 980.0
+offset_bottom = 504.0
+mouse_filter = 2
+texture = ExtResource("tex_26")
+expand_mode = 1
+stretch_mode = 0
+z_index = 80
+
+[node name="Cupcake_2" type="TextureRect" parent="Lienzo"]
+layout_mode = 0
+offset_left = 1018.0
+offset_top = 463.0
+offset_right = 1071.0
+offset_bottom = 517.0
+mouse_filter = 2
+texture = ExtResource("tex_9")
+expand_mode = 1
+stretch_mode = 0
+z_index = 82
+
+[node name="Mostaza" type="TextureRect" parent="Lienzo"]
+layout_mode = 0
+offset_left = 432.0
+offset_top = 409.0
+offset_right = 468.0
+offset_bottom = 485.0
+mouse_filter = 2
+texture = ExtResource("tex_27")
+expand_mode = 1
+stretch_mode = 0
+z_index = 84
+
+[node name="Ketchup" type="TextureRect" parent="Lienzo"]
+layout_mode = 0
+offset_left = 467.0
+offset_top = 412.0
+offset_right = 503.0
+offset_bottom = 488.0
+mouse_filter = 2
+texture = ExtResource("tex_28")
+expand_mode = 1
+stretch_mode = 0
+z_index = 86
+
+[node name="Sal_Pimienta" type="TextureRect" parent="Lienzo"]
+layout_mode = 0
+offset_left = 604.0
+offset_top = 436.0
+offset_right = 655.0
+offset_bottom = 480.0
+mouse_filter = 2
+texture = ExtResource("tex_29")
+expand_mode = 1
+stretch_mode = 0
+z_index = 88
+
+[node name="Servilletero" type="TextureRect" parent="Lienzo"]
+layout_mode = 0
+offset_left = 1084.0
+offset_top = 449.0
+offset_right = 1157.0
+offset_bottom = 519.0
+mouse_filter = 2
+texture = ExtResource("tex_30")
+expand_mode = 1
+stretch_mode = 0
+z_index = 90
+
+[node name="Bol_Lechuga" type="TextureRect" parent="Lienzo"]
+layout_mode = 0
+offset_left = 1122.0
+offset_top = 407.0
+offset_right = 1188.0
+offset_bottom = 461.0
+mouse_filter = 2
+texture = ExtResource("tex_31")
+expand_mode = 1
+stretch_mode = 0
+z_index = 92
+
+[node name="Bandejas_Apiladas" type="TextureRect" parent="Lienzo"]
+layout_mode = 0
+offset_left = 62.0
+offset_top = 573.0
+offset_right = 138.0
+offset_bottom = 627.0
+mouse_filter = 2
+texture = ExtResource("tex_32")
+expand_mode = 1
+stretch_mode = 0
+z_index = 94
+
+[node name="Pila_Platos_2" type="TextureRect" parent="Lienzo"]
+layout_mode = 0
+offset_left = 162.0
+offset_top = 574.0
+offset_right = 228.0
+offset_bottom = 626.0
+mouse_filter = 2
+texture = ExtResource("tex_23")
+expand_mode = 1
+stretch_mode = 0
+z_index = 96
+
+[node name="Servilletero_2" type="TextureRect" parent="Lienzo"]
+layout_mode = 0
+offset_left = 1086.0
+offset_top = 572.0
+offset_right = 1143.0
+offset_bottom = 627.0
+mouse_filter = 2
+texture = ExtResource("tex_30")
+expand_mode = 1
+stretch_mode = 0
+z_index = 98
+
+[node name="Bote_Propinas" type="TextureRect" parent="Lienzo"]
+layout_mode = 0
+offset_left = 1024.0
+offset_top = 580.0
+offset_right = 1067.0
+offset_bottom = 630.0
+mouse_filter = 2
+texture = ExtResource("tex_33")
+expand_mode = 1
+stretch_mode = 0
+z_index = 100
+
+[node name="Pila_Monedas" type="TextureRect" parent="Lienzo"]
+layout_mode = 0
+offset_left = 1167.0
+offset_top = 566.0
+offset_right = 1243.0
+offset_bottom = 644.0
+mouse_filter = 2
+texture = ExtResource("tex_34")
+expand_mode = 1
+stretch_mode = 0
+z_index = 102
+
+[node name="Moneda" type="TextureRect" parent="Lienzo"]
+layout_mode = 0
+offset_left = 1220.0
+offset_top = 611.0
+offset_right = 1261.0
+offset_bottom = 653.0
+mouse_filter = 2
+texture = ExtResource("tex_35")
+expand_mode = 1
+stretch_mode = 0
+z_index = 104
+
+[node name="Vapor" type="TextureRect" parent="Lienzo" groups=["vapor"]]
+layout_mode = 0
+offset_left = 250.0
+offset_top = 320.0
+offset_right = 349.0
+offset_bottom = 420.0
+mouse_filter = 2
+texture = ExtResource("tex_36")
+expand_mode = 1
+stretch_mode = 0
+z_index = 106
+
+[node name="Vapor_2" type="TextureRect" parent="Lienzo" groups=["vapor"]]
+layout_mode = 0
+offset_left = 456.0
+offset_top = 325.0
+offset_right = 545.0
+offset_bottom = 415.0
+mouse_filter = 2
+texture = ExtResource("tex_36")
+expand_mode = 1
+stretch_mode = 0
+z_index = 108
+
+[node name="Vapor_3" type="TextureRect" parent="Lienzo" groups=["vapor"]]
+layout_mode = 0
+offset_left = 660.0
+offset_top = 365.0
+offset_right = 739.0
+offset_bottom = 445.0
+mouse_filter = 2
+texture = ExtResource("tex_36")
+expand_mode = 1
+stretch_mode = 0
+z_index = 110
+
+[node name="Chispas" type="TextureRect" parent="Lienzo" groups=["sparkle"]]
+layout_mode = 0
+offset_left = 1180.0
+offset_top = 555.0
+offset_right = 1265.0
+offset_bottom = 643.0
+mouse_filter = 2
+texture = ExtResource("tex_37")
+expand_mode = 1
+stretch_mode = 0
+z_index = 112
+
+[node name="Toldo_Verde" type="TextureRect" parent="Lienzo"]
+layout_mode = 0
+offset_left = -24.0
+offset_top = -18.0
+offset_right = 266.0
+offset_bottom = 132.0
+mouse_filter = 2
+texture = ExtResource("tex_38")
+expand_mode = 1
+stretch_mode = 0
+z_index = 114
+
+[node name="Moneda_2" type="TextureRect" parent="Lienzo"]
+layout_mode = 0
+offset_left = 930.0
+offset_top = 14.0
+offset_right = 962.0
+offset_bottom = 46.0
+mouse_filter = 2
+texture = ExtResource("tex_35")
+expand_mode = 1
+stretch_mode = 0
+z_index = 116
+
+[node name="Gema" type="TextureRect" parent="Lienzo"]
+layout_mode = 0
+offset_left = 1053.0
+offset_top = 14.0
+offset_right = 1091.0
+offset_bottom = 46.0
+mouse_filter = 2
+texture = ExtResource("tex_39")
+expand_mode = 1
+stretch_mode = 0
+z_index = 118
+
+[node name="Reloj" type="TextureRect" parent="Lienzo"]
+layout_mode = 0
+offset_left = 1130.0
+offset_top = 14.0
+offset_right = 1161.0
+offset_bottom = 46.0
+mouse_filter = 2
+texture = ExtResource("tex_40")
+expand_mode = 1
+stretch_mode = 0
+z_index = 120
+
+[node name="Estrella_Dorada" type="TextureRect" parent="Lienzo"]
+layout_mode = 0
+offset_left = 1230.0
+offset_top = 16.0
+offset_right = 1259.0
+offset_bottom = 44.0
+mouse_filter = 2
+texture = ExtResource("tex_41")
+expand_mode = 1
+stretch_mode = 0
+z_index = 122
+
+[node name="Engranaje" type="TextureRect" parent="Lienzo"]
+layout_mode = 0
+offset_left = 8.0
+offset_top = 648.0
+offset_right = 63.0
+offset_bottom = 702.0
+mouse_filter = 2
+texture = ExtResource("tex_42")
+expand_mode = 1
+stretch_mode = 0
+z_index = 124
+
+[node name="Flecha" type="TextureRect" parent="Lienzo"]
+layout_mode = 0
+offset_left = 1203.0
+offset_top = 648.0
+offset_right = 1273.0
+offset_bottom = 700.0
+mouse_filter = 2
+texture = ExtResource("tex_43")
+expand_mode = 1
+stretch_mode = 0
+z_index = 126
+
+[node name="Texto_Burger" type="Label" parent="Lienzo"]
+layout_mode = 0
+offset_left = 28.0
+offset_top = 8.0
+offset_right = 328.0
+offset_bottom = 52.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0.118, 0.275, 0.176, 1)
+theme_override_constants/outline_size = 6
+theme_override_fonts/font = ExtResource("font_tit")
+theme_override_font_sizes/font_size = 34
+text = "BURGER"
+z_index = 200
+
+[node name="Texto_Street" type="Label" parent="Lienzo"]
+layout_mode = 0
+offset_left = 28.0
+offset_top = 46.0
+offset_right = 328.0
+offset_bottom = 82.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 0.953, 0.667, 1)
+theme_override_colors/font_outline_color = Color(0.118, 0.275, 0.176, 1)
+theme_override_constants/outline_size = 5
+theme_override_fonts/font = ExtResource("font_tit")
+theme_override_font_sizes/font_size = 24
+text = "STREET"
+z_index = 200
+
+[node name="Texto_Monedas" type="Label" parent="Lienzo"]
+layout_mode = 0
+offset_left = 962.0
+offset_top = 14.0
+offset_right = 1082.0
+offset_bottom = 44.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(1.0, 0.925, 0.702, 1.0)
+theme_override_fonts/font = ExtResource("font_ui")
+theme_override_font_sizes/font_size = 19
+vertical_alignment = 1
+text = "1.250"
+z_index = 200
+
+[node name="Texto_Gemas" type="Label" parent="Lienzo"]
+layout_mode = 0
+offset_left = 1088.0
+offset_top = 14.0
+offset_right = 1208.0
+offset_bottom = 44.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.745, 0.98, 1.0, 1.0)
+theme_override_fonts/font = ExtResource("font_ui")
+theme_override_font_sizes/font_size = 19
+vertical_alignment = 1
+text = "12"
+z_index = 200
+
+[node name="Texto_Reloj" type="Label" parent="Lienzo"]
+layout_mode = 0
+offset_left = 1162.0
+offset_top = 14.0
+offset_right = 1282.0
+offset_bottom = 44.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(1.0, 1.0, 1.0, 1.0)
+theme_override_fonts/font = ExtResource("font_ui")
+theme_override_font_sizes/font_size = 19
+vertical_alignment = 1
+text = "00:45"
+z_index = 200
+
+[node name="Precio_Ticket_1" type="Label" parent="Lienzo" groups=["ticket"]]
+layout_mode = 0
+offset_left = 362.0
+offset_top = 192.79999999999998
+offset_right = 442.0
+offset_bottom = 220.79999999999998
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 0.98, 0.9, 1)
+theme_override_colors/font_outline_color = Color(0.118, 0.09, 0.04, 0.9)
+theme_override_constants/outline_size = 4
+theme_override_fonts/font = ExtResource("font_ui")
+theme_override_font_sizes/font_size = 19
+horizontal_alignment = 1
+vertical_alignment = 1
+text = "12"
+z_index = 200
+
+[node name="Precio_Ticket_2" type="Label" parent="Lienzo" groups=["ticket"]]
+layout_mode = 0
+offset_left = 596.0
+offset_top = 192.79999999999998
+offset_right = 676.0
+offset_bottom = 220.79999999999998
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 0.98, 0.9, 1)
+theme_override_colors/font_outline_color = Color(0.118, 0.09, 0.04, 0.9)
+theme_override_constants/outline_size = 4
+theme_override_fonts/font = ExtResource("font_ui")
+theme_override_font_sizes/font_size = 19
+horizontal_alignment = 1
+vertical_alignment = 1
+text = "10"
+z_index = 200
+
+[node name="Precio_Ticket_3" type="Label" parent="Lienzo" groups=["ticket"]]
+layout_mode = 0
+offset_left = 830.0
+offset_top = 192.79999999999998
+offset_right = 910.0
+offset_bottom = 220.79999999999998
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 0.98, 0.9, 1)
+theme_override_colors/font_outline_color = Color(0.118, 0.09, 0.04, 0.9)
+theme_override_constants/outline_size = 4
+theme_override_fonts/font = ExtResource("font_ui")
+theme_override_font_sizes/font_size = 19
+horizontal_alignment = 1
+vertical_alignment = 1
+text = "8"
+z_index = 200
+
+[node name="Precio_Ticket_4" type="Label" parent="Lienzo" groups=["ticket"]]
+layout_mode = 0
+offset_left = 1064.0
+offset_top = 192.79999999999998
+offset_right = 1144.0
+offset_bottom = 220.79999999999998
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 0.98, 0.9, 1)
+theme_override_colors/font_outline_color = Color(0.118, 0.09, 0.04, 0.9)
+theme_override_constants/outline_size = 4
+theme_override_fonts/font = ExtResource("font_ui")
+theme_override_font_sizes/font_size = 19
+horizontal_alignment = 1
+vertical_alignment = 1
+text = "6"
+z_index = 200

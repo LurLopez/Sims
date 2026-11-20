@@ -18,12 +18,16 @@ const ICONOS_CARRERA: Dictionary = {
 
 func _ready():
 	title = "Elegir carrera"
-	min_size = Vector2(580, 520)
+	min_size = Vector2(620, 640)
 	ok_button_text = "Cancelar"
 	_Construir_UI()
 	Estilos_UI.estilizar_dialogo(self)
 	Estilos_UI.aplicar_estilo_boton(get_ok_button(), "secundario")
 	get_ok_button().custom_minimum_size = Vector2(128, 44)
+	# El autowrap de las descripciones infla el alto inicial del diálogo; fijamos
+	# un tamaño tras el popup para que el botón Cancelar quede visible.
+	Estilos_UI.fijar_tamano_dialogo.call_deferred(self, Vector2i(620, 640))
+	confirmed.connect(queue_free)
 
 
 func _Construir_UI():

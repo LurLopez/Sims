@@ -37,13 +37,16 @@ func _ready():
 		indice_dia = 2
 		hora_seleccionada = 15
 	title = "Programar examen"
-	min_size = Vector2(560, 440)
+	min_size = Vector2(600, 520)
 	ok_button_text = "Confirmar horario"
 	get_ok_button().pressed.connect(_on_confirmar_pressed)
 	var cancel := add_cancel_button("Cancelar")
 	cancel.pressed.connect(queue_free)
 	_Construir_UI()
 	Estilos_UI.estilizar_dialogo(self)
+	# Evita que el autowrap del texto infle el alto inicial del diálogo y
+	# empuje los botones fuera de la pantalla.
+	Estilos_UI.fijar_tamano_dialogo.call_deferred(self, Vector2i(600, 520))
 
 
 func _Construir_UI():

@@ -6,6 +6,7 @@ const CREADOR_PERSONAJE := preload("res://Scripts/GUI/Menu/Creador_Personaje.gd"
 @onready var contenido: Control = $Contenido
 
 var _boton_principal: Button
+var _boton_musica: Button
 var _intro_en_curso := false
 var _creador_abierto: CanvasLayer
 var _modal_confirmacion: CanvasLayer
@@ -15,9 +16,12 @@ var _modo_rapido_seleccionado: bool = false
 func _ready() -> void:
 	Guardar_Variables_Estaticas.load_game()
 	Guardar_Variables_Dinamicas.load_game()
+	Musica.Reproducir_General()
 	_construir_menu()
 	_animar_entrada()
 	get_viewport().size_changed.connect(_Ajustar_Pie)
+	if not Musica.silencio_cambiado.is_connected(_on_musica_silencio_cambiado):
+		Musica.silencio_cambiado.connect(_on_musica_silencio_cambiado)
 
 	if Variables_Dinamicas.Muerto:
 		_Mostrar_Game_Over()
@@ -33,6 +37,23 @@ func _Ajustar_Pie() -> void:
 	var pie := contenido.get_node_or_null("Pie_Menu") as Control
 	if pie != null:
 		pie.position = Vector2(24, _Alto_Pantalla() - 64.0)
+
+
+func _alternar_musica() -> void:
+	Musica.Alternar_Silencio()
+	_Actualizar_Boton_Musica()
+
+
+func _on_musica_silencio_cambiado(_silenciado: bool) -> void:
+	_Actualizar_Boton_Musica()
+
+
+func _Actualizar_Boton_Musica() -> void:
+	if _boton_musica == null or not is_instance_valid(_boton_musica):
+		return
+	var silenciado := Musica.Esta_Silenciado()
+	_boton_musica.icon = Estilos_UI.icono("x" if silenciado else "volume-2")
+	_boton_musica.tooltip_text = "Activar la música" if silenciado else "Silenciar la música"
 
 
 func _construir_menu() -> void:
@@ -64,6 +85,13 @@ func _construir_menu() -> void:
 	var version_pill := Estilos_UI.pill_estado("v0.33", Color(0, 0, 0, 0.24), Color.WHITE)
 	version_pill.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	header.add_child(version_pill)
+
+	_boton_musica = Estilos_UI.boton_icono("volume-2", Estilos_UI.ROJO_BIT, 40)
+	_boton_musica.name = "Boton_Musica"
+	_boton_musica.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	_boton_musica.pressed.connect(_alternar_musica)
+	header.add_child(_boton_musica)
+	_Actualizar_Boton_Musica()
 
 	# --- Tarjeta principal ---
 	var card := PanelContainer.new()
@@ -526,8 +554,9 @@ func _reiniciar_partida_desde_cero() -> void:
 	Variables_Dinamicas.En_La_Calle = false
 	Variables_Dinamicas.Ultima_Fecha_Alquiler = -1
 	Variables_Dinamicas.Trabajo_Actual = null
-	Variables_Dinamicas.Objetos_Poseidos = {}
-	Variables_Dinamicas.Objeto_Seleccionado = {}
+	Variables_Dinamicas.Objetos_Poseidos = {"Ropa_Calle": true}
+	Variables_Dinamicas.Objeto_Seleccionado = {"Ropa": "Ropa_Calle"}
+	Variables_Dinamicas.Cocina_Estado = Variables_Dinamicas.Cocina_Estado_Por_Defecto()
 	Variables_Dinamicas.Minute_Day = 0
 	Variables_Dinamicas.Minute_Minute = 0
 	Variables_Dinamicas.Minute = 0
@@ -539,6 +568,7 @@ func _reiniciar_partida_desde_cero() -> void:
 		"semana_inscripcion": -1, "total_inscritos": 0,
 		"resultado_puesto": -1, "resultado_procesado": false
 	}
+	Variables_Dinamicas.Carrera_Futbol = Variables_Dinamicas.Carrera_Futbol_Por_Defecto()
 	Variables_Dinamicas.Mensajes = []
 	Variables_Dinamicas.Esta_Invirtiendo = false
 	Variables_Dinamicas.Dinero_Invertido = 0.0

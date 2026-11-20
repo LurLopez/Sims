@@ -541,4 +541,115 @@ func test_ui_escena_principal_ready_y_pestanas_del_perfil() -> void:
 	raiz.free()
 
 
+func test_ui_calendario_y_reloj_sin_bugs() -> void:
+	Variables_Dinamicas.Minute_Day = 0
+	Variables_Dinamicas.Minute_Minute = 603
+	for m in range(603):
+		Variables_Dinamicas.Matriz_Jugador[m][0] = "Actividad_Aleatoria"
+	var act_cocinar = Variables_Estaticas.Catalogo_Actividades["Cocinar"]
+	for m in range(615, 630):
+		Variables_Dinamicas.Matriz_Jugador[m][0] = act_cocinar
+	var act_estudiar = Variables_Estaticas.Catalogo_Actividades["Estudiar"]
+	for m in range(870, 960):
+		Variables_Dinamicas.Matriz_Jugador[m][1] = act_estudiar
+
+	var raiz = load("res://Escenas/Escena_Principal/Escena principal.tscn").instantiate()
+	raiz.mirar_semana = 0
+	raiz.Inicializar_Otros_Scripts()
+	raiz._Redisenar_Horario()
+	raiz._Redisenar_Seleccionar_Horario()
+	raiz.Iniciar_Bloques_Actividad()
+
+	var col_horas = raiz.get_node("Actividades/Horario_Semanal/Mover_Vertical/Todo calendario/Horario")
+	assert_eq(col_horas.get_child_count(), 48, "48 filas de media hora en la columna de horas")
+	(col_horas.get_child(0) as Button).pressed.emit()
+
+	var btn_ant: Button = raiz.get_node("Actividades/Horario_Semanal/OPCIONES_CALENDARIO/ANTERIOR SEMANA")
+	assert_false(btn_ant.visible, "En semana 0 ANTERIOR SEMANA debe estar oculto")
+
+	var col_lunes = raiz.get_node("Actividades/Horario_Semanal/Mover_Vertical/Todo calendario/Dias/Lunes")
+	assert_eq(col_lunes.get_child_count(), 4, "Lunes debe dividirse en 4 bloques (pasado, libre 10m, cocinar 15m, libre resto)")
+
+	var b_pasado: Button = col_lunes.get_child(0)
+	var b_cocinar_15m: Button = col_lunes.get_child(2)
+	assert_eq(b_pasado.get_meta("estado"), "pasado", "El slot en curso con Actividad_Aleatoria debe ser pasado")
+	assert_eq(b_cocinar_15m.get_meta("estado"), "ocupado", "El bloque de Cocinar debe ser ocupado")
+
+	raiz.actividades_bloque_gui.click_bloque(b_cocinar_15m, raiz)
+	assert_true(raiz.actividades_bloque_gui.comprobar_seleccionado())
+	var hb_cocinar = raiz.actividades_bloque_gui.devolver_hora_desde_posiciones()
+	assert_eq(hb_cocinar.dia_inicio, "Lunes")
+	assert_eq(hb_cocinar.hora_inicio, 10)
+	assert_eq(hb_cocinar.minuto_inicio, 15)
+	assert_eq(hb_cocinar.hora_final, 10)
+	assert_eq(hb_cocinar.minuto_final, 30)
+	hb_cocinar.free()
+
+	# Eliminar actividad debe refrescar el calendario al instante y ocultar el botón Eliminar
+	raiz._on_eliminar_actividad_pressed()
+	assert_eq(col_lunes.get_child_count(), 2, "Tras eliminar Cocinar, los bloques libres se fusionan")
+	var btn_elim: Button = raiz.get_node("Actividades/Horario_Semanal/OPCIONES_CALENDARIO/ELIMINAR_ACTIVIDAD")
+	assert_false(btn_elim.visible)
+	if raiz.horario_bloque != null and is_instance_valid(raiz.horario_bloque):
+		raiz.horario_bloque.free()
+		raiz.horario_bloque = null
+
+	# Selector de horario: bloque de 1h (10:00-11:00), bajar y subir minutos desde :00
+	var bloque_1h = HorarioDesdeBloque.new()
+	bloque_1h.Inicializar("Lunes", 10, 0, "Lunes", 11, 0)
+	raiz.horario_bloque = bloque_1h
+	raiz.actividades_reloj_gui.Comprobar_Visibilidad(raiz, bloque_1h)
+	var h = raiz.actividades_reloj_gui.horario
+	assert_eq(h.hora_inicio_texto.text, "10")
+	assert_eq(h.minuto_inicio_texto.text, "00")
+	assert_eq(h.hora_final_texto.text, "11")
+	assert_eq(h.minuto_final_texto.text, "00")
+
+	raiz.Final_Minuto_Abajo()
+	assert_eq(h.hora_final_texto.text, "10")
+	assert_eq(h.minuto_final_texto.text, "55")
+
+	raiz.Final_Minuto_Arriba()
+	assert_eq(h.hora_final_texto.text, "11")
+	assert_eq(h.minuto_final_texto.text, "00")
+
+	# Selector de horario: bloque de 2h (10:00-12:00), reactivación de botones cuando minuto_final == 0
+	var bloque_2h = HorarioDesdeBloque.new()
+	bloque_2h.Inicializar("Lunes", 10, 0, "Lunes", 12, 0)
+	raiz.horario_bloque = bloque_2h
+	raiz.actividades_reloj_gui.Comprobar_Visibilidad(raiz, bloque_2h)
+	assert_false(h.hora_inicio_arriba.disabled)
+	raiz.Inicio_Hora_Arriba()
+	assert_eq(h.hora_inicio_texto.text, "11")
+	assert_true(h.hora_inicio_arriba.disabled)
+	raiz.Inicio_Hora_Abajo()
+	assert_eq(h.hora_inicio_texto.text, "10")
+	assert_false(h.hora_inicio_arriba.disabled)
+	assert_false(h.hora_final_abajo.disabled)
+
+	# MiniCalendarioPreview detecta actividad en :30 (Martes 14:30-16:00)
+	var mini = MiniCalendarioPreview.new()
+	mini.crear(raiz, 0)
+	mini.actualizar_rango(0, 10, 0, 0, 12, 0)
+	mini.aplicar_blink(true)
+	assert_ne(mini._colores_base[1][14], MiniCalendarioPreview.COLOR_LIBRE)
+	mini.limpiar()
+	mini.free()
+
+	if raiz.horario_bloque != null and raiz.horario_bloque != bloque_1h and raiz.horario_bloque != bloque_2h:
+		raiz.horario_bloque.free()
+	bloque_1h.free()
+	bloque_2h.free()
+	if raiz.actividades_reloj_gui != null and is_instance_valid(raiz.actividades_reloj_gui.horario):
+		raiz.actividades_reloj_gui.horario.free()
+	if raiz.actividades_bloque_gui != null and is_instance_valid(raiz.actividades_bloque_gui.bloque_columna):
+		raiz.actividades_bloque_gui.bloque_columna.free()
+	for auxiliar in [raiz.actividades_reloj_gui, raiz.actividades_bloque_gui,
+			raiz.necesidades_basicas_gui, raiz.first_time_logica]:
+		if auxiliar != null and is_instance_valid(auxiliar):
+			auxiliar.free()
+	raiz.free()
+
+
+
 

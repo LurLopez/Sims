@@ -628,6 +628,20 @@ static func estilizar_dialogo(dlg: AcceptDialog) -> void:
 			cancel.custom_minimum_size = Vector2(112, 44)
 
 
+# Los AcceptDialog con Labels en autowrap calculan una altura mínima enorme antes
+# de tener ancho asignado (el texto entero en una línea), así que el diálogo se
+# abre gigante y sus botones quedan fuera de la pantalla. Llamar en diferido
+# justo después de abrir el diálogo para fijar un tamaño válido y centrarlo.
+static func fijar_tamano_dialogo(dlg: AcceptDialog, tam: Vector2i) -> void:
+	if dlg == null or not dlg.is_inside_tree():
+		return
+	dlg.size = tam
+	var base := dlg.get_parent()
+	if base != null and base.is_inside_tree():
+		var area: Vector2 = base.get_viewport().get_visible_rect().size
+		dlg.position = Vector2i((area - Vector2(tam)) * 0.5)
+
+
 static func animar_entrada(control: Control, retardo: float = 0.0) -> void:
 	if control == null:
 		return
@@ -662,6 +676,7 @@ const ICONOS_BOTONES := {
 	"Economia_Button": ["Economía", "wallet"],
 	"Calendario_Button": ["Horario", "calendar-days"],
 	"Carrera_Button": ["Carrera", "graduation-cap"],
+	"Minijuegos_Button": ["Minijuegos", "puzzle"],
 	"Tienda_Button": ["Tienda", "store"],
 	"Temporales": ["Temporales", "clock"],
 	"Fijas": ["Fijas", "clipboard-list"],
@@ -670,6 +685,7 @@ const ICONOS_BOTONES := {
 	"Progreso": ["Progreso", "trending-up"],
 	"Salir_A_Correr": ["Salir a correr", "footprints"],
 	"Carrera_Deportiva": ["Carrera deportiva", "trophy"],
+	"Boton_Carrera_Futbol": ["Carrera futbolística", "trophy"],
 	"Estudiar": ["Estudiar", "book-open"],
 	"Manualidades": ["Manualidades", "palette"],
 	"Duchar": ["Duchar", "droplet"],
@@ -773,7 +789,7 @@ static func _aplicar_boton_auto(btn: Button) -> void:
 		btn.tooltip_text = info[0] if info.size() > 0 else ""
 		_crear_contenido_nav(btn, info[1] if info.size() > 1 else "circle-help", info[0] if info.size() > 0 else "")
 		aplicar_estilo_boton(btn, "nav")
-	elif btn.name in ["Boton_Perfil", "Economia_Button", "Calendario_Button", "Carrera_Button", "Tienda_Button"]:
+	elif btn.name in ["Boton_Perfil", "Economia_Button", "Calendario_Button", "Carrera_Button", "Minijuegos_Button", "Tienda_Button"]:
 		btn.text = info[0] if info.size() > 0 else btn.text
 		aplicar_estilo_boton(btn, "top", PRIMARIO, info[1] if info.size() > 1 else "")
 		btn.alignment = HORIZONTAL_ALIGNMENT_CENTER

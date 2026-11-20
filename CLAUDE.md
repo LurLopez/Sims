@@ -19,10 +19,13 @@
 | `Funciones_Globales` | `Scripts/Globales/Funciones_Globales.gd` |
 | `Trabajo` | `Scripts/Logica/Escena_Principal/Actividades/Trabajo/Trabajo.gd` |
 | `Actividades` | `Scripts/Logica/Escena_Principal/Actividades/Actividades.gd` |
+| `Sistema_Futbol` | `Scripts/Logica/Escena_Principal/Actividades/Futbol/Sistema_Futbol.gd` |
 | `Alimentacion` | `Scripts/Logica/Escena_Principal/Actividades/Alimentacion.gd` |
+| `Sistema_Cocina` | `Scripts/Logica/Escena_Principal/Minijuego_Cocina/Sistema_Cocina.gd` |
 | `Actividades_Habilidades` | `Scripts/Logica/Escena_Principal/Actividades/Actividades_Habilidades.gd` |
 | `Actividades_Necesidades_Basicas` | `Scripts/Logica/Escena_Principal/Actividades/Actividades_Necesidades_Basicas.gd` |
 | `Gestionar_Visibilidad` | `Scripts/GUI/Escena_Principal/Gestionar_Visibilidad.gd` |
+| `Musica` | `Scripts/Globales/Musica.gd` |
 
 ---
 
@@ -33,6 +36,8 @@
 | `Escenas/Escena_Principal/Escena principal.tscn` | ~1634 | Root + barra nav + paneles stats + calendario actividades |
 | `Escenas/Escena_Principal/Tienda.tscn` | ~869 | Pantalla tienda (objetos Dormir/Comer/Duchar) |
 | `Escenas/Escena_Principal/Pantalla_Mensajes.tscn` | ~235 | Pantalla perfil (Mensajes/Info/Apuntes) |
+| `Escenas/Escena_Principal/Panel_Futbol.tscn` | ~15 | Panel overlay de la carrera de futbolista (se instancia desde `Script_Principal`) |
+| `Escenas/Minijuego_Cocina/Minijuego_Cocina.tscn` | ~12 | Minijuego de cocina estilo *Cooking Fever* en horizontal `1280×720` (overlay `CanvasLayer` desde `Script_Principal`) |
 
 `Tienda` y `Pantalla_Mensajes` son instancias en la escena principal. Los paths de nodo desde el root son idénticos (`$Tienda/Objetos_Dormir/Cama_Basica`, etc.) — los scripts no cambian.
 
@@ -51,7 +56,8 @@ Node2D (root, Script_Principal.gd)
 │   ├── Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones/[Necesidades_Basicas_Opciones|Progreso_Opciones]
 │   ├── Horario_Semanal/[OPCIONES_CALENDARIO|Cabezal_horario|Mover_Vertical/Todo calendario/Dias]
 │   └── Seleccionar_Horario/[Inicio|Final|Cancelar|Crear_Actividad]
-├── Boton_Perfil · Tienda_Button (oculto) · Economia_Button · Calendario_Button · Carrera_Button
+├── Boton_Perfil · Tienda_Button (oculto) · Economia_Button · Calendario_Button · Carrera_Button · Minijuegos_Button
+├── Pantalla_Minijuegos (generada en código; contenedor modular para minijuegos)
 ├── Tienda [instancia Tienda.tscn]
 │   ├── Flecha_Atras · Titulo · Categorias/[Tab_Dormir|Tab_Comer|Tab_Duchar]
 │   ├── Objetos_Dormir/[Cama_Basica|Cama_Premium]/[Imagen_Placeholder|Nombre|Precio|Multiplicador|En_Uso|Comprar|Vender|Elegir]
@@ -61,7 +67,7 @@ Node2D (root, Script_Principal.gd)
     ├── Fondo_Mensajes · Header_Bar · Titulo · Boton_Cerrar
     ├── Tab_Bar/[Tab_Mensajes|Tab_Info|Tab_Apuntes|Tab_Despensa]
     ├── Panel_Info/Scroll_Info/VBox_Info
-    ├── Panel_Apuntes/[Tabs_Libros|Texto_Apuntes|Sin_Apuntes_Label]
+    ├── Panel_Apuntes/[SubTab_Bar(SubTab_Apuntes|SubTab_Ropa)|Scroll_Inventario/Grid_Libros|Scroll_Ropa/VBox_Ropa|Sin_Apuntes_Label]
     ├── Panel_Despensa/Scroll_Tuppers/VBox_Tuppers
     ├── Lista_Mensajes/VBoxContainer
     └── Contenido_Mensaje/[Mensaje_Card|Boton_Volver|Hora_Mensaje_Label|Titulo_Mensaje_Label|Descripcion_Mensaje_Label]
@@ -74,6 +80,10 @@ Node2D (root, Script_Principal.gd)
 - **Nueva pestaña en Perfil** → `Pantalla_Mensajes.tscn`: botón en `Tab_Bar` + panel hijo del root.
 - **Nuevo trabajo de nómina** → botón en `Escena principal.tscn` > `Actividades/Elegir_Actividad/Tipos_De_Actividades/Fijas_Opciones/Trabajo_Opciones` (y en `Trabajo/Actividades_Trabajo_Nomina_Opciones` por compatibilidad). Registrar como `Actividad_Fija_Trabajo` en `Variables_Estaticas.gd`. Si exige cocina, usar `requisito_cocina`. Lógica en `Trabajo.gd`.
 - **Nueva pestaña de Despensa/Tuppers** → la lógica de filas reutilizables está en `Scripts/GUI/Escena_Principal/Tuppers/Tupper_UI.gd`; la despensa del Perfil en `Pantalla_Mensajes.tscn` y el selector modal en `Modal_Tuppers.gd`.
+- **Carrera de futbolista** → botón `Boton_Carrera_Futbol` en `Actividades/Elegir_Actividad/Tipos_De_Actividades/Fijas_Opciones`. La lógica vive en el autoload `Sistema_Futbol`; los horarios en `Calendario_Futbol.gd` y las fórmulas puras en `Simulador_Futbol.gd`. El panel está en `Escenas/Escena_Principal/Panel_Futbol.tscn` y `Scripts/GUI/Escena_Principal/Actividades/Futbol/Panel_Futbol_GUI.gd`. Documentación: `Funcionalidades/Actividades/Futbol/Documentacion/CARRERA_FUTBOL.md`.
+- **Apartado Minijuegos y Cocina (*Cooking Fever*)** → botón `Minijuegos_Button` en la barra superior (5 pestañas) abre `Pantalla_Minijuegos` en `Script_Principal.gd`. Lógica pura y estado en el autoload `Sistema_Cocina`; escena horizontal `1280×720` en `Escenas/Minijuego_Cocina/Minijuego_Cocina.tscn` + `Scripts/GUI/Minijuego_Cocina/Minijuego_Cocina.gd`; ropa equipable en `Objeto_Ropa.gd` y Perfil → Apuntes → `Ropa`. Documentación: `Funcionalidades/Minijuego_Cocina/Documentacion/MINIJUEGO_COCINA.md`.
+- **Pack de sprites del escenario** → 134 PNG en `Imagenes/Minijuego_Cocina/` y escena de muestra `Escenas/Minijuego_Cocina/Escenario_Cooking_Fever.tscn`, que se abre con `./ver_escenario.sh`. Es una maqueta visual independiente del minijuego jugable. Pipeline y catálogos en `Arte_Fuente/Minijuego_Cocina/`; documentación en `Funcionalidades/Minijuego_Cocina/Documentacion/ARTE_SPRITES.md`.
+- **Música de fondo** → pistas en `Sonidos/Musica/` con `loop=true` en el `.import`; autoload `Musica` (`Reproducir_General()` / `Reproducir_Minijuego()`). Botones de altavoz en el menú (`Boton_Musica`) y en la cabecera principal (`Boton_Musica_Header`). Documentación: `Funcionalidades/Musica/Documentacion/MUSICA.md`.
 
 ---
 
@@ -206,6 +216,12 @@ Cada carrera universitaria completada (`Variables_Dinamicas.Carreras_Completadas
 
 ---
 
+## Ejecutar en escritorio (sin editor)
+
+- `./jugar.sh` abre el juego directamente con Godot (`--path .`, sin `--editor`), en ventana 450x800.
+- `./jugar.sh --fondo` lo desengancha de la terminal (log en `/tmp/sims-0.33-juego.log`); `./jugar.sh --completo` usa pantalla completa; `--resolution 540x960` permite otra resolución.
+- `GODOT_BIN=/ruta/a/godot ./jugar.sh` fuerza un binario concreto.
+
 ## Build Android (APK)
 
 - **Orientación (crítico):** `display/window/handheld/orientation=1` (entero). El exportador Android hace `int()` del valor; un string como `"portrait"` se convierte en `0` (**Landscape**). Valores: `0` landscape, `1` portrait.
@@ -256,6 +272,10 @@ Documentación detallada en `Funcionalidades/<ruta>/Documentacion/`.
 | Salir_De_Fiesta | `Actividades/Actividades_Temporales` | Fiesta 18:00–06:00 (2–12 h), ligar/resacón por minuto y estados Euforia/Resacón de 24 h |
 | Cocina_Y_Alimentacion | `Actividades/Cocina_Y_Alimentacion` | Cocinar, tuppers individuales, caducidad, intoxicación, comer tupper/basura y hostelería |
 | Eventos_Aleatorios | `Actividades/Eventos_Aleatorios` | Despido por higiene (cooldown 5 días) + 20 eventos generales con franja horaria |
+| Carrera_Futbol | `Actividades/Futbol` | Fase 1 Modo Jugador: fichaje, entrenamientos, liga dominical, playoff, Modo Rápido, primas, salario y lesiones |
+| Minijuego_Cocina | `Minijuego_Cocina` | Apartado Minijuegos, *Cooking Fever* horizontal `1280×720` (15 niveles R1, 5 mejoras, doble moneda), desbloqueo en 1.er min trabajado, logros Rangos 0–9 y ropa equipable (`Objeto_Ropa`) |
+| Pack_Sprites_Escenario | `Minijuego_Cocina/Sprites` | 134 sprites PNG + escena de muestra 1280×720; arte original inspirado en Cooking Fever, maqueta independiente del minijuego jugable |
+| Musica | `Musica` | Pista general (`Lunchtime_Conspiracies`) en menú/escena principal y pista de comida rápida (`Seven_Minutes_to_Service`) en el minijuego; fundido cruzado, silencio persistente y pausa en background |
 | Marca/Logo | `Documentacion/Marca` | Logo dinámico con la cara del Sim + icono fijo de Play Store/lanzador |
 
 ---

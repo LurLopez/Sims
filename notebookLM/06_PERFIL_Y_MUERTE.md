@@ -117,9 +117,13 @@ func _Renderizar_Info():
     _Info_Fila(vbox, "Manualidades", str(Variables_Dinamicas.Progreso[2]) + " / 100")
 
     _Info_Seccion(vbox, "HABILIDADES INNATAS")
-    var nombres_hab = ["Deporte", "Inteligencia", "Destreza manual", "Memoria", "Liderazgo", "Paciencia"]
+    var nombres_hab = ["Deporte", "Inteligencia", "Destreza manual", "Memoria", "Liderazgo", "Paciencia", "Sangre fría"]
     for i in range(min(nombres_hab.size(), Variables_Estaticas.Habilidades.size())):
-        _Info_Fila(vbox, nombres_hab[i], str(Variables_Estaticas.Habilidades[i]) + " / 100")
+        # El límite natural solo se revela cuando Habilidades_Mostradas lo alcanza.
+        var innato = int(Variables_Estaticas.Habilidades[i])
+        var mostrado = int(Variables_Dinamicas.Habilidades_Mostradas[i]) if i < Variables_Dinamicas.Habilidades_Mostradas.size() else 0
+        var valor = str(innato) if mostrado >= innato else "?"
+        _Info_Fila(vbox, nombres_hab[i], valor + " / 100")
 
 # CRÍTICO: la edad se recalcula cada vez que se abre — no se guarda como variable
 # Fórmula: 18 + (Minute_Day - First_Time_Minute_Day) / 7  (división entera)

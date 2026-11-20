@@ -1,0 +1,466 @@
+[
+  {
+    "ruta": "Clientes/Cliente_01_Nino.png",
+    "x": 323,
+    "y": 192,
+    "w": 158,
+    "h": 200,
+    "modo": "bottom"
+  },
+  {
+    "ruta": "Clientes/Cliente_02_Mujer.png",
+    "x": 550,
+    "y": 187,
+    "w": 172,
+    "h": 205,
+    "modo": "bottom"
+  },
+  {
+    "ruta": "Clientes/Cliente_03_Mayor.png",
+    "x": 768,
+    "y": 192,
+    "w": 204,
+    "h": 200,
+    "modo": "bottom"
+  },
+  {
+    "ruta": "Clientes/Cliente_04_Nina.png",
+    "x": 1020,
+    "y": 196,
+    "w": 167,
+    "h": 196,
+    "modo": "bottom"
+  },
+  {
+    "ruta": "Mostrador/Vitrina_Exposicion.png",
+    "x": 633,
+    "y": 328,
+    "w": 254,
+    "h": 205,
+    "modo": "center"
+  },
+  {
+    "ruta": "Comida/Platos/Hamburguesa_Sola.png",
+    "x": 661,
+    "y": 412,
+    "w": 66,
+    "h": 58,
+    "modo": "center"
+  },
+  {
+    "ruta": "Comida/Platos/Perrito_Caliente.png",
+    "x": 724,
+    "y": 413,
+    "w": 72,
+    "h": 52,
+    "modo": "center"
+  },
+  {
+    "ruta": "Comida/Platos/Cupcake.png",
+    "x": 794,
+    "y": 420,
+    "w": 53,
+    "h": 54,
+    "modo": "center"
+  },
+  {
+    "ruta": "Comida/Platos/Refresco_Cola.png",
+    "x": 841,
+    "y": 416,
+    "w": 32,
+    "h": 58,
+    "modo": "center"
+  },
+  {
+    "ruta": "Chef/Chef_Michelle.png",
+    "x": 0,
+    "y": 115,
+    "w": 256,
+    "h": 545,
+    "modo": "bottom"
+  },
+  {
+    "ruta": "UI/Ticket_Verde.png",
+    "x": 338,
+    "y": 64,
+    "w": 128,
+    "h": 168,
+    "modo": "stretch"
+  },
+  {
+    "ruta": "Comida/Platos/Hamburguesa_Sola.png",
+    "x": 375,
+    "y": 117,
+    "w": 54,
+    "h": 48,
+    "modo": "center"
+  },
+  {
+    "ruta": "UI/Ticket_Verde.png",
+    "x": 572,
+    "y": 64,
+    "w": 128,
+    "h": 168,
+    "modo": "stretch"
+  },
+  {
+    "ruta": "Comida/Platos/Perrito_Caliente.png",
+    "x": 602,
+    "y": 117,
+    "w": 67,
+    "h": 48,
+    "modo": "center"
+  },
+  {
+    "ruta": "UI/Ticket_Rojo.png",
+    "x": 809,
+    "y": 64,
+    "w": 122,
+    "h": 168,
+    "modo": "stretch"
+  },
+  {
+    "ruta": "Comida/Platos/Patatas_Fritas.png",
+    "x": 850,
+    "y": 117,
+    "w": 41,
+    "h": 48,
+    "modo": "center"
+  },
+  {
+    "ruta": "UI/Ticket_Verde.png",
+    "x": 1040,
+    "y": 64,
+    "w": 128,
+    "h": 168,
+    "modo": "stretch"
+  },
+  {
+    "ruta": "Comida/Platos/Refresco_Cola.png",
+    "x": 1091,
+    "y": 117,
+    "w": 26,
+    "h": 48,
+    "modo": "center"
+  },
+  {
+    "ruta": "Mostrador/Modulo_Recto.png",
+    "x": 43,
+    "y": 440,
+    "w": 334,
+    "h": 220,
+    "modo": "center"
+  },
+  {
+    "ruta": "Mostrador/Modulo_Recto.png",
+    "x": 473,
+    "y": 440,
+    "w": 334,
+    "h": 220,
+    "modo": "center"
+  },
+  {
+    "ruta": "Mostrador/Modulo_Recto.png",
+    "x": 903,
+    "y": 440,
+    "w": 334,
+    "h": 220,
+    "modo": "center"
+  },
+  {
+    "ruta": "Mostrador/Frente_Mostrador.png",
+    "x": 0,
+    "y": 520,
+    "w": 1280,
+    "h": 200,
+    "modo": "stretch"
+  },
+  {
+    "ruta": "Estaciones/Plancha.png",
+    "x": 196,
+    "y": 335,
+    "w": 247,
+    "h": 185,
+    "modo": "bottom"
+  },
+  {
+    "ruta": "Estaciones/Freidora.png",
+    "x": 428,
+    "y": 345,
+    "w": 184,
+    "h": 175,
+    "modo": "bottom"
+  },
+  {
+    "ruta": "Estaciones/Dispensador_Refrescos.png",
+    "x": 638,
+    "y": 345,
+    "w": 125,
+    "h": 150,
+    "modo": "bottom"
+  },
+  {
+    "ruta": "Estaciones/Calentador_Comida.png",
+    "x": 768,
+    "y": 355,
+    "w": 173,
+    "h": 165,
+    "modo": "bottom"
+  },
+  {
+    "ruta": "Estaciones/Tostador_Panes.png",
+    "x": 947,
+    "y": 370,
+    "w": 136,
+    "h": 150,
+    "modo": "bottom"
+  },
+  {
+    "ruta": "Mostrador/Caja_Registradora.png",
+    "x": 1088,
+    "y": 375,
+    "w": 174,
+    "h": 155,
+    "modo": "bottom"
+  },
+  {
+    "ruta": "Emplatado/Pila_Platos.png",
+    "x": 200,
+    "y": 448,
+    "w": 89,
+    "h": 70,
+    "modo": "center"
+  },
+  {
+    "ruta": "Comida/Platos/Hamburguesa_Doble.png",
+    "x": 210,
+    "y": 414,
+    "w": 69,
+    "h": 66,
+    "modo": "center"
+  },
+  {
+    "ruta": "Emplatado/Plato_Vacio.png",
+    "x": 320,
+    "y": 462,
+    "w": 59,
+    "h": 60,
+    "modo": "center"
+  },
+  {
+    "ruta": "Comida/Platos/Perrito_Caliente.png",
+    "x": 316,
+    "y": 436,
+    "w": 69,
+    "h": 50,
+    "modo": "center"
+  },
+  {
+    "ruta": "Comida/Platos/Patatas_Fritas.png",
+    "x": 668,
+    "y": 443,
+    "w": 65,
+    "h": 76,
+    "modo": "center"
+  },
+  {
+    "ruta": "Comida/Platos/Refresco_Cola.png",
+    "x": 880,
+    "y": 443,
+    "w": 40,
+    "h": 72,
+    "modo": "center"
+  },
+  {
+    "ruta": "Comida/Platos/Batido.png",
+    "x": 940,
+    "y": 424,
+    "w": 40,
+    "h": 80,
+    "modo": "center"
+  },
+  {
+    "ruta": "Comida/Platos/Cupcake.png",
+    "x": 1018,
+    "y": 463,
+    "w": 53,
+    "h": 54,
+    "modo": "center"
+  },
+  {
+    "ruta": "Emplatado/Mostaza.png",
+    "x": 432,
+    "y": 409,
+    "w": 36,
+    "h": 76,
+    "modo": "center"
+  },
+  {
+    "ruta": "Emplatado/Ketchup.png",
+    "x": 467,
+    "y": 412,
+    "w": 36,
+    "h": 76,
+    "modo": "center"
+  },
+  {
+    "ruta": "Emplatado/Sal_Pimienta.png",
+    "x": 604,
+    "y": 436,
+    "w": 51,
+    "h": 44,
+    "modo": "center"
+  },
+  {
+    "ruta": "Emplatado/Servilletero.png",
+    "x": 1084,
+    "y": 449,
+    "w": 73,
+    "h": 70,
+    "modo": "center"
+  },
+  {
+    "ruta": "Emplatado/Bol_Lechuga.png",
+    "x": 1122,
+    "y": 407,
+    "w": 66,
+    "h": 54,
+    "modo": "center"
+  },
+  {
+    "ruta": "Emplatado/Bandejas_Apiladas.png",
+    "x": 62,
+    "y": 573,
+    "w": 76,
+    "h": 54,
+    "modo": "center"
+  },
+  {
+    "ruta": "Emplatado/Pila_Platos.png",
+    "x": 162,
+    "y": 574,
+    "w": 66,
+    "h": 52,
+    "modo": "center"
+  },
+  {
+    "ruta": "Emplatado/Servilletero.png",
+    "x": 1086,
+    "y": 572,
+    "w": 57,
+    "h": 55,
+    "modo": "center"
+  },
+  {
+    "ruta": "UI/Bote_Propinas.png",
+    "x": 1024,
+    "y": 580,
+    "w": 43,
+    "h": 50,
+    "modo": "center"
+  },
+  {
+    "ruta": "UI/Pila_Monedas.png",
+    "x": 1167,
+    "y": 566,
+    "w": 76,
+    "h": 78,
+    "modo": "center"
+  },
+  {
+    "ruta": "UI/Moneda.png",
+    "x": 1220,
+    "y": 611,
+    "w": 41,
+    "h": 42,
+    "modo": "center"
+  },
+  {
+    "ruta": "Efectos/Vapor.png",
+    "x": 250,
+    "y": 320,
+    "w": 99,
+    "h": 100,
+    "modo": "stretch"
+  },
+  {
+    "ruta": "Efectos/Vapor.png",
+    "x": 456,
+    "y": 325,
+    "w": 89,
+    "h": 90,
+    "modo": "stretch"
+  },
+  {
+    "ruta": "Efectos/Vapor.png",
+    "x": 660,
+    "y": 365,
+    "w": 79,
+    "h": 80,
+    "modo": "stretch"
+  },
+  {
+    "ruta": "Efectos/Chispas.png",
+    "x": 1180,
+    "y": 555,
+    "w": 85,
+    "h": 88,
+    "modo": "stretch"
+  },
+  {
+    "ruta": "Decoracion/Toldo_Verde.png",
+    "x": -24,
+    "y": -18,
+    "w": 290,
+    "h": 150,
+    "modo": "stretch"
+  },
+  {
+    "ruta": "UI/Moneda.png",
+    "x": 930,
+    "y": 14,
+    "w": 32,
+    "h": 32,
+    "modo": "center"
+  },
+  {
+    "ruta": "UI/Gema.png",
+    "x": 1053,
+    "y": 14,
+    "w": 38,
+    "h": 32,
+    "modo": "center"
+  },
+  {
+    "ruta": "UI/Reloj.png",
+    "x": 1130,
+    "y": 14,
+    "w": 31,
+    "h": 32,
+    "modo": "center"
+  },
+  {
+    "ruta": "UI/Estrella_Dorada.png",
+    "x": 1230,
+    "y": 16,
+    "w": 29,
+    "h": 28,
+    "modo": "center"
+  },
+  {
+    "ruta": "UI/Engranaje.png",
+    "x": 8,
+    "y": 648,
+    "w": 55,
+    "h": 54,
+    "modo": "center"
+  },
+  {
+    "ruta": "UI/Flecha.png",
+    "x": 1203,
+    "y": 648,
+    "w": 70,
+    "h": 52,
+    "modo": "center"
+  }
+]

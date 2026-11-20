@@ -54,10 +54,13 @@ Tu objetivo es **planificar, diseñar y especificar al 100 % nuevas funcionalida
 8. `Actividades_Necesidades_Basicas` (`Scripts/Logica/Escena_Principal/Actividades/Actividades_Necesidades_Basicas.gd`) — Aplicación de efectos a necesidades, multiplicadores de objetos y cap de bancarrota.
 9. `Sistema_Examenes` (`Scripts/Logica/Escena_Principal/Actividades/Carreras/Sistema_Examenes.gd`) — Progreso de carrera, matrículas y cálculo de exámenes semanales.
 10. `Actividades` (`Scripts/Logica/Escena_Principal/Actividades/Actividades.gd`) — Bucle principal minuto a minuto (`Actualizar_Horario`), ejecución de actividades, alquiler, tienda, bolsa y muerte.
-11. `Alimentacion` (`Scripts/Logica/Escena_Principal/Actividades/Alimentacion.gd`) — Cocina, tuppers, caducidad, intoxicación, comida rápida y selección de comida de la IA.
-12. `Eventos_Aleatorios` (`Scripts/Logica/Escena_Principal/Actividades/Eventos_Aleatorios.gd`) — Despido por higiene y 20 eventos generales con franja horaria.
-13. `Gestionar_Visibilidad` (`Scripts/GUI/Escena_Principal/Gestionar_Visibilidad.gd`) — Control de pantallas/paneles en `Escena principal.tscn`.
-14. `Debug_Cargar_Guardado` (`Scripts/Otro/Debug/Debug_Cargar_Guardado.gd`) — Utilidades de debug.
+11. `Sistema_Futbol` (`Scripts/Logica/Escena_Principal/Actividades/Futbol/Sistema_Futbol.gd`) — Carrera de futbolista: fichaje, calendario, liga dominical, playoff, Modo Rápido, primas, salario, lesiones y conflictos con el trabajo.
+12. `Alimentacion` (`Scripts/Logica/Escena_Principal/Actividades/Alimentacion.gd`) — Cocina, tuppers, caducidad, intoxicación, comida rápida y selección de comida de la IA.
+13. `Sistema_Cocina` (`Scripts/Logica/Escena_Principal/Minijuego_Cocina/Sistema_Cocina.gd`) — Minijuego de cocina estilo *Cooking Fever*: 3 restaurantes (15 niveles en R1), 5 mejoras, desbloqueo en primer minuto trabajado, economía doble moneda, logros Rangos 0–9 y ropa equipable (`Objeto_Ropa`).
+14. `Eventos_Aleatorios` (`Scripts/Logica/Escena_Principal/Actividades/Eventos_Aleatorios.gd`) — Despido por higiene y 20 eventos generales con franja horaria.
+15. `Gestionar_Visibilidad` (`Scripts/GUI/Escena_Principal/Gestionar_Visibilidad.gd`) — Control de pantallas/paneles en `Escena principal.tscn`.
+16. `Debug_Cargar_Guardado` (`Scripts/Otro/Debug/Debug_Cargar_Guardado.gd`) — Utilidades de debug.
+17. `Musica` (`Scripts/Globales/Musica.gd`) — Música de fondo global: pista general (`Lunchtime_Conspiracies.mp3`) y pista del minijuego de cocina (`Seven_Minutes_to_Service.mp3`), fundido cruzado, bus `Musica`, silencio/volumen persistente en `user://configuracion_audio.cfg` y pausa al background en Android.
 
 ---
 
@@ -69,12 +72,15 @@ Tu objetivo es **planificar, diseñar y especificar al 100 % nuevas funcionalida
    - Gestiona creación de nueva partida (`Intro_Nueva_Partida.gd`, `Creador_Personaje.gd`), selección de modo normal/rápido, apariencia y personalidad.
 2. **`Escenas/Escena_Principal/Escena principal.tscn`** (`Scripts/Globales/Script_Principal.gd`):
    - **Nodos de primer nivel:**
-     - `Top_Bar_Panel`, `Moneda`, `Dinero_Label`, `Boton_Perfil`, `Economia_Button`, `Calendario_Button`, `Carrera_Button`, `Tienda_Button` (oculto por defecto).
+     - `Top_Bar_Panel`, `Moneda`, `Dinero_Label`, `Boton_Perfil`, `Economia_Button`, `Calendario_Button`, `Carrera_Button`, `Minijuegos_Button`, `Tienda_Button` (oculto por defecto).
      - `Barra_Abajo` → `Boton_Habilidades`, `Boton_Progreso`, `Boton_Actividades`, `Boton_Necesidades_Basicas`.
      - `Fondo`, `Progreso` (oculto), `Necesidades_Basicas`, `Trabajo` (oculto), `Habilidades` (oculto).
      - `Actividades`: contiene `Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones/[Necesidades_Basicas_Opciones|Progreso_Opciones]`, `Horario_Semanal/[OPCIONES_CALENDARIO|Cabezal_horario|Mover_Vertical/Todo calendario/Dias]`, `Seleccionar_Horario/[Inicio|Final|Cancelar|Crear_Actividad]`.
      - `Tienda` (instancia de `Tienda.tscn`): `Flecha_Atras`, `Categorias/[Tab_Dormir|Tab_Comer|Tab_Duchar]`, `Objetos_Dormir/...`, `Objetos_Comer/Mesa_Basica`, `Objetos_Duchar/...`.
-     - `Pantalla_Mensajes` (instancia de `Pantalla_Mensajes.tscn`): `Tab_Bar/[Tab_Mensajes|Tab_Info|Tab_Apuntes|Tab_Despensa]`, `Panel_Info`, `Panel_Apuntes`, `Panel_Despensa/Scroll_Tuppers/VBox_Tuppers`, `Lista_Mensajes`, `Contenido_Mensaje`.
+     - `Pantalla_Mensajes` (instancia de `Pantalla_Mensajes.tscn`): `Tab_Bar/[Tab_Mensajes|Tab_Info|Tab_Apuntes|Tab_Despensa]`, `Panel_Info`, `Panel_Apuntes/[SubTab_Bar(Apuntes|Ropa)|Scroll_Inventario|Scroll_Ropa]`, `Panel_Despensa/Scroll_Tuppers/VBox_Tuppers`, `Lista_Mensajes`, `Contenido_Mensaje`.
+     - `Pantalla_Minijuegos` (generada en código en `Script_Principal.gd`): hub modular con tarjetas de minijuegos.
+     - `Panel_Futbol` (instancia dinámica de `Panel_Futbol.tscn`): overlay a pantalla completa con `ScrollContainer` para la carrera de futbolista.
+     - `Minijuego_Cocina` (`Escenas/Minijuego_Cocina/Minijuego_Cocina.tscn`): overlay `CanvasLayer` en horizontal `1280×720` con rotación automática (`permissions/set_orientation=true`) manteniendo `Script_Principal._process` corriendo.
    - **Modales dinámicos:** Creados/instanciados desde código (`Modal_Seleccionar_Carrera.gd`, `Modal_Seleccionar_Examen.gd`, `Modal_Examen.gd`, `Lector_Libros.gd`, `Lector_Libro.gd`, `Tutorial_Inicial.gd`).
    - **Escenario visual:** `Escenario_Actividad.gd`, `Personaje_Visual.gd`, `Apariencia_Personaje.gd`.
 
@@ -87,6 +93,8 @@ Tu objetivo es **planificar, diseñar y especificar al 100 % nuevas funcionalida
 - **Nuevo objeto en Tienda:** `Tienda.tscn` (copiar bloque existente), conexiones al final de `Escena principal.tscn`, registrar en `Variables_Estaticas._Inicializar_Catalogo_Objetos()`.
 - **Nueva actividad temporal:** botón en `Escena principal.tscn` dentro de `Necesidades_Basicas_Opciones` o `Progreso_Opciones`, registrar en `Variables_Estaticas._Inicializar_Catalogo()`, añadir subtítulo/icono en `Script_Principal.gd` / `Estilos_UI.gd` y handler de botón.
 - **Nuevo trabajo de nómina:** botón en `Trabajo/Actividades_Trabajo_Nomina_Opciones`, registrar `Actividad_Fija_Trabajo` en `Variables_Estaticas.gd`, helper en `Trabajo.gd` y verificación de requisitos en `Script_Principal._Cumple_Requisitos_Trabajo()`.
+- **Carrera de futbolista:** botón `Boton_Carrera_Futbol` en `Fijas_Opciones`; lógica en `Sistema_Futbol`, horarios en `Calendario_Futbol.gd`, fórmulas en `Simulador_Futbol.gd` y UI en `Panel_Futbol.tscn` + `Panel_Futbol_GUI.gd`.
+- **Música de fondo:** pistas en `Sonidos/Musica/` importadas con `loop=true`; autoload `Musica` con `Reproducir_General()` / `Reproducir_Minijuego()`. El botón de altavoz está en el menú (`Boton_Musica`) y en la cabecera principal (`Boton_Musica_Header`).
 
 ### Build Android (APK)
 - **Compilar:** `./exportar_apk.sh` (debug) o `./exportar_apk.sh --release`; `--instalar` instala por ADB. Salida: `build/sims-0.33.apk` (arm64-v8a).
@@ -116,18 +124,20 @@ Tu objetivo es **planificar, diseñar y especificar al 100 % nuevas funcionalida
 - `Tuppers`: Array de diccionarios `{id, porcentaje_restante, calidad, minuto_creacion, minuto_caducidad}`. Un tupper completo = 30 min (3,333 %/min).
 - `Tupper_Seleccionado_Idx`: int (`-1` = automático).
 - `Minutos_Cocinando_Actuales`: int volátil (no se guarda).
-- `Habilidades_Mostradas`: Array de **7 ints** (`0..100`), uno por cada habilidad innata. Solo sube; se detiene al alcanzar `Variables_Estaticas.Habilidades[i]`.
+- `Habilidades_Mostradas`: Array de **7 ints** (`0..100`), uno por cada habilidad innata. Solo sube; se detiene al alcanzar `Variables_Estaticas.Habilidades[i]`. En Perfil → Info, mientras no se alcance ese límite, la habilidad se muestra como `? / 100`; al descubrirla se revela el valor innato exacto.
 - `Dinero`: float.
 - `En_La_Calle`: bool (`true` si no pudo pagar alquiler).
 - `Ultima_Fecha_Alquiler`: int (minuto absoluto `Minute_Day * 1440 + Minute_Minute` del último pago, o `-1` si está en la calle).
 - `Trabajo_Actual`: `Actividad_Fija_Trabajo` o `null`.
-- `Objetos_Poseidos`: Dictionary `{clave_objeto: bool}`.
-- `Objeto_Seleccionado`: Dictionary `{nombre_actividad: clave_objeto}` (para `"Dormir"`, `"Comer"`, `"Duchar"`).
+- `Objetos_Poseidos`: Dictionary `{clave_objeto: bool}` (incluye `"Ropa_Calle": true` y prendas desbloqueables).
+- `Objeto_Seleccionado`: Dictionary `{nombre_actividad: clave_objeto}` (para `"Dormir"`, `"Comer"`, `"Duchar"`, `"Ropa"`).
+- `Cocina_Estado`: Dictionary del minijuego de cocina (`restaurantes_desbloqueados`, `fondos_cocina`, `estrellas_nivel`, `mejoras` por restaurante con 5 claves `1..3`, `rango_logro` `0..9`, `servicios_remunerados_hoy`, `ultimo_dia_remunerado`, `plus_nomina_turno_hoy`). Normalización recursiva en `Guardar_Variables_Dinamicas.load_game()`.
 - `Carrera_Actual`: instancia de `Carrera` o `null`.
 - `Carreras_Completadas`: Array de `Carrera`.
 - `Inicio_Semana_Carrera`: int (`-1` si no aplica).
+- `Carrera_Futbol`: Dictionary con la carrera de futbolista: `Activo`, `Division` (4 = 3ª Regional, 3 = 2ª Nacional, 2 = 1ª Élite, 1 = Superliga), `Relacion_Entrenador`, `Entrenamientos_Cancelados_Seguidos`, `Partidos_Jugados`, `Goles_Totales`, `Asistencias_Totales`, `Temporadas_Jugadas`, `Titulos_Superliga`, `Salario_Semanal`, `Estado_Temporada`, `Entrenamientos_Asistencia` (`Martes`, `Jueves`, `Diario`) y `Liga_Domingo` (`Jornada_Actual`, `Puntos_Jugador`, `Puntos_Rivales`, `Medias_Rivales`, `Posicion_Regular`). Incluye claves internas para bloques en curso, último día de salario y ascenso pendiente. Un save sin esta clave carga el diccionario por defecto con `Activo = false`.
 - `Mensajes`: Array de objetos `Mensaje` (`titulo`, `descripcion`, `leido`, `minuto`).
-- `Estados_Temporales`: Dictionary `{ "Euforia"|"Resacon"|"Intoxicacion": minutos_restantes }`. Euforia y Resacón son mutuamente excluyentes; Intoxicación puede convivir con ellos. Todos duran 1440 min (480 de meseta + 960 de bajada).
+- `Estados_Temporales`: Dictionary `{ "Euforia"|"Resacon"|"Intoxicacion"|"Lesion_Deportiva": minutos_restantes }`. Euforia y Resacón son mutuamente excluyentes; Intoxicación y Lesión Deportiva pueden convivir con ellos. Todos duran 1440 min (480 de meseta + 960 de bajada; la lesión usa 360 de meseta y techo de Salud Física 35 → 100).
 - `Fiesta_Evento_Ocurrido`: bool. `true` si ya ocurrió un evento (ligar o resacón) en el bloque de fiesta actual.
 - `Esta_Invirtiendo`: bool, `Dinero_Invertido`: float, `Valor_Inversion`: float, `Salud_Mental_Al_Invertir`: int (snapshot al invertir), `Progreso_Inversion`: int (`1..100`).
 - `Cooldown_Trabajos`: Dictionary `{nombre_trabajo: minuto_fin_cooldown}`.
@@ -148,9 +158,10 @@ Tu objetivo es **planificar, diseñar y especificar al 100 % nuevas funcionalida
   - `[5]` Paciencia
   - `[6]` **Sangre Fría** (usada en exámenes académicos y auto-venta por pánico en bolsa).
 - `Catalogo_Actividades`: Dictionary `{nombre: Actividad}` (no se guarda, se reconstruye en `_ready()`).
-- `Estados_Temporales`: Dictionary con las definiciones de `Euforia`, `Resacon` e `Intoxicacion` (duración, meseta, curvas, índices, títulos y mensajes de inicio/fin).
-- `Actividades`: Array de 6 actividades elegibles para relleno aleatorio cuando una celda está vacía. `Cocinar`, `Comer_Tupper` y `Comer_Basura` quedan fuera del pool.
-- `Catalogo_Objetos`: Dictionary `{clave: Objeto}`.
+- `Estados_Temporales`: Dictionary con las definiciones de `Euforia`, `Resacon`, `Intoxicacion` y `Lesion_Deportiva` (duración, meseta, curvas, índices, títulos y mensajes de inicio/fin).
+- `Actividades`: Array de 6 actividades elegibles para relleno aleatorio cuando una celda está vacía. `Cocinar`, `Comer_Tupper`, `Comer_Basura`, `Salir_De_Fiesta`, `Entrenamiento_Futbol` y `Partido_Futbol` quedan fuera del pool.
+- `Catalogo_Objetos`: Dictionary `{clave: Objeto}` (incluye 5 prendas `Objeto_Ropa` con `afecta_a = "Ropa"`: `Ropa_Calle`, `Delantal_Aprendiz`, `Chaqueta_Chef`, `Atuendo_Chef_Gala`, `Traje_Estrella_Michelin`).
+- `Record_Max_Niveles_Cocina`: int (récord entre partidas de niveles superados en el minijuego de cocina).
 
 ---
 
@@ -159,22 +170,23 @@ Tu objetivo es **planificar, diseñar y especificar al 100 % nuevas funcionalida
 ### A. Ejecución Minuto a Minuto (`Actividades.Actualizar_Horario`)
 Por cada minuto transcurrido:
 1. Si `Minute_Day >= 574` → muerte inmediata.
-2. Lee `celda = Matriz_Jugador[Minute_Minute][Minute_Day]`:
+2. `Sistema_Futbol.Tick_Minuto()`: cierra entrenamientos/partidos en curso, inicia los que empiezan este minuto, paga el salario a las 23:59 y resetea la temporada al inicio del día. Se ejecuta antes de leer la celda para que un bloque recién programado ya se ejecute.
+3. Lee `celda = Matriz_Jugador[Minute_Minute][Minute_Day]`:
    - Si es `""` o `null`: la marca como `"Actividad_Aleatoria"` y ejecuta `Crear_Actividad_Aleatoria()` con `es_aleatoria = true`.
    - Si es `"Actividad_Aleatoria"`: ejecuta `Crear_Actividad_Aleatoria()` con `es_aleatoria = true`.
    - Si es un objeto `Actividad`: ejecuta `Ejecutar_Actividad(celda, false)`.
-3. **Fiesta:** si la celda es `Salir_De_Fiesta`, comprueba `Es_Primer_Minuto_Del_Bloque`; si es el primero, `Fiesta_Evento_Ocurrido = false`. Tras aplicar los efectos del minuto, si no ha ocurrido un evento, `Resolver_Evento_Fiesta()` tira ligar (primero) y resacón.
-4. **Actividad aleatoria (`Crear_Actividad_Aleatoria`):**
+4. **Fiesta:** si la celda es `Salir_De_Fiesta`, comprueba `Es_Primer_Minuto_Del_Bloque`; si es el primero, `Fiesta_Evento_Ocurrido = false`. Tras aplicar los efectos del minuto, si no ha ocurrido un evento, `Resolver_Evento_Fiesta()` tira ligar (primero) y resacón.
+5. **Actividad aleatoria (`Crear_Actividad_Aleatoria`):**
    - Busca la necesidad básica más baja. Si `< 30`, elige la actividad que la recupera (`0→Salir_A_Correr`, `1→Ver_La_Television`, `2→Alimentacion.Elegir_Comida_IA()`, `3→Dormir`, `4→Duchar`). Para Hambre, la IA usa tupper vigente, comida rápida si hay dinero, tupper caducado como último recurso o `Ver_La_Television` si no puede comer.
    - Si todas `>= 30`, tiene 50 % de probabilidad de elegir la actividad favorita de `Personalidad` (`Trabajador_Compulsivo→Estudiar`, `Deportista→Salir_A_Correr`, `Culo_Del_Sofa→Ver_La_Television`) y 50 % de elegir una al azar de `Variables_Estaticas.Actividades`.
    - **Importante:** cuando `es_aleatoria == true`, **solo** aplica Necesidades Básicas; **no** da Progreso, **no** revela Habilidades y **no** avanza la Carrera.
-5. Llama a `Eventos_Aleatorios.Tick_Eventos(celda)`.
-6. Llama a `Tick_Estados()`: aplica Euforia/Resacón con el contador actual y descuenta 1 min. Si llega a 0, elimina el estado y añade el mensaje de fin.
-7. Avanza `Minute_Minute`, `Minute_Day`, `Minute`.
-8. Si `Esta_Invirtiendo`: llama a `_Tick_Inversion()`.
-9. Si `not En_La_Calle` y `Ultima_Fecha_Alquiler >= 0`: si `Minute - Ultima_Fecha_Alquiler >= Dias_Por_Anio() * 1440` → `Cobrar_Alquiler()`.
-10. Si `Carrera_Actual != null`: gestiona conversión de prematrícula a matrícula (Lunes 00:00 en modo normal, 00:00 del día elegido en modo rápido) y disparo del examen al terminar su bloque de 60 min.
-11. Llama a `Comprobar_Muerte()` (después de `Tick_Estados`).
+6. Llama a `Eventos_Aleatorios.Tick_Eventos(celda)`.
+7. Llama a `Tick_Estados()`: aplica Euforia/Resacón/Intoxicación/Lesión con el contador actual y descuenta 1 min. Si llega a 0, elimina el estado y añade el mensaje de fin.
+8. Avanza `Minute_Minute`, `Minute_Day`, `Minute`.
+9. Si `Esta_Invirtiendo`: llama a `_Tick_Inversion()`.
+10. Si `not En_La_Calle` y `Ultima_Fecha_Alquiler >= 0`: si `Minute - Ultima_Fecha_Alquiler >= Dias_Por_Anio() * 1440` → `Cobrar_Alquiler()`.
+11. Si `Carrera_Actual != null`: gestiona conversión de prematrícula a matrícula (Lunes 00:00 en modo normal, 00:00 del día elegido en modo rápido) y disparo del examen al terminar su bloque de 60 min.
+12. Llama a `Comprobar_Muerte()` (después de `Tick_Estados`).
 
 ### B. Necesidades Básicas y Objetos (`Actividades_Necesidades_Basicas.gd`)
 - Frecuencias base por índice: `[30, 30, 12, 15, 20]` (Salud Física 30, Salud Mental 30, Hambre 12, Descanso 15, Higiene 20).
@@ -214,6 +226,8 @@ Clases en `Scripts/Logica/Escena_Principal/Actividades/Herencia/`:
   - `Salir_De_Fiesta`: NB `[0, 9, -3, -4, -2]`, Prog `[0, 0, 0]`. P1, **fuera del pool aleatorio**; ventana 18:00–06:00, 2–12 h.
 - `Actividad_Carrera` (`Estudiar_Carrera`, P1): NB `[-1, -2, -1, -2, -1]`, avanza `Carrera_Actual.progreso_actual`.
 - `Actividad_Examen` (`Examen_Carrera`, Prioridad **P3** máxima): NB `[-1, -3, -1, -3, -1]`, bloque de 60 min.
+- `Actividad_Partido` (`Partido_Futbol`, P3): NB `[-1, 3, -4, -5, -4]`, Prog `[6, 0, 0]`, bloque de 60 min. No entra en el pool aleatorio.
+- `Actividad_Fija` (`Entrenamiento_Futbol`, P2): NB `[2, 1, -2, -3, -3]`, Prog `[4, 0, 0]`. No entra en el pool aleatorio.
 - `Actividad_Fija` → `Actividad_Fija_Trabajo` (Prioridad **P2**):
   - Paga el salario completo al cruzar el último minuto de la jornada (`Minute_Minute == hora_final - 1`): `Obtener_Salario_Hora(actividad) * ((hora_final - hora_inicio) / 60.0)`.
   - `Trabajar_En_Comida_Rapida`: 8–16h, `10.0€/h`, sin requisitos.
@@ -310,6 +324,32 @@ Clases en `Scripts/Logica/Escena_Principal/Actividades/Herencia/`:
 - Herramientas: `Generar_Iconos_Android.gd` (iconos APK) y `Exportar_Logo_Marca.gd` (lockup + feature graphic 1024×500).
 - Documentación: `Documentacion/Marca/README.md`.
 
+### K. Carrera de Futbolista — Fase 1 (`Sistema_Futbol.gd`)
+- **Alcance:** Modo Jugador. La Fase 2 (Modo Mánager / Top Eleven) no está implementada.
+- **Archivos:** `Futbol/Simulador_Futbol.gd` (puro), `Futbol/Calendario_Futbol.gd`, `Futbol/Sistema_Futbol.gd` (autoload), `Herencia/Actividad_Partido.gd`, `Panel_Futbol.tscn` + `Panel_Futbol_GUI.gd`, tests `Funcionalidades/Actividades/Futbol/Tests/test_futbol.gd`.
+- **Actividades:** `Entrenamiento_Futbol` (P2) y `Partido_Futbol` (P3, `Actividad_Partido`). Fuera del pool aleatorio. Programadas por `Sistema_Futbol` en `Matriz_Jugador` al fichar, cambiar de división o cambiar la asistencia; `Tick_Minuto()` hace O(1) por minuto.
+- **Calendario normal:** entrenamiento martes/jueves 120 min (3ª 19:00–21:00; profesional 10:00–12:00). Liga dominical de 4 equipos: 3 jornadas a las 10:00, 13:00 y 16:00 + playoff a las 19:00. Posiciones 1–2 juegan ascenso; 3–4 permanencia.
+- **Calendario rápido:** entrenamiento diario 45 min (3ª 18:30–19:15; profesional 10:00–10:45) y partido decisivo diario 20:30–21:30.
+- **Fórmulas:** condición `clamp(0.45*Física + 0.35*Descanso + 0.20*Hambre, 0, 100)`; innata `0.50*Deporte + 0.25*Liderazgo + 0.25*SangreFría`; convocatoria `0.55*Relación + 0.30*Condición + 0.15*Liderazgo` (bloqueos: lesionado, Física < 30, Relación < 25); puntuación normal `0.50*Deporte + 0.30*Condición + 0.20*Innata`; decisiva `0.42*Deporte + 0.25*Condición + 0.13*Innata + 0.20*SangreFría`; penaltis `clamp(0.25 + 0.55*SangreFría/100 + 0.20*Deporte/100, 0.15, 0.90)`.
+- **Divisiones:** 3ª Regional (umbral 45, 150 €/sem, prima victoria 50, gol 15), 2ª Nacional (62, 600 €, 200/50), 1ª Élite (78, 2500 €, 800/150), Superliga (90, 10000 €, 3000/500).
+- **Economía:** primas y salario × `Multiplicador_Precios()`; salario domingo 23:59 (normal) o diario 23:59 (rápido). Lesión deportiva: 25 % si condición < 30 o Física < 25; estado `Lesion_Deportiva` 1440 min con techo de Física 35 → 100.
+- **Conflictos:** entrenamientos y partidos frente a `Trabajo_Actual`; modales “Seguir con el fútbol” / “Mantener trabajo” al fichar o ascender, y “Dejar el fútbol y trabajar” / “Seguir en el fútbol” al aceptar un empleo. El ascenso conflictivo queda en `Conflicto_Ascenso_Pendiente` hasta que el jugador decide.
+- **Persistencia:** `Carrera_Futbol` en el save dinámico con normalización de claves; saves antiguos cargan `Activo = false`.
+- **UI:** botón `Carrera futbolística` en Actividades → Fijas; panel overlay responsive con requisitos, club, división, salario, barras, estadísticas, tabla dominical, toggles de asistencia y rescisión.
+
+### L. Minijuego de Cocina (*Cooking Fever*) + Apartado Minijuegos + Ropa Equipable (`Sistema_Cocina.gd`)
+- **Archivos:** `Scripts/Logica/Escena_Principal/Minijuego_Cocina/Sistema_Cocina.gd` (autoload con fórmulas puras), `Scripts/Logica/Escena_Principal/Economia/Herencia/Objeto_Ropa.gd`, `Escenas/Minijuego_Cocina/Minijuego_Cocina.tscn` + `Scripts/GUI/Minijuego_Cocina/Minijuego_Cocina.gd`, tests `Funcionalidades/Minijuego_Cocina/Tests/test_minijuego_cocina.gd`, doc `Funcionalidades/Minijuego_Cocina/Documentacion/MINIJUEGO_COCINA.md`.
+- **Desbloqueo:** Exclusivamente al ejecutar el primer minuto real trabajado en hostelería (`Actividades.Ejecutar_Actividad`), nunca al programar el bloque. Emite señal `restaurante_desbloqueado` (toast en pantalla + badge en `Minijuegos_Button` + `Mensaje.new()` en buzón). Mapeo: Comida Rápida → `burger_street` (15 niveles implementados), Ayudante/Cocinero Partida → `bistro_tradicional` (Fase 2), Chef Ejecutivo → `alta_cocina` (Fase 2).
+- **Rotación y Reloj:** Al abrir `Minijuego_Cocina` rota a `1280×720` horizontal (`SCREEN_LANDSCAPE`, `permissions/set_orientation=true` en `export_presets.cfg`) y al salir / `_exit_tree()` restaura `720×1280` vertical refrescando layout (`_Ajustar_Disposicion_Vertical`). Se monta en un `CanvasLayer` sobre `Script_Principal` para que el reloj del Sim siga avanzando normalmente.
+- **Economía y Mejoras:** Doble moneda (`Fondos_Cocina` para 5 mejoras Nv.1→3: `plancha`, `emplatado`, `termostato`, `ingredientes`, `ambiente`; `Dinero` del Sim para bonos 1.ª vez por estrellas `15/15/20 € * Multiplicador_Precios()`, propinas netas con tope 2 servicios/día en modo libre e ilimitadas + `×1.5` + `+10%` nómina en turno activo, y micro-propinas tope `15 € * mult`). Drops por cliente de `Progreso_Cocina` (`15%`, `×2` en turno, `×7` en `Modo_Rapido`) y `Manualidades` (`5%`, `×7` en `Modo_Rapido`).
+- **Logros y Ropa:** Rango `0..9` (sube cada 5 niveles superados). Desbloquea prendas `Objeto_Ropa` en Rangos 1, 3, 6 y 9 (equipables en Perfil → Apuntes → `Ropa`, con bonus de salario hostelería, `-5%` desgaste Higiene y `+25%` propinas) y bonos pasivos en `Alimentacion.gd` (Rangos 2, 4, 7), `Actividades_Habilidades.gd` (Rango 5) e inmunidad a `"Intoxicación alimentaria"` en `Eventos_Aleatorios.gd` (Rango 8).
+- **Pack de sprites del escenario (arte):** `Imagenes/Minijuego_Cocina/` reúne 134 PNG originales (chef + 6 poses, 8 clientes + 8 enfadados, 32 comidas, 8 estaciones, 8 piezas de mostrador, 22 de emplatado/props, 24 de UI, 8 de decoración, 8 efectos y fondo `1280×720`). Escena de muestra editable `Escenas/Minijuego_Cocina/Escenario_Cooking_Fever.tscn` + `Scripts/GUI/Minijuego_Cocina/Escenario_Cooking_Fever.gd`, abierta con `./ver_escenario.sh`; es una maqueta visual independiente y aún no está enganchada al minijuego jugable. Fuentes, prompts, catálogos y pipeline en `Arte_Fuente/Minijuego_Cocina/` y `tools/`; documentación en `Funcionalidades/Minijuego_Cocina/Documentacion/ARTE_SPRITES.md`.
+
+### M. Música de fondo (`Musica.gd`)
+- **Archivos:** `Scripts/Globales/Musica.gd` (autoload), `Sonidos/Musica/Lunchtime_Conspiracies.mp3` (general) y `Sonidos/Musica/Seven_Minutes_to_Service.mp3` (minijuego de cocina), ambos con `loop=true` en su `.import`; tests `Funcionalidades/Musica/Tests/test_musica.gd`; doc en `Funcionalidades/Musica/Documentacion/MUSICA.md`.
+- **Reproducción:** dos `AudioStreamPlayer` sobre el bus `Musica` con fundido cruzado de `0.9 s`. La pista general arranca automáticamente y suena en menú, escena principal y resto de pantallas; el minijuego de cocina cambia a su pista en `_ready()` y restaura la general en `_exit_tree()`. La general se pausa (no se detiene) durante el minijuego para reanudar en el mismo punto.
+- **Controles y persistencia:** `Alternar_Silencio()`, `Establecer_Volumen(0.0–1.0)` y señal `silencio_cambiado`; el estado se guarda en `user://configuracion_audio.cfg`. Botones de altavoz en el menú y en la cabecera principal. En Android la música se pausa/reanuda con `NOTIFICATION_APPLICATION_PAUSED` / `NOTIFICATION_APPLICATION_RESUMED`.
+
 ---
 
 ## 7. Roadmap Pendiente (por prioridad)
@@ -317,6 +357,7 @@ Clases en `Scripts/Logica/Escena_Principal/Actividades/Herencia/`:
 2. **Relaciones simples (NPCs)** (2–3 NPCs base: amigo, pareja potencial, familiar; `afinidad` 0–100; actividad "Quedar con X"; eventos por umbral).
 3. **Hitos por edad** (25 casarse, 30 hijos, 50 reflexión, 65 jubilación, 80+ conectar muerte con edad).
 4. ~~**Avatar visual completo** (post-MVP, alto coste de assets).~~ Implementado: creador de personaje, `Personaje_Visual` y logo dinámico (ver J).
+5. **Fútbol Fase 2 (Modo Mánager / Top Eleven)** — pendiente y fuera del alcance de la Fase 1 implementada (ver K).
 
 ---
 

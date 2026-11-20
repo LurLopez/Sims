@@ -9,13 +9,16 @@ var _sin_tuppers: Label
 
 func _ready() -> void:
 	title = "Despensa de tuppers"
-	min_size = Vector2(600, 760)
+	min_size = Vector2(640, 850)
 	ok_button_text = "Cerrar"
 	_Construir_UI()
 	Estilos_UI.estilizar_dialogo(self)
 	Estilos_UI.aplicar_estilo_boton(get_ok_button(), "secundario")
 	get_ok_button().custom_minimum_size = Vector2(128, 44)
 	_Refrescar()
+	# El párrafo con autowrap reporta un alto mínimo enorme antes de tener ancho;
+	# fijamos el tamaño tras el popup para que el botón Cerrar siga visible.
+	Estilos_UI.fijar_tamano_dialogo.call_deferred(self, Vector2i(640, 850))
 
 
 func _Construir_UI() -> void:

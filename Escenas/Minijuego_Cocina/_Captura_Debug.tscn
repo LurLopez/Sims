@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://Scripts/GUI/Minijuego_Cocina/_captura_debug.gd" id="1_cap"]
+
+[node name="Captura_Debug" type="Node"]
+script = ExtResource("1_cap")

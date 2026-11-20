@@ -7,6 +7,8 @@ extends Node
 
 const TUTORIAL_INICIAL := preload("res://Scripts/GUI/Escena_Principal/Tutorial_Inicial.gd")
 const _MODAL_TUPPERS_SCRIPT := preload("res://Scripts/GUI/Escena_Principal/Tuppers/Modal_Tuppers.gd")
+const _PANEL_FUTBOL_ESCENA := preload("res://Escenas/Escena_Principal/Panel_Futbol.tscn")
+const _MINIJUEGO_COCINA_ESCENA := preload("res://Escenas/Minijuego_Cocina/Minijuego_Cocina.tscn")
 
 var mirar_semana
 var calendario_solo_lectura: bool = false
@@ -37,6 +39,26 @@ var _dialog_ir_a_la_calle: ConfirmationDialog = null
 
 var _badge_perfil: Label = null
 var _badge_tab_mensajes: Label = null
+var _badge_minijuegos: Label = null
+var _boton_musica_header: Button = null
+var _minijuegos_novedad_pendiente: bool = false
+
+# Minijuegos y Ropa
+var _pantalla_minijuegos: ColorRect = null
+var _minijuegos_scroll: ScrollContainer = null
+var _minijuegos_vbox: VBoxContainer = null
+var _capa_minijuego_cocina: CanvasLayer = null
+var _minijuego_cocina_activo: bool = false
+var _subtab_apuntes_activo: String = "Apuntes"
+var _dialog_minijuego_bloqueado: AcceptDialog = null
+
+# Carrera de futbolista
+var _panel_futbol: Control = null
+var _capa_panel_futbol: CanvasLayer = null
+var _dialogo_ascenso_futbol: ConfirmationDialog = null
+var _dialogo_futbol_trabajo: ConfirmationDialog = null
+var _trabajo_conflicto_futbol: Actividad_Fija_Trabajo = null
+var _conflicto_ascenso_mostrado: bool = false
 
 
 func _Crear_Badge(parent: Control) -> Label:
@@ -83,19 +105,34 @@ func _Actualizar_Badges():
 	if _badge_tab_mensajes != null:
 		_badge_tab_mensajes.text = texto
 		_badge_tab_mensajes.visible = count > 0
+	if _badge_minijuegos != null:
+		_badge_minijuegos.text = "!"
+		_badge_minijuegos.visible = _minijuegos_novedad_pendiente
 
 func _ready():
+	Musica.Reproducir_General()
 	Inicializar_Otros_Scripts()
 	_Crear_Pantalla_Carrera()
 	_Crear_Pantalla_Economia()
+	_Crear_Pantalla_Minijuegos()
 	_badge_perfil = _Crear_Badge($Boton_Perfil)
 	_badge_tab_mensajes = _Crear_Badge($Pantalla_Mensajes/Tab_Bar/Tab_Mensajes)
+	if has_node("Minijuegos_Button"):
+		_badge_minijuegos = _Crear_Badge($Minijuegos_Button)
 	$Pantalla_Mensajes/Boton_Cerrar.pressed.connect(_on_mensajes_boton_cerrar_pressed)
 	$Pantalla_Mensajes/Tab_Bar/Tab_Mensajes.pressed.connect(_on_perfil_tab_mensajes_pressed)
 	$Pantalla_Mensajes/Tab_Bar/Tab_Info.pressed.connect(_on_perfil_tab_info_pressed)
 	$Pantalla_Mensajes/Tab_Bar/Tab_Apuntes.pressed.connect(_on_perfil_tab_apuntes_pressed)
 	$Pantalla_Mensajes/Tab_Bar/Tab_Despensa.pressed.connect(_on_perfil_tab_despensa_pressed)
 	$Pantalla_Mensajes/Contenido_Mensaje/Boton_Volver.pressed.connect(_on_mensajes_boton_volver_pressed)
+	var btn_sub_ap := get_node_or_null("Pantalla_Mensajes/Panel_Apuntes/SubTab_Bar/SubTab_Apuntes") as Button
+	if btn_sub_ap != null:
+		btn_sub_ap.pressed.connect(_on_subtab_apuntes_pressed)
+	var btn_sub_rp := get_node_or_null("Pantalla_Mensajes/Panel_Apuntes/SubTab_Bar/SubTab_Ropa") as Button
+	if btn_sub_rp != null:
+		btn_sub_rp.pressed.connect(_on_subtab_ropa_pressed)
+	if not Sistema_Cocina.restaurante_desbloqueado.is_connected(_on_restaurante_cocina_desbloqueado):
+		Sistema_Cocina.restaurante_desbloqueado.connect(_on_restaurante_cocina_desbloqueado)
 	if (Variables_Estaticas.First_Time):
 		first_time_logica.First_Time_Function()
 		Gestionar_Visibilidad.Quitar_Todo(self)
@@ -109,9 +146,17 @@ func _ready():
 			return
 		Gestionar_Visibilidad.Quitar_Todo(self)
 		mirar_semana=Variables_Dinamicas.Minute_Day/7
+	# Temporal para pruebas: desbloquear Burger & Street Food al entrar en la escena principal
+	if not Sistema_Cocina.Esta_Desbloqueado_Restaurante(Sistema_Cocina.RESTAURANTE_BURGER):
+		var estado_cocina: Dictionary = Sistema_Cocina.Obtener_Estado()
+		var desbl_cocina: Array = estado_cocina.get("restaurantes_desbloqueados", [])
+		desbl_cocina.append(Sistema_Cocina.RESTAURANTE_BURGER)
+		estado_cocina["restaurantes_desbloqueados"] = desbl_cocina
 	_Conectar_Tienda()
 	Estilos_UI.aplicar_tema_global(self)
 	_Aplicar_Rediseno()
+	if not Musica.silencio_cambiado.is_connected(_on_musica_silencio_cambiado):
+		Musica.silencio_cambiado.connect(_on_musica_silencio_cambiado)
 	get_viewport().size_changed.connect(_Ajustar_Disposicion_Vertical)
 	necesidades_basicas_gui.Inicializar(self)
 	Actualizar_Progreso()
@@ -122,6 +167,11 @@ func _ready():
 	if not Variables_Estaticas.Tutorial_Completado:
 		_Iniciar_Tutorial()
 	
+func _exit_tree() -> void:
+	if Sistema_Cocina != null and Sistema_Cocina.restaurante_desbloqueado.is_connected(_on_restaurante_cocina_desbloqueado):
+		Sistema_Cocina.restaurante_desbloqueado.disconnect(_on_restaurante_cocina_desbloqueado)
+
+
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
 	if Variables_Estaticas.First_Time == false:
@@ -130,6 +180,10 @@ func _process(delta):
 			var murio = Actividades.Actualizar_Horario(minutos_pendientes)
 			Guardar_Variables_Dinamicas.save_game()
 			if murio:
+				if _capa_minijuego_cocina != null and is_instance_valid(_capa_minijuego_cocina):
+					_capa_minijuego_cocina.queue_free()
+					_capa_minijuego_cocina = null
+					_minijuego_cocina_activo = false
 				get_tree().change_scene_to_file("res://Escenas/Menu/Menu.tscn")
 				return
 			Actualizar_Progreso()
@@ -139,6 +193,7 @@ func _process(delta):
 				Actualizar_Habilidades()
 			_Actualizar_Badges()
 			_Actualizar_Nav_Activa()
+			_Actualizar_Pantalla_Minijuegos_Si_Visible()
 		_home_refresh -= delta
 		if _home_refresh <= 0.0:
 			_home_refresh = 0.5
@@ -146,6 +201,8 @@ func _process(delta):
 			_Actualizar_Home()
 			_Actualizar_Necesidades_Extra()
 			_Actualizar_Tuppers_UI_Si_Visible()
+			_Actualizar_Pantalla_Minijuegos_Si_Visible()
+			_Comprobar_Conflicto_Ascenso_Futbol()
 			for n in find_children("*", "", true, false):
 				if n is AcceptDialog and not n.has_meta("_tema_dialogo"):
 					n.set_meta("_tema_dialogo", true)
@@ -176,6 +233,7 @@ func Actualizar_Dinero():
 	_ultimo_dinero_mostrado = nuevo_dinero
 	_Actualizar_Pantalla_Carrera_Si_Visible()
 	_Actualizar_Pantalla_Economia_Si_Visible()
+	_Actualizar_Pantalla_Minijuegos_Si_Visible()
 
 # Calcula cuántos minutos LOCALES han pasado desde el último tick procesado.
 # Se basa en la hora del dispositivo (no en Unix delta), así DST y cambios de zona
@@ -344,6 +402,7 @@ func _on_boton_actividades_pressed():
 	_Ocultar_Home()
 	_Actualizar_Trabajos_UI()
 	_Actualizar_Boton_Carrera_Deportiva()
+	_Actualizar_Boton_Carrera_Futbol()
 	_Actualizar_Nav_Activa()
 
 
@@ -353,6 +412,7 @@ func _on_siguiente_semana_pressed() -> void:
 		mirar_semana += 1
 		actividades_bloque_gui.bloque_columna.limpiar_todos_los_vboxcontainer()
 		actividades_bloque_gui.Agregar_Bloques(mirar_semana, self)
+		_Limpiar_Seleccion_Calendario_UI()
 		_Actualizar_Visibilidad_Botones_Navegacion()
 		_Actualizar_Titulo_Horario()
 
@@ -361,6 +421,17 @@ func _on_anterior_semana_pressed() -> void:
 		mirar_semana -= 1
 		actividades_bloque_gui.bloque_columna.limpiar_todos_los_vboxcontainer()
 		actividades_bloque_gui.Agregar_Bloques(mirar_semana, self)
+		_Limpiar_Seleccion_Calendario_UI()
+		_Actualizar_Visibilidad_Botones_Navegacion()
+		_Actualizar_Titulo_Horario()
+
+func _Ir_A_Semana_Actual() -> void:
+	var sem_actual: int = clampi(int(Variables_Dinamicas.Minute_Day) / 7, 0, 81)
+	if mirar_semana != sem_actual:
+		mirar_semana = sem_actual
+		actividades_bloque_gui.bloque_columna.limpiar_todos_los_vboxcontainer()
+		actividades_bloque_gui.Agregar_Bloques(mirar_semana, self)
+		_Limpiar_Seleccion_Calendario_UI()
 		_Actualizar_Visibilidad_Botones_Navegacion()
 		_Actualizar_Titulo_Horario()
 
@@ -370,6 +441,9 @@ func _Actualizar_Visibilidad_Botones_Navegacion() -> void:
 
 	boton_anterior.visible = mirar_semana > 0
 	boton_siguiente.visible = mirar_semana < 81
+	var btn_hoy := get_node_or_null("Actividades/Horario_Semanal/Boton_Ir_Hoy") as Button
+	if btn_hoy != null:
+		btn_hoy.visible = (mirar_semana != int(Variables_Dinamicas.Minute_Day) / 7)
 
 
 func _input(event: InputEvent) -> void:
@@ -445,6 +519,9 @@ func Iniciar_Blink() -> void:
 		blink_timer.connect("timeout", Callable(self, "_on_blink_timeout"))
 		add_child(blink_timer)
 	blink_estado = false
+	var btn_crear := get_node_or_null("Actividades/Seleccionar_Horario/Crear_Actividad") as Button
+	if btn_crear != null:
+		btn_crear.text = "Confirmar horario" if (modo_fiesta or modo_alimentacion) else "Elegir actividad"
 	if modo_fiesta:
 		_Mostrar_Preview_Fiesta()
 	elif modo_alimentacion:
@@ -453,6 +530,8 @@ func Iniciar_Blink() -> void:
 	else:
 		_Ocultar_Preview_Fiesta()
 		_Ocultar_Preview_Alimentacion()
+		if mini_cal_preview != null:
+			mini_cal_preview.limpiar()
 		mini_cal_preview = MiniCalendarioPreview.new()
 		mini_cal_preview.crear(self, mirar_semana)
 		_actualizar_mini_cal()
@@ -569,6 +648,8 @@ func _on_ocupar_actividad_pressed() -> void:
 	modo_fiesta = false
 	modo_alimentacion = false
 	if(actividades_bloque_gui.comprobar_seleccionado()):
+		if horario_bloque != null and is_instance_valid(horario_bloque):
+			horario_bloque.free()
 		horario_bloque=(actividades_bloque_gui.devolver_hora_desde_posiciones())
 		Gestionar_Visibilidad.Visibilizar_Seleccionar_Horario(self)
 		actividades_reloj_gui.Comprobar_Visibilidad(self,horario_bloque)
@@ -610,6 +691,8 @@ func _on_cancelar_pressed():
 func _on_eliminar_actividad_pressed() -> void:
 	if not actividades_bloque_gui.comprobar_seleccionado():
 		return
+	if horario_bloque != null and is_instance_valid(horario_bloque):
+		horario_bloque.free()
 	horario_bloque = actividades_bloque_gui.devolver_hora_desde_posiciones()
 
 	# Si la celda seleccionada es un trabajo fijo, eliminar UNA celda no tiene sentido
@@ -624,12 +707,19 @@ func _on_eliminar_actividad_pressed() -> void:
 	if celda_seleccionada is Actividad_Examen:
 		_Mostrar_Error_No_Eliminar_Examen()
 		return
+	if celda_seleccionada is Actividad and celda_seleccionada.nombre == "Carrera_Deportiva":
+		_Mostrar_Error_Bloque_Fijo("Carrera bloqueada", "No puedes eliminar una carrera deportiva en la que ya te has inscrito.")
+		return
+	if celda_seleccionada is Actividad and celda_seleccionada.nombre in ["Entrenamiento_Futbol", "Partido_Futbol"]:
+		_Mostrar_Error_Bloque_Fijo("Compromiso del club", "Los entrenamientos y partidos de fútbol se gestionan desde el panel de Carrera de futbolista.")
+		return
 
-	actividades_reloj_gui.Comprobar_Visibilidad(self,horario_bloque)
-	#$Seleccionar_Horario.visible=true     Si se quiere seleccionar la hora exacta que se quiere eliminar, solamante hay que activar estas 3 lineas de codigo
-	#$Actividades/Crear_Actividad.visible=true
-	#$Horario_Semanal.visible=false
-	actividades_reloj_gui.horario.Crear_Actividad(mirar_semana,"")
+	actividades_reloj_gui.Comprobar_Visibilidad(self, horario_bloque)
+	actividades_reloj_gui.Restart()
+	actividades_reloj_gui.horario.Crear_Actividad(mirar_semana, "")
+	actividades_bloque_gui.bloque_columna.limpiar_todos_los_vboxcontainer()
+	actividades_bloque_gui.Agregar_Bloques(mirar_semana, self)
+	_Limpiar_Seleccion_Calendario_UI()
 
 
 # Diálogo de confirmación para dejar un trabajo. Se crea perezosamente la primera vez
@@ -659,6 +749,7 @@ func _Confirmar_Dejar_Trabajo():
 	Guardar_Variables_Dinamicas.save_game()
 	actividades_bloque_gui.bloque_columna.limpiar_todos_los_vboxcontainer()
 	actividades_bloque_gui.Agregar_Bloques(mirar_semana, self)
+	_Limpiar_Seleccion_Calendario_UI()
 	_trabajo_a_dejar = null
 
 
@@ -669,13 +760,17 @@ func _Cancelar_Dejar_Trabajo():
 var _dialog_no_eliminar_examen: AcceptDialog = null
 
 func _Mostrar_Error_No_Eliminar_Examen():
+	_Mostrar_Error_Bloque_Fijo("Examen bloqueado", "No puedes eliminar un examen programado.")
+
+
+func _Mostrar_Error_Bloque_Fijo(titulo_err: String, texto_err: String) -> void:
 	if _dialog_no_eliminar_examen == null:
 		_dialog_no_eliminar_examen = AcceptDialog.new()
-		_dialog_no_eliminar_examen.title = "Examen bloqueado"
 		_dialog_no_eliminar_examen.ok_button_text = "Entendido"
 		add_child(_dialog_no_eliminar_examen)
-	_dialog_no_eliminar_examen.dialog_text = "No puedes eliminar un examen programado."
-	_dialog_no_eliminar_examen.popup_centered(Vector2i(420, 160))
+	_dialog_no_eliminar_examen.title = titulo_err
+	_dialog_no_eliminar_examen.dialog_text = texto_err
+	_dialog_no_eliminar_examen.popup_centered(Vector2i(460, 180))
 
 
 ##INICIO
@@ -750,8 +845,9 @@ func Iniciar_Bloques_Actividad():
 	actividades_bloque_gui.Añadir_Horas_Al_Horario()
 	actividades_bloque_gui.bloque_columna.limpiar_todos_los_vboxcontainer()
 	actividades_bloque_gui.Agregar_Bloques(mirar_semana, self)
-	_Actualizar_Visibilidad_Botones_Navegacion()
 	Gestionar_Visibilidad.Visibilizar_Horario_Semanal(self)
+	_Limpiar_Seleccion_Calendario_UI()
+	_Actualizar_Visibilidad_Botones_Navegacion()
 	_Actualizar_Titulo_Horario()
 	var mover := get_node_or_null("Actividades/Horario_Semanal/Mover_Vertical") as ScrollContainer
 	if mover != null:
@@ -839,6 +935,13 @@ func _Intentar_Tomar_Trabajo(actividad: Actividad_Fija_Trabajo) -> void:
 		_Tomar_Trabajo(actividad)
 
 func _Tomar_Trabajo(actividad: Actividad_Fija_Trabajo) -> void:
+	# El fútbol y un empleo con horario solapado son incompatibles: el jugador elige
+	# antes de abandonar el empleo anterior, para no perderlo si cancela el diálogo.
+	if Sistema_Futbol.Carrera_Activa() and Sistema_Futbol.Trabajo_Solapa_Con_Futbol(actividad):
+		_Mostrar_Conflicto_Futbol_Trabajo(actividad)
+		return
+	if Variables_Dinamicas.Trabajo_Actual != null:
+		Trabajo.Dejar_Trabajo(Variables_Dinamicas.Trabajo_Actual)
 	Trabajo.Trabajar(actividad)
 	Guardar_Variables_Dinamicas.save_game()
 	Actividad_Terminada()
@@ -864,9 +967,9 @@ func _Mostrar_Confirmacion_Cambiar_Trabajo(actual: Actividad_Fija_Trabajo, nuevo
 func _Confirmar_Cambiar_Trabajo() -> void:
 	if _trabajo_pendiente == null:
 		return
-	Trabajo.Dejar_Trabajo(Variables_Dinamicas.Trabajo_Actual)
-	_Tomar_Trabajo(_trabajo_pendiente)
+	var nuevo: Actividad_Fija_Trabajo = _trabajo_pendiente
 	_trabajo_pendiente = null
+	_Tomar_Trabajo(nuevo)
 
 func _Cancelar_Cambiar_Trabajo() -> void:
 	_trabajo_pendiente = null
@@ -1187,8 +1290,127 @@ func _on_perfil_tab_apuntes_pressed():
 	$Pantalla_Mensajes/Panel_Apuntes.visible = true
 	$Pantalla_Mensajes/Panel_Despensa.visible = false
 	$Pantalla_Mensajes/Contenido_Mensaje.visible = false
-	_Renderizar_Apuntes()
+	_Aplicar_Subtab_Apuntes()
 	_Actualizar_Nav_Activa()
+
+
+func _on_subtab_apuntes_pressed() -> void:
+	_subtab_apuntes_activo = "Apuntes"
+	_Aplicar_Subtab_Apuntes()
+
+
+func _on_subtab_ropa_pressed() -> void:
+	_subtab_apuntes_activo = "Ropa"
+	_Aplicar_Subtab_Apuntes()
+
+
+func _Aplicar_Subtab_Apuntes() -> void:
+	_Marcar_Subtab_Apuntes(_subtab_apuntes_activo)
+	var scroll_ropa := get_node_or_null("Pantalla_Mensajes/Panel_Apuntes/Scroll_Ropa") as Control
+	var scroll_inv := get_node_or_null("Pantalla_Mensajes/Panel_Apuntes/Scroll_Inventario") as Control
+	var sin_libros := get_node_or_null("Pantalla_Mensajes/Panel_Apuntes/Sin_Apuntes_Label") as Control
+	if _subtab_apuntes_activo == "Ropa":
+		if scroll_inv != null:
+			scroll_inv.visible = false
+		if sin_libros != null:
+			sin_libros.visible = false
+		if scroll_ropa != null:
+			scroll_ropa.visible = true
+		_Renderizar_Ropa()
+	else:
+		if scroll_ropa != null:
+			scroll_ropa.visible = false
+		_Renderizar_Apuntes()
+
+
+func _Marcar_Subtab_Apuntes(activo: String) -> void:
+	var sub_bar := get_node_or_null("Pantalla_Mensajes/Panel_Apuntes/SubTab_Bar")
+	if sub_bar == null:
+		return
+	for b in sub_bar.get_children():
+		if b is Button:
+			var es_activo: bool = (activo == "Apuntes" and b.name == "SubTab_Apuntes") \
+				or (activo == "Ropa" and b.name == "SubTab_Ropa")
+			if es_activo:
+				Estilos_UI.aplicar_estilo_boton(b, "primario", Estilos_UI.ROJO_BIT)
+			else:
+				Estilos_UI.aplicar_estilo_boton(b, "secundario", Estilos_UI.TINTA_SUAVE)
+			b.add_theme_font_size_override("font_size", 14)
+
+
+func _Renderizar_Ropa() -> void:
+	var vbox := get_node_or_null("Pantalla_Mensajes/Panel_Apuntes/Scroll_Ropa/VBox_Ropa") as VBoxContainer
+	if vbox == null:
+		return
+	for hijo in vbox.get_children():
+		hijo.queue_free()
+
+	Variables_Dinamicas.Objetos_Poseidos["Ropa_Calle"] = true
+	var equipada: String = Sistema_Cocina.Obtener_Clave_Ropa_Equipada()
+
+	var claves_ropa: Array[String] = []
+	for clave in Sistema_Cocina.ORDEN_ROPA:
+		if bool(Variables_Dinamicas.Objetos_Poseidos.get(clave, false)):
+			claves_ropa.append(clave)
+	for clave_extra in Variables_Dinamicas.Objetos_Poseidos.keys():
+		var c_str: String = str(clave_extra)
+		if bool(Variables_Dinamicas.Objetos_Poseidos[clave_extra]) and not claves_ropa.has(c_str):
+			var obj_extra = Variables_Estaticas.Catalogo_Objetos.get(c_str, null)
+			if obj_extra is Objeto_Ropa:
+				claves_ropa.append(c_str)
+
+	for clave in claves_ropa:
+		var obj = Variables_Estaticas.Catalogo_Objetos.get(clave, null)
+		if not (obj is Objeto_Ropa):
+			continue
+		var ropa: Objeto_Ropa = obj as Objeto_Ropa
+		var es_equipada: bool = (clave == equipada)
+
+		var card := PanelContainer.new()
+		var borde_col: Color = Estilos_UI.EXITO if es_equipada else Estilos_UI.BORDE
+		card.add_theme_stylebox_override("panel",
+			Estilos_UI.caja(Estilos_UI.SUPERFICIE, 14, borde_col, 2 if es_equipada else 1, 1))
+		vbox.add_child(card)
+
+		var m := MarginContainer.new()
+		m.add_theme_constant_override("margin_left", 14)
+		m.add_theme_constant_override("margin_right", 14)
+		m.add_theme_constant_override("margin_top", 12)
+		m.add_theme_constant_override("margin_bottom", 12)
+		card.add_child(m)
+
+		var h := HBoxContainer.new()
+		h.add_theme_constant_override("separation", 12)
+		m.add_child(h)
+
+		h.add_child(Estilos_UI.badge_icono("shirt", 42, 20,
+			Estilos_UI.EXITO if es_equipada else Estilos_UI.INDIGO, Color.WHITE, 11))
+
+		var info := VBoxContainer.new()
+		info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		info.add_theme_constant_override("separation", 3)
+		h.add_child(info)
+		info.add_child(Estilos_UI.titulo(Sistema_Cocina.Obtener_Nombre_Legible_Ropa(clave), 16, Estilos_UI.TINTA))
+		info.add_child(Estilos_UI.parrafo(ropa.descripcion_efecto, 13, Estilos_UI.TINTA_SUAVE))
+
+		if es_equipada:
+			var btn_eq := Estilos_UI.boton("✓ Equipada", "suave", "check", Estilos_UI.EXITO, 40)
+			btn_eq.custom_minimum_size = Vector2(138, 40)
+			btn_eq.disabled = true
+			h.add_child(btn_eq)
+		else:
+			var btn_eq := Estilos_UI.boton("Equipar", "primario", "shirt", Estilos_UI.AZUL, 40)
+			btn_eq.custom_minimum_size = Vector2(138, 40)
+			btn_eq.pressed.connect(func():
+				if Sistema_Cocina.Equipar_Ropa(clave):
+					_Renderizar_Ropa()
+					_Renderizar_Info())
+			h.add_child(btn_eq)
+
+	var nota := Estilos_UI.parrafo(
+		"Desbloquea nuevos atuendos de hostelería subiendo tu Rango de Maestría Culinaria (niveles 5, 15, 30 y 45) en el minijuego de Cocina.",
+		12, Estilos_UI.TINTA_FANTASMA)
+	vbox.add_child(nota)
 
 func _on_perfil_tab_despensa_pressed():
 	_Marcar_Tab_Perfil("Tab_Despensa")
@@ -1320,7 +1542,9 @@ func _Renderizar_Info():
 	_Info_Fila(grupo_p, "Edad", str(edad) + " años")
 	_Info_Fila(grupo_p, "Personalidad", personalidad)
 	_Info_Fila(grupo_p, "Dinero", str(int(Variables_Dinamicas.Dinero)) + " €")
-	_Info_Fila(grupo_p, "Vivienda", "En la calle" if Variables_Dinamicas.En_La_Calle else "Con alquiler", false)
+	_Info_Fila(grupo_p, "Vivienda", "En la calle" if Variables_Dinamicas.En_La_Calle else "Con alquiler")
+	var nombre_atuendo: String = Sistema_Cocina.Obtener_Nombre_Legible_Ropa(Sistema_Cocina.Obtener_Clave_Ropa_Equipada())
+	_Info_Fila(grupo_p, "Atuendo", nombre_atuendo, false)
 
 	_Info_Seccion(vbox, "Progreso")
 	var grupo_pr := _Crear_Grupo_Info(vbox)
@@ -1328,6 +1552,7 @@ func _Renderizar_Info():
 	_Info_Fila(grupo_pr, "Académico", str(Variables_Dinamicas.Progreso[1]) + " / 100")
 	_Info_Fila(grupo_pr, "Manualidades", str(Variables_Dinamicas.Progreso[2]) + " / 100")
 	_Info_Fila(grupo_pr, "Cocina", str(Variables_Dinamicas.Progreso_Cocina) + " / 100")
+	_Info_Fila(grupo_pr, "Maestría Culinaria", "Rango %d/9" % Sistema_Cocina.Obtener_Rango_Logro())
 	_Info_Fila(grupo_pr, "Inversiones", str(Variables_Dinamicas.Progreso_Inversion) + " / 100", false)
 
 	_Info_Seccion(vbox, "Habilidades innatas")
@@ -1335,7 +1560,11 @@ func _Renderizar_Info():
 	var nombres_hab = ["Deporte", "Inteligencia", "Destreza manual", "Memoria", "Liderazgo", "Paciencia", "Sangre fría"]
 	var total_h: int = min(nombres_hab.size(), Variables_Estaticas.Habilidades.size())
 	for i in range(total_h):
-		_Info_Fila(grupo_h, nombres_hab[i], str(Variables_Estaticas.Habilidades[i]) + " / 100", i < total_h - 1)
+		var innato: int = int(Variables_Estaticas.Habilidades[i])
+		var mostrado: int = int(Variables_Dinamicas.Habilidades_Mostradas[i]) if i < Variables_Dinamicas.Habilidades_Mostradas.size() else 0
+		# Solo se revela el valor exacto cuando se ha descubierto el límite natural.
+		var valor_h: String = str(innato) if mostrado >= innato else "?"
+		_Info_Fila(grupo_h, nombres_hab[i], valor_h + " / 100", i < total_h - 1)
 
 
 func _Crear_Grupo_Info(parent: VBoxContainer) -> VBoxContainer:
@@ -2669,6 +2898,286 @@ func _Actualizar_Pantalla_Economia():
 func _Actualizar_Pantalla_Economia_Si_Visible():
 	if _pantalla_economia != null and _pantalla_economia.is_visible_in_tree():
 		_Actualizar_Pantalla_Economia()
+
+
+# ============================================================
+# Apartado de Minijuegos + Minijuego de Cocina + Notificación Toast
+# ============================================================
+
+func _Crear_Pantalla_Minijuegos() -> void:
+	_pantalla_minijuegos = ColorRect.new()
+	_pantalla_minijuegos.name = "Pantalla_Minijuegos"
+	_pantalla_minijuegos.color = Estilos_UI.FONDO
+	_pantalla_minijuegos.position = Vector2.ZERO
+	_pantalla_minijuegos.size = Vector2(720, _Alto_Pantalla())
+	_pantalla_minijuegos.z_index = 5
+	_pantalla_minijuegos.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_pantalla_minijuegos.visible = false
+
+	Estilos_UI.Crear_Label_Titulo_Panel("Minijuegos", _pantalla_minijuegos, Estilos_UI.TINTA)
+	Estilos_UI.Crear_Boton_Volver_Panel(_pantalla_minijuegos, Callable(self, "Quitar_Todo"))
+
+	_minijuegos_scroll = ScrollContainer.new()
+	_minijuegos_scroll.name = "Scroll_Minijuegos"
+	_minijuegos_scroll.position = Vector2(20, 186)
+	_minijuegos_scroll.size = Vector2(680, _Alto_Pantalla() - 304.0)
+	_minijuegos_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	_pantalla_minijuegos.add_child(_minijuegos_scroll)
+
+	_minijuegos_vbox = VBoxContainer.new()
+	_minijuegos_vbox.name = "VBox_Minijuegos"
+	_minijuegos_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_minijuegos_vbox.add_theme_constant_override("separation", 14)
+	_minijuegos_scroll.add_child(_minijuegos_vbox)
+
+	add_child(_pantalla_minijuegos)
+	_Actualizar_Pantalla_Minijuegos()
+
+
+func _on_minijuegos_button_pressed() -> void:
+	Detener_Blink()
+	_minijuegos_novedad_pendiente = false
+	Gestionar_Visibilidad.Quitar_Todo(self)
+	_Ocultar_Home()
+	Gestionar_Visibilidad.Recursivo_Visibilizar(_pantalla_minijuegos)
+	Estilos_UI.animar_entrada(_pantalla_minijuegos)
+	_Actualizar_Pantalla_Minijuegos()
+	_Actualizar_Badges()
+	_Actualizar_Nav_Activa()
+
+
+func _Actualizar_Pantalla_Minijuegos() -> void:
+	if _minijuegos_vbox == null or not is_instance_valid(_minijuegos_vbox):
+		return
+	for hijo in _minijuegos_vbox.get_children():
+		hijo.queue_free()
+
+	# Tarjeta 1: Cocina (Cooking Fever)
+	var desbloqueado: bool = Sistema_Cocina.Esta_Desbloqueado_Minijuego()
+	var en_turno: bool = Sistema_Cocina.Esta_En_Turno_Activo("")
+	var rango: int = Sistema_Cocina.Obtener_Rango_Logro()
+	var info_rango: Dictionary = Sistema_Cocina.Obtener_Info_Rango(rango)
+	var niveles_sup: int = Sistema_Cocina.Contar_Niveles_Superados()
+	var fondos: int = Sistema_Cocina.Obtener_Fondos_Cocina()
+
+	var card := PanelContainer.new()
+	card.name = "Card_Minijuego_Cocina"
+	var borde_c: Color = Estilos_UI.EXITO if (desbloqueado and en_turno) else (Color("#ea580c") if desbloqueado else Estilos_UI.BORDE)
+	var st_c := Estilos_UI.caja_tarjeta(16, 3)
+	st_c.border_color = borde_c
+	card.add_theme_stylebox_override("panel", st_c)
+	_minijuegos_vbox.add_child(card)
+
+	var m := MarginContainer.new()
+	m.add_theme_constant_override("margin_left", 18)
+	m.add_theme_constant_override("margin_right", 18)
+	m.add_theme_constant_override("margin_top", 16)
+	m.add_theme_constant_override("margin_bottom", 16)
+	card.add_child(m)
+
+	var v := VBoxContainer.new()
+	v.add_theme_constant_override("separation", 10)
+	m.add_child(v)
+
+	var cab := HBoxContainer.new()
+	cab.add_theme_constant_override("separation", 12)
+	v.add_child(cab)
+
+	cab.add_child(Estilos_UI.badge_icono("utensils" if desbloqueado else "lock", 46, 22,
+		Color("#ea580c") if desbloqueado else Estilos_UI.TINTA_FANTASMA, Color.WHITE, 12))
+
+	var tit_col := VBoxContainer.new()
+	tit_col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	tit_col.add_theme_constant_override("separation", 2)
+	cab.add_child(tit_col)
+	tit_col.add_child(Estilos_UI.titulo("Cocina (Cooking Fever)", 19, Estilos_UI.TINTA))
+	tit_col.add_child(Estilos_UI.texto("Gestión de pedidos en tiempo real · 1280×720 Horizontal", 12, Estilos_UI.TINTA_SUAVE, 500))
+
+	if not desbloqueado:
+		cab.add_child(Estilos_UI.pill_estado("Bloqueado", Estilos_UI.SUPERFICIE_2, Estilos_UI.TINTA_SUAVE))
+	elif en_turno:
+		cab.add_child(Estilos_UI.pill_estado("En Turno (+50%)", Estilos_UI.EXITO_SUAVE, Estilos_UI.EXITO_OSCURO))
+	else:
+		cab.add_child(Estilos_UI.pill_estado("Disponible", Estilos_UI.ORO_SUAVE, Estilos_UI.ORO))
+
+	if not desbloqueado:
+		var lock_row := HBoxContainer.new()
+		lock_row.add_theme_constant_override("separation", 8)
+		lock_row.add_child(Estilos_UI.icono_rect("lock", 18, Estilos_UI.TINTA_SUAVE))
+		var lbl_lock := Estilos_UI.parrafo(
+			"Trabaja al menos 1 minuto en Comida Rápida u hostelería para desbloquearlo.",
+			14, Estilos_UI.TINTA_SUAVE)
+		lbl_lock.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		lock_row.add_child(lbl_lock)
+		v.add_child(lock_row)
+
+		var btn_bloq := Estilos_UI.boton("Bloqueado", "secundario", "lock", Estilos_UI.TINTA_FANTASMA, 48)
+		btn_bloq.disabled = true
+		v.add_child(btn_bloq)
+	else:
+		var chips := HBoxContainer.new()
+		chips.add_theme_constant_override("separation", 8)
+		chips.add_child(Estilos_UI.pill_estado("Maestría: Rango %d/9" % rango, Estilos_UI.ORO_SUAVE, Estilos_UI.ORO))
+		chips.add_child(Estilos_UI.pill_estado("%d / 45 niveles" % niveles_sup, Estilos_UI.AZUL_SUAVE, Estilos_UI.AZUL))
+		chips.add_child(Estilos_UI.pill_estado("%d Fondos" % fondos, Estilos_UI.SUPERFICIE_2, Estilos_UI.TINTA))
+		v.add_child(chips)
+
+		var desc_txt: String = "Rango actual: %s. " % str(info_rango.get("nombre", ""))
+		if en_turno:
+			desc_txt += "Estás en turno activo: propinas ilimitadas, Fondos ×1.5, Progreso ×2.0 y +10% extra en tu nómina."
+		else:
+			desc_txt += "Modo libre: %d/%d servicios remunerados disponibles hoy." % [
+				Sistema_Cocina.Obtener_Servicios_Remunerados_Restantes_Hoy(),
+				Sistema_Cocina.LIMITE_SERVICIOS_LIBRES_DIA
+			]
+		v.add_child(Estilos_UI.parrafo(desc_txt, 13, Estilos_UI.TINTA_SUAVE))
+
+		var btn_jugar := Estilos_UI.boton("Jugar", "exito", "play", Estilos_UI.EXITO, 50)
+		btn_jugar.name = "Btn_Jugar_Cocina"
+		btn_jugar.pressed.connect(_Abrir_Minijuego_Cocina)
+		v.add_child(btn_jugar)
+
+	# Contenedor modular preparado para añadir futuros minijuegos
+	var sep_lbl := Estilos_UI.texto("PRÓXIMOS MINIJUEGOS", 11, Estilos_UI.TINTA_FANTASMA, 700)
+	_minijuegos_vbox.add_child(sep_lbl)
+
+	for futuro in [
+		["Fútbol · Modo Partido", "Toma decisiones tácticas y tira faltas durante tus encuentros.", "trophy", Estilos_UI.EXITO],
+		["Trading en Directo", "Opera en sesiones rápidas de bolsa con noticias en tiempo real.", "trending-up", Estilos_UI.AZUL]
+	]:
+		var fcard := PanelContainer.new()
+		fcard.add_theme_stylebox_override("panel", Estilos_UI.caja(Estilos_UI.SUPERFICIE_2, 14, Estilos_UI.BORDE, 1, 0))
+		var fm := MarginContainer.new()
+		fm.add_theme_constant_override("margin_left", 16)
+		fm.add_theme_constant_override("margin_right", 16)
+		fm.add_theme_constant_override("margin_top", 12)
+		fm.add_theme_constant_override("margin_bottom", 12)
+		fcard.add_child(fm)
+		var fh := HBoxContainer.new()
+		fh.add_theme_constant_override("separation", 12)
+		fm.add_child(fh)
+		fh.add_child(Estilos_UI.badge_icono(futuro[2], 38, 18, Color(futuro[3], 0.35), futuro[3], 10))
+		var fv := VBoxContainer.new()
+		fv.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		fv.add_theme_constant_override("separation", 2)
+		fv.add_child(Estilos_UI.titulo(futuro[0], 15, Estilos_UI.TINTA_SUAVE))
+		fv.add_child(Estilos_UI.parrafo(futuro[1], 12, Estilos_UI.TINTA_FANTASMA))
+		fh.add_child(fv)
+		fh.add_child(Estilos_UI.pill_estado("Próximamente", Estilos_UI.SUPERFICIE, Estilos_UI.TINTA_FANTASMA))
+		_minijuegos_vbox.add_child(fcard)
+
+
+func _Actualizar_Pantalla_Minijuegos_Si_Visible() -> void:
+	if _pantalla_minijuegos != null and is_instance_valid(_pantalla_minijuegos) and _pantalla_minijuegos.is_visible_in_tree():
+		_Actualizar_Pantalla_Minijuegos()
+
+
+func _Abrir_Minijuego_Cocina() -> void:
+	var validacion: Dictionary = Sistema_Cocina.Puede_Entrar_Minijuego()
+	if not bool(validacion.get("permitido", false)):
+		if _dialog_minijuego_bloqueado == null:
+			_dialog_minijuego_bloqueado = AcceptDialog.new()
+			_dialog_minijuego_bloqueado.title = "No disponible ahora"
+			add_child(_dialog_minijuego_bloqueado)
+		_dialog_minijuego_bloqueado.dialog_text = str(validacion.get("mensaje", "No puedes entrar al minijuego ahora."))
+		_dialog_minijuego_bloqueado.popup_centered(Vector2i(520, 200))
+		return
+
+	if _capa_minijuego_cocina != null and is_instance_valid(_capa_minijuego_cocina):
+		return
+
+	_minijuego_cocina_activo = true
+	_capa_minijuego_cocina = CanvasLayer.new()
+	_capa_minijuego_cocina.name = "Capa_Minijuego_Cocina"
+	_capa_minijuego_cocina.layer = 60
+	add_child(_capa_minijuego_cocina)
+
+	var instancia := _MINIJUEGO_COCINA_ESCENA.instantiate()
+	instancia.cerrado.connect(_on_minijuego_cocina_cerrado)
+	_capa_minijuego_cocina.add_child(instancia)
+
+
+func _on_minijuego_cocina_cerrado() -> void:
+	if _capa_minijuego_cocina != null and is_instance_valid(_capa_minijuego_cocina):
+		_capa_minijuego_cocina.queue_free()
+		_capa_minijuego_cocina = null
+	_minijuego_cocina_activo = false
+	call_deferred("_Refrescar_Tras_Minijuego_Cocina")
+
+
+func _Refrescar_Tras_Minijuego_Cocina() -> void:
+	_Ajustar_Disposicion_Vertical()
+	_Redisenar_Superior()
+	_Redisenar_Inferior()
+	Actualizar_Dinero()
+	Actualizar_Progreso()
+	necesidades_basicas_gui.Actualizar_Necesidades_Basicas(self)
+	_Actualizar_Badges()
+	_Actualizar_Home()
+	_Actualizar_Pantalla_Minijuegos_Si_Visible()
+	_Actualizar_Nav_Activa()
+
+
+func _on_restaurante_cocina_desbloqueado(_restaurante_id: String, nombre_restaurante: String) -> void:
+	_minijuegos_novedad_pendiente = true
+	_Actualizar_Badges()
+	_Actualizar_Pantalla_Minijuegos_Si_Visible()
+	_Mostrar_Toast_Desbloqueo(
+		"¡Nuevo minijuego desbloqueado: Cocina!",
+		"Ya puedes jugar en %s desde el apartado Minijuegos." % nombre_restaurante)
+
+
+func _Mostrar_Toast_Desbloqueo(titulo_toast: String, subtitulo_toast: String) -> void:
+	if not is_inside_tree():
+		return
+	var capa := CanvasLayer.new()
+	capa.name = "Toast_Desbloqueo_Cocina"
+	capa.layer = 90
+	add_child(capa)
+
+	var card := PanelContainer.new()
+	card.position = Vector2(20, -110)
+	card.size = Vector2(680, 82)
+	card.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var st := Estilos_UI.caja(Estilos_UI.NAVY, 16, Color("#f59e0b"), 2, 3)
+	st.border_width_bottom = 3
+	card.add_theme_stylebox_override("panel", st)
+	capa.add_child(card)
+
+	var m := MarginContainer.new()
+	m.add_theme_constant_override("margin_left", 16)
+	m.add_theme_constant_override("margin_right", 16)
+	m.add_theme_constant_override("margin_top", 12)
+	m.add_theme_constant_override("margin_bottom", 12)
+	m.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	card.add_child(m)
+
+	var h := HBoxContainer.new()
+	h.add_theme_constant_override("separation", 12)
+	h.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	m.add_child(h)
+
+	h.add_child(Estilos_UI.badge_icono("utensils", 42, 20, Color("#ea580c"), Color.WHITE, 11))
+
+	var col := VBoxContainer.new()
+	col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	col.alignment = BoxContainer.ALIGNMENT_CENTER
+	col.add_theme_constant_override("separation", 2)
+	col.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	h.add_child(col)
+
+	var lt := Estilos_UI.titulo(titulo_toast, 15, Color("#fde68a"))
+	lt.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	col.add_child(lt)
+	var ls := Estilos_UI.texto(subtitulo_toast, 12, Color.WHITE, 500)
+	ls.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	col.add_child(ls)
+
+	var tw := card.create_tween()
+	tw.tween_property(card, "position:y", 16.0, 0.35).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.tween_interval(4.2)
+	tw.tween_property(card, "position:y", -120.0, 0.30).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	tw.tween_callback(capa.queue_free)
 # ============================================================
 # Diseño e interfaz principal
 # ============================================================
@@ -2751,6 +3260,23 @@ func _Aplicar_Rediseno() -> void:
 		var n := get_node_or_null(ruta) as Control
 		if n != null:
 			n.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+
+func _on_boton_musica_pressed() -> void:
+	Musica.Alternar_Silencio()
+	_Actualizar_Boton_Musica()
+
+
+func _on_musica_silencio_cambiado(_silenciado: bool) -> void:
+	_Actualizar_Boton_Musica()
+
+
+func _Actualizar_Boton_Musica() -> void:
+	if _boton_musica_header == null or not is_instance_valid(_boton_musica_header):
+		return
+	var silenciado := Musica.Esta_Silenciado()
+	_boton_musica_header.icon = Estilos_UI.icono("x" if silenciado else "volume-2")
+	_boton_musica_header.tooltip_text = "Activar la música" if silenciado else "Silenciar la música"
 
 
 func _Redisenar_Superior() -> void:
@@ -2836,6 +3362,18 @@ func _Redisenar_Superior() -> void:
 	_reloj_header.add_theme_font_size_override("font_size", 12)
 	_reloj_header.add_theme_color_override("font_color", Color("#fee2e2"))
 
+	var btn_musica := get_node_or_null("Boton_Musica_Header") as Button
+	if btn_musica == null:
+		btn_musica = Estilos_UI.boton_icono("volume-2", Estilos_UI.ROJO_BIT, 38)
+		btn_musica.name = "Boton_Musica_Header"
+		btn_musica.pressed.connect(_on_boton_musica_pressed)
+		add_child(btn_musica)
+	_boton_musica_header = btn_musica
+	btn_musica.position = Vector2(460, 15)
+	btn_musica.size = Vector2(38, 38)
+	btn_musica.z_index = 30
+	_Actualizar_Boton_Musica()
+
 	var nav := get_node_or_null("Nav_Superior") as Panel
 	if nav == null:
 		nav = Panel.new()
@@ -2851,10 +3389,11 @@ func _Redisenar_Superior() -> void:
 	nav.add_theme_stylebox_override("panel", ns)
 
 	var tabs := [
-		["Boton_Perfil", 14, 170, "Perfil", "user-round"],
-		["Economia_Button", 188, 170, "Economía", "wallet"],
-		["Calendario_Button", 362, 170, "Horario", "calendar-days"],
-		["Carrera_Button", 536, 170, "Carrera", "graduation-cap"],
+		["Boton_Perfil", 12, 136, "Perfil", "user-round"],
+		["Economia_Button", 152, 136, "Economía", "wallet"],
+		["Calendario_Button", 292, 136, "Horario", "calendar-days"],
+		["Carrera_Button", 432, 136, "Carrera", "graduation-cap"],
+		["Minijuegos_Button", 572, 136, "Minijuegos", "puzzle"],
 	]
 	for datos in tabs:
 		var b := get_node_or_null(datos[0]) as Button
@@ -2868,9 +3407,9 @@ func _Redisenar_Superior() -> void:
 		b.icon = Estilos_UI.icono(datos[4])
 		b.expand_icon = false
 		b.add_theme_font_override("font", Estilos_UI.fuente_ui(600))
-		b.add_theme_font_size_override("font_size", 13)
-		b.add_theme_constant_override("icon_max_width", 16)
-		b.add_theme_constant_override("h_separation", 6)
+		b.add_theme_font_size_override("font_size", 12)
+		b.add_theme_constant_override("icon_max_width", 15)
+		b.add_theme_constant_override("h_separation", 4)
 
 	var chip := get_node_or_null("Moneda_Fondo") as Panel
 	if chip == null:
@@ -2924,6 +3463,8 @@ func _Actualizar_Nav_Activa() -> void:
 		top_activo = "Economia_Button"
 	elif _pantalla_carrera != null and is_instance_valid(_pantalla_carrera) and _pantalla_carrera.visible:
 		top_activo = "Carrera_Button"
+	elif _pantalla_minijuegos != null and is_instance_valid(_pantalla_minijuegos) and _pantalla_minijuegos.visible:
+		top_activo = "Minijuegos_Button"
 	elif $Actividades.visible and calendario_solo_lectura:
 		top_activo = "Calendario_Button"
 	elif $Habilidades.visible:
@@ -2940,7 +3481,7 @@ func _Actualizar_Nav_Activa() -> void:
 	if barra_nav != null:
 		Estilos_UI.marcar_nav_activo(barra_nav, bottom_activo)
 
-	for nombre_top in ["Boton_Perfil", "Economia_Button", "Calendario_Button", "Carrera_Button"]:
+	for nombre_top in ["Boton_Perfil", "Economia_Button", "Calendario_Button", "Carrera_Button", "Minijuegos_Button"]:
 		var b := get_node_or_null(nombre_top) as Button
 		if b == null:
 			continue
@@ -3004,6 +3545,8 @@ func _Redisenar_Inferior() -> void:
 # Recoloca y redimensiona los elementos que dependen del alto real de la pantalla.
 # Se llama al terminar el rediseño y cada vez que cambia el tamaño del viewport.
 func _Ajustar_Disposicion_Vertical() -> void:
+	if _minijuego_cocina_activo:
+		return
 	var alto := _Alto_Pantalla()
 
 	var fondo := get_node_or_null("Fondo") as Sprite2D
@@ -3025,6 +3568,7 @@ func _Ajustar_Disposicion_Vertical() -> void:
 		"Progreso", "Habilidades", "Necesidades_Basicas", "Actividades",
 		"Actividades/Horario_Semanal", "Actividades/Seleccionar_Horario",
 		"Pantalla_Mensajes", "Tienda", "Pantalla_Carrera", "Pantalla_Economia",
+		"Pantalla_Minijuegos",
 	]:
 		var seccion := get_node_or_null(ruta) as Control
 		if seccion == null:
@@ -3041,12 +3585,22 @@ func _Ajustar_Disposicion_Vertical() -> void:
 		"Pantalla_Mensajes/Panel_Apuntes", "Pantalla_Mensajes/Contenido_Mensaje",
 		"Pantalla_Mensajes/Panel_Despensa",
 		"Pantalla_Mensajes/Panel_Info/Scroll_Info",
-		"Pantalla_Mensajes/Panel_Apuntes/Scroll_Inventario",
 		"Pantalla_Mensajes/Panel_Despensa/Scroll_Tuppers",
 	]:
 		var contenido := get_node_or_null(ruta) as Control
 		if contenido != null:
 			contenido.size.y = alto_contenido
+
+	for ruta_sub in [
+		"Pantalla_Mensajes/Panel_Apuntes/Scroll_Inventario",
+		"Pantalla_Mensajes/Panel_Apuntes/Scroll_Ropa",
+	]:
+		var sub_cont := get_node_or_null(ruta_sub) as Control
+		if sub_cont != null:
+			sub_cont.size.y = maxf(120.0, alto_contenido - 50.0)
+
+	if _minijuegos_scroll != null and is_instance_valid(_minijuegos_scroll):
+		_minijuegos_scroll.size.y = alto - 304.0
 
 	var card_mensaje := get_node_or_null("Pantalla_Mensajes/Contenido_Mensaje/Mensaje_Card") as Control
 	if card_mensaje != null:
@@ -3499,6 +4053,7 @@ const _SUBTITULOS_ACTIVIDADES := {
 	"Salir_De_Fiesta": ["party-popper", "Noche · 2–12 h · Prob. según estado", Color("#d92673")],
 	"Salir_A_Correr": ["footprints", "+4 Deporte · +4 Salud física", Color("#1ea34a")],
 	"Carrera_Deportiva": ["trophy", "Fin de semana · Inscripción 50€", Color("#ea580c")],
+	"Boton_Carrera_Futbol": ["trophy", "Entrenamientos y liga dominical", Color("#0ea5e9")],
 	"Estudiar": ["book-open", "+4 Académico · Avanza carrera", Color("#1d7afc")],
 	"Manualidades": ["palette", "+4 Manualidades", Color("#ea580c")],
 	"Trabajo": ["briefcase-business", "Elige un empleo fijo semanal", Color("#1ea34a")],
@@ -3682,6 +4237,7 @@ func _Redisenar_Actividades() -> void:
 
 	_Actualizar_Trabajos_UI()
 	_Actualizar_Boton_Carrera_Deportiva()
+	_Actualizar_Boton_Carrera_Futbol()
 
 
 func _Actualizar_Boton_Carrera_Deportiva() -> void:
@@ -3719,6 +4275,150 @@ func _Actualizar_Boton_Carrera_Deportiva() -> void:
 			sub_lbl.text = "Fin de semana · %d€ · %d inscritos" % [costo, visibles]
 
 
+# ---------------- Carrera de futbolista ----------------
+
+func _Actualizar_Boton_Carrera_Futbol() -> void:
+	var btn := get_node_or_null(
+		"Actividades/Elegir_Actividad/Tipos_De_Actividades/Fijas_Opciones/Boton_Carrera_Futbol") as Button
+	if btn == null:
+		return
+	var sub_lbl: Label = null
+	var card_row := btn.get_node_or_null("Card_Contenido")
+	if card_row != null and card_row.get_child_count() > 1:
+		var vbox := card_row.get_child(1)
+		if vbox.get_child_count() > 1:
+			sub_lbl = vbox.get_child(1) as Label
+	if sub_lbl == null:
+		return
+	if Sistema_Futbol.Carrera_Activa():
+		var salario_txt: String = "%d €/sem" % Sistema_Futbol.Obtener_Salario_Semanal()
+		if Variables_Estaticas.Modo_Rapido:
+			salario_txt = "%d €/día" % int(round(
+				Sistema_Futbol.Obtener_Salario_Semanal() * Variables_Estaticas.Multiplicador_Precios()))
+		sub_lbl.text = "%s · %s · %s" % [
+			Sistema_Futbol.Obtener_Nombre_Division(),
+			salario_txt,
+			Sistema_Futbol.Obtener_Resumen_Entrenamiento()]
+	else:
+		var req: Dictionary = Sistema_Futbol.Cumple_Requisitos_Fichaje()
+		if bool(req.get("cumple", false)):
+			sub_lbl.text = "Sin club · Cumples los requisitos (Deporte %d)" % int(
+				req.get("deporte", 0))
+		else:
+			sub_lbl.text = "Sin club · Necesitas Deporte %d y menos de %d años" % [
+				int(req.get("requisito_deporte", 25)), int(req.get("requisito_edad", 30))]
+
+
+func _on_carrera_futbol_pressed() -> void:
+	_Cerrar_Panel_Futbol()
+	# El panel debe colgar de un CanvasLayer: un Control anclado directamente a
+	# un Node2D calcula su rect contra un padre de tamaño cero y queda en 0x0.
+	_capa_panel_futbol = CanvasLayer.new()
+	_capa_panel_futbol.name = "Capa_Panel_Futbol"
+	_capa_panel_futbol.layer = 60
+	add_child(_capa_panel_futbol)
+	_panel_futbol = _PANEL_FUTBOL_ESCENA.instantiate()
+	_capa_panel_futbol.add_child(_panel_futbol)
+	_panel_futbol.cerrado.connect(_on_panel_futbol_cerrado)
+
+
+func _Cerrar_Panel_Futbol() -> void:
+	_panel_futbol = null
+	if _capa_panel_futbol != null and is_instance_valid(_capa_panel_futbol):
+		_capa_panel_futbol.queue_free()
+		_capa_panel_futbol = null
+
+
+func _on_panel_futbol_cerrado() -> void:
+	_Cerrar_Panel_Futbol()
+	_on_boton_actividades_pressed()
+	Opciones_Actividades_Fijas()
+
+
+func _Comprobar_Conflicto_Ascenso_Futbol() -> void:
+	if not Sistema_Futbol.Hay_Conflicto_Ascenso_Pendiente():
+		_conflicto_ascenso_mostrado = false
+		if _dialogo_ascenso_futbol != null and _dialogo_ascenso_futbol.visible:
+			_dialogo_ascenso_futbol.hide()
+		return
+	if _conflicto_ascenso_mostrado:
+		return
+	_conflicto_ascenso_mostrado = true
+	var datos: Dictionary = Sistema_Futbol.Obtener_Datos_Conflicto_Ascenso()
+	if _dialogo_ascenso_futbol == null:
+		_dialogo_ascenso_futbol = ConfirmationDialog.new()
+		_dialogo_ascenso_futbol.title = "Conflicto de horario"
+		_dialogo_ascenso_futbol.ok_button_text = "Seguir con el fútbol"
+		_dialogo_ascenso_futbol.get_cancel_button().text = "Mantener trabajo"
+		_dialogo_ascenso_futbol.confirmed.connect(_on_ascenso_futbol_confirmado)
+		_dialogo_ascenso_futbol.canceled.connect(_on_ascenso_futbol_cancelado)
+		_dialogo_ascenso_futbol.close_requested.connect(_on_ascenso_futbol_cancelado)
+		add_child(_dialogo_ascenso_futbol)
+	_dialogo_ascenso_futbol.dialog_text = (
+		"El ascenso a %s cambia los entrenamientos a un horario que solapa con tu trabajo de %s.\n\n" \
+		+ "Puedes seguir con el fútbol (dejarás el empleo) o mantener el trabajo (rechazarás el ascenso).") % [
+			str(datos.get("nombre_destino", "")), str(datos.get("trabajo", "tu empleo"))]
+	_dialogo_ascenso_futbol.popup_centered(Vector2i(600, 300))
+
+
+func _on_ascenso_futbol_confirmado() -> void:
+	if not Sistema_Futbol.Hay_Conflicto_Ascenso_Pendiente():
+		return
+	_conflicto_ascenso_mostrado = false
+	Sistema_Futbol.Resolver_Conflicto_Ascenso(true)
+	_Actualizar_Trabajos_UI()
+	_Actualizar_Boton_Carrera_Futbol()
+	Actualizar_Dinero()
+	_Refrescar_Panel_Futbol_Si_Abierto()
+
+
+func _on_ascenso_futbol_cancelado() -> void:
+	if not Sistema_Futbol.Hay_Conflicto_Ascenso_Pendiente():
+		return
+	_conflicto_ascenso_mostrado = false
+	Sistema_Futbol.Resolver_Conflicto_Ascenso(false)
+	_Actualizar_Boton_Carrera_Futbol()
+	_Refrescar_Panel_Futbol_Si_Abierto()
+
+
+func _Refrescar_Panel_Futbol_Si_Abierto() -> void:
+	if _panel_futbol != null and is_instance_valid(_panel_futbol):
+		_panel_futbol.Refrescar()
+
+
+func _Mostrar_Conflicto_Futbol_Trabajo(actividad: Actividad_Fija_Trabajo) -> void:
+	_trabajo_conflicto_futbol = actividad
+	if _dialogo_futbol_trabajo == null:
+		_dialogo_futbol_trabajo = ConfirmationDialog.new()
+		_dialogo_futbol_trabajo.title = "Fútbol o trabajo"
+		_dialogo_futbol_trabajo.ok_button_text = "Dejar el fútbol y trabajar"
+		_dialogo_futbol_trabajo.get_cancel_button().text = "Seguir en el fútbol"
+		_dialogo_futbol_trabajo.confirmed.connect(_on_conflicto_futbol_trabajo_confirmado)
+		_dialogo_futbol_trabajo.canceled.connect(_on_conflicto_futbol_trabajo_cancelado)
+		_dialogo_futbol_trabajo.close_requested.connect(_on_conflicto_futbol_trabajo_cancelado)
+		add_child(_dialogo_futbol_trabajo)
+	var nombre := actividad.nombre.replace("Trabajar_En_", "").replace(
+		"Trabajar_De_", "").replace("_", " ")
+	_dialogo_futbol_trabajo.dialog_text = (
+		"El horario de %s solapa con tus compromisos de fútbol (entrenamientos o partidos).\n\n" \
+		+ "Si aceptas el empleo, rescindirás tu contrato como futbolista.") % nombre
+	_dialogo_futbol_trabajo.popup_centered(Vector2i(580, 280))
+
+
+func _on_conflicto_futbol_trabajo_confirmado() -> void:
+	if _trabajo_conflicto_futbol == null:
+		return
+	var actividad: Actividad_Fija_Trabajo = _trabajo_conflicto_futbol
+	_trabajo_conflicto_futbol = null
+	Sistema_Futbol.Rescindir_Por_Trabajo()
+	if actividad != null:
+		_Tomar_Trabajo(actividad)
+
+
+func _on_conflicto_futbol_trabajo_cancelado() -> void:
+	_trabajo_conflicto_futbol = null
+
+
 func _on_carrera_deportiva_pressed() -> void:
 	var sys := Sistema_Carreras_Deportivas
 	if sys == null or not sys.Puede_Inscribirse_Hoy():
@@ -3745,6 +4445,35 @@ func _Redisenar_Horario() -> void:
 	horario.position = Vector2.ZERO
 	horario.size = Vector2(720, _Alto_Pantalla())
 
+	var btn_volver := horario.get_node_or_null("Boton_Volver_Horario") as Button
+	if btn_volver == null:
+		btn_volver = Estilos_UI.boton_icono("arrow-left", Estilos_UI.TINTA, 42)
+		btn_volver.name = "Boton_Volver_Horario"
+		btn_volver.position = Vector2(20, 126)
+		btn_volver.size = Vector2(42, 42)
+		btn_volver.tooltip_text = "Volver a actividades"
+		btn_volver.pressed.connect(_on_boton_actividades_pressed)
+		horario.add_child(btn_volver)
+
+	var badge_hdr := horario.get_node_or_null("Badge_Horario_Header") as PanelContainer
+	if badge_hdr == null:
+		badge_hdr = Estilos_UI.badge_icono("calendar-days", 42, 21, Estilos_UI.AZUL, Color.WHITE, 12)
+		badge_hdr.name = "Badge_Horario_Header"
+		badge_hdr.position = Vector2(20, 126)
+		badge_hdr.size = Vector2(42, 42)
+		horario.add_child(badge_hdr)
+
+	var btn_hoy := horario.get_node_or_null("Boton_Ir_Hoy") as Button
+	if btn_hoy == null:
+		btn_hoy = Estilos_UI.boton("Ir a hoy", "suave", "calendar-check-2", Estilos_UI.PRIMARIO, 38)
+		btn_hoy.name = "Boton_Ir_Hoy"
+		btn_hoy.set_meta("_estilo_propio", true)
+		btn_hoy.add_theme_font_size_override("font_size", 13)
+		btn_hoy.pressed.connect(_Ir_A_Semana_Actual)
+		horario.add_child(btn_hoy)
+	btn_hoy.position = Vector2(564, 128)
+	btn_hoy.size = Vector2(136, 38)
+
 	var fondo_cal := horario.get_node_or_null("Fondo_Calendario") as Panel
 	if fondo_cal == null:
 		fondo_cal = Panel.new()
@@ -3752,41 +4481,50 @@ func _Redisenar_Horario() -> void:
 		fondo_cal.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		horario.add_child(fondo_cal)
 		horario.move_child(fondo_cal, 0)
-	fondo_cal.position = Vector2(16, 188)
-	fondo_cal.size = Vector2(688, 728)
+	fondo_cal.position = Vector2(16, 186)
+	fondo_cal.size = Vector2(688, 722)
 	fondo_cal.z_index = -1
 	fondo_cal.clip_contents = true
 	fondo_cal.add_theme_stylebox_override("panel",
-		Estilos_UI.caja(Estilos_UI.SUPERFICIE, 16, Estilos_UI.BORDE, 1, 1))
+		Estilos_UI.caja(Estilos_UI.SUPERFICIE, 16, Estilos_UI.BORDE_FUERTE, 1, 2))
+
+	var fondo_cab := horario.get_node_or_null("Fondo_Cabecera_Calendario") as Panel
+	if fondo_cab == null:
+		fondo_cab = Panel.new()
+		fondo_cab.name = "Fondo_Cabecera_Calendario"
+		fondo_cab.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		horario.add_child(fondo_cab)
+		horario.move_child(fondo_cab, 1)
+	fondo_cab.position = Vector2(17, 187)
+	fondo_cab.size = Vector2(686, 44)
+	var st_cab := StyleBoxFlat.new()
+	st_cab.bg_color = Estilos_UI.NAVY
+	st_cab.corner_radius_top_left = 15
+	st_cab.corner_radius_top_right = 15
+	st_cab.border_width_bottom = 2
+	st_cab.border_color = Color("#2d3a50")
+	fondo_cab.add_theme_stylebox_override("panel", st_cab)
 
 	var cabecera := horario.get_node_or_null("Cabezal_horario") as HBoxContainer
 	if cabecera != null:
-		cabecera.position = Vector2(22, 194)
-		cabecera.size = Vector2(676, 38)
+		cabecera.position = Vector2(22, 191)
+		cabecera.size = Vector2(676, 36)
+		cabecera.custom_minimum_size = Vector2(676, 36)
 		cabecera.add_theme_constant_override("separation", 0)
-		var nombres := ["Lunes", "Martes", "Miercoles", "Jueves", "Viernes", "Sabado", "Domingo"]
-		var hoy := int(Variables_Dinamicas.Minute_Day) % 7
 		for b in cabecera.get_children():
 			if b is Button:
+				b.mouse_filter = Control.MOUSE_FILTER_IGNORE
+				b.focus_mode = Control.FOCUS_NONE
 				if b.name == "Horario":
-					b.custom_minimum_size.x = 70
+					b.custom_minimum_size = Vector2(68, 36)
 					b.size_flags_horizontal = 0
 				else:
-					b.custom_minimum_size.x = 86
-					b.size_flags_horizontal = 0
-				var es_hoy: bool = b.name == nombres[hoy]
-				b.add_theme_font_override("font", Estilos_UI.fuente_ui(700 if es_hoy else 600))
-				b.add_theme_font_size_override("font_size", 12)
-				b.add_theme_color_override("font_color",
-					Estilos_UI.PRIMARIO if es_hoy else Estilos_UI.TINTA_SUAVE)
-				b.add_theme_stylebox_override("normal",
-					Estilos_UI.caja(Estilos_UI.PRIMARIO_SUAVE if es_hoy else Color(0, 0, 0, 0), 8, Color(0, 0, 0, 0), 0, 0))
-				b.add_theme_stylebox_override("hover",
-					Estilos_UI.caja(Estilos_UI.SUPERFICIE_2, 8, Color(0, 0, 0, 0), 0, 0))
+					b.custom_minimum_size = Vector2(0, 36)
+					b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
 	var mover := horario.get_node_or_null("Mover_Vertical") as ScrollContainer
 	if mover != null:
-		mover.position = Vector2(22, 236)
+		mover.position = Vector2(22, 233)
 		mover.size = Vector2(676, 634)
 		mover.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	var todo := horario.get_node_or_null("Mover_Vertical/Todo calendario") as HBoxContainer
@@ -3794,7 +4532,7 @@ func _Redisenar_Horario() -> void:
 		todo.add_theme_constant_override("separation", 0)
 	var col_horas := horario.get_node_or_null("Mover_Vertical/Todo calendario/Horario") as VBoxContainer
 	if col_horas != null:
-		col_horas.custom_minimum_size = Vector2(70, 0)
+		col_horas.custom_minimum_size = Vector2(68, 0)
 		col_horas.add_theme_constant_override("separation", 0)
 	var dias := horario.get_node_or_null("Mover_Vertical/Todo calendario/Dias") as HBoxContainer
 	if dias != null:
@@ -3805,6 +4543,16 @@ func _Redisenar_Horario() -> void:
 				d.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 				d.add_theme_constant_override("separation", 0)
 
+	var sep_pie := horario.get_node_or_null("Separador_Pie_Calendario") as ColorRect
+	if sep_pie == null:
+		sep_pie = ColorRect.new()
+		sep_pie.name = "Separador_Pie_Calendario"
+		sep_pie.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		horario.add_child(sep_pie)
+	sep_pie.color = Color("#e2e8f0")
+	sep_pie.position = Vector2(17, 870)
+	sep_pie.size = Vector2(686, 1)
+
 	# Leyenda dentro del pie del calendario
 	var leyenda := horario.get_node_or_null("Leyenda_Horario") as HBoxContainer
 	if leyenda == null:
@@ -3812,15 +4560,15 @@ func _Redisenar_Horario() -> void:
 		leyenda.name = "Leyenda_Horario"
 		leyenda.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		horario.add_child(leyenda)
-	leyenda.position = Vector2(30, 882)
-	leyenda.size = Vector2(660, 24)
+	leyenda.position = Vector2(28, 876)
+	leyenda.size = Vector2(664, 24)
 	leyenda.add_theme_constant_override("separation", 18)
 	for hijo in leyenda.get_children():
 		hijo.queue_free()
 	for datos in [
-		["Libre", Color("#ecfdf5"), Color("#86efac")],
-		["Ocupado", Color("#dbeafe"), Color("#93c5fd")],
-		["Pasado", Color("#f1f5f9"), Color("#cbd5e1")],
+		["Libre", Color("#dcfce7"), Color("#4ade80")],
+		["Programado", Color("#dbeafe"), Color("#2563eb")],
+		["Pasado", Color("#e2e8f0"), Color("#94a3b8")],
 	]:
 		var item := HBoxContainer.new()
 		item.add_theme_constant_override("separation", 6)
@@ -3833,15 +4581,59 @@ func _Redisenar_Horario() -> void:
 		item.add_child(Estilos_UI.texto(datos[0], 11, Estilos_UI.TINTA_SUAVE, 600))
 		leyenda.add_child(item)
 
-	# Etiqueta de semana centrada en la barra de navegación semanal
+	var spacer_ley := Control.new()
+	spacer_ley.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	spacer_ley.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	leyenda.add_child(spacer_ley)
+	leyenda.add_child(Estilos_UI.texto("Toca un bloque para ver detalles", 11, Estilos_UI.TINTA_FANTASMA, 500))
+
+	# Tarjeta de detalles y acción del bloque seleccionado
+	var panel_sel := horario.get_node_or_null("Panel_Seleccion_Horario") as Panel
+	if panel_sel == null:
+		panel_sel = Panel.new()
+		panel_sel.name = "Panel_Seleccion_Horario"
+		panel_sel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		horario.add_child(panel_sel)
+	panel_sel.position = Vector2(16, 916)
+	panel_sel.size = Vector2(688, 152)
+	panel_sel.z_index = -1
+
+	var pill_sel := horario.get_node_or_null("Pill_Estado_Seleccion") as PanelContainer
+	if pill_sel == null:
+		pill_sel = Estilos_UI.pill_estado("SIN SELECCIÓN", Estilos_UI.SUPERFICIE_2, Estilos_UI.TINTA_FANTASMA)
+		pill_sel.name = "Pill_Estado_Seleccion"
+		horario.add_child(pill_sel)
+	pill_sel.position = Vector2(34, 928)
+
+	var hint_sel := horario.get_node_or_null("Hint_Seleccion_Label") as Label
+	if hint_sel == null:
+		hint_sel = Estilos_UI.texto("", 12, Estilos_UI.TINTA_FANTASMA, 500)
+		hint_sel.name = "Hint_Seleccion_Label"
+		hint_sel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		horario.add_child(hint_sel)
+	hint_sel.position = Vector2(34, 1004)
+	hint_sel.size = Vector2(652, 42)
+
+	# Tarjeta central para etiqueta de semana en la barra de navegación semanal
+	var panel_sem := horario.get_node_or_null("Panel_Semana_Nav") as Panel
+	if panel_sem == null:
+		panel_sem = Panel.new()
+		panel_sem.name = "Panel_Semana_Nav"
+		panel_sem.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		horario.add_child(panel_sem)
+	panel_sem.position = Vector2(236, 1082)
+	panel_sem.size = Vector2(248, 46)
+	panel_sem.add_theme_stylebox_override("panel",
+		Estilos_UI.caja(Estilos_UI.SUPERFICIE, 11, Estilos_UI.BORDE, 1, 1))
+
 	var semana := horario.get_node_or_null("Semana_Label") as Label
 	if semana == null:
 		semana = Label.new()
 		semana.name = "Semana_Label"
 		semana.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		horario.add_child(semana)
-	semana.position = Vector2(280, 1084)
-	semana.size = Vector2(160, 44)
+	semana.position = Vector2(236, 1082)
+	semana.size = Vector2(248, 46)
 	semana.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	semana.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	semana.add_theme_font_override("font", Estilos_UI.fuente_ui(700))
@@ -3855,30 +4647,148 @@ func _Redisenar_Horario() -> void:
 		opciones.size = Vector2(720, 1140)
 		var texto := opciones.get_node_or_null("Actividad_Texto") as Label
 		if texto != null:
-			texto.position = Vector2(20, 926)
-			texto.size = Vector2(680, 26)
-			texto.add_theme_font_override("font", Estilos_UI.fuente_ui(600))
-			texto.add_theme_font_size_override("font_size", 14)
+			texto.position = Vector2(34, 958)
+			texto.size = Vector2(652, 30)
+			texto.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+			texto.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+			texto.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+			texto.add_theme_font_override("font", Estilos_UI.fuente_ui(700))
+			texto.add_theme_font_size_override("font_size", 15)
 			texto.add_theme_color_override("font_color", Estilos_UI.TINTA)
-		for n in ["OCUPAR_ACTIVIDAD", "ELIMINAR_ACTIVIDAD"]:
-			var b := opciones.get_node_or_null(n) as Button
-			if b != null:
-				b.position = Vector2(20, 960)
-				b.size = Vector2(680, 48)
+		var btn_ocupar := opciones.get_node_or_null("OCUPAR_ACTIVIDAD") as Button
+		if btn_ocupar != null:
+			btn_ocupar.position = Vector2(34, 998)
+			btn_ocupar.size = Vector2(652, 52)
+			btn_ocupar.text = "Elegir hora en este bloque"
+			Estilos_UI.aplicar_estilo_boton(btn_ocupar, "exito", Estilos_UI.EXITO, "clock")
+		var btn_elim := opciones.get_node_or_null("ELIMINAR_ACTIVIDAD") as Button
+		if btn_elim != null:
+			btn_elim.position = Vector2(34, 998)
+			btn_elim.size = Vector2(652, 52)
+			btn_elim.text = "Eliminar actividad"
+			Estilos_UI.aplicar_estilo_boton(btn_elim, "peligro", Estilos_UI.PELIGRO, "x")
 		var ant := opciones.get_node_or_null("ANTERIOR SEMANA") as Button
 		if ant != null:
-			ant.position = Vector2(20, 1084)
-			ant.size = Vector2(240, 44)
+			ant.position = Vector2(16, 1082)
+			ant.size = Vector2(210, 46)
 			ant.text = "Anterior"
 			ant.icon = Estilos_UI.icono("chevron-left")
 			ant.add_theme_constant_override("icon_max_width", 18)
 		var sig := opciones.get_node_or_null("SIGUIENTE SEMANA") as Button
 		if sig != null:
-			sig.position = Vector2(460, 1084)
-			sig.size = Vector2(240, 44)
+			sig.position = Vector2(494, 1082)
+			sig.size = Vector2(210, 46)
 			sig.text = "Siguiente"
 			sig.icon = Estilos_UI.icono("chevron-right")
 			sig.add_theme_constant_override("icon_max_width", 18)
+
+	_Limpiar_Seleccion_Calendario_UI()
+	_Actualizar_Cabecera_Dias_Horario()
+
+
+func _Actualizar_Cabecera_Dias_Horario() -> void:
+	var cabecera := get_node_or_null("Actividades/Horario_Semanal/Cabezal_horario") as HBoxContainer
+	if cabecera == null:
+		return
+	var nombres := ["Lunes", "Martes", "Miercoles", "Jueves", "Viernes", "Sabado", "Domingo"]
+	var semana_actual: int = int(Variables_Dinamicas.Minute_Day) / 7
+	var hoy: int = int(Variables_Dinamicas.Minute_Day) % 7
+	var es_semana_actual: bool = (int(mirar_semana) == semana_actual)
+
+	for b in cabecera.get_children():
+		if b is Button:
+			if b.name == "Horario":
+				b.add_theme_font_override("font", Estilos_UI.fuente_ui(700))
+				b.add_theme_font_size_override("font_size", 11)
+				b.add_theme_color_override("font_color", Color("#94a3b8"))
+				var st_h := Estilos_UI.caja(Color(0, 0, 0, 0), 6, Color(0, 0, 0, 0), 0, 0)
+				b.add_theme_stylebox_override("normal", st_h)
+				b.add_theme_stylebox_override("hover", st_h)
+			else:
+				var idx_d: int = nombres.find(b.name)
+				var es_hoy: bool = es_semana_actual and (idx_d == hoy)
+				var es_finde: bool = idx_d >= 5
+				b.add_theme_font_override("font", Estilos_UI.fuente_ui(700))
+				b.add_theme_font_size_override("font_size", 13 if es_hoy else 12)
+				var col_txt := Color.WHITE if es_hoy else (Color("#cbd5e1") if es_finde else Color("#f8fafc"))
+				b.add_theme_color_override("font_color", col_txt)
+				var st_d := Estilos_UI.caja(
+					Estilos_UI.ROJO_BIT if es_hoy else Color(0, 0, 0, 0),
+					8,
+					Estilos_UI.ROJO_BIT_OSCURO if es_hoy else Color(0, 0, 0, 0),
+					1 if es_hoy else 0,
+					0)
+				b.add_theme_stylebox_override("normal", st_d)
+				b.add_theme_stylebox_override("hover", st_d)
+
+
+func _Limpiar_Seleccion_Calendario_UI() -> void:
+	var btn_ocupar := get_node_or_null("Actividades/Horario_Semanal/OPCIONES_CALENDARIO/OCUPAR_ACTIVIDAD") as Button
+	if btn_ocupar != null:
+		btn_ocupar.visible = false
+	var btn_elim := get_node_or_null("Actividades/Horario_Semanal/OPCIONES_CALENDARIO/ELIMINAR_ACTIVIDAD") as Button
+	if btn_elim != null:
+		btn_elim.visible = false
+	var texto := get_node_or_null("Actividades/Horario_Semanal/OPCIONES_CALENDARIO/Actividad_Texto") as Label
+	if texto != null:
+		texto.text = "Ningún bloque seleccionado"
+	_Actualizar_Panel_Seleccion_Horario("", "")
+
+
+func _Actualizar_Panel_Seleccion_Horario(estado: String, _texto_sel: String) -> void:
+	var horario := get_node_or_null("Actividades/Horario_Semanal") as Control
+	if horario == null:
+		return
+	var panel_sel := horario.get_node_or_null("Panel_Seleccion_Horario") as Panel
+	var pill_sel := horario.get_node_or_null("Pill_Estado_Seleccion") as PanelContainer
+	var hint_sel := horario.get_node_or_null("Hint_Seleccion_Label") as Label
+	var texto := horario.get_node_or_null("OPCIONES_CALENDARIO/Actividad_Texto") as Label
+
+	var col_borde := Estilos_UI.BORDE
+	var ancho_izq := 1
+	var txt_pill := "SIN SELECCIÓN"
+	var bg_pill := Color("#f1f5f9")
+	var fg_pill := Estilos_UI.TINTA_FANTASMA
+	var txt_hint := "Toca una franja verde (libre) o de color (ocupada) en el calendario."
+
+	if estado == "libre":
+		col_borde = Estilos_UI.EXITO
+		ancho_izq = 4
+		txt_pill = "FRANJA DISPONIBLE"
+		bg_pill = Estilos_UI.EXITO_SUAVE
+		fg_pill = Estilos_UI.EXITO_OSCURO
+		txt_hint = "Modo consulta: entra desde Actividades → Temporales para programar aquí." if calendario_solo_lectura else ""
+	elif estado == "ocupado":
+		col_borde = Estilos_UI.AZUL
+		ancho_izq = 4
+		txt_pill = "ACTIVIDAD PROGRAMADA"
+		bg_pill = Estilos_UI.AZUL_SUAVE
+		fg_pill = Estilos_UI.AZUL
+		txt_hint = ""
+	elif estado == "pasado":
+		col_borde = Color("#64748b")
+		ancho_izq = 4
+		txt_pill = "BLOQUE PASADO"
+		bg_pill = Color("#e2e8f0")
+		fg_pill = Color("#475569")
+		txt_hint = "Este periodo ya ha transcurrido y no se puede modificar."
+
+	if panel_sel != null:
+		var st_p := Estilos_UI.caja(Estilos_UI.SUPERFICIE, 16, Estilos_UI.BORDE, 1, 1)
+		st_p.border_width_left = ancho_izq
+		if ancho_izq > 1:
+			st_p.border_color = col_borde.lerp(Estilos_UI.BORDE, 0.35)
+		panel_sel.add_theme_stylebox_override("panel", st_p)
+
+	if pill_sel != null:
+		_Actualizar_Badge_Pill(pill_sel, txt_pill, bg_pill, fg_pill)
+
+	if texto != null:
+		texto.add_theme_color_override("font_color", Estilos_UI.TINTA_SUAVE if estado == "" else Estilos_UI.TINTA)
+
+	if hint_sel != null:
+		hint_sel.text = txt_hint
+		hint_sel.visible = (txt_hint != "")
 
 
 func _Redisenar_Seleccionar_Horario() -> void:
@@ -3888,72 +4798,135 @@ func _Redisenar_Seleccionar_Horario() -> void:
 	sel.position = Vector2.ZERO
 	sel.size = Vector2(720, _Alto_Pantalla())
 
+	var badge_sel := sel.get_node_or_null("Badge_Seleccionar_Header") as PanelContainer
+	if badge_sel == null:
+		badge_sel = Estilos_UI.badge_icono("clock", 42, 21, Estilos_UI.AZUL, Color.WHITE, 12)
+		badge_sel.name = "Badge_Seleccionar_Header"
+		sel.add_child(badge_sel)
+	badge_sel.position = Vector2(16, 124)
+	badge_sel.size = Vector2(42, 42)
+
 	var titulo := sel.get_node_or_null("Titulo") as Label
 	if titulo != null:
-		titulo.position = Vector2(20, 126)
-		titulo.size = Vector2(680, 36)
+		titulo.position = Vector2(68, 120)
+		titulo.size = Vector2(390, 28)
 		titulo.text = "Elegir horario"
 		titulo.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-		titulo.add_theme_font_override("font", Estilos_UI.fuente_titulo(600))
-		titulo.add_theme_font_size_override("font_size", 24)
+		titulo.add_theme_font_override("font", Estilos_UI.fuente_titulo(700))
+		titulo.add_theme_font_size_override("font_size", 22)
 		titulo.add_theme_color_override("font_color", Estilos_UI.TINTA)
 
-	var style_dim := StyleBoxEmpty.new()
-	var style_arrow_p := Estilos_UI.caja(Estilos_UI.PRIMARIO_SUAVE, 8, Color(0, 0, 0, 0), 0, 0)
-	var style_val := Estilos_UI.caja(Estilos_UI.PRIMARIO_SUAVE, 10, Color(0, 0, 0, 0), 0, 0)
+	var sub_disp := sel.get_node_or_null("Subtitulo_Disponible") as Label
+	if sub_disp == null:
+		sub_disp = Estilos_UI.texto("Ajusta el inicio y el final de tu actividad", 12, Estilos_UI.TINTA_SUAVE, 600)
+		sub_disp.name = "Subtitulo_Disponible"
+		sub_disp.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		sel.add_child(sub_disp)
+	sub_disp.position = Vector2(68, 148)
+	sub_disp.size = Vector2(400, 20)
+
+	var pill_dur := sel.get_node_or_null("Pill_Duracion_Seleccion") as PanelContainer
+	if pill_dur == null:
+		pill_dur = PanelContainer.new()
+		pill_dur.name = "Pill_Duracion_Seleccion"
+		pill_dur.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		var st_pd := Estilos_UI.caja(Color("#dbeafe"), 999, Color("#93c5fd"), 1, 0)
+		st_pd.content_margin_left = 14
+		st_pd.content_margin_right = 14
+		st_pd.content_margin_top = 6
+		st_pd.content_margin_bottom = 6
+		pill_dur.add_theme_stylebox_override("panel", st_pd)
+		var lbl_pd := Estilos_UI.texto("⏱  Duración: --", 13, Color("#1d4ed8"), 700)
+		lbl_pd.name = "Duracion_Label"
+		lbl_pd.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		pill_dur.add_child(lbl_pd)
+		sel.add_child(pill_dur)
+	pill_dur.position = Vector2(484, 126)
+	pill_dur.size = Vector2(220, 36)
 
 	var bloques := [
-		["Inicio", 772.0, "Inicio_Texto", "Inicio_Hbox", "Hora de inicio"],
-		["Final", 904.0, "Final_Texto", "Final_Hbox", "Hora final"],
+		["Inicio", 772.0, "Inicio_Texto", "Inicio_Hbox", "DESDE · HORA DE INICIO", "Resumen_Inicio_Label",
+		 Color("#2563eb"), Color("#eff6ff"), Color("#3b82f6"), Color("#1e3a8a"), Color("#dbeafe")],
+		["Final", 904.0, "Final_Texto", "Final_Hbox", "HASTA · HORA FINAL", "Resumen_Final_Label",
+		 Color("#4f46e5"), Color("#eef2ff"), Color("#6366f1"), Color("#312e81"), Color("#e0e7ff")],
 	]
 	for cfg in bloques:
 		var panel := sel.get_node_or_null(cfg[0]) as Panel
 		if panel == null:
 			continue
+		var col_acento: Color = cfg[6]
+		var col_val_bg: Color = cfg[7]
+		var col_val_borde: Color = cfg[8]
+		var col_val_txt: Color = cfg[9]
+		var col_press_bg: Color = cfg[10]
+
 		panel.position = Vector2(16, cfg[1])
 		panel.size = Vector2(688, 120)
-		panel.add_theme_stylebox_override("panel",
-			Estilos_UI.caja(Estilos_UI.SUPERFICIE, 16, Estilos_UI.BORDE, 1, 1))
+		var st_card := Estilos_UI.caja(Estilos_UI.SUPERFICIE, 16, col_val_borde.lerp(Estilos_UI.BORDE, 0.55), 1, 2)
+		st_card.border_width_left = 5
+		st_card.border_color = col_acento
+		panel.add_theme_stylebox_override("panel", st_card)
 
 		var lbl := panel.get_node_or_null(cfg[2]) as Label
 		if lbl != null:
-			lbl.position = Vector2(16, 8)
-			lbl.size = Vector2(656, 20)
+			lbl.position = Vector2(18, 7)
+			lbl.size = Vector2(330, 20)
 			lbl.text = cfg[4]
 			lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 			lbl.add_theme_font_override("font", Estilos_UI.fuente_ui(700))
-			lbl.add_theme_font_size_override("font_size", 12)
-			lbl.add_theme_color_override("font_color", Estilos_UI.TINTA_FANTASMA)
+			lbl.add_theme_font_size_override("font_size", 11)
+			lbl.add_theme_color_override("font_color", col_acento)
+
+		var lbl_res := panel.get_node_or_null(cfg[5]) as Label
+		if lbl_res == null:
+			lbl_res = Estilos_UI.texto("", 13, col_val_txt, 700)
+			lbl_res.name = cfg[5]
+			lbl_res.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			panel.add_child(lbl_res)
+		lbl_res.position = Vector2(360, 7)
+		lbl_res.size = Vector2(310, 20)
+		lbl_res.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+
+		var style_step_n := Estilos_UI.caja(Color("#f1f5f9"), 7, Color("#e2e8f0"), 1, 0)
+		var style_step_h := Estilos_UI.caja(Color("#e2e8f0"), 7, col_val_borde, 1, 0)
+		var style_step_p := Estilos_UI.caja(col_press_bg, 7, col_acento, 1, 0)
+		var style_val := Estilos_UI.caja(col_val_bg, 9, col_val_borde, 2, 0)
 
 		var hbox := panel.get_node_or_null(cfg[3]) as HBoxContainer
 		if hbox != null:
-			hbox.position = Vector2(16, 30)
-			hbox.size = Vector2(656, 82)
-			hbox.add_theme_constant_override("separation", 12)
+			hbox.position = Vector2(18, 30)
+			hbox.size = Vector2(652, 82)
+			hbox.alignment = BoxContainer.ALIGNMENT_CENTER
+			hbox.add_theme_constant_override("separation", 14)
 			for child in hbox.get_children():
 				if child is Label:
-					child.add_theme_color_override("font_color", Estilos_UI.TINTA_SUAVE)
+					child.add_theme_color_override("font_color", col_acento)
 					child.add_theme_font_override("font", Estilos_UI.fuente_ui(700))
-					child.add_theme_font_size_override("font_size", 18)
+					child.add_theme_font_size_override("font_size", 20)
 				elif child is VBoxContainer:
-					child.add_theme_constant_override("separation", 0)
+					child.custom_minimum_size = Vector2(164, 0)
+					child.add_theme_constant_override("separation", 2)
 					for btn_w in child.get_children():
 						if btn_w is Button:
 							btn_w.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
 							if btn_w.name in ["Boton_Arriba", "Boton_Abajo"]:
-								btn_w.custom_minimum_size = Vector2(0, 22)
-								btn_w.add_theme_font_override("font", Estilos_UI.fuente_ui(600))
-								btn_w.add_theme_font_size_override("font_size", 12)
-								btn_w.add_theme_color_override("font_color", Estilos_UI.TINTA_FANTASMA)
-								btn_w.add_theme_color_override("font_hover_color", Estilos_UI.PRIMARIO)
-								btn_w.add_theme_stylebox_override("normal", style_dim)
-								btn_w.add_theme_stylebox_override("hover", style_dim)
-								btn_w.add_theme_stylebox_override("pressed", style_arrow_p)
+								btn_w.custom_minimum_size = Vector2(0, 21)
+								btn_w.add_theme_font_override("font", Estilos_UI.fuente_ui(700))
+								btn_w.add_theme_font_size_override("font_size", 11)
+								btn_w.add_theme_color_override("font_color", Color("#475569"))
+								btn_w.add_theme_color_override("font_hover_color", col_acento)
+								btn_w.add_theme_color_override("font_pressed_color", col_val_txt)
+								btn_w.add_theme_stylebox_override("normal", style_step_n)
+								btn_w.add_theme_stylebox_override("hover", style_step_h)
+								btn_w.add_theme_stylebox_override("pressed", style_step_p)
+								btn_w.add_theme_stylebox_override("disabled", StyleBoxEmpty.new())
 							else:
 								btn_w.custom_minimum_size = Vector2(0, 34)
 								btn_w.add_theme_font_override("font", Estilos_UI.fuente_ui(700))
-								btn_w.add_theme_font_size_override("font_size", 18)
-								btn_w.add_theme_color_override("font_color", Estilos_UI.PRIMARIO_OSCURO)
+								btn_w.add_theme_font_size_override("font_size", 19)
+								btn_w.add_theme_color_override("font_color", col_val_txt)
+								btn_w.add_theme_color_override("font_hover_color", col_val_txt)
+								btn_w.add_theme_color_override("font_pressed_color", col_val_txt)
 								btn_w.add_theme_stylebox_override("normal", style_val)
 								btn_w.add_theme_stylebox_override("hover", style_val)
 								btn_w.add_theme_stylebox_override("pressed", style_val)
@@ -3962,24 +4935,36 @@ func _Redisenar_Seleccionar_Horario() -> void:
 	if btn_cancel != null:
 		btn_cancel.position = Vector2(16, 1044)
 		btn_cancel.size = Vector2(334, 52)
+		Estilos_UI.aplicar_estilo_boton(btn_cancel, "secundario", Estilos_UI.TINTA, "arrow-left")
 	var btn_crear := sel.get_node_or_null("Crear_Actividad") as Button
 	if btn_crear != null:
 		btn_crear.position = Vector2(370, 1044)
 		btn_crear.size = Vector2(334, 52)
+		Estilos_UI.aplicar_estilo_boton(btn_crear, "exito", Estilos_UI.EXITO, "check")
 
 
 func _Actualizar_Titulo_Horario() -> void:
 	var titulo := get_node_or_null("Actividades/Titulo_Actividades") as Label
 	var sub := get_node_or_null("Actividades/Subtitulo_Actividades") as Label
+	var btn_volver := get_node_or_null("Actividades/Horario_Semanal/Boton_Volver_Horario") as Button
+	var badge_hdr := get_node_or_null("Actividades/Horario_Semanal/Badge_Horario_Header") as PanelContainer
+	if btn_volver != null:
+		btn_volver.visible = not calendario_solo_lectura
+	if badge_hdr != null:
+		badge_hdr.visible = calendario_solo_lectura
+	var edad_sem: int = Variables_Estaticas.Calcular_Edad(int(mirar_semana) * 7)
+	var sem_actual: int = int(Variables_Dinamicas.Minute_Day) / 7
+	var sufijo_sem: String = " · Semana actual" if int(mirar_semana) == sem_actual else ""
 	if titulo != null:
-		titulo.position.x = 20
+		titulo.position.x = 74
 		titulo.text = "Horario semanal"
 	if sub != null:
-		sub.position.x = 20
-		sub.text = "Semana %d" % int(mirar_semana)
+		sub.position.x = 74
+		sub.text = "Semana %d · %d años%s" % [int(mirar_semana), max(18, edad_sem), sufijo_sem]
 	var semana := get_node_or_null("Actividades/Horario_Semanal/Semana_Label") as Label
 	if semana != null:
-		semana.text = "Semana %d" % int(mirar_semana)
+		semana.text = "Semana %d · %d años" % [int(mirar_semana), max(18, edad_sem)]
+	_Actualizar_Cabecera_Dias_Horario()
 
 
 func _Mostrar_Titulo_Actividades() -> void:
@@ -4077,10 +5062,20 @@ func _Redisenar_Perfil() -> void:
 	if vbox_info != null:
 		vbox_info.add_theme_constant_override("separation", 8)
 
+	var subtab_bar := p.get_node_or_null("Panel_Apuntes/SubTab_Bar") as HBoxContainer
+	if subtab_bar != null:
+		subtab_bar.position = Vector2.ZERO
+		subtab_bar.size = Vector2(680, 40)
+		subtab_bar.add_theme_constant_override("separation", 8)
+		for sb in subtab_bar.get_children():
+			if sb is Button:
+				sb.custom_minimum_size = Vector2(0, 40)
+				sb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+
 	var scroll_inv := p.get_node_or_null("Panel_Apuntes/Scroll_Inventario") as ScrollContainer
 	if scroll_inv != null:
-		scroll_inv.position = Vector2.ZERO
-		scroll_inv.size = Vector2(680, alto_contenido)
+		scroll_inv.position = Vector2(0, 50)
+		scroll_inv.size = Vector2(680, maxf(120.0, alto_contenido - 50.0))
 		scroll_inv.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	var grid := p.get_node_or_null("Panel_Apuntes/Scroll_Inventario/Grid_Libros") as GridContainer
 	if grid != null:
@@ -4088,9 +5083,18 @@ func _Redisenar_Perfil() -> void:
 		grid.add_theme_constant_override("h_separation", 14)
 		grid.add_theme_constant_override("v_separation", 16)
 
+	var scroll_ropa := p.get_node_or_null("Panel_Apuntes/Scroll_Ropa") as ScrollContainer
+	if scroll_ropa != null:
+		scroll_ropa.position = Vector2(0, 50)
+		scroll_ropa.size = Vector2(680, maxf(120.0, alto_contenido - 50.0))
+		scroll_ropa.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	var vbox_ropa := p.get_node_or_null("Panel_Apuntes/Scroll_Ropa/VBox_Ropa") as VBoxContainer
+	if vbox_ropa != null:
+		vbox_ropa.add_theme_constant_override("separation", 10)
+
 	var sin_libros := p.get_node_or_null("Panel_Apuntes/Sin_Apuntes_Label") as Label
 	if sin_libros != null:
-		sin_libros.position = Vector2(20, 60)
+		sin_libros.position = Vector2(20, 100)
 		sin_libros.size = Vector2(640, 120)
 		sin_libros.add_theme_font_override("font", Estilos_UI.fuente_ui(400))
 		sin_libros.add_theme_font_size_override("font_size", 15)
@@ -4422,14 +5426,14 @@ func _Marcar_Categoria_Tienda(activa: String) -> void:
 
 
 func _Estilizar_Badges() -> void:
-	for badge in [_badge_perfil, _badge_tab_mensajes]:
+	for badge in [_badge_perfil, _badge_tab_mensajes, _badge_minijuegos]:
 		if badge == null:
 			continue
 		badge.add_theme_font_override("font", Estilos_UI.fuente_ui(700))
 		badge.add_theme_font_size_override("font_size", 10)
 		badge.add_theme_stylebox_override("normal",
 			Estilos_UI.caja(Estilos_UI.PELIGRO, 999, Color.WHITE, 2, 1))
-		if badge == _badge_perfil:
+		if badge == _badge_perfil or badge == _badge_minijuegos:
 			badge.offset_top = 2
 			badge.offset_bottom = 18
 			badge.offset_left = -22

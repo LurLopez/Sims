@@ -339,6 +339,10 @@ func _Seleccionar_Evento() -> Evento:
 			pesos.append(0.0)
 			continue
 
+		if evento.titulo == "Intoxicación alimentaria" and Sistema_Cocina.Es_Inmune_Intoxicacion():
+			pesos.append(0.0)
+			continue
+
 		var peso_base = 1.0
 		match evento.tipo:
 			TipoEvento.ENFERMEDAD_LEVE, TipoEvento.ENFERMEDAD_GRAVE:

@@ -113,3 +113,13 @@ Puedes copiar cualquiera de estos prompts en tu chat con NotebookLM teniendo car
 
 - **Para cerrar la especificación final (MVP):**
   > *"Ayúdame a responder una a una las 11 preguntas de la sección 4 de `08_PROPUESTA_FUTBOL_Y_MANAGER.md`. Empieza por el bloque A (Ritmo y tiempo real), dame tu recomendación argumentada según la arquitectura actual del juego y espera mi decisión antes de pasar al bloque B."*
+
+---
+
+## 6. Estado de implementación
+
+- **Fase 1 — Modo Jugador: IMPLEMENTADA** en SIMS 0.33.
+  - Autoload `Sistema_Futbol`, motor puro `Simulador_Futbol`, calendario `Calendario_Futbol`, `Actividad_Partido` P3, panel `Panel_Futbol.tscn`, 34 tests GUT.
+  - Documentación técnica: `Funcionalidades/Actividades/Futbol/Documentacion/CARRERA_FUTBOL.md`.
+  - Incluye fichaje, entrenamientos, liga dominical de 4 equipos con playoff, partido decisivo diario en Modo Rápido, primas, salario, lesiones y conflictos con el trabajo.
+- **Fase 2 — Retiro y Modo Mánager (*Top Eleven*): PENDIENTE.** Las preguntas de la sección 4 siguen abiertas para esa fase.

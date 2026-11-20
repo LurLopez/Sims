@@ -1010,6 +1010,16 @@ theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
 theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
 text = "💼  TRABAJO"
 
+[node name="Boton_Carrera_Futbol" type="Button" parent="Actividades/Elegir_Actividad/Tipos_De_Actividades/Fijas_Opciones"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_fonts/font = ExtResource("10_m1ee0")
+theme_override_font_sizes/font_size = 45
+theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
+text = "⚽  CARRERA FUTBOLÍSTICA"
+
 [node name="Trabajo_Opciones" type="VBoxContainer" parent="Actividades/Elegir_Actividad/Tipos_De_Actividades/Fijas_Opciones"]
 visible = false
 custom_minimum_size = Vector2(0, 50)
@@ -1702,13 +1712,23 @@ icon = ExtResource("13_hmini")
 
 [node name="Carrera_Button" type="Button" parent="."]
 z_index = 10
-offset_left = 545.0
+offset_left = 432.0
 offset_top = 10.0
-offset_right = 715.0
+offset_right = 568.0
 offset_bottom = 60.0
 theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
 theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
 text = "🎓 Carrera"
+
+[node name="Minijuegos_Button" type="Button" parent="."]
+z_index = 10
+offset_left = 572.0
+offset_top = 10.0
+offset_right = 708.0
+offset_bottom = 60.0
+theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
+text = "Minijuegos"
 
 [node name="Tienda" parent="." instance=ExtResource("14_tienda")]
 visible = false
@@ -1740,6 +1760,7 @@ z_index = 5
 [connection signal="pressed" from="Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones/Necesidades_Basicas_Opciones/Ver_La_Television" to="." method="Actividad_Terminada_Ver_La_Television"]
 [connection signal="pressed" from="Actividades/Elegir_Actividad/Tipos_De_Actividades/Especiales_Opciones/Salir_De_Fiesta" to="." method="Actividad_Terminada_Salir_De_Fiesta"]
 [connection signal="pressed" from="Actividades/Elegir_Actividad/Tipos_De_Actividades/Fijas_Opciones/Trabajo" to="." method="Opciones_Actividades_Trabajo"]
+[connection signal="pressed" from="Actividades/Elegir_Actividad/Tipos_De_Actividades/Fijas_Opciones/Boton_Carrera_Futbol" to="." method="_on_carrera_futbol_pressed"]
 [connection signal="pressed" from="Actividades/Elegir_Actividad/Tipos_De_Actividades/Fijas_Opciones/Trabajo_Opciones/Comida_Rapida" to="." method="_on_comida_rapida_pressed"]
 [connection signal="pressed" from="Actividades/Elegir_Actividad/Tipos_De_Actividades/Fijas_Opciones/Trabajo_Opciones/Carpintero" to="." method="_on_carpintero_pressed"]
 [connection signal="pressed" from="Actividades/Elegir_Actividad/Tipos_De_Actividades/Fijas_Opciones/Trabajo_Opciones/Cientifico" to="." method="_on_cientifico_pressed"]
@@ -1775,3 +1796,4 @@ z_index = 5
 [connection signal="pressed" from="Economia_Button" to="." method="_on_economia_button_pressed"]
 [connection signal="pressed" from="Calendario_Button" to="." method="_on_calendario_boton_pressed"]
 [connection signal="pressed" from="Carrera_Button" to="." method="_on_carrera_tab_pressed"]
+[connection signal="pressed" from="Minijuegos_Button" to="." method="_on_minijuegos_button_pressed"]

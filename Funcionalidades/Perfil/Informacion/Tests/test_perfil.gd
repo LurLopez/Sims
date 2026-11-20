@@ -41,21 +41,31 @@ func test_personalidad_deportista_sin_cambio():
 
 func test_habilidades_limite_min():
 	# El loop de habilidades usa min() para evitar out-of-bounds
-	var nombres_hab = ["Deporte", "Inteligencia", "Destreza manual", "Memoria", "Liderazgo", "Paciencia"]
-	var habilidades_simuladas = [50, 70, 30, 80, 60, 45]
+	var nombres_hab = ["Deporte", "Inteligencia", "Destreza manual", "Memoria", "Liderazgo", "Paciencia", "Sangre fría"]
+	var habilidades_simuladas = [50, 70, 30, 80, 60, 45, 55]
 	var limite = min(nombres_hab.size(), habilidades_simuladas.size())
-	assert_eq(limite, 6, "Con 6 nombres y 6 habilidades el limite es 6")
-	# No debe intentar acceder al indice 6
+	assert_eq(limite, 7, "Con 7 nombres y 7 habilidades el limite es 7")
+	# No debe intentar acceder al indice 7
 	assert_true(limite <= nombres_hab.size(), "El limite nunca supera el tamanyo de nombres_hab")
 	assert_true(limite <= habilidades_simuladas.size(), "El limite nunca supera el tamanyo de Habilidades")
 
 
 func test_habilidades_limite_con_array_mas_grande():
-	# Si Habilidades tuviera mas de 6 elementos, el limite sigue siendo 6 (nombres_hab)
-	var nombres_hab = ["Deporte", "Inteligencia", "Destreza manual", "Memoria", "Liderazgo", "Paciencia"]
-	var habilidades_extra = [50, 70, 30, 80, 60, 45, 99]  # 7 elementos
+	# Si Habilidades tuviera mas de 7 elementos, el limite sigue siendo 7 (nombres_hab)
+	var nombres_hab = ["Deporte", "Inteligencia", "Destreza manual", "Memoria", "Liderazgo", "Paciencia", "Sangre fría"]
+	var habilidades_extra = [50, 70, 30, 80, 60, 45, 55, 99]  # 8 elementos
 	var limite = min(nombres_hab.size(), habilidades_extra.size())
-	assert_eq(limite, 6, "Con 7 habilidades el limite sigue siendo 6 por nombres_hab")
+	assert_eq(limite, 7, "Con 8 habilidades el limite sigue siendo 7 por nombres_hab")
+
+
+func test_habilidad_no_descubierta_muestra_interrogacion():
+	# El valor innato solo se revela al alcanzar el límite natural
+	var innato = 92
+	var mostrado_parcial = 19
+	var valor_parcial = str(innato) if mostrado_parcial >= innato else "?"
+	assert_eq(valor_parcial, "?", "Una habilidad sin descubrir debe mostrar ?")
+	var valor_descubierta = str(innato) if innato >= innato else "?"
+	assert_eq(valor_descubierta, "92", "Una habilidad descubierta muestra su valor innato")
 
 
 func test_progreso_rango_valido():

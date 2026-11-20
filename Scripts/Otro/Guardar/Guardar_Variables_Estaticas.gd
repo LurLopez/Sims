@@ -31,6 +31,7 @@ func load_game():
 		Variables_Estaticas.Apariencia = Apariencia_Personaje.normalizar(game_data.get("Apariencia", {}))
 		Variables_Estaticas.First_Time_Minute_Day=game_data["First_Time_Minute_Day"]
 		Variables_Estaticas.First_Time_Minute_Minute = game_data.get("First_Time_Minute_Minute", game_data.get("First_TIme_Minute_Minute", 0))
+		Variables_Estaticas.Record_Max_Niveles_Cocina = maxi(0, int(game_data.get("Record_Max_Niveles_Cocina", 0)))
 		# Fallback para saves anteriores que no tenían fecha local: derivar de First_Time_Minute (Unix)
 		# usando la zona horaria ACTUAL del dispositivo. Habrá un pequeño desajuste si la zona ha
 		# cambiado desde el inicio, pero solo afecta a esta primera carga.
@@ -58,6 +59,7 @@ func game_data_func():
 	"First_Time_Minute_Minute": Variables_Estaticas.First_Time_Minute_Minute,
 	"First_Time_Year": Variables_Estaticas.First_Time_Year,
 	"First_Time_Month": Variables_Estaticas.First_Time_Month,
-	"First_Time_Day_Of_Month": Variables_Estaticas.First_Time_Day_Of_Month
+	"First_Time_Day_Of_Month": Variables_Estaticas.First_Time_Day_Of_Month,
+	"Record_Max_Niveles_Cocina": Variables_Estaticas.Record_Max_Niveles_Cocina
 	}
 	return game_data

@@ -35,10 +35,13 @@ Sistema_Examenes="*res://Scripts/Logica/Escena_Principal/Actividades/Carreras/Si
 Sistema_Carreras_Deportivas="*res://Scripts/Logica/Escena_Principal/Actividades/Sistema_Carreras_Deportivas.gd"
 Sistema_Notificaciones="*res://Scripts/Globales/Sistema_Notificaciones.gd"
 Actividades="*res://Scripts/Logica/Escena_Principal/Actividades/Actividades.gd"
+Sistema_Futbol="*res://Scripts/Logica/Escena_Principal/Actividades/Futbol/Sistema_Futbol.gd"
 Alimentacion="*res://Scripts/Logica/Escena_Principal/Actividades/Alimentacion.gd"
+Sistema_Cocina="*res://Scripts/Logica/Escena_Principal/Minijuego_Cocina/Sistema_Cocina.gd"
 Eventos_Aleatorios="*res://Scripts/Logica/Escena_Principal/Actividades/Eventos_Aleatorios.gd"
 Gestionar_Visibilidad="*res://Scripts/GUI/Escena_Principal/Gestionar_Visibilidad.gd"
 Debug_Cargar_Guardado="*res://Scripts/Otro/Debug/Debug_Cargar_Guardado.gd"
+Musica="*res://Scripts/Globales/Musica.gd"
 
 [display]
 

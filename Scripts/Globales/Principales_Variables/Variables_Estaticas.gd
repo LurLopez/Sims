@@ -22,6 +22,7 @@ var Habilidades = []
 var Actividades = []
 var Catalogo_Actividades: Dictionary = {}
 var Catalogo_Objetos: Dictionary = {}
+var Record_Max_Niveles_Cocina: int = 0
 
 # Estados temporales persistentes (el valor en Variables_Dinamicas son minutos restantes).
 # "Euforia" impone un suelo gradual a la salud mental; "Resacon" un techo gradual
@@ -62,6 +63,18 @@ var Estados_Temporales: Dictionary = {
 		"titulo_fin": "Fin de la intoxicación",
 		"mensaje_inicio": "Has comido un tupper en mal estado. Intoxicación alimentaria durante 24 h.",
 		"mensaje_fin": "Te has recuperado de la intoxicación alimentaria."
+	},
+	"Lesion_Deportiva": {
+		"duracion": 1440,
+		"meseta": 360,
+		"tipo": "cap_gradual",
+		"indices": [0], # Salud física
+		"cap_inicial": 35,
+		"cap_final": 100,
+		"titulo_inicio": "Lesión deportiva",
+		"titulo_fin": "Recuperado de lesión",
+		"mensaje_inicio": "Has sufrido una lesión deportiva. Tu salud física queda limitada durante 24 h.",
+		"mensaje_fin": "Te has recuperado totalmente de la lesión deportiva."
 	}
 }
 var First_Time_Minute_Day = 0
@@ -216,6 +229,21 @@ func _Inicializar_Catalogo():
 	carrera_deportiva.efectos_necesidades_basicas = [4, 2, -3, -3, -4]
 	carrera_deportiva.efectos_progreso = [4, 0, 0]
 	Catalogo_Actividades["Carrera_Deportiva"] = carrera_deportiva
+
+	# Carrera de futbolista (Fase 1). Los bloques los programa Sistema_Futbol.
+	var entrenamiento_futbol = Actividad_Fija.new()
+	entrenamiento_futbol.nombre = "Entrenamiento_Futbol"
+	entrenamiento_futbol.color = Color(0.2, 0.6, 0.86)
+	entrenamiento_futbol.efectos_necesidades_basicas = [2, 1, -2, -3, -3]
+	entrenamiento_futbol.efectos_progreso = [4, 0, 0]
+	Catalogo_Actividades["Entrenamiento_Futbol"] = entrenamiento_futbol
+
+	var partido_futbol = preload("res://Scripts/Logica/Escena_Principal/Actividades/Herencia/Actividad_Partido.gd").new()
+	partido_futbol.nombre = "Partido_Futbol"
+	partido_futbol.color = Color(0.15, 0.75, 0.35)
+	partido_futbol.efectos_necesidades_basicas = [-1, 3, -4, -5, -4]
+	partido_futbol.efectos_progreso = [6, 0, 0]
+	Catalogo_Actividades["Partido_Futbol"] = partido_futbol
 
 	var carpintero = Actividad_Fija_Trabajo.new()
 	carpintero.nombre = "Trabajar_De_Carpintero"
@@ -386,3 +414,64 @@ func _Inicializar_Catalogo_Objetos():
 	ducha_premium.afecta_a = "Duchar"
 	ducha_premium.es_basico = false
 	Catalogo_Objetos["Ducha_Premium"] = ducha_premium
+
+	# Ropa equipable (desbloqueada por Maestría Culinaria; afecta_a = "Ropa")
+	var ropa_calle := Objeto_Ropa.new()
+	ropa_calle.nombre = "Ropa_Calle"
+	ropa_calle.precio = 0.0
+	ropa_calle.multiplicador = 1.0
+	ropa_calle.afecta_a = "Ropa"
+	ropa_calle.es_basico = true
+	ropa_calle.bonus_salario_hosteleria = 0.0
+	ropa_calle.reduccion_higiene_trabajo = 0.0
+	ropa_calle.bonus_propinas_minijuego = 0.0
+	ropa_calle.descripcion_efecto = "Ropa diaria estándar sin bonificaciones."
+	Catalogo_Objetos["Ropa_Calle"] = ropa_calle
+
+	var delantal_aprendiz := Objeto_Ropa.new()
+	delantal_aprendiz.nombre = "Delantal_Aprendiz"
+	delantal_aprendiz.precio = 0.0
+	delantal_aprendiz.multiplicador = 1.0
+	delantal_aprendiz.afecta_a = "Ropa"
+	delantal_aprendiz.es_basico = true
+	delantal_aprendiz.bonus_salario_hosteleria = 0.0
+	delantal_aprendiz.reduccion_higiene_trabajo = 0.05
+	delantal_aprendiz.bonus_propinas_minijuego = 0.0
+	delantal_aprendiz.descripcion_efecto = "-5% desgaste de Higiene en trabajos de hostelería."
+	Catalogo_Objetos["Delantal_Aprendiz"] = delantal_aprendiz
+
+	var chaqueta_chef := Objeto_Ropa.new()
+	chaqueta_chef.nombre = "Chaqueta_Chef"
+	chaqueta_chef.precio = 0.0
+	chaqueta_chef.multiplicador = 1.0
+	chaqueta_chef.afecta_a = "Ropa"
+	chaqueta_chef.es_basico = true
+	chaqueta_chef.bonus_salario_hosteleria = 0.10
+	chaqueta_chef.reduccion_higiene_trabajo = 0.05
+	chaqueta_chef.bonus_propinas_minijuego = 0.0
+	chaqueta_chef.descripcion_efecto = "+10% salario en hostelería y -5% desgaste de Higiene."
+	Catalogo_Objetos["Chaqueta_Chef"] = chaqueta_chef
+
+	var atuendo_gala := Objeto_Ropa.new()
+	atuendo_gala.nombre = "Atuendo_Chef_Gala"
+	atuendo_gala.precio = 0.0
+	atuendo_gala.multiplicador = 1.0
+	atuendo_gala.afecta_a = "Ropa"
+	atuendo_gala.es_basico = true
+	atuendo_gala.bonus_salario_hosteleria = 0.20
+	atuendo_gala.reduccion_higiene_trabajo = 0.05
+	atuendo_gala.bonus_propinas_minijuego = 0.0
+	atuendo_gala.descripcion_efecto = "+20% salario en hostelería y -5% desgaste de Higiene."
+	Catalogo_Objetos["Atuendo_Chef_Gala"] = atuendo_gala
+
+	var traje_michelin := Objeto_Ropa.new()
+	traje_michelin.nombre = "Traje_Estrella_Michelin"
+	traje_michelin.precio = 0.0
+	traje_michelin.multiplicador = 1.0
+	traje_michelin.afecta_a = "Ropa"
+	traje_michelin.es_basico = true
+	traje_michelin.bonus_salario_hosteleria = 0.30
+	traje_michelin.reduccion_higiene_trabajo = 0.05
+	traje_michelin.bonus_propinas_minijuego = 0.25
+	traje_michelin.descripcion_efecto = "+30% salario en hostelería, -5% desgaste de Higiene y +25% propinas en minijuego."
+	Catalogo_Objetos["Traje_Estrella_Michelin"] = traje_michelin

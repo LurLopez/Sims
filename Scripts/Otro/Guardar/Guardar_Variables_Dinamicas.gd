@@ -69,6 +69,12 @@ func load_game():
 		Variables_Dinamicas.Objetos_Poseidos.erase("Mesa_Premium")
 		if str(Variables_Dinamicas.Objeto_Seleccionado.get("Comer", "")) == "Mesa_Premium":
 			Variables_Dinamicas.Objeto_Seleccionado["Comer"] = "Mesa_Basica"
+		# Ropa equipable — fallback seguro para saves antiguos.
+		Variables_Dinamicas.Objetos_Poseidos["Ropa_Calle"] = true
+		var ropa_actual: String = str(Variables_Dinamicas.Objeto_Seleccionado.get("Ropa", ""))
+		if ropa_actual == "" or not Variables_Estaticas.Catalogo_Objetos.has(ropa_actual) \
+				or not bool(Variables_Dinamicas.Objetos_Poseidos.get(ropa_actual, false)):
+			Variables_Dinamicas.Objeto_Seleccionado["Ropa"] = "Ropa_Calle"
 		# Sistema de Carreras — fallback para saves antiguos: ninguna carrera activa.
 		if game_data.has("Carrera_Actual_Data"):
 			Variables_Dinamicas.Carrera_Actual = _Dict_A_Carrera(game_data["Carrera_Actual_Data"])
@@ -95,6 +101,12 @@ func load_game():
 				"resultado_puesto": -1, "resultado_procesado": false
 			}
 		)
+		# Carrera de futbolista — fallback y normalización para saves antiguos.
+		Variables_Dinamicas.Carrera_Futbol = _Normalizar_Carrera_Futbol(
+			game_data.get("Carrera_Futbol", {}))
+		# Minijuego de cocina — fallback y merge recursivo para saves antiguos.
+		Variables_Dinamicas.Cocina_Estado = _Normalizar_Cocina_Estado(
+			game_data.get("Cocina_Estado", {}))
 		if game_data.has("Muerto"):
 			Variables_Dinamicas.Muerto = game_data["Muerto"]
 			Variables_Dinamicas.Edad_Muerte = game_data["Edad_Muerte"]
@@ -124,6 +136,9 @@ func load_game():
 		else:
 			Variables_Dinamicas.Cooldown_Trabajos = {}
 		get_node("/root/Eventos_Aleatorios").Limpiar_Cooldowns_Expirados()
+		# La matriz cargada no coincide con la caché RLE de la sesión anterior.
+		_rle_cache = {}
+		Variables_Dinamicas.Matriz_Sucia = true
 		save_file = null
 
 func game_data_func():
@@ -159,11 +174,13 @@ func game_data_func():
 		"Salud_Mental_Al_Invertir": Variables_Dinamicas.Salud_Mental_Al_Invertir,
 		"Progreso_Inversion": Variables_Dinamicas.Progreso_Inversion,
 		"Cooldown_Trabajos": Variables_Dinamicas.Cooldown_Trabajos,
+		"Carrera_Futbol": Variables_Dinamicas.Carrera_Futbol.duplicate(true),
 		"Estados_Temporales": _Estados_Temporales_Serializables(),
 		"Fiesta_Evento_Ocurrido": Variables_Dinamicas.Fiesta_Evento_Ocurrido,
 		"Progreso_Cocina": Variables_Dinamicas.Progreso_Cocina,
 		"Tuppers": Variables_Dinamicas.Tuppers,
 		"Tupper_Seleccionado_Idx": Variables_Dinamicas.Tupper_Seleccionado_Idx,
+		"Cocina_Estado": Variables_Dinamicas.Cocina_Estado.duplicate(true),
 	}
 	return game_data
 
@@ -240,6 +257,116 @@ func _Cargar_Estados_Temporales(game_data: Dictionary) -> void:
 			Variables_Dinamicas.Estados_Temporales.erase("Euforia")
 
 
+func _Normalizar_Carrera_Futbol(datos) -> Dictionary:
+	# Base completa: cualquier save antiguo (o sin la clave) arranca sin nulls.
+	var resultado: Dictionary = Variables_Dinamicas.Carrera_Futbol_Por_Defecto()
+	if not (datos is Dictionary):
+		return resultado
+
+	resultado["Activo"] = bool(datos.get("Activo", false))
+	resultado["Division"] = clampi(int(datos.get("Division", 4)), 1, 4)
+	resultado["Relacion_Entrenador"] = clampf(float(datos.get("Relacion_Entrenador", 50.0)), 0.0, 100.0)
+	resultado["Entrenamientos_Cancelados_Seguidos"] = maxi(0, int(
+		datos.get("Entrenamientos_Cancelados_Seguidos", 0)))
+	resultado["Partidos_Jugados"] = maxi(0, int(datos.get("Partidos_Jugados", 0)))
+	resultado["Goles_Totales"] = maxi(0, int(datos.get("Goles_Totales", 0)))
+	resultado["Asistencias_Totales"] = maxi(0, int(datos.get("Asistencias_Totales", 0)))
+	resultado["Temporadas_Jugadas"] = maxi(0, int(datos.get("Temporadas_Jugadas", 0)))
+	resultado["Titulos_Superliga"] = maxi(0, int(datos.get("Titulos_Superliga", 0)))
+	resultado["Salario_Semanal"] = maxi(0, int(datos.get("Salario_Semanal", 150)))
+	resultado["Estado_Temporada"] = str(datos.get("Estado_Temporada", "En_Curso"))
+	resultado["Entrenamiento_En_Curso"] = bool(datos.get("Entrenamiento_En_Curso", false))
+	resultado["Entrenamiento_Fin_Abs"] = int(datos.get("Entrenamiento_Fin_Abs", -1))
+	resultado["Partido_En_Curso"] = bool(datos.get("Partido_En_Curso", false))
+	resultado["Partido_Jornada"] = clampi(int(datos.get("Partido_Jornada", -1)), -1, 4)
+	resultado["Partido_Convocado"] = bool(datos.get("Partido_Convocado", false))
+	resultado["Partido_Decisivo"] = bool(datos.get("Partido_Decisivo", false))
+	resultado["Partido_Fin_Abs"] = int(datos.get("Partido_Fin_Abs", -1))
+	resultado["Ultimo_Dia_Salario"] = int(datos.get("Ultimo_Dia_Salario", -1))
+	resultado["Conflicto_Ascenso_Pendiente"] = bool(datos.get("Conflicto_Ascenso_Pendiente", false))
+	resultado["Division_Ascenso_Pendiente"] = clampi(int(
+		datos.get("Division_Ascenso_Pendiente", 0)), 0, 4)
+
+	var asistencia = datos.get("Entrenamientos_Asistencia", {})
+	if asistencia is Dictionary:
+		var base_asistencia: Dictionary = resultado["Entrenamientos_Asistencia"]
+		for clave in ["Martes", "Jueves", "Diario"]:
+			base_asistencia[clave] = bool(asistencia.get(clave, base_asistencia.get(clave, true)))
+		resultado["Entrenamientos_Asistencia"] = base_asistencia
+
+	var liga = datos.get("Liga_Domingo", {})
+	if liga is Dictionary:
+		var liga_base: Dictionary = resultado["Liga_Domingo"]
+		liga_base["Jornada_Actual"] = clampi(int(liga.get("Jornada_Actual", 0)), 0, 4)
+		liga_base["Puntos_Jugador"] = maxi(0, int(liga.get("Puntos_Jugador", 0)))
+		liga_base["Posicion_Regular"] = clampi(int(liga.get("Posicion_Regular", 1)), 1, 4)
+
+		var puntos = liga.get("Puntos_Rivales", [])
+		var puntos_norm: Array = [0, 0, 0]
+		if puntos is Array:
+			for i in range(3):
+				if i < puntos.size():
+					puntos_norm[i] = maxi(0, int(puntos[i]))
+		liga_base["Puntos_Rivales"] = puntos_norm
+
+		var medias = liga.get("Medias_Rivales", [])
+		var medias_norm: Array = [45.0, 45.0, 45.0]
+		if medias is Array:
+			for i in range(3):
+				if i < medias.size():
+					medias_norm[i] = clampf(float(medias[i]), 0.0, 100.0)
+		liga_base["Medias_Rivales"] = medias_norm
+		resultado["Liga_Domingo"] = liga_base
+
+	return resultado
+
+
+func _Normalizar_Cocina_Estado(datos) -> Dictionary:
+	var resultado: Dictionary = Variables_Dinamicas.Cocina_Estado_Por_Defecto()
+	if not (datos is Dictionary):
+		return resultado
+
+	var restaurantes_validos: Array[String] = ["burger_street", "bistro_tradicional", "alta_cocina"]
+	var desbl_raw = datos.get("restaurantes_desbloqueados", [])
+	var desbl_norm: Array = []
+	if desbl_raw is Array:
+		for r in desbl_raw:
+			var rid: String = str(r)
+			if restaurantes_validos.has(rid) and not desbl_norm.has(rid):
+				desbl_norm.append(rid)
+	resultado["restaurantes_desbloqueados"] = desbl_norm
+
+	resultado["fondos_cocina"] = maxi(0, int(datos.get("fondos_cocina", 0)))
+
+	var estrellas_raw = datos.get("estrellas_nivel", {})
+	var estrellas_norm: Dictionary = {}
+	if estrellas_raw is Dictionary:
+		for k in estrellas_raw.keys():
+			var clave: String = str(k)
+			var val: int = clampi(int(estrellas_raw[k]), 0, 3)
+			if clave != "" and val > 0:
+				estrellas_norm[clave] = val
+	resultado["estrellas_nivel"] = estrellas_norm
+
+	var mejoras_raw = datos.get("mejoras", {})
+	if mejoras_raw is Dictionary:
+		var mejoras_base: Dictionary = resultado["mejoras"]
+		for rest_id in restaurantes_validos:
+			var rest_raw = mejoras_raw.get(rest_id, {})
+			if rest_raw is Dictionary:
+				var rest_base: Dictionary = mejoras_base[rest_id]
+				for mejora_id in ["plancha", "emplatado", "termostato", "ingredientes", "ambiente"]:
+					rest_base[mejora_id] = clampi(int(rest_raw.get(mejora_id, 1)), 1, 3)
+				mejoras_base[rest_id] = rest_base
+		resultado["mejoras"] = mejoras_base
+
+	resultado["rango_logro"] = clampi(int(datos.get("rango_logro", 0)), 0, 9)
+	resultado["servicios_remunerados_hoy"] = maxi(0, int(datos.get("servicios_remunerados_hoy", 0)))
+	resultado["ultimo_dia_remunerado"] = int(datos.get("ultimo_dia_remunerado", -1))
+	resultado["plus_nomina_turno_hoy"] = bool(datos.get("plus_nomina_turno_hoy", false))
+	return resultado
+
+
 func _Carrera_A_Dict(carrera) -> Dictionary:
 	if carrera == null:
 		return {}
@@ -314,12 +441,14 @@ func _Inicializar_Objetos_Por_Defecto():
 	Variables_Dinamicas.Objetos_Poseidos = {
 		"Cama_Basica": true,
 		"Mesa_Basica": true,
-		"Ducha_Basica": true
+		"Ducha_Basica": true,
+		"Ropa_Calle": true
 	}
 	Variables_Dinamicas.Objeto_Seleccionado = {
 		"Dormir": "Cama_Basica",
 		"Comer": "Mesa_Basica",
-		"Duchar": "Ducha_Basica"
+		"Duchar": "Ducha_Basica",
+		"Ropa": "Ropa_Calle"
 	}
 
 func _Matriz_A_RLE() -> Dictionary:

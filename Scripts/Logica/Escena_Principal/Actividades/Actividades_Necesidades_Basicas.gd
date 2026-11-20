@@ -3,11 +3,14 @@ extends Node
 
 func Ejecutar_Actividad_Necesidades_Basicas_Array(efecto_necesidades_basicas, nombre_actividad: String = ""):
 	var multiplicador = _Obtener_Multiplicador(nombre_actividad)
+	var reduccion_higiene: float = 0.0
+	if Sistema_Cocina.Es_Trabajo_Hosteleria(nombre_actividad):
+		reduccion_higiene = Sistema_Cocina.Obtener_Reduccion_Higiene_Hosteleria()
 	Ejecutar_Actividad_Necesidades_Basicas(efecto_necesidades_basicas[0],0,30,multiplicador)
 	Ejecutar_Actividad_Necesidades_Basicas(efecto_necesidades_basicas[1],1,30,multiplicador)
 	Ejecutar_Actividad_Necesidades_Basicas(efecto_necesidades_basicas[2],2,12,multiplicador)
 	Ejecutar_Actividad_Necesidades_Basicas(efecto_necesidades_basicas[3],3,15,multiplicador)
-	Ejecutar_Actividad_Necesidades_Basicas(efecto_necesidades_basicas[4],4,20,multiplicador)
+	Ejecutar_Actividad_Necesidades_Basicas(efecto_necesidades_basicas[4],4,20,multiplicador,reduccion_higiene)
 
 
 func _Obtener_Multiplicador(nombre_actividad: String) -> float:
@@ -21,7 +24,7 @@ func _Obtener_Multiplicador(nombre_actividad: String) -> float:
 			return 1.0
 
 
-func Ejecutar_Actividad_Necesidades_Basicas(por_cuanto,indice,frecuencia,multiplicador:float=1.0):
+func Ejecutar_Actividad_Necesidades_Basicas(por_cuanto,indice,frecuencia,multiplicador:float=1.0,reduccion_desgaste:float=0.0):
 	if (!Funciones_Globales.Es_Cero(por_cuanto)):
 		var valor_maximo=floor(frecuencia/Funciones_Globales.Valor_Absoluto(por_cuanto))
 		# El multiplicador solo aplica a efectos positivos (mejoras del objeto).
@@ -29,6 +32,8 @@ func Ejecutar_Actividad_Necesidades_Basicas(por_cuanto,indice,frecuencia,multipl
 		if por_cuanto > 0 and multiplicador != 1.0:
 			valor_maximo = max(1, floor(valor_maximo / multiplicador))
 		if (Funciones_Globales.Generar_Numero_Aleatorio_Entero_Es_Cero(valor_maximo)):
+			if por_cuanto < 0 and reduccion_desgaste > 0.0 and randf() < reduccion_desgaste:
+				return
 			Cambiar_Necesidades_Basicas(Funciones_Globales.Es_Positivo_Int(por_cuanto),indice)
 
 

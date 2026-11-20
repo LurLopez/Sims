@@ -11,24 +11,30 @@ var _option_hora: OptionButton
 
 func _ready() -> void:
 	title = "Inscripción — Carrera deportiva"
-	min_size = Vector2(560, 420)
+	min_size = Vector2(600, 480)
 	ok_button_text = "Inscribirse"
-	add_cancel_button("Cancelar")
+	var cancel := add_cancel_button("Cancelar")
+	cancel.pressed.connect(queue_free)
 	_Construir_UI()
 	Estilos_UI.estilizar_dialogo(self)
 	Estilos_UI.aplicar_estilo_boton(get_ok_button(), "primario")
 	get_ok_button().custom_minimum_size = Vector2(140, 44)
 	confirmed.connect(_on_confirmed)
+	canceled.connect(queue_free)
+	close_requested.connect(queue_free)
 
 	var costo: float = get_node("/root/Sistema_Carreras_Deportivas").Obtener_Costo_Inscripcion()
 	if Variables_Dinamicas.Dinero < costo:
 		get_ok_button().disabled = true
+	# El texto con autowrap aún no tiene ancho cuando Godot calcula el tamaño
+	# inicial del diálogo y reporta una altura enorme; fijamos un tamaño tras el
+	# popup para que los botones OK/Cancelar queden siempre dentro de la pantalla.
+	Estilos_UI.fijar_tamano_dialogo.call_deferred(self, Vector2i(600, 480))
 
 
 func _Construir_UI() -> void:
 	var margen := MarginContainer.new()
 	margen.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	margen.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	margen.add_theme_constant_override("margin_left", 10)
 	margen.add_theme_constant_override("margin_right", 10)
 	margen.add_theme_constant_override("margin_top", 8)

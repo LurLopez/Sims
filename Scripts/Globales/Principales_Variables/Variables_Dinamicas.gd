@@ -38,11 +38,11 @@ var Ultima_Fecha_Alquiler=-1
 #Variable relacionada con el trabajo
 var Trabajo_Actual: Actividad_Fija_Trabajo = null
 
-# Sistema de Objetos/Muebles
+# Sistema de Objetos/Muebles y Ropa
 # Objetos_Poseidos: Dictionary {clave_objeto: bool} indicando qué objetos del catálogo posee el jugador.
-var Objetos_Poseidos: Dictionary = {}
+var Objetos_Poseidos: Dictionary = {"Ropa_Calle": true}
 # Objeto_Seleccionado: Dictionary {nombre_actividad: clave_objeto} indicando qué objeto está usando el jugador para cada actividad.
-var Objeto_Seleccionado: Dictionary = {}
+var Objeto_Seleccionado: Dictionary = {"Ropa": "Ropa_Calle"}
 
 var Minute_Day=0
 var Minute_Minute=0
@@ -67,6 +67,72 @@ var Carrera_Deportiva_Pendiente: Dictionary = {
 	"resultado_puesto": -1,
 	"resultado_procesado": false
 }
+
+# Sistema de Carrera de Futbolista (Fase 1 — Modo Jugador).
+# La base se duplica siempre para no compartir referencias entre partidas.
+const CARRERA_FUTBOL_BASE: Dictionary = {
+	"Activo": false,
+	"Division": 4, # 4: 3ª División Regional, 3: 2ª División, 2: 1ª División, 1: Superliga
+	"Relacion_Entrenador": 50.0, # [0.0, 100.0]
+	"Entrenamientos_Cancelados_Seguidos": 0,
+	"Partidos_Jugados": 0,
+	"Goles_Totales": 0,
+	"Asistencias_Totales": 0,
+	"Temporadas_Jugadas": 0,
+	"Titulos_Superliga": 0,
+	"Salario_Semanal": 150,
+	"Estado_Temporada": "En_Curso", # En_Curso, Ascendido, Mantiene, Descendido, Campeon, Despedido
+	"Entrenamientos_Asistencia": {
+		"Martes": true,
+		"Jueves": true,
+		"Diario": true # Usado en Modo_Rapido
+	},
+	# Estado de la mini-liga dominical en Modo Normal (4 equipos, 3 jornadas + playoff)
+	"Liga_Domingo": {
+		"Jornada_Actual": 0, # 0..3 (0-2 fase regular, 3 playoff); 4 = temporada completada
+		"Puntos_Jugador": 0,
+		"Puntos_Rivales": [0, 0, 0],
+		"Medias_Rivales": [45.0, 45.0, 45.0],
+		"Posicion_Regular": 1
+	},
+	# Estado interno de bloques en curso (se persiste para sobrevivir cierres de app).
+	"Entrenamiento_En_Curso": false,
+	"Entrenamiento_Fin_Abs": -1,
+	"Partido_En_Curso": false,
+	"Partido_Jornada": -1,
+	"Partido_Convocado": false,
+	"Partido_Decisivo": false,
+	"Partido_Fin_Abs": -1,
+	"Ultimo_Dia_Salario": -1,
+	"Conflicto_Ascenso_Pendiente": false,
+	"Division_Ascenso_Pendiente": 0
+}
+var Carrera_Futbol: Dictionary = CARRERA_FUTBOL_BASE.duplicate(true)
+
+
+func Carrera_Futbol_Por_Defecto() -> Dictionary:
+	return CARRERA_FUTBOL_BASE.duplicate(true)
+
+# Sistema de Minijuego de Cocina (estilo Cooking Fever).
+const COCINA_ESTADO_BASE: Dictionary = {
+	"restaurantes_desbloqueados": [],
+	"fondos_cocina": 0,
+	"estrellas_nivel": {},
+	"mejoras": {
+		"burger_street": {"plancha": 1, "emplatado": 1, "termostato": 1, "ingredientes": 1, "ambiente": 1},
+		"bistro_tradicional": {"plancha": 1, "emplatado": 1, "termostato": 1, "ingredientes": 1, "ambiente": 1},
+		"alta_cocina": {"plancha": 1, "emplatado": 1, "termostato": 1, "ingredientes": 1, "ambiente": 1}
+	},
+	"rango_logro": 0,
+	"servicios_remunerados_hoy": 0,
+	"ultimo_dia_remunerado": -1,
+	"plus_nomina_turno_hoy": false
+}
+var Cocina_Estado: Dictionary = COCINA_ESTADO_BASE.duplicate(true)
+
+
+func Cocina_Estado_Por_Defecto() -> Dictionary:
+	return COCINA_ESTADO_BASE.duplicate(true)
 
 # Sistema de Mensajes/Notificaciones
 var Mensajes: Array = []

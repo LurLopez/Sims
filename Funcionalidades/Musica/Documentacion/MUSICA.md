@@ -1,0 +1,75 @@
+# Música de fondo
+
+Sistema global de música del juego basado en el autoload `Musica`
+(`Scripts/Globales/Musica.gd`). Mantiene una pista general para menú/escena
+principal y una pista específica para el minijuego de cocina de comida rápida.
+
+## Pistas
+
+| Uso | Archivo | Bucle |
+|---|---|---|
+| Juego general (menú, escena principal, resto de pantallas) | `Sonidos/Musica/Lunchtime_Conspiracies.mp3` | Sí (`loop=true` en el `.import`) |
+| Minijuego de cocina / comida rápida | `Sonidos/Musica/Seven_Minutes_to_Service.mp3` | Sí (`loop=true` en el `.import`) |
+
+Los MP3 se importan con el importador nativo de Godot (`AudioStreamMP3`). El
+bucle se configura en los archivos `.import`; si se sustituye una pista hay que
+volver a marcar `loop=true` y reimportar (`godot --headless --path . --import`).
+
+## Autoload `Musica`
+
+- Crea el bus de audio `Musica` en tiempo de ejecución (envía a `Master`) y dos
+  `AudioStreamPlayer`: `Reproductor_General` y `Reproductor_Minijuego`.
+- Arranca automáticamente la pista general al iniciar el juego.
+- `Reproducir_General()`: fundido cruzado a la pista general. Si venía del
+  minijuego, la general se reanuda exactamente donde se pausó.
+- `Reproducir_Minijuego()`: fundido cruzado a la pista del minijuego.
+- `Alternar_Silencio()` / `Establecer_Silencio(valor)`: silencia o restaura el
+  bus de música. Emite `silencio_cambiado(silenciado)`.
+- `Establecer_Volumen(0.0–1.0)` / `Obtener_Volumen()`: volumen del bus.
+- Las preferencias se guardan en `user://configuracion_audio.cfg`.
+- En Android, la música se pausa con `NOTIFICATION_APPLICATION_PAUSED` y se
+  reanuda con `NOTIFICATION_APPLICATION_RESUMED`.
+- Si un MP3 termina por cualquier motivo (por ejemplo, un import sin bucle), el
+  reproductor activo se reinicia solo.
+
+Detalles del fundido: `0.9 s`, con `Tween` senoidal y volumen general `-9 dB` /
+minijuego `-7 dB`. El reproductor general no se detiene al entrar al minijuego:
+queda pausado (`stream_paused`) para conservar la posición.
+
+## Integración
+
+- `Menu.gd` y `Script_Principal.gd` llaman a `Musica.Reproducir_General()` al
+  cargar, garantizando la pista correcta tras cualquier cambio de escena.
+- `Minijuego_Cocina.gd` llama a `Musica.Reproducir_Minijuego()` en `_ready()` y a
+  `Musica.Reproducir_General()` en `_exit_tree()`, de modo que cualquier salida
+  del minijuego (botón, muerte del Sim o cierre de escena) restaura la general.
+- Botón de altavoz en el menú principal y en la cabecera de la escena principal
+  (`Boton_Musica` / `Boton_Musica_Header`): alterna el silencio y actualiza el
+  icono (`volume-2` / `x`).
+
+## Añadir una pista nueva
+
+1. Copiar el archivo a `Sonidos/Musica/` y ejecutar la importación de Godot.
+2. Marcar `loop=true` en el `.import` y reimportar.
+3. Añadir la constante `PISTA_*` en `Musica.gd` y una función
+   `Reproducir_*()` que llame a `_Cambiar_Pista()`.
+4. Llamar a esa función al abrir la pantalla/minijuego correspondiente y a
+   `Reproducir_General()` al salir.
+
+## Prueba rápida headless
+
+```bash
+godot --headless --path . --import
+```
+
+Tests GUT del sistema:
+
+```bash
+godot --headless --path . -s addons/gut/gut_cmdln.gd \
+	-gdir=res://Funcionalidades/Musica/Tests -gexit
+```
+
+Una prueba de integración puede instanciar `Minijuego_Cocina.tscn`, esperar al
+fundido y comprobar que `Musica._pista_activa` pasa a `MINIJUEGO`; al liberar la
+instancia debe volver a `GENERAL` y el reproductor general debe quedar
+despausado.

@@ -22,7 +22,10 @@ func Coste_Cocinar() -> float:
 
 
 func Coste_Comida_Basura() -> float:
-	return Variables_Estaticas.Obtener_Coste_Comida_Basura()
+	var coste: float = Variables_Estaticas.Obtener_Coste_Comida_Basura()
+	if Sistema_Cocina.Obtener_Rango_Logro() >= 4:
+		coste = round(coste * 0.80 * 100.0) / 100.0
+	return coste
 
 
 func Validar_Cocinar(duracion_min: int, en_la_calle: bool) -> Dictionary:
@@ -163,13 +166,35 @@ func Obtener_Indice_Tupper_Activo(es_aleatoria: bool = false) -> int:
 
 
 func Obtener_Efectos_Comer_Tupper(calidad: int) -> Array:
+	var rango: int = Sistema_Cocina.Obtener_Rango_Logro()
 	var fisico: int = 1
 	if calidad >= 71:
 		fisico = 3
 	elif calidad >= 31:
 		fisico = 2
 	var mental: int = 3 if calidad > 60 else 2
-	return [fisico, mental, 20, -1, -1]
+	var hambre: float = 20.0
+	if rango >= 2:
+		mental += 2
+	if rango >= 4:
+		hambre *= 1.15
+	if rango >= 7:
+		hambre *= 1.15
+		fisico += 1
+	return [fisico, mental, int(round(hambre)), -1, -1]
+
+
+func Obtener_Efectos_Comer_Basura() -> Array:
+	var rango: int = Sistema_Cocina.Obtener_Rango_Logro()
+	var fisico: int = -2
+	var mental: int = 2
+	var hambre: float = 20.0
+	if rango >= 2:
+		mental += 2
+	if rango >= 7:
+		hambre *= 1.15
+		fisico += 1
+	return [fisico, mental, int(round(hambre)), -1, -1]
 
 
 func Ejecutar_Minuto_Comer_Tupper(es_aleatoria: bool = false) -> Dictionary:
@@ -185,6 +210,13 @@ func Ejecutar_Minuto_Comer_Tupper(es_aleatoria: bool = false) -> Dictionary:
 	var calidad: int = clampi(int(tupper.get("calidad", 1)), 1, 100)
 	var efectos: Array = Obtener_Efectos_Comer_Tupper(calidad)
 	Actividades_Necesidades_Basicas.Ejecutar_Actividad_Necesidades_Basicas_Array(efectos, NOMBRE_TUPPER)
+
+	# Bonos de saciedad y velocidad de Hambre por Maestría Culinaria (respetando caps vía Cambiar_Necesidades_Basicas)
+	var rango_cocina: int = Sistema_Cocina.Obtener_Rango_Logro()
+	if rango_cocina >= 4 and randf() < 0.15:
+		Actividades_Necesidades_Basicas.Cambiar_Necesidades_Basicas(1, 2)
+	if rango_cocina >= 7 and randf() < 0.15:
+		Actividades_Necesidades_Basicas.Cambiar_Necesidades_Basicas(1, 2)
 
 	var restante: float = float(tupper.get("porcentaje_restante", 100.0)) - PORCENTAJE_POR_MINUTO
 	tupper["porcentaje_restante"] = maxf(0.0, restante)
@@ -229,8 +261,11 @@ func Ejecutar_Minuto_Comer_Basura() -> Dictionary:
 			return {"cancelado": true, "cobrado": false, "coste": coste}
 		Variables_Dinamicas.Dinero -= coste
 
+	var efectos_basura: Array = Obtener_Efectos_Comer_Basura()
 	Actividades_Necesidades_Basicas.Ejecutar_Actividad_Necesidades_Basicas_Array(
-		[-2, 2, 20, -1, -1], NOMBRE_BASURA)
+		efectos_basura, NOMBRE_BASURA)
+	if Sistema_Cocina.Obtener_Rango_Logro() >= 7 and randf() < 0.15:
+		Actividades_Necesidades_Basicas.Cambiar_Necesidades_Basicas(1, 2)
 	return {"cancelado": false, "cobrado": debe_cobrar, "coste": coste}
 
 

@@ -55,6 +55,8 @@ func Visibilizar_Lo_Basico(raiz):
 	raiz.get_node("Economia_Button").visible = true
 	raiz.get_node("Calendario_Button").visible = true
 	raiz.get_node("Carrera_Button").visible = true
+	if raiz.has_node("Minijuegos_Button"):
+		raiz.get_node("Minijuegos_Button").visible = true
 	for n in ["Header_BitLife", "Logo_Marca", "Logo_Titulo", "Logo_BitLife", "Reloj_Header", "Nav_Superior", "Dock_Fondo", "Moneda_Fondo"]:
 		if raiz.has_node(n):
 			raiz.get_node(n).visible = true

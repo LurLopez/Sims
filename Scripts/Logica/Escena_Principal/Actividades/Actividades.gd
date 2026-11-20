@@ -40,10 +40,22 @@ func Ejecutar_Actividad(actividad: Actividad, es_aleatoria: bool = false):
 	if not es_aleatoria and Variables_Dinamicas.Carrera_Actual != null:
 		if actividad is Actividad_Carrera or actividad.nombre == "Estudiar":
 			get_node("/root/Sistema_Examenes").Incrementar_Progreso_Carrera(Variables_Dinamicas.Carrera_Actual)
+	# Desbloqueo del minijuego de cocina al primer minuto real trabajado en hostelería
+	if actividad is Actividad_Fija_Trabajo and not es_aleatoria \
+			and Sistema_Cocina.Es_Trabajo_Hosteleria(actividad.nombre):
+		Sistema_Cocina.Registrar_Minuto_Trabajo_Hosteleria(actividad.nombre)
+
 	# Pago de salario al cruzar el último minuto del día laboral
 	if actividad is Actividad_Fija_Trabajo and Variables_Dinamicas.Minute_Minute == actividad.hora_final - 1:
-		var horas_trabajadas = (actividad.hora_final - actividad.hora_inicio) / 60.0
-		Variables_Dinamicas.Dinero += Variables_Estaticas.Obtener_Salario_Hora(actividad) * horas_trabajadas
+		var horas_trabajadas: float = float(actividad.hora_final - actividad.hora_inicio) / 60.0
+		var salario_jornada: float = Variables_Estaticas.Obtener_Salario_Hora(actividad) * horas_trabajadas
+		if Sistema_Cocina.Es_Trabajo_Hosteleria(actividad.nombre):
+			var bonus_ropa: float = Sistema_Cocina.Obtener_Bonus_Salario_Hosteleria()
+			var plus_turno: bool = bool(Variables_Dinamicas.Cocina_Estado.get("plus_nomina_turno_hoy", false))
+			salario_jornada *= Sistema_Cocina.Calcular_Multiplicador_Salario_Hosteleria(bonus_ropa, plus_turno)
+			if plus_turno:
+				Variables_Dinamicas.Cocina_Estado["plus_nomina_turno_hoy"] = false
+		Variables_Dinamicas.Dinero += salario_jornada
 
 
 func Crear_Actividad_Aleatoria() -> Actividad:
@@ -711,6 +723,10 @@ func Actualizar_Horario(minutos_a_procesar: int) -> bool:
 			_Guardar_Log_Muerte()
 			Funciones_Globales.Guardar_Matriz()
 			return true
+		# Carrera de futbolista: inicios/fines de entrenamiento y partido,
+		# salario y cambio de temporada. Se resuelve antes de ejecutar la celda
+		# para que el bloque recién programado ya sea el que se ejecute.
+		Sistema_Futbol.Tick_Minuto()
 		var celda = Variables_Dinamicas.Matriz_Jugador[Variables_Dinamicas.Minute_Minute][Variables_Dinamicas.Minute_Day]
 		var cd_pendiente: Dictionary = Variables_Dinamicas.Carrera_Deportiva_Pendiente
 		if cd_pendiente.get("inscrito", false) and cd_pendiente.get("resultado_puesto", -1) == -1:

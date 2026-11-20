@@ -50,7 +50,7 @@ func limpiar_dia_vbox_container(dia):
 	for child in dia.get_children():
 		if child is Button:
 			dia.remove_child(child)
-			child.queue_free()
+			child.free()
 
 func limpiar_horas_del_horario():
 	limpiar_dia_vbox_container(horario_columna)

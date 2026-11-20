@@ -56,12 +56,14 @@ func Crear_Objetos_Iniciales():
 	Variables_Dinamicas.Objetos_Poseidos = {
 		"Cama_Basica": true,
 		"Mesa_Basica": true,
-		"Ducha_Basica": true
+		"Ducha_Basica": true,
+		"Ropa_Calle": true
 	}
 	Variables_Dinamicas.Objeto_Seleccionado = {
 		"Dormir": "Cama_Basica",
 		"Comer": "Mesa_Basica",
-		"Duchar": "Ducha_Basica"
+		"Duchar": "Ducha_Basica",
+		"Ropa": "Ropa_Calle"
 	}
 
 func Crear_Progreso():
@@ -72,6 +74,7 @@ func Crear_Progreso():
 	Variables_Dinamicas.Tuppers = []
 	Variables_Dinamicas.Tupper_Seleccionado_Idx = -1
 	Variables_Dinamicas.Minutos_Cocinando_Actuales = 0
+	Variables_Dinamicas.Cocina_Estado = Variables_Dinamicas.Cocina_Estado_Por_Defecto()
 
 func Crear_Necesidades_Basicas():
 	for i in range(0,5):
