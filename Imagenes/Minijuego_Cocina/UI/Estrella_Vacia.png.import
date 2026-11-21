@@ -3,19 +3,21 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://b2yfuhff5iv4u"
-path="res://.godot/imported/Estrella_Vacia.png-9b72e13bb86f3f663887d6c786661751.ctex"
+path.s3tc="res://.godot/imported/Estrella_Vacia.png-9b72e13bb86f3f663887d6c786661751.s3tc.ctex"
+path.etc2="res://.godot/imported/Estrella_Vacia.png-9b72e13bb86f3f663887d6c786661751.etc2.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://Imagenes/Minijuego_Cocina/UI/Estrella_Vacia.png"
-dest_files=["res://.godot/imported/Estrella_Vacia.png-9b72e13bb86f3f663887d6c786661751.ctex"]
+dest_files=["res://.godot/imported/Estrella_Vacia.png-9b72e13bb86f3f663887d6c786661751.s3tc.ctex", "res://.godot/imported/Estrella_Vacia.png-9b72e13bb86f3f663887d6c786661751.etc2.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

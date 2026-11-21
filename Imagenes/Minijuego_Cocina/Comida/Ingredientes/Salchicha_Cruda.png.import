@@ -3,19 +3,21 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://ckqdwvt7m6ykg"
-path="res://.godot/imported/Salchicha_Cruda.png-540b53dc012394117816d1081174756e.ctex"
+path.s3tc="res://.godot/imported/Salchicha_Cruda.png-540b53dc012394117816d1081174756e.s3tc.ctex"
+path.etc2="res://.godot/imported/Salchicha_Cruda.png-540b53dc012394117816d1081174756e.etc2.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://Imagenes/Minijuego_Cocina/Comida/Ingredientes/Salchicha_Cruda.png"
-dest_files=["res://.godot/imported/Salchicha_Cruda.png-540b53dc012394117816d1081174756e.ctex"]
+dest_files=["res://.godot/imported/Salchicha_Cruda.png-540b53dc012394117816d1081174756e.s3tc.ctex", "res://.godot/imported/Salchicha_Cruda.png-540b53dc012394117816d1081174756e.etc2.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

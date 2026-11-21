@@ -3,19 +3,21 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://boxwjgmcpk8on"
-path="res://.godot/imported/Toldo_Rojo.png-c6ff64127669f51cd3d11ec69f519a55.ctex"
+path.s3tc="res://.godot/imported/Toldo_Rojo.png-c6ff64127669f51cd3d11ec69f519a55.s3tc.ctex"
+path.etc2="res://.godot/imported/Toldo_Rojo.png-c6ff64127669f51cd3d11ec69f519a55.etc2.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://Imagenes/Minijuego_Cocina/Decoracion/Toldo_Rojo.png"
-dest_files=["res://.godot/imported/Toldo_Rojo.png-c6ff64127669f51cd3d11ec69f519a55.ctex"]
+dest_files=["res://.godot/imported/Toldo_Rojo.png-c6ff64127669f51cd3d11ec69f519a55.s3tc.ctex", "res://.godot/imported/Toldo_Rojo.png-c6ff64127669f51cd3d11ec69f519a55.etc2.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

@@ -1,10 +1,28 @@
 extends Node
 
 func First_Time_Function():
+		# Idempotente: una partida nueva debe partir siempre de cero, aunque la
+		# escena principal se recargue o queden restos de una partida anterior.
 		Variables_Estaticas.Tutorial_Completado = false
 		Variables_Estaticas.Apariencia = Apariencia_Personaje.normalizar(Variables_Estaticas.Apariencia)
+		Variables_Estaticas.Habilidades.clear()
+		Variables_Dinamicas.Habilidades_Mostradas.clear()
+		Variables_Dinamicas.Habilidades_Cap_Notificado = [false, false, false, false, false, false, false]
+		Variables_Dinamicas.Necesidades_Basicas.clear()
+		Variables_Dinamicas.Progreso.clear()
+		Variables_Dinamicas.Matriz_Jugador.clear()
+		Variables_Dinamicas.Estados_Temporales = {}
+		Variables_Dinamicas.Mensajes = []
+		Variables_Dinamicas.Carreras_Completadas = []
+		Variables_Dinamicas.Carrera_Actual = null
+		Variables_Dinamicas.Trabajo_Actual = null
+		Variables_Dinamicas.Cooldown_Trabajos = {}
+		Variables_Dinamicas.Fiesta_Evento_Ocurrido = false
+		Variables_Dinamicas.Rejuvenecimiento_Anios = 0
+		Variables_Dinamicas.Tratamientos_Rejuvenecimiento = 0
 		Crear_Matriz()
-		Crear_Personalidad()
+		if str(Variables_Estaticas.Personalidad) == "":
+			Crear_Personalidad()
 		Crear_Habilidades()
 		Crear_Habilidades_Mostradas()
 		Crear_Necesidades_Basicas()
@@ -17,12 +35,18 @@ func First_Time_Function():
 #Creará una matriz de 1339 filas y 574 columnas, llena de "". Las filas representaran los minutos de un día y
 #las columnas los dias, que seran de 7 dias por 82 años 
 func Crear_Matriz(): 
-	var filas = 1440
-	var columnas = 574
+	# Crear en bloque es mucho más rápido que 826.560 append() en GDScript,
+	# sobre todo en móviles modestos durante el primer arranque. Cada fila se
+	# duplica para que las actividades no compartan el mismo Array.
+	Variables_Dinamicas.Matriz_Jugador.clear()
+	var filas: int = 1440
+	var columnas: int = 574
+	var fila_vacia: Array = []
+	fila_vacia.resize(columnas)
+	fila_vacia.fill("")
+	Variables_Dinamicas.Matriz_Jugador.resize(filas)
 	for i in range(filas):
-		Variables_Dinamicas.Matriz_Jugador.append([]) # Agregar una nueva fila vacía
-		for j in range(columnas):
-			Variables_Dinamicas.Matriz_Jugador[i].append("") # Llenar con cadenas vacías
+		Variables_Dinamicas.Matriz_Jugador[i] = fila_vacia.duplicate()
 
 #Se utilizara para crear la personalidad del personaje. Solo se va a utilizará por una vez.
 func Crear_Personalidad():
@@ -35,6 +59,7 @@ func Crear_Personalidad():
 		Variables_Estaticas.Personalidad="Deportista"
 
 func Crear_Habilidades():
+	Variables_Estaticas.Habilidades.clear()
 	# 7 habilidades innatas: 0=Deporte, 1=Inteligencia, 2=Destreza, 3=Memoria,
 	# 4=Liderazgo, 5=Paciencia, 6=Sangre_Fria (afecta a exámenes de carreras).
 	for i in range(0,7):
@@ -42,6 +67,7 @@ func Crear_Habilidades():
 		Variables_Estaticas.Habilidades.append(Funciones_Globales.Generar_Numero_Aleatorio_Entero(1,100))
 
 func Crear_Habilidades_Mostradas():
+	Variables_Dinamicas.Habilidades_Mostradas.clear()
 	for i in range(0,7):
 		Variables_Dinamicas.Habilidades_Mostradas.append(0)
 
@@ -65,8 +91,11 @@ func Crear_Objetos_Iniciales():
 		"Duchar": "Ducha_Basica",
 		"Ropa": "Ropa_Calle"
 	}
+	# Armario inicial ampliado: todas las prendas gratuitas de inicio.
+	Sistema_Cocina.Asegurar_Prendas_Iniciales()
 
 func Crear_Progreso():
+	Variables_Dinamicas.Progreso.clear()
 	for i in range(0,3):
 		Variables_Dinamicas.Progreso.append(1)
 	Variables_Dinamicas.Progreso_Inversion = 1
@@ -77,6 +106,7 @@ func Crear_Progreso():
 	Variables_Dinamicas.Cocina_Estado = Variables_Dinamicas.Cocina_Estado_Por_Defecto()
 
 func Crear_Necesidades_Basicas():
+	Variables_Dinamicas.Necesidades_Basicas.clear()
 	for i in range(0,5):
 		Variables_Dinamicas.Necesidades_Basicas.append(50)
 

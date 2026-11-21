@@ -643,12 +643,13 @@ Tienda (Control, visible=false por defecto, z_index=5)
 ├── Flecha_Atras (Button)         ← arriba-izq, vuelve al menú
 ├── Titulo (Label)                ← "TIENDA"
 ├── Categorias (Control)
-│   ├── Tab_Dormir (Button)       ← 🛏️
-│   ├── Tab_Comer (Button)        ← 🍽️
-│   └── Tab_Duchar (Button)       ← 🚿
+│   ├── Tab_Dormir (Button)       ← icono bed-double
+│   ├── Tab_Comer (Button)        ← icono utensils
+│   └── Tab_Duchar (Button)       ← icono shower-head
 ├── Objetos_Dormir (Control)
 │   ├── Cama_Basica (Panel)
-│   └── Cama_Premium (Panel)
+│   ├── Cama_Premium (Panel)
+│   └── Cama_Lujo (Panel)
 ├── Objetos_Comer (Control)
 │   └── Mesa_Basica (Panel)
 └── Objetos_Duchar (Control)
@@ -657,10 +658,21 @@ Tienda (Control, visible=false por defecto, z_index=5)
 ```
 
 Cada `Panel` de objeto contiene:
-- `Imagen_Placeholder` (Panel) → `Imagen_Emoji` (Label con emoji grande, sustituible por TextureRect cuando haya sprites)
+- `Imagen_Placeholder` (Panel) → vitrina con el fondo tintado, la píldora de nivel (`BÁSICO`/`PREMIUM`/`LUJO`) y un `Icono_Item` (`TextureRect`) con la ilustración propia del mueble
 - `Nombre`, `Precio`, `Multiplicador` (Labels)
 - `En_Uso` (Label, "✓ En uso") — visible solo si seleccionado
 - `Comprar`, `Vender`, `Elegir` (Buttons superpuestos en el mismo slot)
+
+El layout final de las tarjetas se construye en `Script_Principal._Redisenar_Tienda()`: rejilla de 2 columnas (tarjeta 332×442), vitrina de 304×200 y una tarjeta única o la tercera de Dormir centradas.
+
+### Ilustraciones de los muebles
+
+Las tarjetas usan ilustraciones 2.5D propias en lugar de emojis o iconos Lucide:
+
+- **Originales:** JPG con fondo magenta plano en `Arte_Fuente/Tienda/Fuente/` (`Cama_Basica.jpg`, `Ducha_Premium.jpg`, …). Los prompts del lote están en `Arte_Fuente/Tienda/prompts.md`.
+- **Runtime:** PNG cuadrados 512×512 con alfa en `Imagenes/Tienda/Iconos/`, con el nombre exacto de la clave del catálogo (`Cama_Basica.png`, `Cama_Premium.png`, `Cama_Lujo.png`, `Mesa_Basica.png`, `Ducha_Basica.png`, `Ducha_Premium.png`).
+- **Pipeline:** `python3 tools/procesar_iconos_tienda.py [--preview preview.png]` recorta el magenta por croma, elimina el derrame del borde, limpia motas, recorta al contenido y centra cada objeto con un 5 % de margen transparente.
+- **Carga:** `Estilos_UI.icono_tienda(clave)` resuelve la ruta desde `Estilos_UI.RUTAS_ICONOS_TIENDA` y cachea la textura. Si falta el PNG, la tarjeta cae al icono Lucide anterior.
 
 ### Estados Visuales del Panel
 
@@ -691,24 +703,103 @@ Visibilizar_Tienda(raiz)
     # Muestra el Control Tienda y abre la categoría Dormir
 
 Mostrar_Categoria_Tienda(raiz, categoria)
-    # Oculta Objetos_Dormir/Comer/Duchar y muestra solo la categoría indicada
+    # Oculta Objetos_Dormir/Comer/Duchar/Ventajas y muestra solo la categoría indicada
 ```
 
 ### Handlers en `Script_Principal.gd`
 
 - `_on_tienda_button_pressed` — abre la tienda, refresca UI
 - `_on_tienda_flecha_atras_pressed` — `Quitar_Todo` (vuelve al menú)
-- `_on_tab_<dormir|comer|duchar>_pressed` — switcher de categorías
+- `_on_tab_<dormir|comer|duchar|ventajas>_pressed` — switcher de categorías; Ventajas abre la pestaña Bienestar (anuncios + clínica)
 - 18 handlers `_on_<comprar|vender|elegir>_<objeto>_pressed` → delegan a 3 helpers (`_Tienda_Comprar/Vender/Elegir`) que llaman a `Actividades.Comprar_Objeto/Vender_Objeto/Seleccionar_Objeto`, refrescan UI y `Actualizar_Dinero()`
 
 ### Limitaciones Actuales de la UI
 
-- Solo se muestran 2 objetos por categoría (Básico + Premium). `Cama_Lujo` existe en el catálogo pero **no tiene tarjeta en la UI**. Para añadirla habría que ampliar el layout (scroll horizontal o reducir tamaño de tarjeta).
-- Las imágenes son emojis placeholder (`🛏️`, `🛌`, `🍽️`, `🍱`, `🚿`, `🛁`). Sustituir por `TextureRect` con sprites reales cuando estén disponibles.
+- La vitrina está pensada para las seis ilustraciones actuales; un objeto nuevo sin PNG usa el respaldo Lucide, pero conviene añadir su ilustración y su entrada en `Estilos_UI.RUTAS_ICONOS_TIENDA`.
+- Las tarjetas de muebles usan posiciones fijas en coordenadas de diseño 720×1280 (el dock inferior empieza en `alto - 92`). La pestaña Bienestar sí usa un `ScrollContainer` y se adapta a pantallas altas.
 
 ## Estado Actual
 
-- **Implementado:** 6 objetos en catálogo, 3 categorías (Dormir, Comer, Duchar), backend completo (compra/venta/selección), aplicación de multiplicador en Dormir/Duchar, guardado/carga, UI de tienda funcional con tabs y estados visuales.
-- **Cocina:** `Mesa_Premium` retirada; comer ya no usa multiplicadores de mesa. El gasto alimentario pasa por `Comer_Basura` (2 € cada 5 min) y `Cocinar` (2 € por tupper de 15 min), ambos escalados por `Multiplicador_Precios()`.
-- **Pendiente en UI:** Tarjeta para `Cama_Lujo`, sprites reales en lugar de emojis.
-- **Planeado:** Efectos negativos (multiplicador < 1.0), más categorías (Ocio, Trabajo).
+- **Implementado:** 6 objetos en catálogo, 3 categorías (Dormir, Comer, Duchar), backend completo (compra/venta/selección), aplicación de multiplicador en Dormir/Duchar, guardado/carga, UI de tienda funcional con tabs y estados visuales, y tarjetas con ilustraciones 2.5D propias (Cama Básica/Premium/Lujo, Mesa Básica, Ducha Básica/Premium). La alimentación pasó a `Cocinar`/`Comer_Tupper`/`Comer_Basura`; las mesas ya no modulan comer.
+- **Planeado:** Efectos negativos (multiplicador < 1.0), más categorías de muebles (Ocio, Trabajo) e integración de una red de anuncios real (sin pagos ni moneda premium).
+
+
+---
+
+## Bienestar y rejuvenecimiento (Tienda → Bienestar)
+
+La tienda incorpora una cuarta pestaña, **Bienestar**, que sustituye al antiguo
+prototipo de monetización. No hay gemas, Pase VIP, moneda premium ni pasarela de
+pago. Solo hay dos fuentes de contenido:
+
+1. **Anuncios recompensados simulados** con espera entre uno y otro.
+2. **Servicios pagados con euros del juego**: cuidado exprés y tratamientos que
+   restan años reales al Sim.
+
+### Archivos
+
+- `Scripts/Globales/Recompensas.gd` (autoload): anuncios, servicios, tokens,
+  recompensas, esperas, historial y señales.
+- `Scripts/Globales/Recompensas/Recompensas_Catalogo.gd`: catálogo y
+  creatividades.
+- `Proveedor_Anuncios.gd` / `Proveedor_Simulado_Anuncios.gd`: interfaz y
+  adaptador de la red falsa.
+- `Scripts/GUI/Tienda/Tienda_Bienestar.gd`, `Modal_Tratamiento.gd`,
+  `Modal_Anuncio_Bienestar.gd` y `Visual_Bienestar.gd`.
+- `Tienda.tscn`: `Tab_Ventajas` y `Objetos_Ventajas`.
+- Tests: `Funcionalidades/Bienestar/Tests/test_bienestar.gd`.
+- Doc: `Funcionalidades/Bienestar/Documentacion/BIENESTAR.md`.
+
+### Catálogo
+
+| Anuncio | Duración | Espera | Recompensa |
+|---|---|---|---|
+| Bono de 150 € | 5 s | 30 min | +150 € |
+| Recarga de bienestar | 6 s | 10 min | +30 a cada necesidad |
+| Cesta caliente | 6 s | 15 min | 2 tuppers al 100 % |
+| Spa express | 8 s | 60 min | −1 año |
+
+| Servicio | Precio base | Recompensa |
+|---|---|---|
+| Spa revitalizante | 400 € | −1 año |
+| Clínica regenerativa | 1.100 € | −3 años |
+| Cápsula del tiempo | 2.200 € | −5 años |
+| Día de spa | 120 € | Necesidades al 100 % |
+| Cesta gourmet | 90 € | 3 tuppers al 100 % |
+
+Los tratamientos de rejuvenecimiento suben de precio con cada sesión:
+`coste = base + incremento × Tratamientos_Rejuvenecimiento`. El contador es
+global y se guarda con la partida.
+
+### Rejuvenecimiento
+
+`Variables_Estaticas.Calcular_Edad()` resta `Rejuvenecimiento_Anios` a la edad
+natural y aplica un suelo de 18 años. El cambio afecta a todos los retratos de
+`Personaje_Visual`, al HUD de Inicio, a la carrera de futbolista y a cualquier
+sistema que consulte la edad. `First_Time_Function()` pone el contador a cero
+en una partida nueva y `Guardar_Variables_Dinamicas.gd` lo persiste.
+
+### Flujo y arquitectura
+
+1. La UI lee anuncios y servicios de `Recompensas_Catalogo`.
+2. `Solicitar_Anuncio` valida proveedor, espera y edad, y emite un token de un
+   solo uso. `Completar_Anuncio` lo invalida antes de verificar para evitar
+   dobles cobros.
+3. `Comprar_Servicio` vuelve a validar dinero y edad mínima, descuenta euros,
+   aplica la recompensa y registra el historial.
+4. `Script_Principal._On_Recompensa_Bienestar()` repinta dinero, necesidades,
+   Home y tarjetas de la tienda.
+5. Las esperas y el historial se guardan en `user://recompensas.cfg`, fuera de
+   la partida. El dinero, necesidades, tuppers y años se guardan con la partida.
+
+La UI muestra la edad actual, un medidor de 18 a 100 con marca fantasma de la
+edad sin tratamientos, tarjetas de servicios, cuidado exprés, anuncios con
+barra de espera y pie con reinicio de esperas. Se adapta a `720×1280` y a
+pantallas altas (`720×1600`).
+
+### Integración futura
+
+Sustituir `Proveedor_Simulado_Anuncios` por un adaptador real (AdMob u otro).
+Antes de publicar: consentimiento (GDPR/UMP), protección de menores, SSV de
+anuncios y pruebas de políticas. No hay pagos ni compras integradas; si se
+añaden en el futuro deben validarse en servidor y no reutilizar este catálogo.

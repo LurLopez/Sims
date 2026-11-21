@@ -3,19 +3,21 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cgolgpxcc7tus"
-path="res://.godot/imported/Nachos.png-1ab88432244c7b123d74b53dc59faa49.ctex"
+path.s3tc="res://.godot/imported/Nachos.png-1ab88432244c7b123d74b53dc59faa49.s3tc.ctex"
+path.etc2="res://.godot/imported/Nachos.png-1ab88432244c7b123d74b53dc59faa49.etc2.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://Imagenes/Minijuego_Cocina/Comida/Extras/Nachos.png"
-dest_files=["res://.godot/imported/Nachos.png-1ab88432244c7b123d74b53dc59faa49.ctex"]
+dest_files=["res://.godot/imported/Nachos.png-1ab88432244c7b123d74b53dc59faa49.s3tc.ctex", "res://.godot/imported/Nachos.png-1ab88432244c7b123d74b53dc59faa49.etc2.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

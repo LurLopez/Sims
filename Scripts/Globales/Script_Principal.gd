@@ -8,14 +8,49 @@ extends Node
 const TUTORIAL_INICIAL := preload("res://Scripts/GUI/Escena_Principal/Tutorial_Inicial.gd")
 const _MODAL_TUPPERS_SCRIPT := preload("res://Scripts/GUI/Escena_Principal/Tuppers/Modal_Tuppers.gd")
 const _PANEL_FUTBOL_ESCENA := preload("res://Escenas/Escena_Principal/Panel_Futbol.tscn")
-const _MINIJUEGO_COCINA_ESCENA := preload("res://Escenas/Minijuego_Cocina/Minijuego_Cocina.tscn")
 
 var mirar_semana
 var calendario_solo_lectura: bool = false
 
-var actividad_seleccionada
+# Actividad elegida en el catálogo que se está programando en el selector de horario.
+var actividad_seleccionada: String = ""
 
 var horario_bloque
+
+# Duración sugerida (en minutos) al abrir el selector de horario tras elegir
+# una actividad. El jugador puede ajustar inicio y final libremente.
+const DURACIONES_PREDETERMINADAS := {
+	"Dormir": 480,
+	"Cocinar": 30,
+	"Comer_Tupper": 30,
+	"Comer_Basura": 30,
+	"Duchar": 30,
+	"Ver_La_Television": 60,
+	"Estudiar": 120,
+	"Salir_A_Correr": 60,
+	"Practicar_Manualidades": 120,
+	"Salir_De_Fiesta": 180,
+}
+
+const NOMBRES_VISIBLES_ACTIVIDADES := {
+	"Dormir": "Dormir",
+	"Duchar": "Duchar",
+	"Cocinar": "Cocinar",
+	"Comer_Tupper": "Comida casera",
+	"Comer_Basura": "Comida rápida",
+	"Ver_La_Television": "Ver la televisión",
+	"Estudiar": "Estudiar",
+	"Salir_A_Correr": "Salir a correr",
+	"Practicar_Manualidades": "Manualidades",
+	"Salir_De_Fiesta": "Salir de fiesta",
+}
+
+# Hora de inicio propuesta al programar en una semana futura (minutos del día).
+const HORA_INICIO_GENERICA := 540 # 09:00
+const HORAS_INICIO_PREDETERMINADAS := {
+	"Dormir": 1320, # 22:00
+	"Salir_De_Fiesta": 1080, # 18:00
+}
 
 var actividades_reloj_gui
 var actividades_bloque_gui
@@ -41,15 +76,20 @@ var _badge_perfil: Label = null
 var _badge_tab_mensajes: Label = null
 var _badge_minijuegos: Label = null
 var _boton_musica_header: Button = null
+var _boton_ajustes_header: Button = null
+var _panel_ajustes: Panel_Ajustes = null
 var _minijuegos_novedad_pendiente: bool = false
 
 # Minijuegos y Ropa
 var _pantalla_minijuegos: ColorRect = null
+var _pantalla_vestuario: Pantalla_Vestuario = null
 var _minijuegos_scroll: ScrollContainer = null
 var _minijuegos_vbox: VBoxContainer = null
 var _capa_minijuego_cocina: CanvasLayer = null
 var _minijuego_cocina_activo: bool = false
-var _subtab_apuntes_activo: String = "Apuntes"
+var _transicion_minijuego_activa: bool = false
+var _minijuego_cocina_packed: PackedScene = null
+var _script_transicion_minijuego: Script = null
 var _dialog_minijuego_bloqueado: AcceptDialog = null
 
 # Carrera de futbolista
@@ -112,9 +152,13 @@ func _Actualizar_Badges():
 func _ready():
 	Musica.Reproducir_General()
 	Inicializar_Otros_Scripts()
-	_Crear_Pantalla_Carrera()
-	_Crear_Pantalla_Economia()
-	_Crear_Pantalla_Minijuegos()
+	# Los diálogos se estilizan al añadirse, sin recorrer todo el árbol cada
+	# medio segundo (en móvil eso generaba picos de CPU y basura).
+	if not get_tree().node_added.is_connected(_on_nodo_anadido):
+		get_tree().node_added.connect(_on_nodo_anadido)
+	var btn_vestuario := get_node_or_null("Vestuario_Button") as Button
+	if btn_vestuario != null and not btn_vestuario.pressed.is_connected(_on_vestuario_button_pressed):
+		btn_vestuario.pressed.connect(_on_vestuario_button_pressed)
 	_badge_perfil = _Crear_Badge($Boton_Perfil)
 	_badge_tab_mensajes = _Crear_Badge($Pantalla_Mensajes/Tab_Bar/Tab_Mensajes)
 	if has_node("Minijuegos_Button"):
@@ -125,12 +169,6 @@ func _ready():
 	$Pantalla_Mensajes/Tab_Bar/Tab_Apuntes.pressed.connect(_on_perfil_tab_apuntes_pressed)
 	$Pantalla_Mensajes/Tab_Bar/Tab_Despensa.pressed.connect(_on_perfil_tab_despensa_pressed)
 	$Pantalla_Mensajes/Contenido_Mensaje/Boton_Volver.pressed.connect(_on_mensajes_boton_volver_pressed)
-	var btn_sub_ap := get_node_or_null("Pantalla_Mensajes/Panel_Apuntes/SubTab_Bar/SubTab_Apuntes") as Button
-	if btn_sub_ap != null:
-		btn_sub_ap.pressed.connect(_on_subtab_apuntes_pressed)
-	var btn_sub_rp := get_node_or_null("Pantalla_Mensajes/Panel_Apuntes/SubTab_Bar/SubTab_Ropa") as Button
-	if btn_sub_rp != null:
-		btn_sub_rp.pressed.connect(_on_subtab_ropa_pressed)
 	if not Sistema_Cocina.restaurante_desbloqueado.is_connected(_on_restaurante_cocina_desbloqueado):
 		Sistema_Cocina.restaurante_desbloqueado.connect(_on_restaurante_cocina_desbloqueado)
 	if (Variables_Estaticas.First_Time):
@@ -153,6 +191,7 @@ func _ready():
 		desbl_cocina.append(Sistema_Cocina.RESTAURANTE_BURGER)
 		estado_cocina["restaurantes_desbloqueados"] = desbl_cocina
 	_Conectar_Tienda()
+	_Conectar_Recompensas()
 	Estilos_UI.aplicar_tema_global(self)
 	_Aplicar_Rediseno()
 	if not Musica.silencio_cambiado.is_connected(_on_musica_silencio_cambiado):
@@ -170,6 +209,8 @@ func _ready():
 func _exit_tree() -> void:
 	if Sistema_Cocina != null and Sistema_Cocina.restaurante_desbloqueado.is_connected(_on_restaurante_cocina_desbloqueado):
 		Sistema_Cocina.restaurante_desbloqueado.disconnect(_on_restaurante_cocina_desbloqueado)
+	if Recompensas.recompensa_aplicada.is_connected(_On_Recompensa_Bienestar):
+		Recompensas.recompensa_aplicada.disconnect(_On_Recompensa_Bienestar)
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -203,13 +244,26 @@ func _process(delta):
 			_Actualizar_Tuppers_UI_Si_Visible()
 			_Actualizar_Pantalla_Minijuegos_Si_Visible()
 			_Comprobar_Conflicto_Ascenso_Futbol()
-			for n in find_children("*", "", true, false):
-				if n is AcceptDialog and not n.has_meta("_tema_dialogo"):
-					n.set_meta("_tema_dialogo", true)
-					Estilos_UI.estilizar_dialogo(n)
-				elif n is Window and not n.has_meta("_tema_ventana"):
-					n.set_meta("_tema_ventana", true)
-					Estilos_UI.estilizar_ventana(n)
+
+
+## Estiliza los diálogos en cuanto se añaden al árbol. Sustituye al recorrido
+## completo de find_children() que se hacía cada 0,5 s.
+func _on_nodo_anadido(nodo: Node) -> void:
+	if nodo is AcceptDialog and not nodo.has_meta("_tema_dialogo"):
+		nodo.set_meta("_tema_dialogo", true)
+		_Estilizar_Nodo_Diferido.call_deferred(nodo)
+	elif nodo is Window and not nodo.has_meta("_tema_ventana"):
+		nodo.set_meta("_tema_ventana", true)
+		_Estilizar_Nodo_Diferido.call_deferred(nodo)
+
+
+func _Estilizar_Nodo_Diferido(nodo: Node) -> void:
+	if not is_instance_valid(nodo):
+		return
+	if nodo is AcceptDialog:
+		Estilos_UI.estilizar_dialogo(nodo)
+	elif nodo is Window:
+		Estilos_UI.estilizar_ventana(nodo)
 
 
 const _DINERO_OFFSET_RIGHT_3_DIGITOS: int = 600
@@ -395,8 +449,21 @@ func Quitar_Todo():
 
 
 func _on_boton_actividades_pressed():
+	_Liberar_Bloque_Horario()
+	_Mostrar_Catalogo_Actividades()
+
+
+func _Mostrar_Catalogo_Actividades() -> void:
+	actividad_seleccionada = ""
 	Detener_Blink()
 	calendario_solo_lectura = false
+	# Si se estaba consultando una semana pasada, programar ahí no tendría efecto:
+	# volvemos a la semana actual. Las semanas futuras se respetan.
+	var sem_actual: int = int(Variables_Dinamicas.Minute_Day) / 7
+	if mirar_semana == null:
+		mirar_semana = sem_actual
+	if int(mirar_semana) < sem_actual:
+		mirar_semana = sem_actual
 	Gestionar_Visibilidad.Visibilizar_Elegir_Actividad(self)
 	_Mostrar_Titulo_Actividades()
 	_Ocultar_Home()
@@ -404,6 +471,156 @@ func _on_boton_actividades_pressed():
 	_Actualizar_Boton_Carrera_Deportiva()
 	_Actualizar_Boton_Carrera_Futbol()
 	_Actualizar_Nav_Activa()
+
+
+func _Restaurar_Catalogo_Actividades() -> void:
+	# Vuelve exactamente al submenú desde el que se eligió la actividad.
+	actividad_seleccionada = ""
+	Detener_Blink()
+	Gestionar_Visibilidad.Restaurar_Elegir_Actividad(self)
+	_Actualizar_Nav_Activa()
+
+
+func _Liberar_Bloque_Horario() -> void:
+	if actividades_reloj_gui != null and is_instance_valid(actividades_reloj_gui):
+		actividades_reloj_gui.horariobloque = null
+	if horario_bloque != null and is_instance_valid(horario_bloque):
+		horario_bloque.free()
+	horario_bloque = null
+
+
+func _Nombre_Visible_Actividad(nombre: String) -> String:
+	if NOMBRES_VISIBLES_ACTIVIDADES.has(nombre):
+		return NOMBRES_VISIBLES_ACTIVIDADES[nombre]
+	return nombre.replace("_", " ")
+
+
+func _Duracion_Predeterminada(nombre: String) -> int:
+	return int(DURACIONES_PREDETERMINADAS.get(nombre, 60))
+
+
+func _Bloque_Desde_Minutos(inicio_abs: int, fin_abs: int) -> HorarioDesdeBloque:
+	var bloque := HorarioDesdeBloque.new()
+	var d_ini: int = clampi(int(inicio_abs / 1440), 0, 6)
+	var rem_ini: int = clampi(inicio_abs - d_ini * 1440, 0, 1439)
+	var d_fin: int = 6
+	var hora_fin: int = 24
+	var min_fin: int = 0
+	if fin_abs < 10080:
+		d_fin = clampi(int(fin_abs / 1440), 0, 6)
+		var rem_fin: int = fin_abs - d_fin * 1440
+		hora_fin = int(rem_fin / 60)
+		min_fin = rem_fin % 60
+	bloque.Inicializar(
+		Funciones_Globales.Devolver_Dia(d_ini),
+		int(rem_ini / 60), rem_ini % 60,
+		Funciones_Globales.Devolver_Dia(d_fin),
+		hora_fin, min_fin)
+	return bloque
+
+
+func _Crear_Bloque_Predeterminado(nombre: String) -> HorarioDesdeBloque:
+	var sem_actual: int = int(Variables_Dinamicas.Minute_Day) / 7
+	if mirar_semana == null:
+		mirar_semana = sem_actual
+	if int(mirar_semana) < sem_actual:
+		mirar_semana = sem_actual
+	var dia_ini: int = 0
+	var min_ini: int = 0
+	if int(mirar_semana) == sem_actual:
+		dia_ini = int(Variables_Dinamicas.Minute_Day) % 7
+		min_ini = int(ceil(float(Variables_Dinamicas.Minute_Minute) / 5.0)) * 5
+		if min_ini >= 1440:
+			min_ini = 0
+			if dia_ini >= 6:
+				# Domingo al borde del cierre: se propone el lunes siguiente.
+				if int(mirar_semana) < 81:
+					mirar_semana = int(mirar_semana) + 1
+					dia_ini = 0
+					min_ini = int(HORAS_INICIO_PREDETERMINADAS.get(nombre, HORA_INICIO_GENERICA))
+			else:
+				dia_ini += 1
+	else:
+		# Semana futura: hora de inicio razonable según la actividad.
+		min_ini = int(HORAS_INICIO_PREDETERMINADAS.get(nombre, HORA_INICIO_GENERICA))
+
+	var duracion: int = _Duracion_Predeterminada(nombre)
+	if nombre == "Salir_De_Fiesta":
+		# La fiesta solo es válida de 18:00 a 06:00. Se propone la próxima
+		# ventana razonable y el jugador puede ajustarla en el selector.
+		if min_ini < 360:
+			# Madrugada: si queda al menos la duración mínima, se empieza ahora.
+			if 360 - min_ini >= 120:
+				duracion = mini(180, 360 - min_ini)
+			else:
+				min_ini = 1080
+				duracion = 180
+		elif min_ini < 1080:
+			# Mañana/tarde: la siguiente fiesta empieza a las 18:00.
+			min_ini = 1080
+			duracion = 180
+		else:
+			# Noche: se empieza ahora y puede cruzar medianoche.
+			duracion = 180
+
+	var inicio_abs: int = dia_ini * 1440 + min_ini
+	var fin_abs: int = inicio_abs + duracion
+	if fin_abs > 10080:
+		fin_abs = 10080
+		inicio_abs = maxi(0, fin_abs - duracion)
+		inicio_abs = (inicio_abs / 5) * 5
+	if fin_abs <= inicio_abs:
+		fin_abs = mini(10080, inicio_abs + 5)
+	return _Bloque_Desde_Minutos(inicio_abs, fin_abs)
+
+
+func _Abrir_Horario_Para_Actividad(nombre: String) -> void:
+	if nombre == "":
+		return
+	if nombre == "Cocinar" and Variables_Dinamicas.En_La_Calle:
+		_Mostrar_Error_Alimentacion("No puedes cocinar sin una vivienda.")
+		return
+	actividad_seleccionada = nombre
+	modo_fiesta = (nombre == "Salir_De_Fiesta")
+	modo_alimentacion = nombre in ["Cocinar", "Comer_Tupper", "Comer_Basura"]
+	var rango_inicial = null
+	if horario_bloque != null and is_instance_valid(horario_bloque):
+		# El bloque marcado en el calendario actúa como franja inicial sugerida.
+		rango_inicial = _Rango_A_Minutos(horario_bloque)
+		if actividades_reloj_gui != null and is_instance_valid(actividades_reloj_gui):
+			actividades_reloj_gui.horariobloque = null
+		horario_bloque.free()
+	else:
+		var sugerido := _Crear_Bloque_Predeterminado(nombre)
+		rango_inicial = _Rango_A_Minutos(sugerido)
+		sugerido.free()
+	# En ambos casos el selector permite ajustar cualquier franja de la semana.
+	horario_bloque = _Crear_Bloque_Semana_Completa()
+	Gestionar_Visibilidad.Visibilizar_Seleccionar_Horario(self)
+	actividades_reloj_gui.Comprobar_Visibilidad(self, horario_bloque, rango_inicial)
+	Iniciar_Blink()
+	_Actualizar_Titulo_Selector(nombre)
+	if nombre == "Comer_Tupper":
+		call_deferred("_Abrir_Modal_Tuppers_Al_Entrar")
+
+
+func _Crear_Bloque_Semana_Completa() -> HorarioDesdeBloque:
+	return _Bloque_Desde_Minutos(0, 10080)
+
+
+func _Rango_A_Minutos(bloque: HorarioDesdeBloque) -> Array:
+	if bloque == null:
+		return [0, 60]
+	var inicio: int = bloque.dia_inicio_int() * 1440 + int(bloque.hora_inicio) * 60 + int(bloque.minuto_inicio)
+	var fin: int = bloque.dia_final_int() * 1440 + int(bloque.hora_final) * 60 + int(bloque.minuto_final)
+	return [inicio, fin]
+
+
+func _Actualizar_Titulo_Selector(nombre: String) -> void:
+	var titulo := get_node_or_null("Actividades/Seleccionar_Horario/Titulo") as Label
+	if titulo == null:
+		return
+	titulo.text = "Horario · %s" % _Nombre_Visible_Actividad(nombre)
 
 
 
@@ -447,7 +664,7 @@ func _Actualizar_Visibilidad_Botones_Navegacion() -> void:
 
 
 func _input(event: InputEvent) -> void:
-	if not seleccionar_horario_activo:
+	if _panel_ajustes != null or not seleccionar_horario_activo:
 		return
 	var pos := Vector2.ZERO
 	var es_presion := false
@@ -521,7 +738,7 @@ func Iniciar_Blink() -> void:
 	blink_estado = false
 	var btn_crear := get_node_or_null("Actividades/Seleccionar_Horario/Crear_Actividad") as Button
 	if btn_crear != null:
-		btn_crear.text = "Confirmar horario" if (modo_fiesta or modo_alimentacion) else "Elegir actividad"
+		btn_crear.text = "Crear actividad"
 	if modo_fiesta:
 		_Mostrar_Preview_Fiesta()
 	elif modo_alimentacion:
@@ -612,6 +829,7 @@ func _Seleccionar_Modo_Comer(modo: String) -> void:
 	if modo != "Comer_Tupper" and modo != "Comer_Basura":
 		return
 	actividad_seleccionada = modo
+	_Actualizar_Titulo_Selector(modo)
 	if modo == "Comer_Tupper" and not Variables_Dinamicas.Tuppers.is_empty():
 		_Abrir_Modal_Tuppers()
 	_Actualizar_Preview_Alimentacion()
@@ -647,52 +865,31 @@ func _on_blink_timeout() -> void:
 func _on_ocupar_actividad_pressed() -> void:
 	modo_fiesta = false
 	modo_alimentacion = false
-	if(actividades_bloque_gui.comprobar_seleccionado()):
-		if horario_bloque != null and is_instance_valid(horario_bloque):
-			horario_bloque.free()
-		horario_bloque=(actividades_bloque_gui.devolver_hora_desde_posiciones())
-		Gestionar_Visibilidad.Visibilizar_Seleccionar_Horario(self)
-		actividades_reloj_gui.Comprobar_Visibilidad(self,horario_bloque)
-		Iniciar_Blink()
-	
+	if not actividades_bloque_gui.comprobar_seleccionado():
+		return
+	# El bloque elegido se conserva como franja propuesta. Primero se elige la
+	# actividad en el catálogo y después se ajusta el horario.
+	_Liberar_Bloque_Horario()
+	horario_bloque = actividades_bloque_gui.devolver_hora_desde_posiciones()
+	_Mostrar_Catalogo_Actividades()
+
 
 func _on_crear_actividad_pressed():
-	if modo_fiesta:
-		# Segundo paso del flujo de Fiesta: la franja ya está elegida y el
-		# jugador ha visto la vista previa; confirmar valida y escribe.
-		Crear_Actividad("Salir_De_Fiesta")
+	if actividad_seleccionada == "":
 		return
-	if modo_alimentacion:
-		# Segundo paso de Cocinar / Comer: confirmar escribe el bloque elegido.
-		Crear_Actividad(actividad_seleccionada)
-		return
-	Detener_Blink()
-	Gestionar_Visibilidad.Recursivo_Desvisibilizar($Actividades/Seleccionar_Horario)
-	$Actividades/Horario_Semanal.visible = false
-	Gestionar_Visibilidad.Visibilizar_Actividades(self)
-	_Mostrar_Titulo_Actividades()
-	$Actividades/Elegir_Actividad.visible=true
-	$Actividades/Elegir_Actividad/Tipos_De_Actividades.visible=true
-	if Gestionar_Visibilidad.raiz_path != null and has_node(Gestionar_Visibilidad.raiz_path):
-		Gestionar_Visibilidad.Desvisibilizar_Botones(get_node(Gestionar_Visibilidad.raiz_path))
-	Gestionar_Visibilidad.raiz_path = "Actividades/Elegir_Actividad/Tipos_De_Actividades"
-	Gestionar_Visibilidad.Pulsar_Boton_Opciones_Actividades("Temporales",self)
+	Crear_Actividad(actividad_seleccionada)
 
 
 func _on_cancelar_pressed():
 	calendario_solo_lectura = false
-	modo_fiesta = false
-	modo_alimentacion = false
-	Detener_Blink()
-	Gestionar_Visibilidad.Recursivo_Desvisibilizar($Actividades/Seleccionar_Horario)
-	Iniciar_Bloques_Actividad()
+	_Liberar_Bloque_Horario()
+	_Restaurar_Catalogo_Actividades()
 
 
 func _on_eliminar_actividad_pressed() -> void:
 	if not actividades_bloque_gui.comprobar_seleccionado():
 		return
-	if horario_bloque != null and is_instance_valid(horario_bloque):
-		horario_bloque.free()
+	_Liberar_Bloque_Horario()
 	horario_bloque = actividades_bloque_gui.devolver_hora_desde_posiciones()
 
 	# Si la celda seleccionada es un trabajo fijo, eliminar UNA celda no tiene sentido
@@ -864,7 +1061,12 @@ func _on_calendario_boton_pressed() -> void:
 	_Actualizar_Nav_Activa()
 
 
+func Opciones_Actividades_Temporales() -> void:
+	Gestionar_Visibilidad.Pulsar_Boton_Opciones_Actividades("Temporales", self)
+
+
 func _on_temporales_pressed() -> void:
+	# Entrada directa al calendario semanal (accesos rápidos / compatibilidad).
 	calendario_solo_lectura = false
 	Iniciar_Bloques_Actividad()
 	_Actualizar_Nav_Activa()
@@ -881,6 +1083,11 @@ func _on_especiales_pressed() -> void:
 
 func Opciones_Actividades_Trabajo() -> void:
 	Gestionar_Visibilidad.Pulsar_Boton_Opciones_Actividades("Trabajo", self)
+	_Actualizar_Trabajos_UI()
+
+
+func Opciones_Actividades_Cocinero() -> void:
+	Gestionar_Visibilidad.Pulsar_Boton_Opciones_Actividades("Cocinero", self)
 	_Actualizar_Trabajos_UI()
 
 
@@ -1027,34 +1234,26 @@ func Opciones_Actividades_Necesidades_Basicas() -> void:
 	Gestionar_Visibilidad.Pulsar_Boton_Opciones_Actividades("Necesidades_Basicas",self)
 
 ###ACTIVIDADES TERMINADAS
+# Nuevo flujo: la actividad se elige primero y después se abre el selector de
+# horario con una franja propuesta (o la seleccionada previamente en el calendario).
 func Actividad_Terminada_Estudiar() -> void:
-	Crear_Actividad("Estudiar")
+	_Abrir_Horario_Para_Actividad("Estudiar")
 
 func Actividad_Terminada_Salir_A_Correr() -> void:
-	Crear_Actividad("Salir_A_Correr")
+	_Abrir_Horario_Para_Actividad("Salir_A_Correr")
 
 func Actividad_Terminada_Manualidades() -> void:
-	Crear_Actividad("Practicar_Manualidades")
+	_Abrir_Horario_Para_Actividad("Practicar_Manualidades")
 
 func Actividad_Terminada_Duchar() -> void:
-	Crear_Actividad("Duchar")
+	_Abrir_Horario_Para_Actividad("Duchar")
 
 func Actividad_Terminada_Dormir() -> void:
-	Crear_Actividad("Dormir")
+	_Abrir_Horario_Para_Actividad("Dormir")
 
 func Actividad_Terminada_Comer() -> void:
-	# Primer paso: reabrir el reloj con las pestañas Tupper / Comida rápida.
-	if horario_bloque == null:
-		_on_temporales_pressed()
-		return
-	modo_fiesta = false
-	modo_alimentacion = true
-	actividad_seleccionada = "Comer_Tupper" if not Variables_Dinamicas.Tuppers.is_empty() else "Comer_Basura"
-	Gestionar_Visibilidad.Visibilizar_Seleccionar_Horario(self)
-	actividades_reloj_gui.Comprobar_Visibilidad(self, horario_bloque)
-	Iniciar_Blink()
-	if actividad_seleccionada == "Comer_Tupper":
-		call_deferred("_Abrir_Modal_Tuppers_Al_Entrar")
+	var modo := "Comer_Tupper" if not Variables_Dinamicas.Tuppers.is_empty() else "Comer_Basura"
+	_Abrir_Horario_Para_Actividad(modo)
 
 func _Abrir_Modal_Tuppers_Al_Entrar() -> void:
 	if not modo_alimentacion or actividad_seleccionada != "Comer_Tupper":
@@ -1064,33 +1263,13 @@ func _Abrir_Modal_Tuppers_Al_Entrar() -> void:
 	_Abrir_Modal_Tuppers()
 
 func Actividad_Terminada_Cocinar() -> void:
-	if Variables_Dinamicas.En_La_Calle:
-		_Mostrar_Error_Alimentacion("No puedes cocinar sin una vivienda.")
-		return
-	if horario_bloque == null:
-		_on_temporales_pressed()
-		return
-	modo_fiesta = false
-	modo_alimentacion = true
-	actividad_seleccionada = "Cocinar"
-	Gestionar_Visibilidad.Visibilizar_Seleccionar_Horario(self)
-	actividades_reloj_gui.Comprobar_Visibilidad(self, horario_bloque)
-	Iniciar_Blink()
+	_Abrir_Horario_Para_Actividad("Cocinar")
 
 func Actividad_Terminada_Ver_La_Television() -> void:
-	Crear_Actividad("Ver_La_Television")
+	_Abrir_Horario_Para_Actividad("Ver_La_Television")
 
 func Actividad_Terminada_Salir_De_Fiesta() -> void:
-	# Primer paso del flujo de Fiesta: reabrir el selector con la franja elegida
-	# y mostrar la vista previa. El botón "Crear Actividad" hará el segundo paso.
-	if horario_bloque == null:
-		_on_temporales_pressed()
-		return
-	modo_fiesta = true
-	actividad_seleccionada = "Salir_De_Fiesta"
-	Gestionar_Visibilidad.Visibilizar_Seleccionar_Horario(self)
-	actividades_reloj_gui.Comprobar_Visibilidad(self, horario_bloque)
-	Iniciar_Blink()
+	_Abrir_Horario_Para_Actividad("Salir_De_Fiesta")
 
 
 var _dialog_prioridad: AcceptDialog = null
@@ -1165,6 +1344,7 @@ func Crear_Actividad(actividad):
 	Actividad_Terminada()
 
 func Actividad_Terminada():
+	actividad_seleccionada = ""
 	Detener_Blink()
 	_on_boton_actividades_pressed()
 	# Solo limpiar el calendario si el flujo pasó por él (Temporales). En el flujo
@@ -1290,127 +1470,9 @@ func _on_perfil_tab_apuntes_pressed():
 	$Pantalla_Mensajes/Panel_Apuntes.visible = true
 	$Pantalla_Mensajes/Panel_Despensa.visible = false
 	$Pantalla_Mensajes/Contenido_Mensaje.visible = false
-	_Aplicar_Subtab_Apuntes()
+	_Renderizar_Apuntes()
 	_Actualizar_Nav_Activa()
 
-
-func _on_subtab_apuntes_pressed() -> void:
-	_subtab_apuntes_activo = "Apuntes"
-	_Aplicar_Subtab_Apuntes()
-
-
-func _on_subtab_ropa_pressed() -> void:
-	_subtab_apuntes_activo = "Ropa"
-	_Aplicar_Subtab_Apuntes()
-
-
-func _Aplicar_Subtab_Apuntes() -> void:
-	_Marcar_Subtab_Apuntes(_subtab_apuntes_activo)
-	var scroll_ropa := get_node_or_null("Pantalla_Mensajes/Panel_Apuntes/Scroll_Ropa") as Control
-	var scroll_inv := get_node_or_null("Pantalla_Mensajes/Panel_Apuntes/Scroll_Inventario") as Control
-	var sin_libros := get_node_or_null("Pantalla_Mensajes/Panel_Apuntes/Sin_Apuntes_Label") as Control
-	if _subtab_apuntes_activo == "Ropa":
-		if scroll_inv != null:
-			scroll_inv.visible = false
-		if sin_libros != null:
-			sin_libros.visible = false
-		if scroll_ropa != null:
-			scroll_ropa.visible = true
-		_Renderizar_Ropa()
-	else:
-		if scroll_ropa != null:
-			scroll_ropa.visible = false
-		_Renderizar_Apuntes()
-
-
-func _Marcar_Subtab_Apuntes(activo: String) -> void:
-	var sub_bar := get_node_or_null("Pantalla_Mensajes/Panel_Apuntes/SubTab_Bar")
-	if sub_bar == null:
-		return
-	for b in sub_bar.get_children():
-		if b is Button:
-			var es_activo: bool = (activo == "Apuntes" and b.name == "SubTab_Apuntes") \
-				or (activo == "Ropa" and b.name == "SubTab_Ropa")
-			if es_activo:
-				Estilos_UI.aplicar_estilo_boton(b, "primario", Estilos_UI.ROJO_BIT)
-			else:
-				Estilos_UI.aplicar_estilo_boton(b, "secundario", Estilos_UI.TINTA_SUAVE)
-			b.add_theme_font_size_override("font_size", 14)
-
-
-func _Renderizar_Ropa() -> void:
-	var vbox := get_node_or_null("Pantalla_Mensajes/Panel_Apuntes/Scroll_Ropa/VBox_Ropa") as VBoxContainer
-	if vbox == null:
-		return
-	for hijo in vbox.get_children():
-		hijo.queue_free()
-
-	Variables_Dinamicas.Objetos_Poseidos["Ropa_Calle"] = true
-	var equipada: String = Sistema_Cocina.Obtener_Clave_Ropa_Equipada()
-
-	var claves_ropa: Array[String] = []
-	for clave in Sistema_Cocina.ORDEN_ROPA:
-		if bool(Variables_Dinamicas.Objetos_Poseidos.get(clave, false)):
-			claves_ropa.append(clave)
-	for clave_extra in Variables_Dinamicas.Objetos_Poseidos.keys():
-		var c_str: String = str(clave_extra)
-		if bool(Variables_Dinamicas.Objetos_Poseidos[clave_extra]) and not claves_ropa.has(c_str):
-			var obj_extra = Variables_Estaticas.Catalogo_Objetos.get(c_str, null)
-			if obj_extra is Objeto_Ropa:
-				claves_ropa.append(c_str)
-
-	for clave in claves_ropa:
-		var obj = Variables_Estaticas.Catalogo_Objetos.get(clave, null)
-		if not (obj is Objeto_Ropa):
-			continue
-		var ropa: Objeto_Ropa = obj as Objeto_Ropa
-		var es_equipada: bool = (clave == equipada)
-
-		var card := PanelContainer.new()
-		var borde_col: Color = Estilos_UI.EXITO if es_equipada else Estilos_UI.BORDE
-		card.add_theme_stylebox_override("panel",
-			Estilos_UI.caja(Estilos_UI.SUPERFICIE, 14, borde_col, 2 if es_equipada else 1, 1))
-		vbox.add_child(card)
-
-		var m := MarginContainer.new()
-		m.add_theme_constant_override("margin_left", 14)
-		m.add_theme_constant_override("margin_right", 14)
-		m.add_theme_constant_override("margin_top", 12)
-		m.add_theme_constant_override("margin_bottom", 12)
-		card.add_child(m)
-
-		var h := HBoxContainer.new()
-		h.add_theme_constant_override("separation", 12)
-		m.add_child(h)
-
-		h.add_child(Estilos_UI.badge_icono("shirt", 42, 20,
-			Estilos_UI.EXITO if es_equipada else Estilos_UI.INDIGO, Color.WHITE, 11))
-
-		var info := VBoxContainer.new()
-		info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		info.add_theme_constant_override("separation", 3)
-		h.add_child(info)
-		info.add_child(Estilos_UI.titulo(Sistema_Cocina.Obtener_Nombre_Legible_Ropa(clave), 16, Estilos_UI.TINTA))
-		info.add_child(Estilos_UI.parrafo(ropa.descripcion_efecto, 13, Estilos_UI.TINTA_SUAVE))
-
-		if es_equipada:
-			var btn_eq := Estilos_UI.boton("✓ Equipada", "suave", "check", Estilos_UI.EXITO, 40)
-			btn_eq.custom_minimum_size = Vector2(138, 40)
-			btn_eq.disabled = true
-			h.add_child(btn_eq)
-		else:
-			var btn_eq := Estilos_UI.boton("Equipar", "primario", "shirt", Estilos_UI.AZUL, 40)
-			btn_eq.custom_minimum_size = Vector2(138, 40)
-			btn_eq.pressed.connect(func():
-				if Sistema_Cocina.Equipar_Ropa(clave):
-					_Renderizar_Ropa()
-					_Renderizar_Info())
-			h.add_child(btn_eq)
-
-	var nota := Estilos_UI.parrafo(
-		"Desbloquea nuevos atuendos de hostelería subiendo tu Rango de Maestría Culinaria (niveles 5, 15, 30 y 45) en el minijuego de Cocina.",
-		12, Estilos_UI.TINTA_FANTASMA)
-	vbox.add_child(nota)
 
 func _on_perfil_tab_despensa_pressed():
 	_Marcar_Tab_Perfil("Tab_Despensa")
@@ -1525,7 +1587,8 @@ func _Renderizar_Info():
 	var hrow := HBoxContainer.new()
 	hrow.add_theme_constant_override("separation", 14)
 	hm.add_child(hrow)
-	hrow.add_child(Estilos_UI.avatar_personaje(68, Estilos_UI.ROJO_BIT, 3, ap, true))
+	hrow.add_child(Estilos_UI.avatar_personaje(68, Estilos_UI.ROJO_BIT, 3,
+		Sistema_Cocina.Obtener_Apariencia_Con_Ropa_Equipada(ap), true))
 	var hcol := VBoxContainer.new()
 	hcol.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	hcol.alignment = BoxContainer.ALIGNMENT_CENTER
@@ -1534,12 +1597,18 @@ func _Renderizar_Info():
 	hcol.add_child(Estilos_UI.titulo(nombre_prota if nombre_prota != "" else "Tu personaje", 20, Estilos_UI.TINTA))
 	hcol.add_child(Estilos_UI.texto("%s · %d años · %s" % [genero_txt, edad, personalidad], 13, Estilos_UI.TINTA_SUAVE, 600))
 
+	var btn_vestuario := Estilos_UI.boton("Cambiar de atuendo", "suave", "shirt", Estilos_UI.AZUL, 44)
+	btn_vestuario.name = "Boton_Vestuario_Perfil"
+	btn_vestuario.pressed.connect(_on_vestuario_button_pressed)
+	vbox.add_child(btn_vestuario)
+
 	_Info_Seccion(vbox, "Personaje")
 	var grupo_p := _Crear_Grupo_Info(vbox)
 	if nombre_prota != "":
 		_Info_Fila(grupo_p, "Nombre", nombre_prota)
 	_Info_Fila(grupo_p, "Género", genero_txt)
 	_Info_Fila(grupo_p, "Edad", str(edad) + " años")
+	_Info_Fila(grupo_p, "Etapa de vida", Envejecimiento_Personaje.etapa(edad))
 	_Info_Fila(grupo_p, "Personalidad", personalidad)
 	_Info_Fila(grupo_p, "Dinero", str(int(Variables_Dinamicas.Dinero)) + " €")
 	_Info_Fila(grupo_p, "Vivienda", "En la calle" if Variables_Dinamicas.En_La_Calle else "Con alquiler")
@@ -1991,6 +2060,12 @@ func _on_tab_duchar_pressed():
 	Gestionar_Visibilidad.Mostrar_Categoria_Tienda(self, "Duchar")
 
 
+func _on_tab_ventajas_pressed():
+	_Marcar_Categoria_Tienda("Tab_Ventajas")
+	Gestionar_Visibilidad.Mostrar_Categoria_Tienda(self, "Ventajas")
+	_Actualizar_Tienda_UI()
+
+
 func _Tienda_Comprar(clave: String):
 	if Actividades.Comprar_Objeto(clave):
 		_Actualizar_Tienda_UI()
@@ -2350,6 +2425,8 @@ var _carrera_completadas_card: PanelContainer = null
 
 
 func _Crear_Pantalla_Carrera():
+	if _pantalla_carrera != null and is_instance_valid(_pantalla_carrera):
+		return
 	_pantalla_carrera = ColorRect.new()
 	_pantalla_carrera.name = "Pantalla_Carrera"
 	_pantalla_carrera.color = Estilos_UI.FONDO
@@ -2445,6 +2522,8 @@ func _Crear_Pantalla_Carrera():
 
 
 func _on_carrera_tab_pressed():
+	if _pantalla_carrera == null or not is_instance_valid(_pantalla_carrera):
+		_Crear_Pantalla_Carrera()
 	Gestionar_Visibilidad.Quitar_Todo(self)
 	_Ocultar_Home()
 	Gestionar_Visibilidad.Recursivo_Visibilizar(_pantalla_carrera)
@@ -2631,6 +2710,8 @@ var _dialog_alquiler_info: AcceptDialog = null
 
 
 func _Crear_Pantalla_Economia():
+	if _pantalla_economia != null and is_instance_valid(_pantalla_economia):
+		return
 	_pantalla_economia = ColorRect.new()
 	_pantalla_economia.name = "Pantalla_Economia"
 	_pantalla_economia.color = Estilos_UI.FONDO
@@ -2755,6 +2836,8 @@ func _Crear_Card_Economia(parent: VBoxContainer, icono_n: String, titulo_t: Stri
 
 
 func _on_economia_button_pressed():
+	if _pantalla_economia == null or not is_instance_valid(_pantalla_economia):
+		_Crear_Pantalla_Economia()
 	_tienda_origen = "economia"
 	Gestionar_Visibilidad.Quitar_Todo(self)
 	_Ocultar_Home()
@@ -2905,6 +2988,8 @@ func _Actualizar_Pantalla_Economia_Si_Visible():
 # ============================================================
 
 func _Crear_Pantalla_Minijuegos() -> void:
+	if _pantalla_minijuegos != null and is_instance_valid(_pantalla_minijuegos):
+		return
 	_pantalla_minijuegos = ColorRect.new()
 	_pantalla_minijuegos.name = "Pantalla_Minijuegos"
 	_pantalla_minijuegos.color = Estilos_UI.FONDO
@@ -2934,7 +3019,70 @@ func _Crear_Pantalla_Minijuegos() -> void:
 	_Actualizar_Pantalla_Minijuegos()
 
 
+func _Crear_Pantalla_Vestuario() -> void:
+	if _pantalla_vestuario != null and is_instance_valid(_pantalla_vestuario):
+		return
+	_pantalla_vestuario = Pantalla_Vestuario.new()
+	_pantalla_vestuario.name = "Pantalla_Vestuario"
+	_pantalla_vestuario.visible = false
+	_pantalla_vestuario.z_index = 5
+	_pantalla_vestuario.cerrado.connect(_on_vestuario_cerrado)
+	_pantalla_vestuario.atuendo_equipado.connect(_on_atuendo_equipado)
+	_pantalla_vestuario.atuendo_comprado.connect(_on_atuendo_comprado)
+	add_child(_pantalla_vestuario)
+
+
+func _on_vestuario_button_pressed() -> void:
+	Detener_Blink()
+	Gestionar_Visibilidad.Quitar_Todo(self)
+	_Ocultar_Home()
+	if _pantalla_vestuario == null or not is_instance_valid(_pantalla_vestuario):
+		_Crear_Pantalla_Vestuario()
+	Gestionar_Visibilidad.Recursivo_Visibilizar(_pantalla_vestuario)
+	_pantalla_vestuario.abrir()
+	Estilos_UI.animar_entrada(_pantalla_vestuario)
+	_Actualizar_Nav_Activa()
+
+
+func _on_vestuario_cerrado() -> void:
+	Quitar_Todo()
+
+
+func _on_atuendo_equipado(_clave: String) -> void:
+	_Actualizar_Apariencia_Vestuario()
+	_Actualizar_Home()
+	if has_node("Pantalla_Mensajes") and $Pantalla_Mensajes.visible \
+			and $Pantalla_Mensajes/Panel_Info.visible:
+		_Renderizar_Info()
+
+
+func _on_atuendo_comprado(_clave: String) -> void:
+	# La compra se paga desde el Vestuario; refresca el saldo de la cabecera.
+	Actualizar_Dinero()
+
+
+## Refresca los avatares y retratos que muestran al personaje con la ropa puesta.
+func _Actualizar_Apariencia_Vestuario() -> void:
+	var avatar_btn := get_node_or_null("Avatar_Header_Btn") as Button
+	if avatar_btn != null:
+		var retrato := avatar_btn.find_child("Retrato", true, false)
+		if retrato is Personaje_Visual:
+			retrato.apariencia = Sistema_Cocina.Obtener_Apariencia_Con_Ropa_Equipada(
+				Variables_Estaticas.Apariencia)
+	if _home_escenario != null and is_instance_valid(_home_escenario):
+		_home_escenario.actualizar_estado(
+			_Obtener_Nombre_Actividad_Actual(),
+			Variables_Dinamicas.En_La_Calle,
+			Sistema_Cocina.Obtener_Apariencia_Con_Ropa_Equipada(Variables_Estaticas.Apariencia),
+			int(Variables_Dinamicas.Minute_Minute),
+			str(Variables_Dinamicas.Objeto_Seleccionado.get("Comer", "Mesa_Basica")),
+			str(Variables_Estaticas.Personalidad)
+		)
+
+
 func _on_minijuegos_button_pressed() -> void:
+	if _pantalla_minijuegos == null or not is_instance_valid(_pantalla_minijuegos):
+		_Crear_Pantalla_Minijuegos()
 	Detener_Blink()
 	_minijuegos_novedad_pendiente = false
 	Gestionar_Visibilidad.Quitar_Todo(self)
@@ -2952,13 +3100,13 @@ func _Actualizar_Pantalla_Minijuegos() -> void:
 	for hijo in _minijuegos_vbox.get_children():
 		hijo.queue_free()
 
-	# Tarjeta 1: Cocina (Cooking Fever)
+	# Tarjeta 1: Cocina
 	var desbloqueado: bool = Sistema_Cocina.Esta_Desbloqueado_Minijuego()
 	var en_turno: bool = Sistema_Cocina.Esta_En_Turno_Activo("")
 	var rango: int = Sistema_Cocina.Obtener_Rango_Logro()
 	var info_rango: Dictionary = Sistema_Cocina.Obtener_Info_Rango(rango)
 	var niveles_sup: int = Sistema_Cocina.Contar_Niveles_Superados()
-	var fondos: int = Sistema_Cocina.Obtener_Fondos_Cocina()
+	var fondos: int = Sistema_Cocina.Obtener_Caja_Restaurante()
 
 	var card := PanelContainer.new()
 	card.name = "Card_Minijuego_Cocina"
@@ -2979,6 +3127,41 @@ func _Actualizar_Pantalla_Minijuegos() -> void:
 	v.add_theme_constant_override("separation", 10)
 	m.add_child(v)
 
+	# Banner visual con el arte del minijuego: fondo propio de mostrador (damero
+	# poco contrastado + comedor desenfocado) y composición 3/4 con sombras de
+	# contacto. El plato se usa en perspectiva para que no parezca un círculo.
+	var banner := Control.new()
+	banner.name = "Banner_Cocina"
+	banner.custom_minimum_size = Vector2(0.0, 142.0)
+	banner.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	banner.clip_contents = true
+	banner.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	v.add_child(banner)
+
+	var bg_banner := TextureRect.new()
+	bg_banner.name = "Fondo_Banner"
+	bg_banner.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	bg_banner.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	bg_banner.texture = Arte_Cocina.TEX_BANNER
+	bg_banner.set_anchors_preset(Control.PRESET_FULL_RECT)
+	bg_banner.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	banner.add_child(bg_banner)
+
+	# Sombras primero (de atrás a delante) y después los sprites.
+	_Anadir_Sombra_Banner(banner, Vector2(158.0, 116.0), Vector2(118.0, 18.0))
+	_Anadir_Sombra_Banner(banner, Vector2(274.0, 122.0), Vector2(132.0, 14.0))
+	_Anadir_Sombra_Banner(banner, Vector2(375.0, 124.0), Vector2(96.0, 14.0))
+	_Anadir_Sombra_Banner(banner, Vector2(445.0, 120.0), Vector2(64.0, 12.0))
+	_Anadir_Sombra_Banner(banner, Vector2(549.0, 124.0), Vector2(152.0, 16.0))
+
+	_Anadir_Item_Banner(banner, Arte_Cocina.textura_chef("pulgar"), Vector2(0.0, 0.0), Vector2(104.0, 142.0))
+	_Anadir_Item_Banner(banner, Arte_Cocina.TEX_HAMBURGUESA, Vector2(106.0, 22.0), Vector2(104.0, 104.0))
+	_Anadir_Item_Banner(banner, Arte_Cocina.TEX_PATATAS, Vector2(330.0, 32.0), Vector2(90.0, 96.0))
+	_Anadir_Item_Banner(banner, Arte_Cocina.TEX_REFRESCO, Vector2(414.0, 16.0), Vector2(62.0, 112.0))
+	_Anadir_Item_Banner(banner, Arte_Cocina.TEX_PLANCHA, Vector2(476.0, 24.0), Vector2(146.0, 100.0))
+	# El plato va delante de las patatas: es el objeto más cercano de ese grupo.
+	_Anadir_Item_Banner(banner, Arte_Cocina.TEX_PLATO_PERSPECTIVA, Vector2(212.0, 64.0), Vector2(124.0, 58.0))
+
 	var cab := HBoxContainer.new()
 	cab.add_theme_constant_override("separation", 12)
 	v.add_child(cab)
@@ -2990,13 +3173,13 @@ func _Actualizar_Pantalla_Minijuegos() -> void:
 	tit_col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	tit_col.add_theme_constant_override("separation", 2)
 	cab.add_child(tit_col)
-	tit_col.add_child(Estilos_UI.titulo("Cocina (Cooking Fever)", 19, Estilos_UI.TINTA))
+	tit_col.add_child(Estilos_UI.titulo("Cocina", 19, Estilos_UI.TINTA))
 	tit_col.add_child(Estilos_UI.texto("Gestión de pedidos en tiempo real · 1280×720 Horizontal", 12, Estilos_UI.TINTA_SUAVE, 500))
 
 	if not desbloqueado:
 		cab.add_child(Estilos_UI.pill_estado("Bloqueado", Estilos_UI.SUPERFICIE_2, Estilos_UI.TINTA_SUAVE))
 	elif en_turno:
-		cab.add_child(Estilos_UI.pill_estado("En Turno (+50%)", Estilos_UI.EXITO_SUAVE, Estilos_UI.EXITO_OSCURO))
+		cab.add_child(Estilos_UI.pill_estado("En Turno · Propinas x1.5", Estilos_UI.EXITO_SUAVE, Estilos_UI.EXITO_OSCURO))
 	else:
 		cab.add_child(Estilos_UI.pill_estado("Disponible", Estilos_UI.ORO_SUAVE, Estilos_UI.ORO))
 
@@ -3019,16 +3202,16 @@ func _Actualizar_Pantalla_Minijuegos() -> void:
 		chips.add_theme_constant_override("separation", 8)
 		chips.add_child(Estilos_UI.pill_estado("Maestría: Rango %d/9" % rango, Estilos_UI.ORO_SUAVE, Estilos_UI.ORO))
 		chips.add_child(Estilos_UI.pill_estado("%d / 45 niveles" % niveles_sup, Estilos_UI.AZUL_SUAVE, Estilos_UI.AZUL))
-		chips.add_child(Estilos_UI.pill_estado("%d Fondos" % fondos, Estilos_UI.SUPERFICIE_2, Estilos_UI.TINTA))
+		chips.add_child(Estilos_UI.pill_estado("Caja %d €" % fondos, Estilos_UI.SUPERFICIE_2, Estilos_UI.TINTA))
 		v.add_child(chips)
 
 		var desc_txt: String = "Rango actual: %s. " % str(info_rango.get("nombre", ""))
 		if en_turno:
-			desc_txt += "Estás en turno activo: propinas ilimitadas, Fondos ×1.5, Progreso ×2.0 y +10% extra en tu nómina."
+			desc_txt += "Estás en turno activo: propinas ×1.5, paga completa ilimitada, Progreso ×2.0 y +10% extra en tu nómina."
 		else:
-			desc_txt += "Modo libre: %d/%d servicios remunerados disponibles hoy." % [
-				Sistema_Cocina.Obtener_Servicios_Remunerados_Restantes_Hoy(),
-				Sistema_Cocina.LIMITE_SERVICIOS_LIBRES_DIA
+			desc_txt += "Modo libre: %d/%d servicios con paga completa hoy. Después, modo práctica (25%% para ti; la Caja sigue al 100%%)." % [
+				Sistema_Cocina.Obtener_Servicios_Completos_Restantes_Hoy(),
+				Sistema_Cocina.LIMITE_SERVICIOS_COMPLETOS_DIA
 			]
 		v.add_child(Estilos_UI.parrafo(desc_txt, 13, Estilos_UI.TINTA_SUAVE))
 
@@ -3067,6 +3250,33 @@ func _Actualizar_Pantalla_Minijuegos() -> void:
 		_minijuegos_vbox.add_child(fcard)
 
 
+# Añade un sprite al banner respetando su relación de aspecto dentro de la caja.
+func _Anadir_Item_Banner(banner: Control, tex: Texture2D, pos: Vector2, tam: Vector2) -> void:
+	if tex == null:
+		return
+	var nodo := TextureRect.new()
+	nodo.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	nodo.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	nodo.texture = tex
+	nodo.position = pos
+	nodo.size = tam
+	nodo.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	banner.add_child(nodo)
+
+
+# Sombra elíptica de contacto: un degradado radial estirado bajo el sprite.
+func _Anadir_Sombra_Banner(banner: Control, centro: Vector2, tam: Vector2) -> void:
+	var nodo := TextureRect.new()
+	nodo.name = "Sombra_Banner"
+	nodo.texture = Arte_Cocina.textura_sombra_contacto()
+	nodo.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	nodo.stretch_mode = TextureRect.STRETCH_SCALE
+	nodo.position = centro - tam * 0.5
+	nodo.size = tam
+	nodo.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	banner.add_child(nodo)
+
+
 func _Actualizar_Pantalla_Minijuegos_Si_Visible() -> void:
 	if _pantalla_minijuegos != null and is_instance_valid(_pantalla_minijuegos) and _pantalla_minijuegos.is_visible_in_tree():
 		_Actualizar_Pantalla_Minijuegos()
@@ -3085,24 +3295,90 @@ func _Abrir_Minijuego_Cocina() -> void:
 
 	if _capa_minijuego_cocina != null and is_instance_valid(_capa_minijuego_cocina):
 		return
+	if _transicion_minijuego_activa:
+		return
 
+	# Transición de entrada: el telón de cocina cubre la pantalla, se prepara
+	# el minijuego debajo y después el telón sigue subiendo para descubrirlo.
+	_transicion_minijuego_activa = true
+	var transicion = _Obtener_Transicion_Minijuego().new()
+	transicion.name = "Transicion_Minijuego"
+	add_child(transicion)
+	await transicion.Cubrir("Cocina", "Preparando los fogones…")
+
+	if not is_inside_tree() or not is_instance_valid(transicion):
+		_transicion_minijuego_activa = false
+		return
+
+	_Instanciar_Minijuego_Cocina()
+	await get_tree().create_timer(0.12).timeout
+
+	if not is_inside_tree() or not is_instance_valid(transicion):
+		_transicion_minijuego_activa = false
+		return
+
+	await transicion.Descubrir("¡A cocinar!")
+	_transicion_minijuego_activa = false
+
+
+## Carga la escena del minijuego solo la primera vez que se entra. Antes estaba
+## en un preload del script principal, lo que obligaba a decodificar las ~150
+## texturas de la cocina al arrancar el juego (coste alto en móviles modestos).
+func _Obtener_Escena_Minijuego_Cocina() -> PackedScene:
+	if _minijuego_cocina_packed == null:
+		_minijuego_cocina_packed = load("res://Escenas/Minijuego_Cocina/Minijuego_Cocina.tscn") as PackedScene
+	return _minijuego_cocina_packed
+
+
+func _Obtener_Transicion_Minijuego() -> Script:
+	if _script_transicion_minijuego == null:
+		_script_transicion_minijuego = load("res://Scripts/GUI/Transiciones/Transicion_Minijuego.gd") as Script
+	return _script_transicion_minijuego
+
+
+func _Instanciar_Minijuego_Cocina() -> void:
+	if _capa_minijuego_cocina != null and is_instance_valid(_capa_minijuego_cocina):
+		return
 	_minijuego_cocina_activo = true
 	_capa_minijuego_cocina = CanvasLayer.new()
 	_capa_minijuego_cocina.name = "Capa_Minijuego_Cocina"
 	_capa_minijuego_cocina.layer = 60
 	add_child(_capa_minijuego_cocina)
 
-	var instancia := _MINIJUEGO_COCINA_ESCENA.instantiate()
+	var instancia := _Obtener_Escena_Minijuego_Cocina().instantiate()
 	instancia.cerrado.connect(_on_minijuego_cocina_cerrado)
 	_capa_minijuego_cocina.add_child(instancia)
 
 
 func _on_minijuego_cocina_cerrado() -> void:
+	if _transicion_minijuego_activa:
+		return
+	# Transición de salida: el telón sube sobre la cocina, se retira el
+	# minijuego y se refresca la escena principal antes de descubrirla.
+	_transicion_minijuego_activa = true
+	var transicion = _Obtener_Transicion_Minijuego().new()
+	transicion.name = "Transicion_Minijuego"
+	add_child(transicion)
+	await transicion.Cubrir("Volviendo al Sim", "Recogiendo la cocina…")
+
+	if not is_inside_tree():
+		_transicion_minijuego_activa = false
+		return
+
 	if _capa_minijuego_cocina != null and is_instance_valid(_capa_minijuego_cocina):
 		_capa_minijuego_cocina.queue_free()
 		_capa_minijuego_cocina = null
 	_minijuego_cocina_activo = false
-	call_deferred("_Refrescar_Tras_Minijuego_Cocina")
+	_Refrescar_Tras_Minijuego_Cocina()
+	await get_tree().process_frame
+	await get_tree().process_frame
+
+	if not is_inside_tree() or not is_instance_valid(transicion):
+		_transicion_minijuego_activa = false
+		return
+
+	await transicion.Descubrir("¡De vuelta a casa!")
+	_transicion_minijuego_activa = false
 
 
 func _Refrescar_Tras_Minijuego_Cocina() -> void:
@@ -3118,13 +3394,19 @@ func _Refrescar_Tras_Minijuego_Cocina() -> void:
 	_Actualizar_Nav_Activa()
 
 
-func _on_restaurante_cocina_desbloqueado(_restaurante_id: String, nombre_restaurante: String) -> void:
+func _on_restaurante_cocina_desbloqueado(restaurante_id: String, nombre_restaurante: String) -> void:
 	_minijuegos_novedad_pendiente = true
 	_Actualizar_Badges()
 	_Actualizar_Pantalla_Minijuegos_Si_Visible()
-	_Mostrar_Toast_Desbloqueo(
-		"¡Nuevo minijuego desbloqueado: Cocina!",
-		"Ya puedes jugar en %s desde el apartado Minijuegos." % nombre_restaurante)
+	var rest_cfg: Dictionary = Sistema_Cocina.Obtener_Restaurante(restaurante_id)
+	if bool(rest_cfg.get("implementado", false)):
+		_Mostrar_Toast_Desbloqueo(
+			"¡Nuevo minijuego desbloqueado: Cocina!",
+			"Ya puedes jugar en %s desde el apartado Minijuegos." % nombre_restaurante)
+	else:
+		_Mostrar_Toast_Desbloqueo(
+			"Restaurante desbloqueado: %s" % nombre_restaurante,
+			"Su mundo de cocina llegará al apartado Minijuegos en la Fase 2.")
 
 
 func _Mostrar_Toast_Desbloqueo(titulo_toast: String, subtitulo_toast: String) -> void:
@@ -3256,6 +3538,7 @@ func _Aplicar_Rediseno() -> void:
 		"Actividades/Seleccionar_Horario", "Pantalla_Mensajes",
 		"Pantalla_Mensajes/Fondo_Mensajes", "Pantalla_Mensajes/Contenido_Mensaje", "Tienda",
 		"Tienda/Categorias", "Tienda/Objetos_Dormir", "Tienda/Objetos_Comer", "Tienda/Objetos_Duchar",
+		"Tienda/Objetos_Ventajas",
 	]:
 		var n := get_node_or_null(ruta) as Control
 		if n != null:
@@ -3265,6 +3548,14 @@ func _Aplicar_Rediseno() -> void:
 func _on_boton_musica_pressed() -> void:
 	Musica.Alternar_Silencio()
 	_Actualizar_Boton_Musica()
+
+
+func _on_boton_ajustes_pressed() -> void:
+	if _panel_ajustes != null and is_instance_valid(_panel_ajustes):
+		return
+	_panel_ajustes = Panel_Ajustes.new()
+	_panel_ajustes.cerrado.connect(func(): _panel_ajustes = null)
+	add_child(_panel_ajustes)
 
 
 func _on_musica_silencio_cambiado(_silenciado: bool) -> void:
@@ -3319,13 +3610,15 @@ func _Redisenar_Superior() -> void:
 		avatar_btn.pressed.connect(_on_perfil_button_pressed)
 		Estilos_UI.animar_presion(avatar_btn)
 		add_child(avatar_btn)
-		var av := Estilos_UI.avatar_personaje(44, Color.WHITE, 2, Variables_Estaticas.Apariencia, false)
+		var av := Estilos_UI.avatar_personaje(44, Color.WHITE, 2,
+			Sistema_Cocina.Obtener_Apariencia_Con_Ropa_Equipada(Variables_Estaticas.Apariencia), false)
 		av.set_anchors_preset(Control.PRESET_FULL_RECT)
 		avatar_btn.add_child(av)
 	else:
 		var retrato := avatar_btn.find_child("Retrato", true, false)
 		if retrato is Personaje_Visual:
-			retrato.apariencia = Variables_Estaticas.Apariencia
+			retrato.apariencia = Sistema_Cocina.Obtener_Apariencia_Con_Ropa_Equipada(
+				Variables_Estaticas.Apariencia)
 	avatar_btn.position = Vector2(16, 11)
 	avatar_btn.size = Vector2(44, 44)
 	avatar_btn.z_index = 30
@@ -3374,6 +3667,18 @@ func _Redisenar_Superior() -> void:
 	btn_musica.z_index = 30
 	_Actualizar_Boton_Musica()
 
+	var btn_ajustes := get_node_or_null("Boton_Ajustes_Header") as Button
+	if btn_ajustes == null:
+		btn_ajustes = Estilos_UI.boton_icono("settings-2", Estilos_UI.ROJO_BIT, 38)
+		btn_ajustes.name = "Boton_Ajustes_Header"
+		btn_ajustes.tooltip_text = "Ajustes"
+		btn_ajustes.pressed.connect(_on_boton_ajustes_pressed)
+		add_child(btn_ajustes)
+	_boton_ajustes_header = btn_ajustes
+	btn_ajustes.position = Vector2(414, 15)
+	btn_ajustes.size = Vector2(38, 38)
+	btn_ajustes.z_index = 30
+
 	var nav := get_node_or_null("Nav_Superior") as Panel
 	if nav == null:
 		nav = Panel.new()
@@ -3389,22 +3694,27 @@ func _Redisenar_Superior() -> void:
 	nav.add_theme_stylebox_override("panel", ns)
 
 	var tabs := [
-		["Boton_Perfil", 12, 136, "Perfil", "user-round"],
-		["Economia_Button", 152, 136, "Economía", "wallet"],
-		["Calendario_Button", 292, 136, "Horario", "calendar-days"],
-		["Carrera_Button", 432, 136, "Carrera", "graduation-cap"],
-		["Minijuegos_Button", 572, 136, "Minijuegos", "puzzle"],
+		["Boton_Perfil", "Perfil", "user-round"],
+		["Economia_Button", "Economía", "wallet"],
+		["Calendario_Button", "Horario", "calendar-days"],
+		["Carrera_Button", "Carrera", "graduation-cap"],
+		["Minijuegos_Button", "Minijuegos", "puzzle"],
+		["Vestuario_Button", "Vestuario", "shirt"],
 	]
-	for datos in tabs:
+	var ancho_tab := 112.0
+	var hueco_tab := 4.0
+	var x_inicial := 12.0
+	for i in range(tabs.size()):
+		var datos: Array = tabs[i]
 		var b := get_node_or_null(datos[0]) as Button
 		if b == null:
 			continue
-		b.position = Vector2(datos[1], 73)
-		b.size = Vector2(datos[2], 38)
-		b.custom_minimum_size = Vector2(datos[2], 38)
+		b.position = Vector2(x_inicial + float(i) * (ancho_tab + hueco_tab), 73)
+		b.size = Vector2(ancho_tab, 38)
+		b.custom_minimum_size = Vector2(ancho_tab, 38)
 		b.z_index = 30
-		b.text = datos[3]
-		b.icon = Estilos_UI.icono(datos[4])
+		b.text = datos[1]
+		b.icon = Estilos_UI.icono(datos[2])
 		b.expand_icon = false
 		b.add_theme_font_override("font", Estilos_UI.fuente_ui(600))
 		b.add_theme_font_size_override("font_size", 12)
@@ -3465,6 +3775,8 @@ func _Actualizar_Nav_Activa() -> void:
 		top_activo = "Carrera_Button"
 	elif _pantalla_minijuegos != null and is_instance_valid(_pantalla_minijuegos) and _pantalla_minijuegos.visible:
 		top_activo = "Minijuegos_Button"
+	elif _pantalla_vestuario != null and is_instance_valid(_pantalla_vestuario) and _pantalla_vestuario.visible:
+		top_activo = "Vestuario_Button"
 	elif $Actividades.visible and calendario_solo_lectura:
 		top_activo = "Calendario_Button"
 	elif $Habilidades.visible:
@@ -3481,7 +3793,7 @@ func _Actualizar_Nav_Activa() -> void:
 	if barra_nav != null:
 		Estilos_UI.marcar_nav_activo(barra_nav, bottom_activo)
 
-	for nombre_top in ["Boton_Perfil", "Economia_Button", "Calendario_Button", "Carrera_Button", "Minijuegos_Button"]:
+	for nombre_top in ["Boton_Perfil", "Economia_Button", "Calendario_Button", "Carrera_Button", "Minijuegos_Button", "Vestuario_Button"]:
 		var b := get_node_or_null(nombre_top) as Button
 		if b == null:
 			continue
@@ -3593,11 +3905,10 @@ func _Ajustar_Disposicion_Vertical() -> void:
 
 	for ruta_sub in [
 		"Pantalla_Mensajes/Panel_Apuntes/Scroll_Inventario",
-		"Pantalla_Mensajes/Panel_Apuntes/Scroll_Ropa",
 	]:
 		var sub_cont := get_node_or_null(ruta_sub) as Control
 		if sub_cont != null:
-			sub_cont.size.y = maxf(120.0, alto_contenido - 50.0)
+			sub_cont.size.y = maxf(120.0, alto_contenido)
 
 	if _minijuegos_scroll != null and is_instance_valid(_minijuegos_scroll):
 		_minijuegos_scroll.size.y = alto - 304.0
@@ -3613,6 +3924,12 @@ func _Ajustar_Disposicion_Vertical() -> void:
 		var contenedor := get_node_or_null(ruta) as Control
 		if contenedor != null:
 			contenedor.size.y = alto
+
+	# La pestaña de ventajas es un scroll: su alto termina justo encima del dock.
+	var ventajas := get_node_or_null("Tienda/Objetos_Ventajas") as Control
+	if ventajas != null:
+		ventajas.position = Vector2(0, 248)
+		ventajas.size = Vector2(720, alto - 248 - 92)
 
 	var vbox_carrera := get_node_or_null("Pantalla_Carrera/VBoxContainer") as Control
 	if vbox_carrera == null:
@@ -4057,6 +4374,7 @@ const _SUBTITULOS_ACTIVIDADES := {
 	"Estudiar": ["book-open", "+4 Académico · Avanza carrera", Color("#1d7afc")],
 	"Manualidades": ["palette", "+4 Manualidades", Color("#ea580c")],
 	"Trabajo": ["briefcase-business", "Elige un empleo fijo semanal", Color("#1ea34a")],
+	"Cocinero": ["chef-hat", "Comida rápida, ayudante, partida y chef ejecutivo", Color("#ea580c")],
 	"Comida_Rapida": ["utensils-crossed", "10 €/h · L–V 08:00–16:00 · Sin requisitos", Color("#f59e0b")],
 	"Carpintero": ["hammer", "18 €/h · L–V 07:00–15:00 · Req: Manualidades 30", Color("#ea580c")],
 	"Cientifico": ["flask-conical", "28 €/h · L–V 09:00–17:00 · Ing. Informática", Color("#1d7afc")],
@@ -4163,11 +4481,11 @@ func _Actualizar_Trabajos_UI() -> void:
 	var activo_nombre := ""
 	if Variables_Dinamicas.Trabajo_Actual != null:
 		activo_nombre = _TRABAJO_A_BOTON.get(Variables_Dinamicas.Trabajo_Actual.nombre, "")
-	for b in cont.get_children():
-		if b is Button:
-			var pill := b.get_node_or_null("Card_Contenido/Pill_Actual") as PanelContainer
-			if pill != null:
-				pill.visible = (b.name == activo_nombre)
+	# Recorre también los submenús anidados (Trabajo → Cocinero).
+	for b in cont.find_children("*", "Button", true, false):
+		var pill := b.get_node_or_null("Card_Contenido/Pill_Actual") as PanelContainer
+		if pill != null:
+			pill.visible = (b.name == activo_nombre)
 
 
 func _Redisenar_Actividades() -> void:
@@ -4659,8 +4977,8 @@ func _Redisenar_Horario() -> void:
 		if btn_ocupar != null:
 			btn_ocupar.position = Vector2(34, 998)
 			btn_ocupar.size = Vector2(652, 52)
-			btn_ocupar.text = "Elegir hora en este bloque"
-			Estilos_UI.aplicar_estilo_boton(btn_ocupar, "exito", Estilos_UI.EXITO, "clock")
+			btn_ocupar.text = "Elegir actividad"
+			Estilos_UI.aplicar_estilo_boton(btn_ocupar, "exito", Estilos_UI.EXITO, "clipboard-list")
 		var btn_elim := opciones.get_node_or_null("ELIMINAR_ACTIVIDAD") as Button
 		if btn_elim != null:
 			btn_elim.position = Vector2(34, 998)
@@ -4757,7 +5075,7 @@ func _Actualizar_Panel_Seleccion_Horario(estado: String, _texto_sel: String) -> 
 		txt_pill = "FRANJA DISPONIBLE"
 		bg_pill = Estilos_UI.EXITO_SUAVE
 		fg_pill = Estilos_UI.EXITO_OSCURO
-		txt_hint = "Modo consulta: entra desde Actividades → Temporales para programar aquí." if calendario_solo_lectura else ""
+		txt_hint = "Modo consulta: programa desde Actividades o desde Inicio → Horario." if calendario_solo_lectura else "Pulsa «Elegir actividad» y después ajusta el horario."
 	elif estado == "ocupado":
 		col_borde = Estilos_UI.AZUL
 		ancho_izq = 4
@@ -5062,35 +5380,16 @@ func _Redisenar_Perfil() -> void:
 	if vbox_info != null:
 		vbox_info.add_theme_constant_override("separation", 8)
 
-	var subtab_bar := p.get_node_or_null("Panel_Apuntes/SubTab_Bar") as HBoxContainer
-	if subtab_bar != null:
-		subtab_bar.position = Vector2.ZERO
-		subtab_bar.size = Vector2(680, 40)
-		subtab_bar.add_theme_constant_override("separation", 8)
-		for sb in subtab_bar.get_children():
-			if sb is Button:
-				sb.custom_minimum_size = Vector2(0, 40)
-				sb.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-
 	var scroll_inv := p.get_node_or_null("Panel_Apuntes/Scroll_Inventario") as ScrollContainer
 	if scroll_inv != null:
-		scroll_inv.position = Vector2(0, 50)
-		scroll_inv.size = Vector2(680, maxf(120.0, alto_contenido - 50.0))
+		scroll_inv.position = Vector2.ZERO
+		scroll_inv.size = Vector2(680, maxf(120.0, alto_contenido))
 		scroll_inv.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	var grid := p.get_node_or_null("Panel_Apuntes/Scroll_Inventario/Grid_Libros") as GridContainer
 	if grid != null:
 		grid.columns = 2
 		grid.add_theme_constant_override("h_separation", 14)
 		grid.add_theme_constant_override("v_separation", 16)
-
-	var scroll_ropa := p.get_node_or_null("Panel_Apuntes/Scroll_Ropa") as ScrollContainer
-	if scroll_ropa != null:
-		scroll_ropa.position = Vector2(0, 50)
-		scroll_ropa.size = Vector2(680, maxf(120.0, alto_contenido - 50.0))
-		scroll_ropa.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	var vbox_ropa := p.get_node_or_null("Panel_Apuntes/Scroll_Ropa/VBox_Ropa") as VBoxContainer
-	if vbox_ropa != null:
-		vbox_ropa.add_theme_constant_override("separation", 10)
 
 	var sin_libros := p.get_node_or_null("Panel_Apuntes/Sin_Apuntes_Label") as Label
 	if sin_libros != null:
@@ -5180,6 +5479,21 @@ func _Marcar_Tab_Perfil(activo: String) -> void:
 				tab.add_theme_color_override(k, col)
 
 
+func _Conectar_Recompensas() -> void:
+	if not Recompensas.recompensa_aplicada.is_connected(_On_Recompensa_Bienestar):
+		Recompensas.recompensa_aplicada.connect(_On_Recompensa_Bienestar)
+
+
+func _On_Recompensa_Bienestar(_origen: String, _recompensas: Array) -> void:
+	# La recompensa ya está aplicada en Variables_Dinamicas; aquí solo se
+	# refresca lo que pinta la escena principal.
+	Actualizar_Dinero()
+	necesidades_basicas_gui.Actualizar_Necesidades_Basicas(self)
+	_Actualizar_Home()
+	_Actualizar_Tienda_UI()
+	_Actualizar_Badges()
+
+
 func _Conectar_Tienda() -> void:
 	var tienda := get_node_or_null("Tienda")
 	if tienda == null:
@@ -5187,7 +5501,7 @@ func _Conectar_Tienda() -> void:
 	var flecha := tienda.get_node_or_null("Flecha_Atras")
 	if flecha != null and not flecha.pressed.is_connected(_on_tienda_flecha_atras_pressed):
 		flecha.pressed.connect(_on_tienda_flecha_atras_pressed)
-	var tabs := {"Tab_Dormir": _on_tab_dormir_pressed, "Tab_Comer": _on_tab_comer_pressed, "Tab_Duchar": _on_tab_duchar_pressed}
+	var tabs := {"Tab_Dormir": _on_tab_dormir_pressed, "Tab_Comer": _on_tab_comer_pressed, "Tab_Duchar": _on_tab_duchar_pressed, "Tab_Ventajas": _on_tab_ventajas_pressed}
 	for n in tabs:
 		var b := tienda.get_node_or_null("Categorias/" + n)
 		if b != null and not b.pressed.is_connected(tabs[n]):
@@ -5265,12 +5579,12 @@ func _Redisenar_Tienda() -> void:
 	if categorias != null:
 		categorias.position = Vector2(24, 188)
 		categorias.size = Vector2(672, 38)
-	var tab_data := [["Tab_Dormir", 0, "Dormir", "bed-double"], ["Tab_Comer", 226, "Comer", "utensils"], ["Tab_Duchar", 452, "Duchar", "shower-head"]]
+	var tab_data := [["Tab_Dormir", 0, "Dormir", "bed-double"], ["Tab_Comer", 169, "Comer", "utensils"], ["Tab_Duchar", 338, "Duchar", "shower-head"], ["Tab_Ventajas", 507, "Bienestar", "sparkles"]]
 	for datos in tab_data:
 		var b := categorias.get_node_or_null(datos[0]) as Button
 		if b != null:
 			b.position = Vector2(datos[1], 0)
-			b.size = Vector2(220, 38)
+			b.size = Vector2(164, 38)
 			b.text = datos[2]
 			b.icon = Estilos_UI.icono(datos[3])
 			b.expand_icon = false
@@ -5279,43 +5593,59 @@ func _Redisenar_Tienda() -> void:
 			b.add_theme_constant_override("icon_max_width", 16)
 			b.add_theme_constant_override("h_separation", 6)
 
+	# Contenido de la pestaña Bienestar (anuncios y clínica).
+	var ventajas := tienda.get_node_or_null("Objetos_Ventajas") as Control
+	if ventajas != null:
+		ventajas.position = Vector2(0, 248)
+		ventajas.size = Vector2(720, alto - 248 - 92)
+		ventajas.visible = false
+		ventajas.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	# Ilustración propia de cada mueble + fondo de la vitrina (el tercer valor
+	# solo se usa como respaldo con el icono Lucide si falta el PNG).
 	var iconos := {
-		"Cama_Basica": ["bed-double", Estilos_UI.AZUL_SUAVE, Estilos_UI.AZUL],
-		"Cama_Premium": ["bed-double", Estilos_UI.AZUL, Color.WHITE],
-		"Cama_Lujo": ["sparkles", Estilos_UI.MORADO, Color.WHITE],
-		"Mesa_Basica": ["utensils", Estilos_UI.ORO_SUAVE, Estilos_UI.ORO],
-		"Ducha_Basica": ["shower-head", Estilos_UI.EXITO_SUAVE, Estilos_UI.EXITO],
-		"Ducha_Premium": ["bath", Estilos_UI.EXITO, Color.WHITE],
+		"Cama_Basica": ["bed-double", Color("#eef5fc"), Estilos_UI.AZUL],
+		"Cama_Premium": ["bed-double", Color("#e8f1fe"), Estilos_UI.AZUL],
+		"Cama_Lujo": ["sparkles", Color("#f2edff"), Estilos_UI.MORADO],
+		"Mesa_Basica": ["utensils", Color("#fdf7e8"), Estilos_UI.ORO],
+		"Ducha_Basica": ["shower-head", Color("#eaf8f2"), Estilos_UI.EXITO],
+		"Ducha_Premium": ["bath", Color("#e1f4ec"), Estilos_UI.EXITO],
 	}
 	for categoria in ["Dormir", "Comer", "Duchar"]:
 		var contenedor := tienda.get_node_or_null("Objetos_" + categoria) as Control
 		if contenedor != null:
 			contenedor.position = Vector2.ZERO
 			contenedor.size = Vector2(720, alto)
-		var claves := iconos.keys()
-		var idx := 0
-		for clave in claves:
-			if not str(clave).contains(categoria) and not (
-					(categoria == "Dormir" and str(clave).begins_with("Cama")) or
-					(categoria == "Comer" and str(clave).begins_with("Mesa")) or
-					(categoria == "Duchar" and str(clave).begins_with("Ducha"))):
-				continue
+		var claves: Array = []
+		for clave in iconos.keys():
+			if (categoria == "Dormir" and str(clave).begins_with("Cama")) or \
+					(categoria == "Comer" and str(clave).begins_with("Mesa")) or \
+					(categoria == "Duchar" and str(clave).begins_with("Ducha")):
+				claves.append(clave)
+		for idx in claves.size():
+			var clave: String = claves[idx]
 			var card := tienda.get_node_or_null("Objetos_" + categoria + "/" + clave) as Panel
 			if card == null:
 				continue
 			var col := idx % 2
 			var row := idx / 2
-			card.position = Vector2(20 if col == 0 else 368, 248 + row * 386)
-			card.size = Vector2(332, 370)
+			var x := 20 if col == 0 else 368
+			# Con una sola tarjeta, o con la tercera de Dormir, se centra la rejilla.
+			if claves.size() == 1 or (claves.size() == 3 and idx == 2):
+				x = 194
+			card.position = Vector2(x, 248 + row * 462)
+			card.size = Vector2(332, 442)
 			card.add_theme_stylebox_override("panel", Estilos_UI.caja_tarjeta(16, 3))
 
 			var img := card.get_node_or_null("Imagen_Placeholder") as Panel
 			if img != null:
 				img.position = Vector2(14, 14)
-				img.size = Vector2(304, 112)
-				var st_img := Estilos_UI.caja(iconos[clave][1], 12, Color(0, 0, 0, 0), 0, 0)
+				img.size = Vector2(304, 200)
+				img.mouse_filter = Control.MOUSE_FILTER_IGNORE
+				var fondo_img: Color = iconos[clave][1]
+				var st_img := Estilos_UI.caja(fondo_img, 12, Color(0, 0, 0, 0), 0, 0)
 				st_img.border_width_bottom = 2
-				st_img.border_color = iconos[clave][1].darkened(0.14)
+				st_img.border_color = fondo_img.darkened(0.14)
 				img.add_theme_stylebox_override("panel", st_img)
 				var emoji := img.get_node_or_null("Imagen_Emoji")
 				if emoji != null:
@@ -5331,23 +5661,32 @@ func _Redisenar_Tienda() -> void:
 				var tier_pill := Estilos_UI.pill_estado(tier_txt, tier_bg, tier_fg)
 				tier_pill.name = "Tier_Pill"
 				tier_pill.position = Vector2(10, 10)
+				tier_pill.z_index = 2
 				img.add_child(tier_pill)
 				var icono_item := img.get_node_or_null("Icono_Item") as TextureRect
 				if icono_item == null:
 					icono_item = TextureRect.new()
 					icono_item.name = "Icono_Item"
-					icono_item.mouse_filter = Control.MOUSE_FILTER_IGNORE
 					img.add_child(icono_item)
-				icono_item.texture = Estilos_UI.icono(iconos[clave][0])
-				icono_item.self_modulate = iconos[clave][2]
-				icono_item.position = Vector2(128, 32)
-				icono_item.size = Vector2(48, 48)
+				icono_item.mouse_filter = Control.MOUSE_FILTER_IGNORE
+				icono_item.position = Vector2.ZERO
+				icono_item.size = Vector2(304, 200)
 				icono_item.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 				icono_item.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+				var ilustracion := Estilos_UI.icono_tienda(clave)
+				if ilustracion != null:
+					icono_item.texture = ilustracion
+					icono_item.self_modulate = Color.WHITE
+				else:
+					# Respaldo si el PNG procesado no está disponible.
+					icono_item.texture = Estilos_UI.icono(iconos[clave][0])
+					icono_item.self_modulate = iconos[clave][2]
+					icono_item.position = Vector2(128, 76)
+					icono_item.size = Vector2(48, 48)
 
 			var nombre := card.get_node_or_null("Nombre") as Label
 			if nombre != null:
-				nombre.position = Vector2(16, 136)
+				nombre.position = Vector2(16, 224)
 				nombre.size = Vector2(300, 28)
 				nombre.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 				nombre.add_theme_font_override("font", Estilos_UI.fuente_ui(700))
@@ -5356,7 +5695,7 @@ func _Redisenar_Tienda() -> void:
 
 			var precio := card.get_node_or_null("Precio") as Label
 			if precio != null:
-				precio.position = Vector2(16, 166)
+				precio.position = Vector2(16, 254)
 				precio.size = Vector2(300, 24)
 				precio.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 				var obj_catalogo = Variables_Estaticas.Catalogo_Objetos.get(clave, null)
@@ -5371,7 +5710,7 @@ func _Redisenar_Tienda() -> void:
 
 			var mult := card.get_node_or_null("Multiplicador") as Label
 			if mult != null:
-				mult.position = Vector2(16, 194)
+				mult.position = Vector2(16, 280)
 				mult.size = Vector2(300, 22)
 				mult.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 				mult.add_theme_font_override("font", Estilos_UI.fuente_ui(500))
@@ -5380,14 +5719,14 @@ func _Redisenar_Tienda() -> void:
 
 			var uso := card.get_node_or_null("En_Uso") as Label
 			if uso != null:
-				uso.position = Vector2(16, 224)
+				uso.position = Vector2(16, 306)
 				uso.size = Vector2(300, 22)
 				uso.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 				uso.add_theme_font_override("font", Estilos_UI.fuente_ui(700))
 				uso.add_theme_font_size_override("font_size", 13)
 				uso.add_theme_color_override("font_color", Estilos_UI.EXITO)
 
-			var ys := {"Comprar": 312, "Elegir": 258, "Vender": 312}
+			var ys := {"Comprar": 384, "Elegir": 336, "Vender": 384}
 			for bn in ys:
 				var b := card.get_node_or_null(bn) as Button
 				if b != null:
@@ -5407,7 +5746,7 @@ func _Marcar_Categoria_Tienda(activa: String) -> void:
 	var tabs := get_node_or_null("Tienda/Categorias")
 	if tabs == null:
 		return
-	for n in ["Tab_Dormir", "Tab_Comer", "Tab_Duchar"]:
+	for n in ["Tab_Dormir", "Tab_Comer", "Tab_Duchar", "Tab_Ventajas"]:
 		var b := tabs.get_node_or_null(n) as Button
 		if b == null:
 			continue
@@ -5615,6 +5954,12 @@ func _Crear_Home() -> void:
 	_home_edad = Estilos_UI.texto("", 13, Estilos_UI.TINTA_SUAVE, 600)
 	_home_edad.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	pie_estado.add_child(_home_edad)
+
+	var btn_vestuario := Estilos_UI.boton("Vestuario", "suave", "shirt", Estilos_UI.AZUL, 34)
+	btn_vestuario.name = "Boton_Vestuario_Home"
+	btn_vestuario.add_theme_font_size_override("font_size", 12)
+	btn_vestuario.pressed.connect(_on_vestuario_button_pressed)
+	pie_estado.add_child(btn_vestuario)
 
 	var btn_horario := Estilos_UI.boton("Ver horario", "suave", "calendar-days", Estilos_UI.ROJO_BIT, 34)
 	btn_horario.add_theme_font_size_override("font_size", 12)
@@ -5863,9 +6208,10 @@ func _Actualizar_Home() -> void:
 		_home_escenario.actualizar_estado(
 			_Obtener_Nombre_Actividad_Actual(),
 			Variables_Dinamicas.En_La_Calle,
-			Variables_Estaticas.Apariencia,
+			Sistema_Cocina.Obtener_Apariencia_Con_Ropa_Equipada(Variables_Estaticas.Apariencia),
 			int(Variables_Dinamicas.Minute_Minute),
-			str(Variables_Dinamicas.Objeto_Seleccionado.get("Comer", "Mesa_Basica"))
+			str(Variables_Dinamicas.Objeto_Seleccionado.get("Comer", "Mesa_Basica")),
+			str(Variables_Estaticas.Personalidad)
 		)
 
 	if _home_fecha != null:

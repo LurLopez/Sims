@@ -37,6 +37,10 @@ func Visibilizar_Botones(raiz):
 				Recursivo_Visibilizar(card)
 				if pill != null:
 					pill.visible = pill_vis
+		elif nodo is Container:
+			# Submenús anidados (p. ej. Trabajo → Cocinero): se ocultan al volver
+			# al nivel superior y se muestran al pulsar su botón.
+			Recursivo_Desvisibilizar(nodo)
 
 
 func Desvisibilizar_Botones(raiz):
@@ -57,6 +61,8 @@ func Visibilizar_Lo_Basico(raiz):
 	raiz.get_node("Carrera_Button").visible = true
 	if raiz.has_node("Minijuegos_Button"):
 		raiz.get_node("Minijuegos_Button").visible = true
+	if raiz.has_node("Vestuario_Button"):
+		raiz.get_node("Vestuario_Button").visible = true
 	for n in ["Header_BitLife", "Logo_Marca", "Logo_Titulo", "Logo_BitLife", "Reloj_Header", "Nav_Superior", "Dock_Fondo", "Moneda_Fondo"]:
 		if raiz.has_node(n):
 			raiz.get_node(n).visible = true
@@ -86,6 +92,24 @@ func Visibilizar_Elegir_Actividad(raiz):
 	Comprobar_Flecha_Atras(raiz)
 
 
+func Restaurar_Elegir_Actividad(raiz):
+	# Vuelve al catálogo conservando el submenú en el que estaba el jugador
+	# (p. ej. Temporales → Progreso) cuando cancela el selector de horario.
+	var ruta_objetivo = raiz_path
+	Visibilizar_Elegir_Actividad(raiz)
+	if ruta_objetivo == null or str(ruta_objetivo) == "" or ruta_objetivo == raiz_path:
+		return
+	if not raiz.has_node(ruta_objetivo):
+		return
+	var partes: PackedStringArray = str(ruta_objetivo).split("/")
+	var i := 3
+	while i < partes.size():
+		var grupo := partes[i]
+		if raiz.has_node(raiz_path + "/" + grupo):
+			Pulsar_Boton_Opciones_Actividades(grupo.trim_suffix("_Opciones"), raiz)
+		i += 1
+
+
 func Pulsar_Boton_Opciones_Actividades(opcion, raiz):
 	Desvisibilizar_Botones(raiz.get_node(raiz_path))
 	raiz_path = raiz_path + "/" + opcion + "_Opciones"
@@ -112,6 +136,8 @@ func Comprobar_Flecha_Atras(raiz):
 		sub.position.x = x_pos
 		if en_raiz:
 			sub.text = "Tipo de actividad"
+		elif raiz_path.ends_with("Cocinero_Opciones"):
+			sub.text = "Fijas · Cocina"
 		elif raiz_path.ends_with("Trabajo_Opciones"):
 			sub.text = "Fijas · Empleo"
 		elif raiz_path.ends_with("Fijas_Opciones"):
@@ -159,10 +185,10 @@ func Visibilizar_Tienda(raiz):
 
 
 func Mostrar_Categoria_Tienda(raiz, categoria):
-	raiz.get_node("Tienda/Objetos_Dormir").visible = false
-	raiz.get_node("Tienda/Objetos_Comer").visible = false
-	raiz.get_node("Tienda/Objetos_Duchar").visible = false
-	raiz.get_node("Tienda/Objetos_" + categoria).visible = true
+	for nombre in ["Dormir", "Comer", "Duchar", "Ventajas"]:
+		var contenedor = raiz.get_node_or_null("Tienda/Objetos_" + nombre)
+		if contenedor != null:
+			contenedor.visible = (nombre == categoria)
 
 
 func Visibilizar_Perfil(raiz):

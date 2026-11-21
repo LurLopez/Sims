@@ -24,6 +24,9 @@ func load_game():
 		Variables_Estaticas.Tutorial_Completado = game_data.get("Tutorial_Completado", true)
 		Variables_Estaticas.First_Time_Minute=game_data["First_Time_Minute"]
 		Variables_Estaticas.Habilidades=game_data["Habilidades"]
+		# Saneado: saves corruptos pueden traer más de 7 habilidades duplicadas.
+		if Variables_Estaticas.Habilidades.size() > 7:
+			Variables_Estaticas.Habilidades = Variables_Estaticas.Habilidades.slice(0, 7)
 		# Fallback para saves antiguos con 6 habilidades: añadir Sangre_Fria (índice 6) aleatoriamente.
 		while Variables_Estaticas.Habilidades.size() < 7:
 			Variables_Estaticas.Habilidades.append(Funciones_Globales.Generar_Numero_Aleatorio_Entero(1,100))

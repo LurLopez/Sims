@@ -3,19 +3,21 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://ddp8lljwrjchx"
-path="res://.godot/imported/Cebolla.png-5eff271ed16bc3e942a1d8c6c0d56339.ctex"
+path.s3tc="res://.godot/imported/Cebolla.png-5eff271ed16bc3e942a1d8c6c0d56339.s3tc.ctex"
+path.etc2="res://.godot/imported/Cebolla.png-5eff271ed16bc3e942a1d8c6c0d56339.etc2.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://Imagenes/Minijuego_Cocina/Comida/Ingredientes/Cebolla.png"
-dest_files=["res://.godot/imported/Cebolla.png-5eff271ed16bc3e942a1d8c6c0d56339.ctex"]
+dest_files=["res://.godot/imported/Cebolla.png-5eff271ed16bc3e942a1d8c6c0d56339.s3tc.ctex", "res://.godot/imported/Cebolla.png-5eff271ed16bc3e942a1d8c6c0d56339.etc2.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

@@ -3,19 +3,21 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://chp4y46jr6j5q"
-path="res://.godot/imported/Candado_Abierto.png-66b429af74369364f068cc4cd7acc70e.ctex"
+path.s3tc="res://.godot/imported/Candado_Abierto.png-66b429af74369364f068cc4cd7acc70e.s3tc.ctex"
+path.etc2="res://.godot/imported/Candado_Abierto.png-66b429af74369364f068cc4cd7acc70e.etc2.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://Imagenes/Minijuego_Cocina/UI/Candado_Abierto.png"
-dest_files=["res://.godot/imported/Candado_Abierto.png-66b429af74369364f068cc4cd7acc70e.ctex"]
+dest_files=["res://.godot/imported/Candado_Abierto.png-66b429af74369364f068cc4cd7acc70e.s3tc.ctex", "res://.godot/imported/Candado_Abierto.png-66b429af74369364f068cc4cd7acc70e.etc2.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

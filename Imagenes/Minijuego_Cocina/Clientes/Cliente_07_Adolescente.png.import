@@ -3,19 +3,21 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://c1kcugjc1x8xp"
-path="res://.godot/imported/Cliente_07_Adolescente.png-3239bc7aa2de9ed304a9d5c17760d24e.ctex"
+path.s3tc="res://.godot/imported/Cliente_07_Adolescente.png-3239bc7aa2de9ed304a9d5c17760d24e.s3tc.ctex"
+path.etc2="res://.godot/imported/Cliente_07_Adolescente.png-3239bc7aa2de9ed304a9d5c17760d24e.etc2.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://Imagenes/Minijuego_Cocina/Clientes/Cliente_07_Adolescente.png"
-dest_files=["res://.godot/imported/Cliente_07_Adolescente.png-3239bc7aa2de9ed304a9d5c17760d24e.ctex"]
+dest_files=["res://.godot/imported/Cliente_07_Adolescente.png-3239bc7aa2de9ed304a9d5c17760d24e.s3tc.ctex", "res://.godot/imported/Cliente_07_Adolescente.png-3239bc7aa2de9ed304a9d5c17760d24e.etc2.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

@@ -3,19 +3,21 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cl8ft8pe7j1cg"
-path="res://.godot/imported/Hamburguesa_Sola.png-fc210b9c3c46597999f8eb46d93e0762.ctex"
+path.s3tc="res://.godot/imported/Hamburguesa_Sola.png-fc210b9c3c46597999f8eb46d93e0762.s3tc.ctex"
+path.etc2="res://.godot/imported/Hamburguesa_Sola.png-fc210b9c3c46597999f8eb46d93e0762.etc2.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://Imagenes/Minijuego_Cocina/Comida/Platos/Hamburguesa_Sola.png"
-dest_files=["res://.godot/imported/Hamburguesa_Sola.png-fc210b9c3c46597999f8eb46d93e0762.ctex"]
+dest_files=["res://.godot/imported/Hamburguesa_Sola.png-fc210b9c3c46597999f8eb46d93e0762.s3tc.ctex", "res://.godot/imported/Hamburguesa_Sola.png-fc210b9c3c46597999f8eb46d93e0762.etc2.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

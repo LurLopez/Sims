@@ -3,19 +3,21 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://7yicd6qlcl3"
-path="res://.godot/imported/Queso.png-eca1c295c8146dfea51c1719e01eaecd.ctex"
+path.s3tc="res://.godot/imported/Queso.png-eca1c295c8146dfea51c1719e01eaecd.s3tc.ctex"
+path.etc2="res://.godot/imported/Queso.png-eca1c295c8146dfea51c1719e01eaecd.etc2.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://Imagenes/Minijuego_Cocina/Comida/Ingredientes/Queso.png"
-dest_files=["res://.godot/imported/Queso.png-eca1c295c8146dfea51c1719e01eaecd.ctex"]
+dest_files=["res://.godot/imported/Queso.png-eca1c295c8146dfea51c1719e01eaecd.s3tc.ctex", "res://.godot/imported/Queso.png-eca1c295c8146dfea51c1719e01eaecd.etc2.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

@@ -19,14 +19,18 @@ El bucle de juego ya funciona end-to-end. La GUI tiene cuatro pantallas accesibl
 | **Trabajos** | ✅ Hecho | Comida rápida, carpintero, científico, abogado, médico, artista y hostelería (ayudante, cocinero, chef). Salario al final del turno. Jerarquía P1/P2/P3. |
 | **Invertir en bolsa** | ✅ Hecho | Inversión pasiva; ~3 eventos/día; auto-venta si pánico (Sangre_Fría < 30). |
 | **Cocina y alimentación** | ✅ Hecho | `Cocinar`, tuppers con caducidad, intoxicación, `Comer_Tupper`/`Comer_Basura` y hostelería por `Progreso_Cocina`. |
-| **Sistema de objetos / Tienda** | ✅ Hecho | Compra/venta de camas y duchas con multiplicadores; `Mesa_Premium` retirada y comer ya no depende de mesas. |
+| **Sistema de objetos / Tienda** | ✅ Hecho | Compra/venta de camas y duchas con multiplicadores; `Mesa_Premium` retirada y comer ya no depende de mesas. Tarjetas con ilustraciones 2.5D propias (`Imagenes/Tienda/Iconos/`) y vitrina por niveles. |
+| **Bienestar y rejuvenecimiento (Tienda)** | ✅ Hecho | Cuarta pestaña sin gemas ni pagos: anuncios recompensados simulados (+dinero, +necesidades, tuppers y −1 año), servicios de cuidado con euros y clínica de rejuvenecimiento con precio creciente. Persistencia de esperas separada y 20 tests. |
 | **Carreras universitarias** | ✅ Hecho | Sistema de carreras; libros desbloqueados por carrera visibles en Apuntes. |
 | **Muerte** | ✅ Hecho | Condiciones de muerte del personaje implementadas. |
 | **Eventos aleatorios** | ✅ Hecho | Despido por higiene (cooldown 5 días) + 20 eventos generales con franja horaria. |
 | **Perfil** | ✅ Hecho | 4 pestañas: Info (datos en tiempo real), Mensajes, Apuntes y Despensa. |
+| **Minijuego de Cocina** | ✅ Hecho | 15 niveles, 4 mundos (3 de Fase 2), 5 mejoras, economía de Caja + costes, rangos 0–9 y SFX. Partidas por clientes (sin límite de tiempo, píldora azul de clientes), botón MENÚ, pase de cuatro huecos con platos en perspectiva 3/4 (2 abiertos y candados Nv.2/Nv.3), despensa integrada bajo la encimera (panera de dos huecos con panecillos completos, bandeja de carne, cesta de patatas y toppings) y HUD con menú/clientes/dinero inspirado en la referencia. Pantalla de Mejoras a pantalla completa (`Mejoras_Cocina.gd`) con las 5 mejoras, escaparate de la siguiente versión, pestañas Nv.1–3 y compra con la Caja; 15 sprites propios y suite de 33 tests. |
+| **Vestuario** | ✅ Hecho | Sección propia en la barra superior con vista previa animada, tarjetas de atuendos, candados por rango y equipado persistente; la ropa se dibuja en el escenario de Inicio, avatar, perfil y logo. |
 | **Calendario solo lectura** | ✅ Hecho | Botón horario abre el calendario en modo consulta (`calendario_solo_lectura`). |
 | **Jerarquía de actividades** | ✅ Hecho | Prioridades P1 (Normal) / P2 (Trabajo) / P3 (Examen). |
 | **Refactorización de escenas** | ✅ Hecho | Escenas reorganizadas; mejoras de UI e iconos. |
+| **Anuncios reales** | ⏳ Pendiente | Integrar una red de anuncios (AdMob u otra) sobre `Proveedor_Anuncios`; consentimiento GDPR/UMP, protección de menores, SSV y pruebas de políticas. Sin pagos ni moneda premium. |
 
 ---
 

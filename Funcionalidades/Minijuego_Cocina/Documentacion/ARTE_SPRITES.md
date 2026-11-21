@@ -2,26 +2,29 @@
 
 ## 1. Resumen
 
-Pack de **134 sprites PNG** para el escenario del minijuego de cocina estilo *Cooking Fever*, más un **layout JSON** y una **escena editable de muestra a 1280×720** que reproduce la composición de referencia: chef a la izquierda, cuatro clientes tras el mostrador, tickets de pedido, vitrina, estaciones de cocina y primer plano de acero inoxidable.
+Pack de **149 sprites PNG** para el escenario del minijuego de cocina de estilo casual, más **3 recursos de composición** para el banner de la tarjeta «Cocina» y el fondo del selector (`Banner_Cocina.png`, `Emplatado/Plato_Perspectiva.png` y `Fondo_Restaurante_Selector.png`), un **layout JSON** y una **escena editable de muestra a 1280×720** que reproduce la composición de referencia: chef a la izquierda, cuatro clientes tras el mostrador, tickets de pedido, vitrina, estaciones de cocina y primer plano de acero inoxidable. Las **15 ilustraciones de mejoras** (`Mejoras/`) son nuevas y se usan en la pantalla de Mejoras.
 
 - Arte **original generado por IA** (no se han extraído sprites del juego original).
 - Dirección: 2.5D casual, brillos suaves, colores saturados, perspectiva ligeramente cenital.
 - Los maestros, hojas de generación, prompts y catálogos viven en `Arte_Fuente/Minijuego_Cocina/` (ignorado por Godot mediante `Arte_Fuente/.gdignore`).
-- La escena de muestra es **independiente**: no está enganchada al minijuego jugable ni modifica su lógica.
+- El pack **está integrado en el minijuego jugable** mediante `Scripts/GUI/Minijuego_Cocina/Arte_Cocina.gd`; la escena de muestra sigue siendo una maqueta independiente para revisar el arte completo.
 
 ## 2. Alcance
 
 **Incluido**
 
 - 134 PNG RGBA en `Imagenes/Minijuego_Cocina/` con sus `.import` de Godot.
+- 15 PNG RGBA de mejoras en `Imagenes/Minijuego_Cocina/Mejoras/` (3 variantes por mejora), con sus `.import`.
+- 3 recursos de composición fuera del pack: `Banner_Cocina.png` (1288×284, RGB), `Emplatado/Plato_Perspectiva.png` (640×297, RGBA) y `Fondo_Restaurante_Selector.png` (360×640, RGBA, generado por `tools/generar_fondo_selector.py`). Los dos primeros conservan maestros en `Arte_Fuente/Minijuego_Cocina/`.
 - `Imagenes/Minijuego_Cocina/escenario_layout.json` con 54 entradas de composición (`ruta`, `x`, `y`, `w`, `h`, `modo`).
-- Escena de muestra `Escenas/Minijuego_Cocina/Escenario_Cooking_Fever.tscn` y su controlador `Scripts/GUI/Minijuego_Cocina/Escenario_Cooking_Fever.gd`.
+- Escena de muestra `Escenas/Minijuego_Cocina/Escenario_Maqueta_Cocina.tscn` y su controlador `Scripts/GUI/Minijuego_Cocina/Escenario_Maqueta_Cocina.gd`.
 - Herramientas reproducibles en `tools/` y catálogos visuales en `Arte_Fuente/Minijuego_Cocina/Catalogo/`.
 
 **Excluido**
 
 - Lógica, economía, niveles, pedidos y temporizadores del minijuego jugable (viven en `Sistema_Cocina` y `Minijuego_Cocina.gd`).
-- Integración visual en la escena jugable: el minijuego sigue dibujando sus sprites vectoriales con `Sprites_Cocina.gd`; este pack no se carga desde allí.
+- Integración visual en la escena jugable: `Minijuego_Cocina.gd` usa `Arte_Cocina.gd` para cargar fondo, clientes, chef, estaciones, comida, tickets, UI y efectos. `Sprites_Cocina.gd` queda como implementación vectorial legacy.
+- Capturas del juego real: `Funcionalidades/Minijuego_Cocina/Documentacion/Capturas/`.
 - Animaciones de personajes, audio, textos localizados, atlas de sprites o `SpriteFrames`.
 - Revisión legal para publicación comercial (ver aviso legal).
 
@@ -41,8 +44,21 @@ Pack de **134 sprites PNG** para el escenario del minijuego de cocina estilo *Co
 | `UI/` | 24 | HUD, tickets, monedas, botones y estrellas |
 | `Decoracion/` | 8 | Toldos, rótulos, planta, lámpara y trofeo |
 | `Efectos/` | 8 | Vapor, humo, chispas, fuego, monedas, estrellas, frescura y enfado |
+| `Mejoras/` | 15 | Tres variantes (Nv.1/Nv.2/Nv.3) de cada una de las 5 mejoras |
 | Raíz | 1 | `Fondo_Restaurante.png` |
-| **Total** | **134** | |
+| **Total** | **149** | |
+
+La carpeta `Emplatado/` contiene además `Plato_Perspectiva.png`, la raíz contiene `Banner_Cocina.png` y `Fondo_Restaurante_Selector.png`; los tres son recursos de composición y no se cuentan en los 149 sprites del pack. Se detallan a continuación.
+
+### Recursos de composición (fuera de los 149)
+
+| Archivo | Tamaño | Maestro | Uso |
+|---|---:|---|---|
+| `Banner_Cocina.png` (raíz) | 1288×284 | `Arte_Fuente/Minijuego_Cocina/Fondos/banner_cocina_maestro.png` (1913×822) | Fondo del banner de la tarjeta «Cocina» en `Pantalla_Minijuegos`: mostrador de diner con damero crema/negro, borde metálico inferior y comedor desenfocado detrás. Lleva horneados el desenfoque de fondo, la viñeta y la luz cálida. |
+| `Emplatado/Plato_Perspectiva.png` | 640×297 | `Arte_Fuente/Minijuego_Cocina/plato_perspectiva_maestro.png` (1336×1177) | Plato vacío de cerámica blanca en perspectiva 3/4 (ala, hueco, brillos y transparencia limpia) para el banner y el pase jugable; en esas composiciones sustituye al plato cenital `Plato_Vacio.png`. |
+| `Fondo_Restaurante_Selector.png` (raíz) | 360×640 | Generado con `tools/generar_fondo_selector.py` desde `Fondo_Restaurante.png` | Fondo vertical desenfocado y viñeteado del selector cartoon de niveles; se usa detrás del marco celeste y no forma parte del pack. |
+
+Se consumen desde `Scripts/GUI/Minijuego_Cocina/Arte_Cocina.gd` (`TEX_BANNER`, `TEX_PLATO_PERSPECTIVA` y la textura cacheada `textura_sombra_contacto()`) y `Scripts/Globales/Script_Principal.gd` (`_Actualizar_Pantalla_Minijuegos()`, `_Anadir_Item_Banner()`, `_Anadir_Sombra_Banner()`).
 
 ### `Chef/` (7)
 
@@ -88,6 +104,10 @@ Pack de **134 sprites PNG** para el escenario del minijuego de cocina estilo *Co
 
 `Plato_Vacio.png`, `Pila_Platos.png`, `Bandeja_Metal.png`, `Bandeja_Tomate.png`, `Bandejas_Apiladas.png`, `Cesta_Patatas.png`, `Bol_Lechuga.png`, `Salsera.png`, `Ketchup.png`, `Mostaza.png`, `Sal_Pimienta.png`, `Rastrillo_Salsas.png`, `Pinzas.png`, `Espatula.png`, `Tabla_Cortar.png`, `Servilleta.png`, `Servilletero.png`, `Tarro_Pepinillos.png`, `Vasos_Rojos.png`, `Tapas_Vasos.png`, `Pajitas.png`, `Limpiador.png`.
 
+> **Emplatado en el juego:** el pase es un puesto 3D. La base es la bandeja metálica renderizada `Emplatado/Bandeja_Metal.png`, con borde, paredes interiores y sombra de contacto; dentro va una alfombrilla beige hundida y detrás una mampara de cristal con marco cromado y filo verde (`Arte_Cocina.Fondo_Pase`). El pase muestra **siempre cuatro huecos**: al empezar se abren dos y las mejoras de Emplatado abren el tercero (`Nv.2`) y el cuarto (`Nv.3`); los cerrados son rebajes metálicos con candado y una pastilla de nivel. Los platos activos usan `Emplatado/Plato_Perspectiva.png` (640×297, `PLATO_PERSPECTIVA = 0.464`), cerámica 3/4 con filo celeste grueso. El plato se centra en su hueco y el ancho se acota por el alto para que la hamburguesa siempre quepa. `Bandeja_Metal.png` también se usa para la bandeja de carne cruda.
+>
+> **Alineación de iconos y capas:** los PNG de `Comida/Ingredientes` y `Comida/Platos` llevan ~10 px de margen transparente y encuadres distintos, así que no se pueden alinear por el tamaño de la textura. `Arte_Cocina.region_contenido()` calcula una sola vez (y cachea) el rectángulo de píxeles visibles con alfa > 24 y `dibujar_tex_recortada()` dibuja solo esa región. La bandeja inferior usa `rect_icono_alineado()` para que los seis iconos compartan línea de base (y = 70), centro horizontal (x = 49) y altura máxima (56 px) sin deformar su proporción; el icono de «Pan» es `Pan_Superior.png`, igual que el fantasma del plato vacío. La hamburguesa se compone con `_capas_hamburguesa()`, que fija ancho, alto y solape de cada capa sobre un eje común de 120 unidades. El fantasma del pan y su botón «+» comparten el centro del plato, de modo que quedan siempre alineados.
+
 ### `UI/` (24)
 
 `Ticket_Verde.png`, `Ticket_Rojo.png`, `Moneda.png`, `Pila_Monedas.png`, `Gema.png`, `Reloj.png`, `Bote_Propinas.png`, `Burbuja.png`, `Boton_Verde.png`, `Boton_Azul.png`, `Boton_Naranja.png`, `Boton_Check.png`, `Boton_X.png`, `Flecha.png`, `Engranaje.png`, `Estrella_Dorada.png`, `Estrella_Plateada.png`, `Estrella_Vacia.png`, `Corazon.png`, `Candado_Abierto.png`, `Candado_Cerrado.png`, `Insignia_Nivel.png`, `Regalo.png`, `Cinta_Dorada.png`.
@@ -99,6 +119,24 @@ Pack de **134 sprites PNG** para el escenario del minijuego de cocina estilo *Co
 ### `Efectos/` (8)
 
 `Vapor.png`, `Humo.png`, `Chispas.png`, `Monedas.png`, `Fuego.png`, `Estrellas.png`, `Frescura.png`, `Enfado.png`.
+
+### `Mejoras/` (15)
+
+Tres variantes por cada mejora, de básica a profesional:
+
+- `plancha_nv1.png`, `plancha_nv2.png`, `plancha_nv3.png` — sartén/plancha con 2, 3 y 4 hamburguesas.
+- `emplatado_nv1.png`, `emplatado_nv2.png`, `emplatado_nv3.png` — 1, 2 y 3 servicios con plato y refresco.
+- `termostato_nv1.png`, `termostato_nv2.png`, `termostato_nv3.png` — dial manual, dial de precisión y panel digital.
+- `ingredientes_nv1.png`, `ingredientes_nv2.png`, `ingredientes_nv3.png` — caja de madera, bandeja de acero y cesta premium.
+- `ambiente_nv1.png`, `ambiente_nv2.png`, `ambiente_nv3.png` — jukebox de mesa, jukebox de diner y jukebox de lujo.
+
+Se generaron con el modelo de imagen a partir de cinco hojas maestras (`Arte_Fuente/Minijuego_Cocina/Mejoras/hoja_<mejora>.png`), cada una con las tres variantes en fila sobre magenta. El procesado es reproducible con:
+
+```bash
+python3 tools/procesar_mejoras_cocina.py
+```
+
+El script recorta cada variante, limpia el halo blanco, aplica un **despill de magenta más agresivo** que el estándar (los vapores y brillos semitransparentes quedan grises en vez de rosados), limita el lado mayor a 640 px y guarda los PNG con optimización. También compone el catálogo de control `Arte_Fuente/Minijuego_Cocina/Mejoras/catalogo_mejoras.png`. Los prompts están documentados en `Arte_Fuente/Minijuego_Cocina/prompts.md` (P22–P26).
 
 ### Raíz (1)
 
@@ -126,8 +164,8 @@ Nombres en `PascalCase_Con_Guiones_Bajos`, sin acentos (`Nina`, `Pequena`) para 
 
 | Archivo | Rol |
 |---|---|
-| `Escenas/Minijuego_Cocina/Escenario_Cooking_Fever.tscn` | Escena editable de 1280×720. 76 nodos: 2 `Control`, 59 `TextureRect` (58 del layout + fondo), 9 `Label` y 6 `ColorRect` (fondo de ventana, HUD y estante). |
-| `Scripts/GUI/Minijuego_Cocina/Escenario_Cooking_Fever.gd` | Formato horizontal, animación idle, cierre con `Esc` y captura opcional. |
+| `Escenas/Minijuego_Cocina/Escenario_Maqueta_Cocina.tscn` | Escena editable de 1280×720. 76 nodos: 2 `Control`, 59 `TextureRect` (58 del layout + fondo), 9 `Label` y 6 `ColorRect` (fondo de ventana, HUD y estante). |
+| `Scripts/GUI/Minijuego_Cocina/Escenario_Maqueta_Cocina.gd` | Formato horizontal, animación idle, cierre con `Esc` y captura opcional. |
 | `Imagenes/Minijuego_Cocina/escenario_layout.json` | Layout de origen (58 entradas) usado por el generador. |
 | `Arte_Fuente/Minijuego_Cocina/escenario_godot_1280x720.png` | Captura real del resultado en Godot. |
 | `Arte_Fuente/Minijuego_Cocina/escenario_preview.png` | Composición de referencia hecha con PIL. |
@@ -146,7 +184,7 @@ La escena fija `content_scale_size = 1280×720`, rota a horizontal en Android/iO
 
 **Animación idle:** el script mueve los nodos del grupo `ticket` (tickets y sus precios), del grupo `chef`, 3 nodos de `vapor` sobre la plancha/freidora y 1 de `sparkle` sobre las monedas.
 
-La escena es una maqueta visual: no se instancia desde `Minijuego_Cocina.tscn`, `Pantalla_Minijuegos` ni `Script_Principal`. La única referencia en el proyecto, fuera de la documentación, es `ver_escenario.sh`.
+La escena de muestra no se instancia desde `Minijuego_Cocina.tscn`, pero el pack sí se consume desde el juego real. La maqueta se conserva para revisar el arte completo con `ver_escenario.sh`.
 
 ## 6. Pipeline reproducible
 
@@ -170,6 +208,8 @@ python3 tools/catalogo_sprites.py
 godot --headless --path . --editor --quit   # importar PNG nuevos
 ```
 
+Los recursos de composición no salen de hojas: el banner y el plato se generaron como imágenes completas y se conservan como maestros en `Arte_Fuente/Minijuego_Cocina/` (`Fondos/banner_cocina_maestro.png` y `plato_perspectiva_maestro.png`); el fondo del selector es procedural (`tools/generar_fondo_selector.py`). Los PNG de runtime del banner y el plato son versiones reducidas (1288×284 y 640×297) con los mismos parámetros de importación que el pack; no pasan por `cortar_sprites.py` ni por `componer_escenario.py`.
+
 Notas del recorte:
 
 - `--grid COLSxROWS` corta celdas iguales; sin `--grid` se detectan blobs conectados y se agrupan por filas.
@@ -181,7 +221,7 @@ Notas del recorte:
 Advertencias:
 
 - `optimizar_sprites.py` **no sobreescribe** maestros existentes: si `Sprites_Full/` ya existe, solo reduce los PNG de runtime. Para refrescar maestros hay que mover o borrar esa carpeta antes.
-- `generar_escena_godot.py` reescribe `Escenario_Cooking_Fever.tscn`; si se edita la escena a mano, se pierden los cambios al regenerar.
+- `generar_escena_godot.py` reescribe `Escenario_Maqueta_Cocina.tscn`; si se edita la escena a mano, se pierden los cambios al regenerar.
 - Las hojas originales y los maestros no se importan en Godot porque `Arte_Fuente/.gdignore` corta esa carpeta.
 
 ## 7. Cómo usarlo en Godot
@@ -253,11 +293,14 @@ La escena usa `z_index` crecientes: fondo 0, clientes 12–18, vitrina 20, comid
 | `Decoracion/` | 317–420 × 206–420 |
 | `Efectos/` | 187–280 × 242–280 |
 | `Fondo_Restaurante.png` | 1280×720 |
+| `Banner_Cocina.png` | 1288×284 |
+| `Emplatado/Plato_Perspectiva.png` | 640×297 |
 
-- **Formato:** 134 PNG en RGBA de 8 bits por canal, sin perfil ICC incrustado (Godot los interpreta como sRGB) y sin indexar.
-- **Importación:** los 134 tienen `.import` con `compress/mode=0` (lossless), compresión VRAM desactivada, `mipmaps/generate=false`, `process/fix_alpha_border=true` y filtro lineal por defecto. No hay atlas ni `SpriteFrames`.
-- **Peso:** ~19,3 MB de PNG de runtime; el más pesado es el fondo (~1,39 MB). Para Android conviene valorar compresión VRAM o un atlas si el pack se integra en el juego real.
-- **Maestros:** `Arte_Fuente/Minijuego_Cocina/Sprites_Full/` contiene **134 PNG** e incluye los 8 clientes enfadados. Esa carpeta no se importa en Godot.
+- **Formato:** 149 PNG del pack en RGBA de 8 bits por canal, sin perfil ICC incrustado (Godot los interpreta como sRGB) y sin indexar. Los tres recursos de composición añaden un PNG opaco en RGB (`Banner_Cocina.png`) y dos en RGBA (`Plato_Perspectiva.png` y `Fondo_Restaurante_Selector.png`).
+- **Importación:** los 152 PNG tienen `.import` con `compress/mode=2` y `compress/high_quality=false` (VRAM comprimida: ETC2 en Android, S3TC/BPTC en escritorio), `mipmaps/generate=false`, `process/fix_alpha_border=true` y filtro lineal por defecto. No hay atlas ni `SpriteFrames`. Se aplica con `python3 tools/optimizar_import_texturas.py` y `godot --headless --import`; el resto de texturas del juego (iconos pequeños, marca) se queda en lossless.
+- **Peso:** ~26,2 MB de PNG de runtime (149 del pack: ~25,6 MB; 3 de composición: ~0,6 MB); el más pesado es el fondo (~1,39 MB). En memoria, las versiones ETC2 ocupan ~4-8× menos que RGBA y el APK queda en ~62 MB.
+- **Carga perezosa:** `Arte_Cocina.gd` no usa `preload` de texturas: cada `TEX_*` es un `static var` con getter a `_tex(ruta)` y caché. Así el menú y la escena principal no cargan los ~72 MB del pack; las texturas se decodifican al dibujarse por primera vez en la cocina.
+- **Maestros:** `Arte_Fuente/Minijuego_Cocina/Sprites_Full/` contiene **134 PNG** e incluye los 8 clientes enfadados. Las 15 mejoras tienen sus hojas maestras en `Arte_Fuente/Minijuego_Cocina/Mejoras/` y se procesan con `tools/procesar_mejoras_cocina.py`. Los maestros de composición quedan fuera de esas carpetas: `Fondos/banner_cocina_maestro.png` y `plato_perspectiva_maestro.png`; ninguna de esas rutas se importa en Godot.
 
 ## 9. Catálogos visuales
 
@@ -278,19 +321,21 @@ Sirven para revisar el pack completo de un vistazo; se regeneran con `tools/cata
 - **Toldos:** están cortados a propósito en el borde de la hoja; no son sprites completos.
 - **Frente de mostrador:** se estira a 1280×200 en la muestra; no está pensado para escalar verticalmente sin pérdida. Usar 9-slice o repetir la encimera.
 - **Tickets:** los precios son `Label`, no sprite, para poder cambiarlos por código.
-- **Escena de muestra:** es una maqueta visual; no sustituye al minijuego jugable ni se engancha a él. Incluye 3 nodos de vapor y 1 de chispas animados.
+- **Escena de muestra:** es una maqueta visual; no sustituye al minijuego jugable, pero el pack sí está integrado en la cocina real. Incluye 3 nodos de vapor y 1 de chispas animados.
 - **Fondo:** está horneado a 1280×720; en otras relaciones de aspecto hay que recortarlo o rellenar.
+- **Banner:** está horneado a 1288×284 (≈4,5:1) y es opaco; la tarjeta lo muestra con `STRETCH_KEEP_ASPECT_COVERED` en una franja de 142 px de alto, así que en anchos extremos se recorta por los lados.
+- **Plato en perspectiva:** `Emplatado/Plato_Perspectiva.png` se usa en el banner y en el **pase jugable** (con filo celeste, contacto y plato fantasma); `Plato_Vacio.png` queda como recurso heredado para props y pruebas. La proporción del pase es `PLATO_PERSPECTIVA = 0.464`, la del sprite 640×297.
 - **Maestros:** `Sprites_Full/` está completo (134 PNG). El optimizador no sobreescribe maestros si la carpeta ya existe; para refrescarlos hay que moverla o borrarla antes.
-- **Texto y marcas:** los sprites no contienen texto, pero el pack se inspira en una IP ajena; ver el aviso legal.
+- **Texto y marcas:** los sprites no contienen texto ni logotipos; ver el aviso legal.
 
 ## 11. Aviso legal
 
-*Cooking Fever* es una marca de Nordcurrent. Este pack es una **inspiración/homenaje** con arte propio generado para el proyecto; no contiene recursos extraídos del juego original. Para una publicación comercial conviene diferenciar aún más el diseño de la chef y no usar nombres, logotipos ni marcas ajenas.
+Este pack es una **obra original** con arte propio generado para el proyecto; no contiene recursos extraídos de ningún juego comercial. Para una publicación comercial conviene evitar nombres, logotipos o marcas ajenas.
 
 ## 12. Verificación
 
-- 134 PNG RGBA válidos y 134 `.import`; 19,3 MB en runtime.
+- 152 PNG válidos y 152 `.import`: 149 del pack en RGBA (incluidas las 15 mejoras), el banner opaco en RGB, el plato en RGBA y el fondo del selector en RGBA; ~26,2 MB en runtime.
 - 58 entradas de layout; 0 rutas rotas.
 - Escena: 76 nodos, 59 `TextureRect`, 9 `Label` y 46 recursos externos (43 texturas, 2 fuentes y el script); 0 rutas rotas.
-- Tests del minijuego: **11/11, 336 asserts**.
+- Tests del minijuego: **33/33, 678 asserts** (incluye 11 tests de arrastre y toque rápido, 1 de pedidos deterministas, 6 de alineación del arte y la compra de mejoras con la Caja). La pantalla de Mejoras añade 1 test y no altera la suite existente.
 - Escena ejecutada en Godot 4.7.2 a 1280×720 y capturada en `Arte_Fuente/Minijuego_Cocina/escenario_godot_1280x720.png`.

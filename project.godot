@@ -17,7 +17,7 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 config/name="Sims"
 run/main_scene="res://Escenas/Menu/Menu.tscn"
 config/features=PackedStringArray("4.7", "Mobile")
-config/icon="res://icon.svg"
+config/icon="res://Imagenes/Marca/logo_play_store_512.png"
 boot_splash/show_image=false
 boot_splash/bg_color=Color(0.953, 0.961, 0.973, 1)
 
@@ -41,7 +41,10 @@ Sistema_Cocina="*res://Scripts/Logica/Escena_Principal/Minijuego_Cocina/Sistema_
 Eventos_Aleatorios="*res://Scripts/Logica/Escena_Principal/Actividades/Eventos_Aleatorios.gd"
 Gestionar_Visibilidad="*res://Scripts/GUI/Escena_Principal/Gestionar_Visibilidad.gd"
 Debug_Cargar_Guardado="*res://Scripts/Otro/Debug/Debug_Cargar_Guardado.gd"
+Ajustes="*res://Scripts/Globales/Ajustes.gd"
+Recompensas="*res://Scripts/Globales/Recompensas.gd"
 Musica="*res://Scripts/Globales/Musica.gd"
+Pantalla_Carga="*res://Scripts/Globales/Pantalla_Carga.gd"
 
 [display]
 
@@ -61,5 +64,9 @@ pointing/emulate_touch_from_mouse=true
 
 [rendering]
 
-renderer/rendering_method="mobile"
+; Juego 2D con UI: el renderer Compatibility es el más rápido y compatible en
+; móviles modestos (evita compilación de pipelines Vulkan y drivers problemáticos).
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+rendering_device/fallback_to_opengl3=true
 textures/vram_compression/import_etc2_astc=true

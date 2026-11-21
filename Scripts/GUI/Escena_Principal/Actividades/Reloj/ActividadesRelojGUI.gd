@@ -8,7 +8,7 @@ var _ultimo_fin_abs: int = -1
 var _raiz_ref: Node = null
 
 
-func Comprobar_Visibilidad(raiz, horarioblquee):
+func Comprobar_Visibilidad(raiz, horarioblquee, rango_inicial = null):
 	_raiz_ref = raiz
 	if horario == null or not is_instance_valid(horario):
 		horario = SeleccionarHorarioReloj.new()
@@ -21,7 +21,14 @@ func Comprobar_Visibilidad(raiz, horarioblquee):
 	var max_abs: int = _Max_Bloque_Abs()
 
 	if es_nuevo_bloque or Comprobar_Negativos():
-		_Aplicar_Abs_A_Horario(min_abs, max_abs)
+		if rango_inicial != null and rango_inicial is Array and rango_inicial.size() >= 2:
+			# El bloque define los límites permitidos, pero la franja sugerida
+			# (actividad elegida en el catálogo) marca el inicio/final iniciales.
+			var ini_sug: int = clampi(int(rango_inicial[0]), min_abs, maxi(min_abs, max_abs - 5))
+			var fin_sug: int = clampi(int(rango_inicial[1]), ini_sug + 5, max_abs)
+			_Aplicar_Abs_A_Horario(ini_sug, fin_sug)
+		else:
+			_Aplicar_Abs_A_Horario(min_abs, max_abs)
 	else:
 		var ini_abs: int = _Leer_Inicio_Abs()
 		var fin_abs: int = _Leer_Final_Abs()

@@ -3,19 +3,21 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dpcycvj6hgig2"
-path="res://.godot/imported/Cesta_Patatas.png-b04c21dbf128733181bb95996cc4e7ef.ctex"
+path.s3tc="res://.godot/imported/Cesta_Patatas.png-b04c21dbf128733181bb95996cc4e7ef.s3tc.ctex"
+path.etc2="res://.godot/imported/Cesta_Patatas.png-b04c21dbf128733181bb95996cc4e7ef.etc2.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://Imagenes/Minijuego_Cocina/Emplatado/Cesta_Patatas.png"
-dest_files=["res://.godot/imported/Cesta_Patatas.png-b04c21dbf128733181bb95996cc4e7ef.ctex"]
+dest_files=["res://.godot/imported/Cesta_Patatas.png-b04c21dbf128733181bb95996cc4e7ef.s3tc.ctex", "res://.godot/imported/Cesta_Patatas.png-b04c21dbf128733181bb95996cc4e7ef.etc2.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

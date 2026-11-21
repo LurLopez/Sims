@@ -3,19 +3,21 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://b3e2jpptu5be4"
-path="res://.godot/imported/Vitrina_Exposicion.png-a90367f7e11fd0d3fe4baa52e333b1cf.ctex"
+path.s3tc="res://.godot/imported/Vitrina_Exposicion.png-a90367f7e11fd0d3fe4baa52e333b1cf.s3tc.ctex"
+path.etc2="res://.godot/imported/Vitrina_Exposicion.png-a90367f7e11fd0d3fe4baa52e333b1cf.etc2.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://Imagenes/Minijuego_Cocina/Mostrador/Vitrina_Exposicion.png"
-dest_files=["res://.godot/imported/Vitrina_Exposicion.png-a90367f7e11fd0d3fe4baa52e333b1cf.ctex"]
+dest_files=["res://.godot/imported/Vitrina_Exposicion.png-a90367f7e11fd0d3fe4baa52e333b1cf.s3tc.ctex", "res://.godot/imported/Vitrina_Exposicion.png-a90367f7e11fd0d3fe4baa52e333b1cf.etc2.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

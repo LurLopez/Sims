@@ -121,6 +121,31 @@ static func icono(nombre: String) -> Texture2D:
 	return null
 
 
+# Ilustraciones propias de los muebles de la tienda (PNG con alfa generados
+# con tools/procesar_iconos_tienda.py). Se cachean porque las tarjetas se
+# reconstruyen cada vez que se abre la tienda.
+const RUTAS_ICONOS_TIENDA := {
+	"Cama_Basica": "res://Imagenes/Tienda/Iconos/Cama_Basica.png",
+	"Cama_Premium": "res://Imagenes/Tienda/Iconos/Cama_Premium.png",
+	"Cama_Lujo": "res://Imagenes/Tienda/Iconos/Cama_Lujo.png",
+	"Mesa_Basica": "res://Imagenes/Tienda/Iconos/Mesa_Basica.png",
+	"Ducha_Basica": "res://Imagenes/Tienda/Iconos/Ducha_Basica.png",
+	"Ducha_Premium": "res://Imagenes/Tienda/Iconos/Ducha_Premium.png",
+}
+static var _cache_iconos_tienda: Dictionary = {}
+
+
+static func icono_tienda(clave: String) -> Texture2D:
+	if _cache_iconos_tienda.has(clave):
+		return _cache_iconos_tienda[clave]
+	var ruta := str(RUTAS_ICONOS_TIENDA.get(clave, ""))
+	var textura: Texture2D = null
+	if ruta != "" and ResourceLoader.exists(ruta):
+		textura = load(ruta) as Texture2D
+	_cache_iconos_tienda[clave] = textura
+	return textura
+
+
 static func icono_rect(nombre: String, tam: int = 22, color: Color = TINTA) -> TextureRect:
 	var tex := TextureRect.new()
 	tex.texture = icono(nombre)
@@ -228,7 +253,11 @@ static func _obtener_apariencia_actual(datos: Dictionary) -> Dictionary:
 		if ve != null:
 			var ap = ve.get("Apariencia")
 			if ap is Dictionary and not ap.is_empty():
-				return Apariencia_Personaje.normalizar(ap)
+				var ap_norm := Apariencia_Personaje.normalizar(ap)
+				var cocina: Node = tree.root.get_node_or_null("Sistema_Cocina")
+				if cocina != null and cocina.has_method("Obtener_Apariencia_Con_Ropa_Equipada"):
+					return cocina.call("Obtener_Apariencia_Con_Ropa_Equipada", ap_norm)
+				return ap_norm
 	return Apariencia_Personaje.por_defecto()
 
 
@@ -632,14 +661,19 @@ static func estilizar_dialogo(dlg: AcceptDialog) -> void:
 # de tener ancho asignado (el texto entero en una línea), así que el diálogo se
 # abre gigante y sus botones quedan fuera de la pantalla. Llamar en diferido
 # justo después de abrir el diálogo para fijar un tamaño válido y centrarlo.
-static func fijar_tamano_dialogo(dlg: AcceptDialog, tam: Vector2i) -> void:
-	if dlg == null or not dlg.is_inside_tree():
+static func fijar_tamano_dialogo(dlg, tam: Vector2i) -> void:
+	# Sin tipo estricto: si el diálogo se cerró antes del call_deferred, llega
+	# una referencia liberada y la conversión tipada lanzaría un error.
+	if dlg == null or not is_instance_valid(dlg):
 		return
-	dlg.size = tam
-	var base := dlg.get_parent()
+	var dialogo := dlg as AcceptDialog
+	if dialogo == null or not dialogo.is_inside_tree():
+		return
+	dialogo.size = tam
+	var base := dialogo.get_parent()
 	if base != null and base.is_inside_tree():
 		var area: Vector2 = base.get_viewport().get_visible_rect().size
-		dlg.position = Vector2i((area - Vector2(tam)) * 0.5)
+		dialogo.position = Vector2i((area - Vector2(tam)) * 0.5)
 
 
 static func animar_entrada(control: Control, retardo: float = 0.0) -> void:
@@ -677,6 +711,7 @@ const ICONOS_BOTONES := {
 	"Calendario_Button": ["Horario", "calendar-days"],
 	"Carrera_Button": ["Carrera", "graduation-cap"],
 	"Minijuegos_Button": ["Minijuegos", "puzzle"],
+	"Vestuario_Button": ["Vestuario", "shirt"],
 	"Tienda_Button": ["Tienda", "store"],
 	"Temporales": ["Temporales", "clock"],
 	"Fijas": ["Fijas", "clipboard-list"],
@@ -697,6 +732,7 @@ const ICONOS_BOTONES := {
 	"Ver_La_Television": ["Ver la televisión", "tv"],
 	"Salir_De_Fiesta": ["Salir de fiesta", "party-popper"],
 	"Trabajo": ["Trabajo", "briefcase-business"],
+	"Cocinero": ["Cocinero", "chef-hat"],
 	"Comida_Rapida": ["Comida rápida", "utensils-crossed"],
 	"COMIDA_RAPIDA": ["Comida rápida", "utensils-crossed"],
 	"Carpintero": ["Carpintero", "hammer"],
@@ -789,7 +825,7 @@ static func _aplicar_boton_auto(btn: Button) -> void:
 		btn.tooltip_text = info[0] if info.size() > 0 else ""
 		_crear_contenido_nav(btn, info[1] if info.size() > 1 else "circle-help", info[0] if info.size() > 0 else "")
 		aplicar_estilo_boton(btn, "nav")
-	elif btn.name in ["Boton_Perfil", "Economia_Button", "Calendario_Button", "Carrera_Button", "Minijuegos_Button", "Tienda_Button"]:
+	elif btn.name in ["Boton_Perfil", "Economia_Button", "Calendario_Button", "Carrera_Button", "Minijuegos_Button", "Vestuario_Button", "Tienda_Button"]:
 		btn.text = info[0] if info.size() > 0 else btn.text
 		aplicar_estilo_boton(btn, "top", PRIMARIO, info[1] if info.size() > 1 else "")
 		btn.alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -829,9 +865,9 @@ static func _aplicar_boton_auto(btn: Button) -> void:
 		aplicar_estilo_boton(btn, "secundario")
 	elif btn.name in ["Crear_Actividad", "OCUPAR_ACTIVIDAD"]:
 		if btn.name == "Crear_Actividad":
-			btn.text = "Elegir actividad"
+			btn.text = "Crear actividad"
 		else:
-			btn.text = "Programar aquí"
+			btn.text = "Elegir actividad"
 		aplicar_estilo_boton(btn, "exito", EXITO)
 	elif btn.name == "ELIMINAR_ACTIVIDAD":
 		btn.text = "Eliminar actividad"

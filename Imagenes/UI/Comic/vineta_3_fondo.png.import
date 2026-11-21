@@ -3,19 +3,21 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cynfy0wurq4vr"
-path="res://.godot/imported/vineta_3_fondo.png-3a81ea65a0acd02a831d8323addfe86f.ctex"
+path.s3tc="res://.godot/imported/vineta_3_fondo.png-3a81ea65a0acd02a831d8323addfe86f.s3tc.ctex"
+path.etc2="res://.godot/imported/vineta_3_fondo.png-3a81ea65a0acd02a831d8323addfe86f.etc2.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://Imagenes/UI/Comic/vineta_3_fondo.png"
-dest_files=["res://.godot/imported/vineta_3_fondo.png-3a81ea65a0acd02a831d8323addfe86f.ctex"]
+dest_files=["res://.godot/imported/vineta_3_fondo.png-3a81ea65a0acd02a831d8323addfe86f.s3tc.ctex", "res://.godot/imported/vineta_3_fondo.png-3a81ea65a0acd02a831d8323addfe86f.etc2.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

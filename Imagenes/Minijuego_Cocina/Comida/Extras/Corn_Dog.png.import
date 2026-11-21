@@ -3,19 +3,21 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bq2nm3r13baga"
-path="res://.godot/imported/Corn_Dog.png-837a3c69e3ad19d47a39389b45c13bff.ctex"
+path.s3tc="res://.godot/imported/Corn_Dog.png-837a3c69e3ad19d47a39389b45c13bff.s3tc.ctex"
+path.etc2="res://.godot/imported/Corn_Dog.png-837a3c69e3ad19d47a39389b45c13bff.etc2.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://Imagenes/Minijuego_Cocina/Comida/Extras/Corn_Dog.png"
-dest_files=["res://.godot/imported/Corn_Dog.png-837a3c69e3ad19d47a39389b45c13bff.ctex"]
+dest_files=["res://.godot/imported/Corn_Dog.png-837a3c69e3ad19d47a39389b45c13bff.s3tc.ctex", "res://.godot/imported/Corn_Dog.png-837a3c69e3ad19d47a39389b45c13bff.etc2.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

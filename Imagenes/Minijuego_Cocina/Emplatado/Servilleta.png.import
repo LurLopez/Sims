@@ -3,19 +3,21 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://csae3fr7h6pjb"
-path="res://.godot/imported/Servilleta.png-b16f57170739cdd648c79caa32d43fba.ctex"
+path.s3tc="res://.godot/imported/Servilleta.png-b16f57170739cdd648c79caa32d43fba.s3tc.ctex"
+path.etc2="res://.godot/imported/Servilleta.png-b16f57170739cdd648c79caa32d43fba.etc2.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://Imagenes/Minijuego_Cocina/Emplatado/Servilleta.png"
-dest_files=["res://.godot/imported/Servilleta.png-b16f57170739cdd648c79caa32d43fba.ctex"]
+dest_files=["res://.godot/imported/Servilleta.png-b16f57170739cdd648c79caa32d43fba.s3tc.ctex", "res://.godot/imported/Servilleta.png-b16f57170739cdd648c79caa32d43fba.etc2.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

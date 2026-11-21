@@ -45,9 +45,9 @@
 [ext_resource type="Texture2D" path="res://Imagenes/Minijuego_Cocina/UI/Flecha.png" id="tex_43"]
 [ext_resource type="FontFile" path="res://Fuentes/UI/Bricolage-800.ttf" id="font_tit"]
 [ext_resource type="FontFile" path="res://Fuentes/UI/DMSans-700.ttf" id="font_ui"]
-[ext_resource type="Script" path="res://Scripts/GUI/Minijuego_Cocina/Escenario_Cooking_Fever.gd" id="script"]
+[ext_resource type="Script" path="res://Scripts/GUI/Minijuego_Cocina/Escenario_Maqueta_Cocina.gd" id="script"]
 
-[node name="Escenario_Cooking_Fever" type="Control"]
+[node name="Escenario_Maqueta_Cocina" type="Control"]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0

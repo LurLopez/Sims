@@ -3,19 +3,21 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bwggr4q21lwla"
-path="res://.godot/imported/Ticket_Verde.png-9c5f5ad4596b1e13cf89272c324c4e5d.ctex"
+path.s3tc="res://.godot/imported/Ticket_Verde.png-9c5f5ad4596b1e13cf89272c324c4e5d.s3tc.ctex"
+path.etc2="res://.godot/imported/Ticket_Verde.png-9c5f5ad4596b1e13cf89272c324c4e5d.etc2.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://Imagenes/Minijuego_Cocina/UI/Ticket_Verde.png"
-dest_files=["res://.godot/imported/Ticket_Verde.png-9c5f5ad4596b1e13cf89272c324c4e5d.ctex"]
+dest_files=["res://.godot/imported/Ticket_Verde.png-9c5f5ad4596b1e13cf89272c324c4e5d.s3tc.ctex", "res://.godot/imported/Ticket_Verde.png-9c5f5ad4596b1e13cf89272c324c4e5d.etc2.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

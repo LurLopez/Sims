@@ -3,19 +3,21 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bxlc606mqfq0p"
-path="res://.godot/imported/Cliente_06_Abuela_Enojado.png-6f8fa9c9bd546e33a5e90a586799546f.ctex"
+path.s3tc="res://.godot/imported/Cliente_06_Abuela_Enojado.png-6f8fa9c9bd546e33a5e90a586799546f.s3tc.ctex"
+path.etc2="res://.godot/imported/Cliente_06_Abuela_Enojado.png-6f8fa9c9bd546e33a5e90a586799546f.etc2.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://Imagenes/Minijuego_Cocina/Clientes/Enojados/Cliente_06_Abuela_Enojado.png"
-dest_files=["res://.godot/imported/Cliente_06_Abuela_Enojado.png-6f8fa9c9bd546e33a5e90a586799546f.ctex"]
+dest_files=["res://.godot/imported/Cliente_06_Abuela_Enojado.png-6f8fa9c9bd546e33a5e90a586799546f.s3tc.ctex", "res://.godot/imported/Cliente_06_Abuela_Enojado.png-6f8fa9c9bd546e33a5e90a586799546f.etc2.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

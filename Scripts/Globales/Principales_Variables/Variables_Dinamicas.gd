@@ -113,7 +113,7 @@ var Carrera_Futbol: Dictionary = CARRERA_FUTBOL_BASE.duplicate(true)
 func Carrera_Futbol_Por_Defecto() -> Dictionary:
 	return CARRERA_FUTBOL_BASE.duplicate(true)
 
-# Sistema de Minijuego de Cocina (estilo Cooking Fever).
+# Sistema de Minijuego de Cocina (gestión de pedidos).
 const COCINA_ESTADO_BASE: Dictionary = {
 	"restaurantes_desbloqueados": [],
 	"fondos_cocina": 0,
@@ -121,6 +121,7 @@ const COCINA_ESTADO_BASE: Dictionary = {
 	"mejoras": {
 		"burger_street": {"plancha": 1, "emplatado": 1, "termostato": 1, "ingredientes": 1, "ambiente": 1},
 		"bistro_tradicional": {"plancha": 1, "emplatado": 1, "termostato": 1, "ingredientes": 1, "ambiente": 1},
+		"cocina_mercado": {"plancha": 1, "emplatado": 1, "termostato": 1, "ingredientes": 1, "ambiente": 1},
 		"alta_cocina": {"plancha": 1, "emplatado": 1, "termostato": 1, "ingredientes": 1, "ambiente": 1}
 	},
 	"rango_logro": 0,
@@ -161,6 +162,11 @@ var Cooldown_Trabajos: Dictionary = {}
 # Estado de muerte del personaje
 var Muerto: bool = false
 var Edad_Muerte: int = 0
+# Rejuvenecimiento comprado en Tienda > Bienestar.
+# Rejuvenecimiento_Anios resta años a la edad calculada (suelo de 18 años);
+# Tratamientos_Rejuvenecimiento hace subir el precio de las siguientes sesiones.
+var Rejuvenecimiento_Anios: int = 0
+var Tratamientos_Rejuvenecimiento: int = 0
 # Probabilidad de supervivencia acumulada desde el inicio de la partida (producto de (1 - p_minuto)).
 # Solo se usa para el log de debug; no afecta a la jugabilidad.
 var Prob_Supervivencia_Acumulada: float = 1.0

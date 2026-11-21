@@ -3,19 +3,21 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dlv6d7qy51amv"
-path="res://.godot/imported/Salsera.png-195e0514145e317505ba608edd8cbd77.ctex"
+path.s3tc="res://.godot/imported/Salsera.png-195e0514145e317505ba608edd8cbd77.s3tc.ctex"
+path.etc2="res://.godot/imported/Salsera.png-195e0514145e317505ba608edd8cbd77.etc2.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://Imagenes/Minijuego_Cocina/Emplatado/Salsera.png"
-dest_files=["res://.godot/imported/Salsera.png-195e0514145e317505ba608edd8cbd77.ctex"]
+dest_files=["res://.godot/imported/Salsera.png-195e0514145e317505ba608edd8cbd77.s3tc.ctex", "res://.godot/imported/Salsera.png-195e0514145e317505ba608edd8cbd77.etc2.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

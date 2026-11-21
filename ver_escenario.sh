@@ -11,4 +11,4 @@ if [[ "${1:-}" == "--captura" ]]; then
   ARGS=(-- --captura)
 fi
 exec "$GODOT_BIN" --path . --resolution 1280x720 \
-  res://Escenas/Minijuego_Cocina/Escenario_Cooking_Fever.tscn "${ARGS[@]}" "$@"
+  res://Escenas/Minijuego_Cocina/Escenario_Maqueta_Cocina.tscn "${ARGS[@]}" "$@"

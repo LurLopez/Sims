@@ -1,7 +1,7 @@
 extends Node
 
 # ============================================================================
-# Sistema de Minijuego de Cocina (estilo Cooking Fever) + Ropa Equipable.
+# Sistema de Minijuego de Cocina (gestión de pedidos) + Ropa Equipable.
 # Toda la matemática y reglas puras viven aquí como static func para pruebas GUT.
 # ============================================================================
 
@@ -9,30 +9,48 @@ signal restaurante_desbloqueado(restaurante_id: String, nombre_restaurante: Stri
 
 const RESTAURANTE_BURGER := "burger_street"
 const RESTAURANTE_BISTRO := "bistro_tradicional"
+const RESTAURANTE_MERCADO := "cocina_mercado"
 const RESTAURANTE_ALTA := "alta_cocina"
 
+# 4 mundos de cocina, uno por cada trabajo de hostelería.
 const ORDEN_RESTAURANTES: Array[String] = [
 	RESTAURANTE_BURGER,
 	RESTAURANTE_BISTRO,
+	RESTAURANTE_MERCADO,
 	RESTAURANTE_ALTA
 ]
 
 const TRABAJO_A_RESTAURANTE: Dictionary = {
 	"Trabajar_En_Comida_Rapida": RESTAURANTE_BURGER,
 	"Trabajar_De_Ayudante_Cocina": RESTAURANTE_BISTRO,
-	"Trabajar_De_Cocinero_Partida": RESTAURANTE_BISTRO,
+	"Trabajar_De_Cocinero_Partida": RESTAURANTE_MERCADO,
 	"Trabajar_De_Chef_Ejecutivo": RESTAURANTE_ALTA
 }
 
+const LIMITE_SERVICIOS_COMPLETOS_DIA: int = 2
+# Alias conservado para saves/scripts antiguos: ahora son "servicios completos".
 const LIMITE_SERVICIOS_LIBRES_DIA: int = 2
-const TOPE_MICRO_PROPINAS_BASE_EUR: float = 15.0
+const TOPE_MICRO_PROPINAS_BASE_EUR: float = 6.0
+const MICRO_PROPINA_MIN_EUR: float = 1.0
+const MICRO_PROPINA_MAX_EUR: float = 3.0
 const PROB_MICRO_COCINA_BASE: float = 0.15
 const PROB_MICRO_MANUALIDADES_BASE: float = 0.05
 const PROB_MICRO_NECESIDAD_BASE: float = 0.12
 const PROB_MICRO_PROPINA_BASE: float = 0.10
 const RATIO_PROPINA_MONEDA_A_EUR: float = 0.50
 const PLUS_NOMINA_TURNO_BONUS: float = 0.10
-const BONOS_ESTRELLAS_BASE_EUR: Array[float] = [15.0, 15.0, 20.0]
+
+# --- Modelo económico del local (v2) ---
+# La Caja del restaurante recibe las ventas menos los costes y paga las 5
+# mejoras. El dinero personal del Sim sale de las propinas, de una parte del
+# beneficio y de la prima por estrellas.
+const COSTE_INGREDIENTES_RATIO: float = 0.30
+const COSTE_SERVICIO_BASE_EUR: float = 6.0
+const COSTE_SERVICIO_POR_NIVEL_EUR: float = 2.0
+const COSTE_MERMA_RATIO: float = 0.30
+const REPARTO_BENEFICIO_SIM: float = 0.05
+const MULT_MODO_PRACTICA: float = 0.25
+const BONO_ESTRELLA_RATIO: float = 0.10
 
 const ORDEN_MEJORAS: Array[String] = [
 	"plancha",
@@ -42,10 +60,15 @@ const ORDEN_MEJORAS: Array[String] = [
 	"ambiente"
 ]
 
+# Cada mejora tiene 3 niveles. Además de los números que consume el juego,
+# `niveles` describe cada escalón para la pantalla de Mejoras: nombre corto,
+# dos o tres beneficios legibles y una frase que invita a subir de nivel.
 const MEJORAS_DEF: Dictionary = {
 	"plancha": {
 		"nombre": "Plancha y Freidora",
+		"nombre_corto": "Plancha y Freidora",
 		"icono": "flame",
+		"acento": "#f97316",
 		"costes": [0, 120, 320],
 		"huecos": [2, 3, 4],
 		"cestas_freidora": [1, 2, 2],
@@ -54,11 +77,33 @@ const MEJORAS_DEF: Dictionary = {
 			"2 huecos de plancha · 1 cesta · Vel. x1.00",
 			"3 huecos de plancha · 2 cestas · Cocción -20%",
 			"4 huecos de plancha · 2 cestas · Cocción -35%"
+		],
+		"niveles": [
+			{
+				"nombre": "Básica",
+				"beneficios": ["2 huecos de plancha", "1 cesta de fritura", "Cocción a velocidad normal"],
+				"ganancias": [],
+				"frase": "Dos hamburguesas a la vez para arrancar. Sube a tres huecos en cuanto puedas."
+			},
+			{
+				"nombre": "Mejorada",
+				"beneficios": ["3 huecos de plancha", "2 cestas de fritura", "Cocción un 20% más rápida"],
+				"ganancias": ["+1 hueco de plancha", "+1 cesta de fritura", "−20% tiempo de cocción"],
+				"frase": "Tres huecos y dos cestas: el ritmo ya es de diner de verdad."
+			},
+			{
+				"nombre": "Profesional",
+				"beneficios": ["4 huecos de plancha", "2 cestas de fritura", "Cocción un 35% más rápida"],
+				"ganancias": ["+1 hueco de plancha", "−15% tiempo de cocción"],
+				"frase": "Cuatro huecos a pleno rendimiento. La plancha ya no te frena."
+			}
 		]
 	},
 	"emplatado": {
 		"nombre": "Emplatado y Bebidas",
+		"nombre_corto": "Emplatado y Bebidas",
 		"icono": "utensils",
+		"acento": "#38bdf8",
 		"costes": [0, 100, 280],
 		"platos": [2, 3, 4],
 		"bebidas": [1, 2, 3],
@@ -67,11 +112,33 @@ const MEJORAS_DEF: Dictionary = {
 			"2 platos · 1 vaso (4.0 s)",
 			"3 platos · 2 vasos (2.5 s)",
 			"4 platos · 3 vasos (1.0 s)"
+		],
+		"niveles": [
+			{
+				"nombre": "Básico",
+				"beneficios": ["2 platos de pase", "1 vaso a la vez", "Refresco en 4.0 s"],
+				"ganancias": [],
+				"frase": "Dos platos y un vaso para empezar. Con tres platos el pase respira."
+			},
+			{
+				"nombre": "Mejorado",
+				"beneficios": ["3 platos de pase", "2 vasos a la vez", "Refresco en 2.5 s"],
+				"ganancias": ["+1 plato de pase", "+1 vaso a la vez", "−1.5 s por refresco"],
+				"frase": "Tres platos y dos vasos: sirve sin cruzar pedidos ni esperar."
+			},
+			{
+				"nombre": "Profesional",
+				"beneficios": ["4 platos de pase", "3 vasos a la vez", "Refresco en 1.0 s"],
+				"ganancias": ["+1 plato de pase", "+1 vaso a la vez", "−1.5 s por refresco"],
+				"frase": "Cuatro platos y tres vasos. El pase de servicio ya vuela."
+			}
 		]
 	},
 	"termostato": {
 		"nombre": "Termostato",
+		"nombre_corto": "Termostato",
 		"icono": "zap",
+		"acento": "#facc15",
 		"costes": [0, 90, 240],
 		"tiempo_quemado": [6.0, 8.1, 10.5],
 		"aviso_temprano": [false, false, true],
@@ -79,22 +146,66 @@ const MEJORAS_DEF: Dictionary = {
 			"6.0 s antes de quemarse",
 			"8.1 s antes de quemarse",
 			"10.5 s + aviso visual temprano"
+		],
+		"niveles": [
+			{
+				"nombre": "Manual",
+				"beneficios": ["6.0 s de margen", "Sin aviso temprano", "Dial de control básico"],
+				"ganancias": [],
+				"frase": "Seis segundos de margen. Con el dial de precisión ganarás dos más."
+			},
+			{
+				"nombre": "Precisión",
+				"beneficios": ["8.1 s de margen", "Sin aviso temprano", "Dial de precisión"],
+				"ganancias": ["+2.1 s de margen", "Dial de precisión"],
+				"frase": "Ocho segundos y un dial fino. El aviso temprano está a un paso."
+			},
+			{
+				"nombre": "Digital",
+				"beneficios": ["10.5 s de margen", "Aviso visual temprano", "Panel digital"],
+				"ganancias": ["+2.4 s de margen", "Aviso visual temprano"],
+				"frase": "Diez segundos y aviso visual: quemar la comida es cosa del pasado."
+			}
 		]
 	},
 	"ingredientes": {
 		"nombre": "Calidad de Ingredientes",
+		"nombre_corto": "Ingredientes",
 		"icono": "sparkles",
+		"acento": "#4ade80",
 		"costes": [0, 140, 360],
 		"mult_precio": [1.00, 1.25, 1.50],
 		"descripciones": [
 			"Precio base x1.00",
 			"Precio por plato x1.25",
 			"Precio por plato x1.50"
+		],
+		"niveles": [
+			{
+				"nombre": "De proximidad",
+				"beneficios": ["Precio base x1.00", "Género de proximidad", "Sin bonificación"],
+				"ganancias": [],
+				"frase": "Producto correcto, precio correcto. Con género seleccionado subirás cada ticket."
+			},
+			{
+				"nombre": "Seleccionado",
+				"beneficios": ["Precio por plato x1.25", "Género seleccionado", "+25% en cada ticket"],
+				"ganancias": ["+25% precio por plato", "Género seleccionado"],
+				"frase": "Buen producto, mejor ticket. El género premium está a un paso."
+			},
+			{
+				"nombre": "Premium",
+				"beneficios": ["Precio por plato x1.50", "Género premium", "+50% en cada ticket"],
+				"ganancias": ["+25% precio por plato", "Género premium"],
+				"frase": "Producto premium y tickets un 50% más altos. Se nota en la Caja."
+			}
 		]
 	},
 	"ambiente": {
 		"nombre": "Ambiente del Local",
+		"nombre_corto": "Ambiente del Local",
 		"icono": "smile",
+		"acento": "#f472b6",
 		"costes": [0, 110, 300],
 		"mult_paciencia": [1.00, 1.15, 1.30],
 		"mult_propinas": [1.00, 1.20, 1.40],
@@ -102,9 +213,31 @@ const MEJORAS_DEF: Dictionary = {
 			"Paciencia x1.00 · Propinas x1.00",
 			"Paciencia x1.15 · Propinas x1.20",
 			"Paciencia x1.30 · Propinas x1.40"
+		],
+		"niveles": [
+			{
+				"nombre": "Acogedor",
+				"beneficios": ["Paciencia x1.00", "Propinas x1.00", "Hilo musical"],
+				"ganancias": [],
+				"frase": "Un local agradable ya suma. Con el jukebox los clientes esperan mejor."
+			},
+			{
+				"nombre": "Con jukebox",
+				"beneficios": ["Paciencia x1.15", "Propinas x1.20", "Jukebox y luz cálida"],
+				"ganancias": ["+15% paciencia", "+20% propinas"],
+				"frase": "Luz cálida y buena música: los clientes aguantan más y dejan más."
+			},
+			{
+				"nombre": "De lujo",
+				"beneficios": ["Paciencia x1.30", "Propinas x1.40", "Jukebox de lujo"],
+				"ganancias": ["+15% paciencia", "+20% propinas"],
+				"frase": "El jukebox de lujo: esperan con gusto y dejan propinas de estrella."
+			}
 		]
 	}
 }
+
+const NOMBRES_NIVEL_MEJORA: Array[String] = ["Básico", "Mejorado", "Profesional"]
 
 const RECETAS_BURGER_STREET: Dictionary = {
 	"burger_sola": {
@@ -170,8 +303,46 @@ const RANGOS_LOGRO: Array[Dictionary] = [
 	{"rango": 9, "niveles": 45, "nombre": "Estrella Michelin", "beneficio": "Desbloquea Traje Estrella Michelin (+30% salario, -5% Higiene, +25% propinas).", "prenda": "Traje_Estrella_Michelin"}
 ]
 
+const DESBLOQUEO_INICIO: String = "inicio"
+const DESBLOQUEO_TIENDA: String = "tienda"
+const DESBLOQUEO_RANGO: String = "rango"
+
+const CATEGORIAS_ROPA: Array[Dictionary] = [
+	{"id": "todo", "nombre": "Todo"},
+	{"id": "tienda", "nombre": "Tienda"},
+	{"id": "diario", "nombre": "Diario"},
+	{"id": "deporte", "nombre": "Deporte"},
+	{"id": "elegante", "nombre": "Elegante"},
+	{"id": "trabajo", "nombre": "Trabajo"},
+	{"id": "fiesta", "nombre": "Fiesta"},
+	{"id": "cocina", "nombre": "Cocina"},
+]
+
 const ORDEN_ROPA: Array[String] = [
+	# Inicio (gratis)
 	"Ropa_Calle",
+	"Camiseta_Blanca",
+	"Sudadera_Gris",
+	"Camisa_Cuadros",
+	"Conjunto_Verano",
+	"Vestido_Flores",
+	"Pijama_Estrellada",
+	"Jersey_Invierno",
+	"Conjunto_Deportivo",
+	"Equipacion_Futbol",
+	# Tienda (dinero)
+	"Camiseta_Universidad",
+	"Mono_Taller",
+	"Uniforme_Camarero",
+	"Bata_Laboratorio",
+	"Abrigo_Invierno",
+	"Chaqueta_Cuero",
+	"Chaqueta_Neon",
+	"Traje_Ejecutivo",
+	"Vestido_Gala",
+	"Esmoquin_Noir",
+	"Traje_Astronauta",
+	# Cocina (rangos)
 	"Delantal_Aprendiz",
 	"Chaqueta_Chef",
 	"Atuendo_Chef_Gala",
@@ -180,6 +351,26 @@ const ORDEN_ROPA: Array[String] = [
 
 const NOMBRES_ROPA: Dictionary = {
 	"Ropa_Calle": "Ropa de Calle",
+	"Camiseta_Blanca": "Camiseta Blanca",
+	"Sudadera_Gris": "Sudadera con Capucha",
+	"Camisa_Cuadros": "Camisa de Cuadros",
+	"Conjunto_Verano": "Conjunto de Verano",
+	"Vestido_Flores": "Vestido de Flores",
+	"Pijama_Estrellada": "Pijama Estrellada",
+	"Jersey_Invierno": "Jersey de Invierno",
+	"Conjunto_Deportivo": "Conjunto Deportivo",
+	"Equipacion_Futbol": "Equipación de Fútbol",
+	"Camiseta_Universidad": "Camiseta Universitaria",
+	"Mono_Taller": "Mono de Taller",
+	"Uniforme_Camarero": "Uniforme de Camarero",
+	"Bata_Laboratorio": "Bata de Laboratorio",
+	"Abrigo_Invierno": "Abrigo de Invierno",
+	"Chaqueta_Cuero": "Chaqueta de Cuero",
+	"Chaqueta_Neon": "Chaqueta Neón",
+	"Traje_Ejecutivo": "Traje Ejecutivo",
+	"Vestido_Gala": "Vestido de Gala",
+	"Esmoquin_Noir": "Esmoquin Noir",
+	"Traje_Astronauta": "Traje de Astronauta",
 	"Delantal_Aprendiz": "Delantal de Aprendiz",
 	"Chaqueta_Chef": "Chaqueta de Chef",
 	"Atuendo_Chef_Gala": "Atuendo de Chef de Gala",
@@ -195,21 +386,21 @@ func _ready() -> void:
 
 func _Inicializar_Restaurantes() -> void:
 	var niveles_burger: Array = [
-		{"nivel": 1, "duracion": 60, "meta_1": 55, "meta_2": 85, "meta_3": 115, "intervalo_spawn": 6.5, "paciencia_base": 28.0, "max_items": 2, "menu": ["burger_sola", "refresco"]},
-		{"nivel": 2, "duracion": 60, "meta_1": 70, "meta_2": 105, "meta_3": 140, "intervalo_spawn": 6.0, "paciencia_base": 27.0, "max_items": 2, "menu": ["burger_sola", "refresco"]},
-		{"nivel": 3, "duracion": 65, "meta_1": 85, "meta_2": 125, "meta_3": 165, "intervalo_spawn": 5.6, "paciencia_base": 26.0, "max_items": 2, "menu": ["burger_sola", "burger_queso", "refresco"]},
-		{"nivel": 4, "duracion": 65, "meta_1": 100, "meta_2": 145, "meta_3": 190, "intervalo_spawn": 5.3, "paciencia_base": 25.5, "max_items": 2, "menu": ["burger_sola", "burger_queso", "refresco"]},
-		{"nivel": 5, "duracion": 70, "meta_1": 115, "meta_2": 165, "meta_3": 215, "intervalo_spawn": 5.0, "paciencia_base": 25.0, "max_items": 2, "menu": ["burger_sola", "burger_queso", "patatas", "refresco"]},
-		{"nivel": 6, "duracion": 70, "meta_1": 130, "meta_2": 185, "meta_3": 240, "intervalo_spawn": 4.8, "paciencia_base": 24.0, "max_items": 3, "menu": ["burger_sola", "burger_queso", "patatas", "refresco"]},
-		{"nivel": 7, "duracion": 75, "meta_1": 145, "meta_2": 205, "meta_3": 265, "intervalo_spawn": 4.6, "paciencia_base": 23.5, "max_items": 3, "menu": ["burger_sola", "burger_queso", "patatas", "refresco"]},
-		{"nivel": 8, "duracion": 75, "meta_1": 165, "meta_2": 235, "meta_3": 300, "intervalo_spawn": 4.4, "paciencia_base": 23.0, "max_items": 3, "menu": ["burger_sola", "burger_queso", "burger_completa", "patatas", "refresco"]},
-		{"nivel": 9, "duracion": 75, "meta_1": 180, "meta_2": 255, "meta_3": 330, "intervalo_spawn": 4.2, "paciencia_base": 22.0, "max_items": 3, "menu": ["burger_sola", "burger_queso", "burger_completa", "patatas", "refresco"]},
-		{"nivel": 10, "duracion": 80, "meta_1": 200, "meta_2": 285, "meta_3": 365, "intervalo_spawn": 4.0, "paciencia_base": 21.5, "max_items": 3, "menu": ["burger_sola", "burger_queso", "burger_completa", "patatas", "refresco"]},
-		{"nivel": 11, "duracion": 80, "meta_1": 220, "meta_2": 310, "meta_3": 400, "intervalo_spawn": 3.8, "paciencia_base": 21.0, "max_items": 3, "menu": ["burger_sola", "burger_queso", "burger_completa", "burger_doble", "patatas", "refresco"]},
-		{"nivel": 12, "duracion": 80, "meta_1": 235, "meta_2": 335, "meta_3": 430, "intervalo_spawn": 3.7, "paciencia_base": 20.0, "max_items": 3, "menu": ["burger_sola", "burger_queso", "burger_completa", "burger_doble", "patatas", "refresco"]},
-		{"nivel": 13, "duracion": 85, "meta_1": 255, "meta_2": 360, "meta_3": 465, "intervalo_spawn": 3.5, "paciencia_base": 19.5, "max_items": 3, "menu": ["burger_sola", "burger_queso", "burger_completa", "burger_doble", "patatas", "refresco"]},
-		{"nivel": 14, "duracion": 90, "meta_1": 275, "meta_2": 385, "meta_3": 495, "intervalo_spawn": 3.3, "paciencia_base": 19.0, "max_items": 3, "menu": ["burger_sola", "burger_queso", "burger_completa", "burger_doble", "patatas", "refresco"]},
-		{"nivel": 15, "duracion": 90, "meta_1": 295, "meta_2": 415, "meta_3": 535, "intervalo_spawn": 3.1, "paciencia_base": 18.0, "max_items": 3, "menu": ["burger_sola", "burger_queso", "burger_completa", "burger_doble", "patatas", "refresco"]}
+		{"nivel": 1, "clientes": 11, "meta_1": 55, "meta_2": 85, "meta_3": 115, "intervalo_spawn": 6.5, "paciencia_base": 28.0, "max_items": 2, "menu": ["burger_sola", "refresco"]},
+		{"nivel": 2, "clientes": 12, "meta_1": 70, "meta_2": 105, "meta_3": 140, "intervalo_spawn": 6.0, "paciencia_base": 27.0, "max_items": 2, "menu": ["burger_sola", "refresco"]},
+		{"nivel": 3, "clientes": 14, "meta_1": 85, "meta_2": 125, "meta_3": 165, "intervalo_spawn": 5.6, "paciencia_base": 26.0, "max_items": 2, "menu": ["burger_sola", "burger_queso", "refresco"]},
+		{"nivel": 4, "clientes": 15, "meta_1": 100, "meta_2": 145, "meta_3": 190, "intervalo_spawn": 5.3, "paciencia_base": 25.5, "max_items": 2, "menu": ["burger_sola", "burger_queso", "refresco"]},
+		{"nivel": 5, "clientes": 16, "meta_1": 115, "meta_2": 165, "meta_3": 215, "intervalo_spawn": 5.0, "paciencia_base": 25.0, "max_items": 2, "menu": ["burger_sola", "burger_queso", "patatas", "refresco"]},
+		{"nivel": 6, "clientes": 17, "meta_1": 130, "meta_2": 185, "meta_3": 240, "intervalo_spawn": 4.8, "paciencia_base": 24.0, "max_items": 3, "menu": ["burger_sola", "burger_queso", "patatas", "refresco"]},
+		{"nivel": 7, "clientes": 19, "meta_1": 145, "meta_2": 205, "meta_3": 265, "intervalo_spawn": 4.6, "paciencia_base": 23.5, "max_items": 3, "menu": ["burger_sola", "burger_queso", "patatas", "refresco"]},
+		{"nivel": 8, "clientes": 20, "meta_1": 165, "meta_2": 235, "meta_3": 300, "intervalo_spawn": 4.4, "paciencia_base": 23.0, "max_items": 3, "menu": ["burger_sola", "burger_queso", "burger_completa", "patatas", "refresco"]},
+		{"nivel": 9, "clientes": 21, "meta_1": 180, "meta_2": 255, "meta_3": 330, "intervalo_spawn": 4.2, "paciencia_base": 22.0, "max_items": 3, "menu": ["burger_sola", "burger_queso", "burger_completa", "patatas", "refresco"]},
+		{"nivel": 10, "clientes": 22, "meta_1": 200, "meta_2": 285, "meta_3": 365, "intervalo_spawn": 4.0, "paciencia_base": 21.5, "max_items": 3, "menu": ["burger_sola", "burger_queso", "burger_completa", "patatas", "refresco"]},
+		{"nivel": 11, "clientes": 24, "meta_1": 220, "meta_2": 310, "meta_3": 400, "intervalo_spawn": 3.8, "paciencia_base": 21.0, "max_items": 3, "menu": ["burger_sola", "burger_queso", "burger_completa", "burger_doble", "patatas", "refresco"]},
+		{"nivel": 12, "clientes": 25, "meta_1": 235, "meta_2": 335, "meta_3": 430, "intervalo_spawn": 3.7, "paciencia_base": 20.0, "max_items": 3, "menu": ["burger_sola", "burger_queso", "burger_completa", "burger_doble", "patatas", "refresco"]},
+		{"nivel": 13, "clientes": 27, "meta_1": 255, "meta_2": 360, "meta_3": 465, "intervalo_spawn": 3.5, "paciencia_base": 19.5, "max_items": 3, "menu": ["burger_sola", "burger_queso", "burger_completa", "burger_doble", "patatas", "refresco"]},
+		{"nivel": 14, "clientes": 29, "meta_1": 275, "meta_2": 385, "meta_3": 495, "intervalo_spawn": 3.3, "paciencia_base": 19.0, "max_items": 3, "menu": ["burger_sola", "burger_queso", "burger_completa", "burger_doble", "patatas", "refresco"]},
+		{"nivel": 15, "clientes": 31, "meta_1": 295, "meta_2": 415, "meta_3": 535, "intervalo_spawn": 3.1, "paciencia_base": 18.0, "max_items": 3, "menu": ["burger_sola", "burger_queso", "burger_completa", "burger_doble", "patatas", "refresco"]}
 	]
 
 	_restaurantes = {
@@ -227,8 +418,17 @@ func _Inicializar_Restaurantes() -> void:
 			"nombre": "Bistró Tradicional",
 			"subtitulo": "Filetes al punto, salsas artesanas y postres",
 			"implementado": false,
-			"trabajo_requerido": "Ayudante de Cocina o Cocinero de Partida",
-			"trabajos_ids": ["Trabajar_De_Ayudante_Cocina", "Trabajar_De_Cocinero_Partida"],
+			"trabajo_requerido": "Ayudante de Cocina",
+			"trabajos_ids": ["Trabajar_De_Ayudante_Cocina"],
+			"niveles": []
+		},
+		RESTAURANTE_MERCADO: {
+			"id": RESTAURANTE_MERCADO,
+			"nombre": "Cocina de Mercado",
+			"subtitulo": "Producto fresco, arroces y guisos de temporada",
+			"implementado": false,
+			"trabajo_requerido": "Cocinero de Partida",
+			"trabajos_ids": ["Trabajar_De_Cocinero_Partida"],
 			"niveles": []
 		},
 		RESTAURANTE_ALTA: {
@@ -310,6 +510,34 @@ static func Obtener_Multiplicador_Propinas_Ambiente(nivel_ambiente: int) -> floa
 	return float(MEJORAS_DEF["ambiente"]["mult_propinas"][idx])
 
 
+# --- Datos de presentación de las mejoras (pantalla de Mejoras) ------------
+
+static func Obtener_Info_Nivel_Mejora(mejora_id: String, nivel: int) -> Dictionary:
+	if not MEJORAS_DEF.has(mejora_id):
+		return {}
+	var niveles: Array = MEJORAS_DEF[mejora_id].get("niveles", [])
+	var idx: int = clampi(nivel, 1, 3) - 1
+	if idx < 0 or idx >= niveles.size():
+		return {}
+	return niveles[idx]
+
+
+static func Obtener_Nombre_Nivel_Mejora(mejora_id: String, nivel: int) -> String:
+	return str(Obtener_Info_Nivel_Mejora(mejora_id, nivel).get("nombre", NOMBRES_NIVEL_MEJORA[clampi(nivel, 1, 3) - 1]))
+
+
+static func Obtener_Beneficios_Nivel_Mejora(mejora_id: String, nivel: int) -> Array:
+	return Obtener_Info_Nivel_Mejora(mejora_id, nivel).get("beneficios", [])
+
+
+static func Obtener_Ganancias_Nivel_Mejora(mejora_id: String, nivel: int) -> Array:
+	return Obtener_Info_Nivel_Mejora(mejora_id, nivel).get("ganancias", [])
+
+
+static func Obtener_Frase_Nivel_Mejora(mejora_id: String, nivel: int) -> String:
+	return str(Obtener_Info_Nivel_Mejora(mejora_id, nivel).get("frase", ""))
+
+
 static func Calcular_Tiempo_Coccion(base_seg: float, nivel_plancha: int, destreza_innata: float) -> float:
 	var mult_plancha: float = Obtener_Multiplicador_Plancha(nivel_plancha)
 	var destreza_norm: float = clampf(destreza_innata, 0.0, 100.0) / 100.0
@@ -357,40 +585,77 @@ static func Calcular_Propina_Cliente(precio_pedido: int, ratio_paciencia: float,
 	return int(round(propina_raw * mult_ambiente * mult_ropa))
 
 
-static func Calcular_Estrellas(recaudacion: int, meta_1: int, meta_2: int, meta_3: int) -> int:
-	if recaudacion >= meta_3:
+static func Calcular_Estrellas(ventas: int, meta_1: int, meta_2: int, meta_3: int) -> int:
+	if ventas >= meta_3:
 		return 3
-	if recaudacion >= meta_2:
+	if ventas >= meta_2:
 		return 2
-	if recaudacion >= meta_1:
+	if ventas >= meta_1:
 		return 1
 	return 0
 
 
-static func Calcular_Fondos_Ganados(recaudacion: int, en_turno: bool) -> int:
-	var mult: float = 1.5 if en_turno else 1.0
-	return int(round(float(maxi(0, recaudacion)) * mult))
+# --- Costes, beneficio y reparto del servicio ---
+
+static func Calcular_Coste_Ingredientes(ventas: int) -> int:
+	return int(round(float(maxi(0, ventas)) * COSTE_INGREDIENTES_RATIO))
 
 
-static func Calcular_Bono_Estrellas_Eur(estrellas_previas: int, estrellas_nuevas: int, mult_precios: float) -> float:
+static func Calcular_Coste_Servicio(nivel: int) -> int:
+	var n: int = maxi(1, nivel)
+	return int(round(COSTE_SERVICIO_BASE_EUR + COSTE_SERVICIO_POR_NIVEL_EUR * float(n)))
+
+
+static func Calcular_Coste_Merma(desperdicio_valor: int) -> int:
+	return int(round(float(maxi(0, desperdicio_valor)) * COSTE_MERMA_RATIO))
+
+
+static func Calcular_Costes_Totales(ventas: int, nivel: int, desperdicio_valor: int = 0) -> int:
+	return Calcular_Coste_Ingredientes(ventas) + Calcular_Coste_Servicio(nivel) \
+		+ Calcular_Coste_Merma(desperdicio_valor)
+
+
+static func Calcular_Beneficio_Neto(ventas: int, nivel: int, desperdicio_valor: int = 0) -> int:
+	return maxi(0, maxi(0, ventas) - Calcular_Costes_Totales(ventas, nivel, desperdicio_valor))
+
+
+## Parte del beneficio que se lleva el Sim. En modo práctica se reduce al 25%.
+static func Calcular_Reparto_Sim(beneficio_neto: int, modo_practica: bool = false) -> int:
+	var reparto: float = float(maxi(0, beneficio_neto)) * REPARTO_BENEFICIO_SIM
+	if modo_practica:
+		reparto *= MULT_MODO_PRACTICA
+	return int(round(reparto))
+
+
+static func Calcular_Caja_Ganada(beneficio_neto: int, reparto_sim: int) -> int:
+	return maxi(0, maxi(0, beneficio_neto) - maxi(0, reparto_sim))
+
+
+## Prima única por mejorar estrellas. Se paga contra los umbrales del nivel,
+## así que escalar de nivel multiplica la recompensa sin premiar el farmeo del 1.
+static func Calcular_Bono_Estrellas_Eur(estrellas_previas: int, estrellas_nuevas: int,
+		meta_1: int, meta_2: int, meta_3: int, mult_precios: float) -> float:
 	var prev: int = clampi(estrellas_previas, 0, 3)
 	var nuevo: int = clampi(estrellas_nuevas, 0, 3)
 	if nuevo <= prev:
 		return 0.0
+	var metas: Array[int] = [maxi(0, meta_1), maxi(0, meta_2), maxi(0, meta_3)]
 	var suma_base: float = 0.0
 	for s in range(prev, nuevo):
-		suma_base += BONOS_ESTRELLAS_BASE_EUR[s]
+		suma_base += float(metas[s]) * BONO_ESTRELLA_RATIO
 	return round(suma_base * mult_precios * 100.0) / 100.0
 
 
 static func Calcular_Propinas_Netas_Eur(propinas_servicio: int, estrellas: int, en_turno: bool,
-		mult_precios: float, bonus_ropa_propinas: float = 0.0) -> float:
+		mult_precios: float, bonus_ropa_propinas: float = 0.0,
+		modo_practica: bool = false) -> float:
 	if estrellas < 1 or propinas_servicio <= 0:
 		return 0.0
 	var base_eur: float = float(propinas_servicio) * RATIO_PROPINA_MONEDA_A_EUR
 	var mult_turno: float = 1.5 if en_turno else 1.0
 	var mult_ropa: float = 1.0 + maxf(0.0, bonus_ropa_propinas)
-	return round(base_eur * mult_turno * mult_ropa * mult_precios * 100.0) / 100.0
+	var mult_practica: float = MULT_MODO_PRACTICA if modo_practica else 1.0
+	return round(base_eur * mult_turno * mult_ropa * mult_precios * mult_practica * 100.0) / 100.0
 
 
 static func Calcular_Tasa_Drop_Cocina(en_turno: bool, modo_rapido: bool) -> float:
@@ -490,6 +755,12 @@ func Obtener_Fondos_Cocina() -> int:
 	return maxi(0, int(Obtener_Estado().get("fondos_cocina", 0)))
 
 
+## Caja del restaurante en euros. Sustituye a los antiguos "Fondos" y paga las
+## 5 mejoras. El dinero personal del Sim no se mezcla con ella.
+func Obtener_Caja_Restaurante() -> int:
+	return Obtener_Fondos_Cocina()
+
+
 func Obtener_Rango_Logro() -> int:
 	return clampi(int(Obtener_Estado().get("rango_logro", 0)), 0, 9)
 
@@ -579,10 +850,10 @@ func Comprar_Mejora(restaurante_id: String, mejora_id: String) -> Dictionary:
 	if nivel_actual >= 3:
 		return {"exito": false, "motivo": "nivel_maximo"}
 	var coste: int = int(MEJORAS_DEF[mejora_id]["costes"][nivel_actual])
-	var fondos: int = Obtener_Fondos_Cocina()
-	if fondos < coste:
-		return {"exito": false, "motivo": "fondos_insuficientes", "coste": coste, "fondos": fondos}
-	estado["fondos_cocina"] = fondos - coste
+	var caja: int = Obtener_Caja_Restaurante()
+	if caja < coste:
+		return {"exito": false, "motivo": "fondos_insuficientes", "coste": coste, "fondos": caja}
+	estado["fondos_cocina"] = caja - coste
 	mejoras_all[restaurante_id][mejora_id] = nivel_actual + 1
 	Guardar_Variables_Dinamicas.save_game()
 	return {
@@ -593,12 +864,18 @@ func Comprar_Mejora(restaurante_id: String, mejora_id: String) -> Dictionary:
 	}
 
 
-func Obtener_Servicios_Remunerados_Restantes_Hoy() -> int:
+## Servicios que aún pagan propinas y parte del beneficio al 100% hoy.
+## Fuera de turno son 2; en turno no hay límite y no consume esta cuota.
+func Obtener_Servicios_Completos_Restantes_Hoy() -> int:
 	var estado: Dictionary = Obtener_Estado()
 	if int(estado.get("ultimo_dia_remunerado", -1)) != int(Variables_Dinamicas.Minute_Day):
-		return LIMITE_SERVICIOS_LIBRES_DIA
+		return LIMITE_SERVICIOS_COMPLETOS_DIA
 	var usados: int = maxi(0, int(estado.get("servicios_remunerados_hoy", 0)))
-	return maxi(0, LIMITE_SERVICIOS_LIBRES_DIA - usados)
+	return maxi(0, LIMITE_SERVICIOS_COMPLETOS_DIA - usados)
+
+
+func Obtener_Servicios_Remunerados_Restantes_Hoy() -> int:
+	return Obtener_Servicios_Completos_Restantes_Hoy()
 
 
 # ============================================================================
@@ -618,13 +895,23 @@ func Registrar_Minuto_Trabajo_Hosteleria(nombre_trabajo: String) -> bool:
 	desbl.append(rest_id)
 	estado["restaurantes_desbloqueados"] = desbl
 
+	var rest_cfg: Dictionary = Obtener_Restaurante(rest_id)
+	var implementado: bool = bool(rest_cfg.get("implementado", false))
 	var nombre_rest: String = Obtener_Nombre_Restaurante(rest_id)
-	var titulo_msg: String = "¡Nuevo minijuego desbloqueado: Cocina!" if es_primero else "Nuevo restaurante desbloqueado: %s" % nombre_rest
+	var titulo_msg: String
+	if es_primero:
+		titulo_msg = "¡Nuevo minijuego desbloqueado: Cocina!"
+	elif implementado:
+		titulo_msg = "Nuevo restaurante desbloqueado: %s" % nombre_rest
+	else:
+		titulo_msg = "Nuevo mundo de cocina desbloqueado: %s (Fase 2)" % nombre_rest
 	var desc_msg: String
 	if es_primero:
 		desc_msg = "Has empezado tu primer turno en hostelería y has desbloqueado %s en el apartado Minijuegos.\n\nEntra desde la barra superior (Minijuegos) para atender pedidos, ganar propinas, mejorar tu cocina y subir tu Maestría Culinaria." % nombre_rest
-	else:
+	elif implementado:
 		desc_msg = "Tu experiencia en hostelería ha desbloqueado %s en el apartado Minijuegos." % nombre_rest
+	else:
+		desc_msg = "Tu experiencia en hostelería ha desbloqueado %s. Su mundo de cocina llegará al apartado Minijuegos en la Fase 2." % nombre_rest
 
 	_Agregar_Mensaje_Buzon(titulo_msg, desc_msg)
 	Guardar_Variables_Dinamicas.save_game()
@@ -718,7 +1005,7 @@ func Puede_Entrar_Minijuego() -> Dictionary:
 # ============================================================================
 
 func Procesar_Micro_Recompensa_Cliente(en_turno: bool, micro_propinas_acumuladas: float,
-		rolls: Dictionary = {}) -> Dictionary:
+		rolls: Dictionary = {}, modo_practica: bool = false) -> Dictionary:
 	var resultado: Dictionary = {
 		"cocina_ganada": 0,
 		"manualidades_ganadas": 0,
@@ -760,15 +1047,19 @@ func Procesar_Micro_Recompensa_Cliente(en_turno: bool, micro_propinas_acumuladas
 			resultado["necesidad_indice"] = idx_nec
 			resultado["necesidad_ganada"] = ganancia_n
 
-	# 10% de micro-propina (2-5 € * Multiplicador_Precios(), tope 15 € * Multiplicador_Precios() por partida)
+	# 10% de micro-propina (1-3 € * Multiplicador_Precios(), tope 6 € * Multiplicador_Precios() por partida).
+	# En modo práctica también se reduce al 25%, como el resto del dinero personal.
 	var mult_precios: float = Variables_Estaticas.Multiplicador_Precios()
-	var tope_sesion: float = round(TOPE_MICRO_PROPINAS_BASE_EUR * mult_precios * 100.0) / 100.0
+	var mult_practica: float = MULT_MODO_PRACTICA if modo_practica else 1.0
+	var tope_sesion: float = round(
+		TOPE_MICRO_PROPINAS_BASE_EUR * mult_precios * mult_practica * 100.0) / 100.0
 	var restante: float = maxf(0.0, tope_sesion - micro_propinas_acumuladas)
 	var roll_prop: float = float(rolls.get("propina", randf()))
 	if restante > 0.0001 and roll_prop < PROB_MICRO_PROPINA_BASE:
-		var base_eur: float = float(rolls.get("propina_base", randi_range(2, 5)))
-		base_eur = clampf(base_eur, 2.0, 5.0)
-		var cantidad_eur: float = round(minf(restante, base_eur * mult_precios) * 100.0) / 100.0
+		var base_eur: float = float(rolls.get("propina_base", randi_range(1, 3)))
+		base_eur = clampf(base_eur, MICRO_PROPINA_MIN_EUR, MICRO_PROPINA_MAX_EUR)
+		var cantidad_eur: float = round(
+			minf(restante, base_eur * mult_precios * mult_practica) * 100.0) / 100.0
 		if cantidad_eur > 0.0:
 			Variables_Dinamicas.Dinero += cantidad_eur
 			resultado["micro_propina_eur"] = cantidad_eur
@@ -777,7 +1068,7 @@ func Procesar_Micro_Recompensa_Cliente(en_turno: bool, micro_propinas_acumuladas
 
 
 func Procesar_Fin_Nivel(restaurante_id: String, nivel: int, recaudacion: int,
-		propinas_servicio: int, en_turno: bool) -> Dictionary:
+		propinas_servicio: int, en_turno: bool, desperdicio_valor: int = 0) -> Dictionary:
 	var estado: Dictionary = Obtener_Estado()
 	var cfg: Dictionary = Obtener_Config_Nivel(restaurante_id, nivel)
 	var meta_1: int = int(cfg.get("meta_1", 50))
@@ -789,41 +1080,62 @@ func Procesar_Fin_Nivel(restaurante_id: String, nivel: int, recaudacion: int,
 		estado["servicios_remunerados_hoy"] = 0
 		estado["ultimo_dia_remunerado"] = dia_actual
 
+	# El ticket incluye propinas (bonus de servicio para las estrellas), pero la
+	# Caja solo ingresa las ventas de platos/bebidas: las propinas van al equipo.
+	var ventas: int = maxi(0, recaudacion - propinas_servicio)
 	var estrellas: int = Calcular_Estrellas(recaudacion, meta_1, meta_2, meta_3)
-	var fondos_ganados: int = Calcular_Fondos_Ganados(recaudacion, en_turno)
-	estado["fondos_cocina"] = Obtener_Fondos_Cocina() + fondos_ganados
 
+	# --- Caja del restaurante: ventas - ingredientes - servicio - merma ---
+	var coste_ingredientes: int = Calcular_Coste_Ingredientes(ventas)
+	var coste_servicio: int = Calcular_Coste_Servicio(nivel)
+	var coste_merma: int = Calcular_Coste_Merma(desperdicio_valor)
+	var costes_totales: int = coste_ingredientes + coste_servicio + coste_merma
+	var beneficio_neto: int = Calcular_Beneficio_Neto(ventas, nivel, desperdicio_valor)
+
+	# --- Estrellas y prima única por mejora de estrellas ---
 	var estrellas_dict: Dictionary = estado.get("estrellas_nivel", {})
 	var clave_nivel: String = "%s_%d" % [restaurante_id, nivel]
 	var estrellas_previas: int = clampi(int(estrellas_dict.get(clave_nivel, 0)), 0, 3)
 
 	var mult_precios: float = Variables_Estaticas.Multiplicador_Precios()
-	var bono_estrellas_eur: float = Calcular_Bono_Estrellas_Eur(estrellas_previas, estrellas, mult_precios)
+	var bono_estrellas_eur: float = Calcular_Bono_Estrellas_Eur(
+		estrellas_previas, estrellas, meta_1, meta_2, meta_3, mult_precios)
 	if estrellas > estrellas_previas:
 		estrellas_dict[clave_nivel] = estrellas
 		estado["estrellas_nivel"] = estrellas_dict
 
+	# --- Reparto personal: propinas + parte del beneficio ---
 	var propinas_eur: float = 0.0
-	var limite_diario_alcanzado: bool = false
+	var reparto_sim: int = 0
+	var modo_practica: bool = false
 	var plus_nomina_activado: bool = false
 	var bonus_ropa_propinas: float = Obtener_Bonus_Propinas_Ropa()
 
 	if estrellas >= 1:
 		if en_turno:
 			propinas_eur = Calcular_Propinas_Netas_Eur(
-				propinas_servicio, estrellas, true, mult_precios, bonus_ropa_propinas)
+				propinas_servicio, estrellas, true, mult_precios, bonus_ropa_propinas, false)
+			reparto_sim = Calcular_Reparto_Sim(beneficio_neto, false)
 			estado["plus_nomina_turno_hoy"] = true
 			plus_nomina_activado = true
 		else:
 			var usados: int = maxi(0, int(estado.get("servicios_remunerados_hoy", 0)))
-			if usados < LIMITE_SERVICIOS_LIBRES_DIA:
+			if usados < LIMITE_SERVICIOS_COMPLETOS_DIA:
 				propinas_eur = Calcular_Propinas_Netas_Eur(
-					propinas_servicio, estrellas, false, mult_precios, bonus_ropa_propinas)
+					propinas_servicio, estrellas, false, mult_precios, bonus_ropa_propinas, false)
+				reparto_sim = Calcular_Reparto_Sim(beneficio_neto, false)
 				estado["servicios_remunerados_hoy"] = usados + 1
 			else:
-				limite_diario_alcanzado = true
+				modo_practica = true
+				propinas_eur = Calcular_Propinas_Netas_Eur(
+					propinas_servicio, estrellas, false, mult_precios, bonus_ropa_propinas, true)
+				reparto_sim = Calcular_Reparto_Sim(beneficio_neto, true)
 
-	var dinero_ganado: float = round((bono_estrellas_eur + propinas_eur) * 100.0) / 100.0
+	var caja_ganada: int = Calcular_Caja_Ganada(beneficio_neto, reparto_sim)
+	estado["fondos_cocina"] = Obtener_Caja_Restaurante() + caja_ganada
+
+	var dinero_ganado: float = round(
+		(bono_estrellas_eur + propinas_eur + float(reparto_sim)) * 100.0) / 100.0
 	if dinero_ganado > 0.0:
 		Variables_Dinamicas.Dinero += dinero_ganado
 
@@ -849,7 +1161,7 @@ func Procesar_Fin_Nivel(restaurante_id: String, nivel: int, recaudacion: int,
 				r, str(info_r.get("nombre", "")), niveles_superados, str(info_r.get("beneficio", ""))
 			]
 			if prenda != "":
-				msg_desc += "\n\nPuedes equipar %s en Perfil → Apuntes → Ropa." % Obtener_Nombre_Legible_Ropa(prenda)
+				msg_desc += "\n\nPuedes equipar %s en Vestuario (barra superior)." % Obtener_Nombre_Legible_Ropa(prenda)
 			_Agregar_Mensaje_Buzon("Maestría Culinaria: Rango %d/9" % r, msg_desc)
 
 	# Garantía idempotente de prendas hasta el rango alcanzado
@@ -863,12 +1175,22 @@ func Procesar_Fin_Nivel(restaurante_id: String, nivel: int, recaudacion: int,
 		"estrellas": estrellas,
 		"estrellas_previas": estrellas_previas,
 		"superado": estrellas >= 1,
-		"recaudacion": recaudacion,
-		"fondos_ganados": fondos_ganados,
+		"ventas": ventas,
+		"recaudacion": maxi(0, recaudacion),
+		"propinas_servicio": maxi(0, propinas_servicio),
+		"coste_ingredientes": coste_ingredientes,
+		"coste_servicio": coste_servicio,
+		"coste_merma": coste_merma,
+		"costes_totales": costes_totales,
+		"beneficio_neto": beneficio_neto,
+		"reparto_sim": reparto_sim,
+		"caja_ganada": caja_ganada,
+		"fondos_ganados": caja_ganada,
 		"bono_estrellas_eur": bono_estrellas_eur,
 		"propinas_eur": propinas_eur,
 		"dinero_ganado": dinero_ganado,
-		"limite_diario_alcanzado": limite_diario_alcanzado,
+		"modo_practica": modo_practica,
+		"limite_diario_alcanzado": modo_practica,
 		"en_turno": en_turno,
 		"plus_nomina_activado": plus_nomina_activado,
 		"niveles_superados": niveles_superados,
@@ -902,7 +1224,97 @@ func Obtener_Ropa_Equipada() -> Objeto_Ropa:
 func Obtener_Nombre_Legible_Ropa(clave: String) -> String:
 	if NOMBRES_ROPA.has(clave):
 		return str(NOMBRES_ROPA[clave])
+	var obj = Variables_Estaticas.Catalogo_Objetos.get(clave, null)
+	if obj is Objeto_Ropa and str(obj.nombre) != "":
+		return str(obj.nombre).replace("_", " ")
 	return clave.replace("_", " ")
+
+
+## Prendas gratuitas que todo Sim recibe al empezar (o al cargar una partida
+## antigua creada antes de que existiera el armario ampliado).
+func Obtener_Prendas_Iniciales() -> Array[String]:
+	var claves: Array[String] = []
+	for clave in ORDEN_ROPA:
+		var obj = Variables_Estaticas.Catalogo_Objetos.get(clave, null)
+		if obj is Objeto_Ropa and str(obj.desbloqueo) == DESBLOQUEO_INICIO:
+			claves.append(clave)
+	return claves
+
+
+func Asegurar_Prendas_Iniciales() -> void:
+	for clave in Obtener_Prendas_Iniciales():
+		Variables_Dinamicas.Objetos_Poseidos[clave] = true
+
+
+func Obtener_Categoria_Ropa(clave: String) -> String:
+	var obj = Variables_Estaticas.Catalogo_Objetos.get(clave, null)
+	if obj is Objeto_Ropa:
+		return str(obj.categoria)
+	return "diario"
+
+
+func Obtener_Desbloqueo_Ropa(clave: String) -> String:
+	var obj = Variables_Estaticas.Catalogo_Objetos.get(clave, null)
+	if obj is Objeto_Ropa:
+		return str(obj.desbloqueo)
+	return DESBLOQUEO_INICIO
+
+
+## Precio de compra de la prenda, ya escalado por el modo de juego.
+func Obtener_Precio_Ropa(clave: String) -> float:
+	var obj = Variables_Estaticas.Catalogo_Objetos.get(clave, null)
+	if not (obj is Objeto_Ropa):
+		return 0.0
+	return Variables_Estaticas.Obtener_Precio_Objeto(obj as Objeto)
+
+
+## Una prenda es comprable si está en la tienda, tiene precio y aún no se posee.
+func Es_Ropa_Comprable(clave: String) -> bool:
+	var obj = Variables_Estaticas.Catalogo_Objetos.get(clave, null)
+	if not (obj is Objeto_Ropa):
+		return false
+	if bool(Variables_Dinamicas.Objetos_Poseidos.get(clave, false)):
+		return false
+	return str(obj.desbloqueo) == DESBLOQUEO_TIENDA and obj.precio > 0.0
+
+
+func Puede_Comprar_Ropa(clave: String) -> bool:
+	return Es_Ropa_Comprable(clave) and Variables_Dinamicas.Dinero >= Obtener_Precio_Ropa(clave)
+
+
+func Comprar_Ropa(clave: String) -> bool:
+	if not Es_Ropa_Comprable(clave):
+		return false
+	var precio := Obtener_Precio_Ropa(clave)
+	if Variables_Dinamicas.Dinero < precio:
+		return false
+	Variables_Dinamicas.Dinero -= precio
+	Variables_Dinamicas.Objetos_Poseidos[clave] = true
+	Guardar_Variables_Dinamicas.save_game()
+	return true
+
+
+## Apariencia del personaje con un atuendo concreto aplicado (para la vista
+## previa del vestuario) sin modificar la apariencia guardada.
+func Obtener_Apariencia_Con_Ropa(apariencia: Dictionary, clave: String) -> Dictionary:
+	var obj = Variables_Estaticas.Catalogo_Objetos.get(clave, null)
+	var ropa: Objeto_Ropa = obj as Objeto_Ropa if obj is Objeto_Ropa else null
+	return Apariencia_Personaje.aplicar_atuendo(apariencia, ropa)
+
+
+## Apariencia del personaje con la prenda equipada. Se usa en el escenario de
+## Inicio, el avatar de cabecera, el retrato del perfil y el logo.
+func Obtener_Apariencia_Con_Ropa_Equipada(apariencia: Dictionary) -> Dictionary:
+	return Obtener_Apariencia_Con_Ropa(apariencia, Obtener_Clave_Ropa_Equipada())
+
+
+## Rango de Maestría Culinaria necesario para desbloquear una prenda.
+## Devuelve 0 si la prenda es inicial o no pertenece al sistema de rangos.
+func Obtener_Rango_Requerido_Ropa(clave: String) -> int:
+	for rango in RANGOS_LOGRO:
+		if str(rango.get("prenda", "")) == clave:
+			return int(rango["rango"])
+	return 0
 
 
 func Obtener_Bonus_Salario_Hosteleria() -> float:
@@ -918,6 +1330,38 @@ func Obtener_Reduccion_Higiene_Hosteleria() -> float:
 func Obtener_Bonus_Propinas_Ropa() -> float:
 	var ropa: Objeto_Ropa = Obtener_Ropa_Equipada()
 	return ropa.bonus_propinas_minijuego if ropa != null else 0.0
+
+
+func Obtener_Bonus_Salario_General() -> float:
+	var ropa: Objeto_Ropa = Obtener_Ropa_Equipada()
+	return ropa.bonus_salario_general if ropa != null else 0.0
+
+
+## Bonus de progreso por índice: 0 = Deporte, 1 = Académico, 2 = Manualidades.
+func Obtener_Bonus_Progreso(indice: int) -> float:
+	var ropa: Objeto_Ropa = Obtener_Ropa_Equipada()
+	if ropa == null:
+		return 0.0
+	match indice:
+		0:
+			return ropa.bonus_progreso_deporte
+		1:
+			return ropa.bonus_progreso_academico
+		2:
+			return ropa.bonus_progreso_manualidades
+	return 0.0
+
+
+## Reducción de desgaste de Higiene para un trabajo concreto. Los uniformes de
+## hostelería y los de cualquier trabajo pueden acumular su mejor reducción.
+func Obtener_Reduccion_Higiene_Para_Trabajo(nombre_trabajo: String) -> float:
+	var ropa: Objeto_Ropa = Obtener_Ropa_Equipada()
+	if ropa == null:
+		return 0.0
+	var reduccion := ropa.reduccion_higiene_cualquier_trabajo
+	if Es_Trabajo_Hosteleria(nombre_trabajo):
+		reduccion = maxf(reduccion, ropa.reduccion_higiene_trabajo)
+	return clampf(reduccion, 0.0, 0.95)
 
 
 func Equipar_Ropa(clave: String) -> bool:

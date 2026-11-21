@@ -77,10 +77,20 @@ Escena_Principal.tscn
     │   │   │   │   │   ├── Comer (Button)
     │   │   │   │   │   └── Ver_La_Television (Button)
     │   │   │   │   ├── Fijas_Opciones (VBoxContainer)
+    │   │   │   │   │   ├── Trabajo (Button)
+    │   │   │   │   │   ├── Boton_Carrera_Futbol (Button)
     │   │   │   │   │   └── Trabajo_Opciones (VBoxContainer)
-    │   │   │   │   │       ├── Comida_Rapida (Button)
+    │   │   │   │   │       ├── Cocinero (Button)
+    │   │   │   │   │       ├── Cocinero_Opciones (VBoxContainer)
+    │   │   │   │   │       │   ├── Comida_Rapida (Button)
+    │   │   │   │   │       │   ├── Ayudante_Cocina (Button)
+    │   │   │   │   │       │   ├── Cocinero_Partida (Button)
+    │   │   │   │   │       │   └── Chef_Ejecutivo (Button)
     │   │   │   │   │       ├── Carpintero (Button)
-    │   │   │   │   │       └── Cientifico (Button)
+    │   │   │   │   │       ├── Cientifico (Button)
+    │   │   │   │   │       ├── Abogado (Button)
+    │   │   │   │   │       ├── Medico (Button)
+    │   │   │   │   │       └── Artista (Button)
     │   │   │   │   └── Progreso_Opciones (VBoxContainer)
     │   │   │   │       ├── Salir_A_Correr (Button)
     │   │   │   │       ├── Estudiar (Button)
@@ -152,14 +162,16 @@ Escena_Principal.tscn
         ├── Titulo (Label)               ← "TIENDA"
         │
         ├── Categorias (Control)
-        │   ├── Tab_Dormir (Button)      ← 🛏️
-        │   ├── Tab_Comer (Button)       ← 🍽️
-        │   └── Tab_Duchar (Button)      ← 🚿
+        │   ├── Tab_Dormir (Button)      ← icono bed-double
+        │   ├── Tab_Comer (Button)       ← icono utensils
+        │   ├── Tab_Duchar (Button)      ← icono shower-head
+        │   └── Tab_Ventajas (Button)    ← icono sparkles, abre Bienestar (anuncios + clínica)
         │
         ├── Objetos_Dormir (Control)
         │   ├── Cama_Basica (Panel)
         │   │   ├── Imagen_Placeholder (Panel)
-        │   │   │   └── Imagen_Emoji (Label)
+        │   │   │   ├── Tier_Pill (PanelContainer, runtime) ← BÁSICO/PREMIUM/LUJO
+        │   │   │   └── Icono_Item (TextureRect, runtime)   ← PNG 512×512 con alfa
         │   │   ├── Nombre (Label)
         │   │   ├── Precio (Label)
         │   │   ├── Multiplicador (Label)
@@ -167,17 +179,31 @@ Escena_Principal.tscn
         │   │   ├── Comprar (Button)     ← visible si NO poseído
         │   │   ├── Vender (Button)      ← visible si poseído y hay otra opción
         │   │   └── Elegir (Button)      ← visible si poseído pero no seleccionado
-        │   └── Cama_Premium (Panel)     ← misma estructura
+        │   ├── Cama_Premium (Panel)     ← misma estructura
+        │   └── Cama_Lujo (Panel)        ← misma estructura
         │
         ├── Objetos_Comer (Control)      ← visible=false (oculto inicial)
-        │   ├── Mesa_Basica (Panel)
-        │   └── Mesa_Premium (Panel)
+        │   └── Mesa_Basica (Panel)
         │
-        └── Objetos_Duchar (Control)     ← visible=false (oculto inicial)
-            ├── Ducha_Basica (Panel)
-            └── Ducha_Premium (Panel)
+        ├── Objetos_Duchar (Control)     ← visible=false (oculto inicial)
+        │   ├── Ducha_Basica (Panel)
+        │   └── Ducha_Premium (Panel)
+        │
+        └── Objetos_Ventajas (Control)   ← visible=false; construido por Tienda_Bienestar.gd
+            └── Scroll_Bienestar/[Barra_Estado|Heroe_Clinica|Rejuvenecimiento|Cuidado_Exprés|Anuncios|Pie_Informacion]
 
-NOTA: MiniCalendarioPreview se añade dinámicamente en Seleccionar_Horario durante runtime
+NOTA: El layout de las tarjetas (332×442, vitrina 304×200, rejilla y centrado)
+se construye en `Script_Principal._Redisenar_Tienda()`. Los iconos se generan
+con `tools/procesar_iconos_tienda.py` y se cargan con `Estilos_UI.icono_tienda()`.
+
+PESTAÑA BIENESTAR (ANUNCIOS + CLÍNICA):
+- La construye `Scripts/GUI/Tienda/Tienda_Bienestar.gd` dentro de `Objetos_Ventajas`.
+- Guarda las esperas de anuncios en `user://recompensas.cfg` mediante el autoload `Recompensas`.
+- Incluye anuncios recompensados simulados (+dinero, +necesidades, tuppers y −1 año), servicios de
+  cuidado exprés pagados con euros y tratamientos de rejuvenecimiento con precio creciente.
+- La edad se calcula en `Variables_Estaticas.Calcular_Edad()` restando `Variables_Dinamicas.Rejuvenecimiento_Anios` (suelo 18).
+- Modales propios en CanvasLayer: `Modal_Tratamiento` y `Modal_Anuncio_Bienestar`.
+- Documentación: `Funcionalidades/Bienestar/Documentacion/BIENESTAR.md`.
 
 ESTADOS VISUALES DE LOS PANELES DE OBJETO:
 - StyleBox_Card_Normal    → borde gris (no poseído)

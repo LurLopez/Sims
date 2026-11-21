@@ -1,26 +1,54 @@
 class_name Logo_Juego
 extends HBoxContainer
-## Logotipo horizontal reutilizable del juego.
-## La insignia dibuja la cara real del protagonista (Personaje_Visual + Apariencia_Personaje),
-## por lo que el logo local cambia automáticamente con el personaje creado.
-## El icono de Play Store / lanzador es un recurso fijo independiente.
+## Logotipo horizontal oficial de SIMS LIFE.
+##
+## La insignia es un medallón ilustrado con la cara real del protagonista
+## (Personaje_Visual + Apariencia_Personaje), así que el logo local cambia
+## automáticamente con el Sim creado. El wordmark y el marco son assets fijos
+## de marca; el icono de Play Store / lanzador es un recurso independiente.
+##
+## Uso:
+##   var logo := Logo_Juego.new()
+##   logo.tamano_insignia = 104
+##   logo.subtitulo = "Simulador de vida en tiempo real"
+##   add_child(logo)
+##   logo.configurar_apariencia(Variables_Estaticas.Apariencia)
 
-const TINTA := Color("#111827")
+const TEX_WORDMARK_CLARO := preload("res://Imagenes/Marca/wordmark_claro.png")
+const TEX_WORDMARK_OSCURO := preload("res://Imagenes/Marca/wordmark_oscuro.png")
+const TEX_MARCO := preload("res://Imagenes/Marca/medallon_marco.png")
+const FUENTE_SUBTITULO := preload("res://Fuentes/UI/Mulish-700.ttf")
+
+## Margen del hueco de la cara respecto al lado del medallón:
+## (1 - r_hueco / lado) / 2. Coincide con Arte_Fuente/Marca/generar_logo.py.
+const MARGEN_MARCO := 0.1429
+## Alto del wordmark respecto al medallón.
+const ALTO_WORDMARK := 0.72
+
+const CREMA_SUBTITULO := Color("#fff0d6")
+const MARRON_SUBTITULO := Color("#5c2a2f")
+const ORO := Color("#f5b942")
+const ORO_OSCURO := Color("#d99a2b")
 
 ## Apariencia del Sim que se dibuja en la insignia. Vacío = apariencia global guardada.
 var apariencia: Dictionary = {}
-var tamano_insignia: int = 92
+var tamano_insignia: int = 104
 var animar_retrato: bool = true
+var subtitulo: String = "Simulador de vida en tiempo real"
+## Tamaño manual del subtítulo en px. 0 = proporcional al medallón.
+var tamano_subtitulo: int = 0
+## true para fondos claros (wordmark en granate y subtítulo oscuro).
+var variante_oscura: bool = false
+
+# --- Compatibilidad con la API anterior (el wordmark ya es un asset fijo).
 var texto_principal: String = "SIMS"
 var texto_secundario: String = "LIFE"
-var subtitulo: String = "Simulador de vida en tiempo real"
 var tamano_texto_principal: int = 40
 var tamano_texto_secundario: int = 15
-var tamano_subtitulo: int = 13
 var color_texto: Color = Color.WHITE
-var color_subtitulo: Color = Color("#fee2e2")
+var color_subtitulo: Color = CREMA_SUBTITULO
 var color_pill_fondo: Color = Color("#fff7ed")
-var color_pill_texto: Color = Estilos_UI.ROJO_BIT
+var color_pill_texto: Color = Color("#d62828")
 
 var _construido: bool = false
 var _retrato: Personaje_Visual = null
@@ -28,7 +56,7 @@ var _mascara: Panel = null
 
 
 func _ready() -> void:
-	add_theme_constant_override("separation", 14)
+	add_theme_constant_override("separation", maxi(6, int(round(tamano_insignia * 0.13))))
 	alignment = BoxContainer.ALIGNMENT_BEGIN
 	_construir()
 
@@ -49,7 +77,11 @@ func _apariencia_actual() -> Dictionary:
 		if ve != null:
 			var ap = ve.get("Apariencia")
 			if ap is Dictionary and not ap.is_empty():
-				return Apariencia_Personaje.normalizar(ap)
+				var ap_norm := Apariencia_Personaje.normalizar(ap)
+				var cocina: Node = tree.root.get_node_or_null("Sistema_Cocina")
+				if cocina != null and cocina.has_method("Obtener_Apariencia_Con_Ropa_Equipada"):
+					return cocina.call("Obtener_Apariencia_Con_Ropa_Equipada", ap_norm)
+				return ap_norm
 	return Apariencia_Personaje.por_defecto()
 
 
@@ -58,18 +90,22 @@ func _construir() -> void:
 		return
 	_construido = true
 	custom_minimum_size = Vector2(0, tamano_insignia)
-
 	add_child(_crear_insignia())
 	add_child(_crear_texto())
 
 
+# ------------------------------------------------------------------ insignia
+
 func _crear_insignia() -> Control:
-	var insignia := Insignia_Logo.new(tamano_insignia)
+	var insignia := Control.new()
+	insignia.name = "Insignia_Logo"
+	insignia.custom_minimum_size = Vector2(tamano_insignia, tamano_insignia)
 	insignia.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	insignia.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	insignia.custom_minimum_size = Vector2(tamano_insignia, tamano_insignia)
+	insignia.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
-	var margen := int(round(tamano_insignia * 0.17))
+	# Ventana circular donde se dibuja la cara.
+	var margen := int(round(tamano_insignia * MARGEN_MARCO))
 	_mascara = Panel.new()
 	_mascara.name = "Mascara_Logo"
 	_mascara.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -83,31 +119,37 @@ func _crear_insignia() -> Control:
 	_mascara.offset_right = -margen
 	_mascara.offset_bottom = -margen
 	var st := StyleBoxFlat.new()
-	st.bg_color = Color("#bae6fd")
+	st.bg_color = Color("#fde3c8")
 	st.set_corner_radius_all(999)
 	st.anti_aliasing = true
 	_mascara.add_theme_stylebox_override("panel", st)
 	insignia.add_child(_mascara)
 
-	_retrato = Personaje_Visual.new(_apariencia_actual(), "retrato_cercano")
+	_retrato = Personaje_Visual.new(_apariencia_actual(), "retrato")
 	_retrato.name = "Retrato_Logo"
-	_retrato.set_anchors_preset(Control.PRESET_FULL_RECT)
-	_retrato.expresion = "feliz"
+	_retrato.margen_retrato = 12.0
+	_retrato.expresion = "sonrisa"
 	_retrato.animar_idle = animar_retrato
 	_retrato.dibujar_fondo_sunburst = true
-	_retrato.color_fondo_base = Color("#bae6fd")
-	_retrato.color_fondo_rayo = Color("#7dd3fc")
+	_retrato.color_fondo_base = Color("#fde3c8")
+	_retrato.color_fondo_rayo = Color("#f8c795")
+	_retrato.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_mascara.add_child(_retrato)
 
-	# Destello dorado en la esquina: refuerza el aire de pegatina cómic.
-	var brillo := Estilos_UI.icono_rect("sparkles", maxi(16, int(round(tamano_insignia * 0.25))), Color("#fbbf24"))
-	brillo.name = "Destello"
-	brillo.position = Vector2(tamano_insignia - brillo.custom_minimum_size.x * 0.7, -brillo.custom_minimum_size.y * 0.25)
-	brillo.rotation = deg_to_rad(8.0)
-	insignia.add_child(brillo)
+	# Marco, aros y destello dorado (el centro del PNG es transparente).
+	var marco := TextureRect.new()
+	marco.name = "Marco_Logo"
+	marco.texture = TEX_MARCO
+	marco.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	marco.stretch_mode = TextureRect.STRETCH_SCALE
+	marco.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	marco.set_anchors_preset(Control.PRESET_FULL_RECT)
+	insignia.add_child(marco)
 
 	return insignia
 
+
+# ------------------------------------------------------------------ texto
 
 func _crear_texto() -> Control:
 	var col := VBoxContainer.new()
@@ -115,60 +157,65 @@ func _crear_texto() -> Control:
 	col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	col.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	col.alignment = BoxContainer.ALIGNMENT_CENTER
-	col.add_theme_constant_override("separation", 1)
+	col.add_theme_constant_override("separation", 0)
 
-	var fila := HBoxContainer.new()
-	fila.alignment = BoxContainer.ALIGNMENT_BEGIN
-	fila.add_theme_constant_override("separation", 8)
-	col.add_child(fila)
+	var textura: Texture2D = TEX_WORDMARK_OSCURO if variante_oscura else TEX_WORDMARK_CLARO
+	var aspecto := 1013.0 / 360.0
+	if textura != null and textura.get_height() > 0:
+		aspecto = float(textura.get_width()) / float(textura.get_height())
 
-	var lbl_principal := Estilos_UI.titulo(texto_principal, tamano_texto_principal, color_texto)
-	lbl_principal.add_theme_font_override("font", Estilos_UI.fuente_logo())
-	lbl_principal.add_theme_color_override("font_shadow_color", Color(0.28, 0.03, 0.03, 0.55))
-	lbl_principal.add_theme_constant_override("shadow_offset_y", 3)
-	lbl_principal.add_theme_constant_override("shadow_offset_x", 0)
-	fila.add_child(lbl_principal)
-
-	var pill := PanelContainer.new()
-	pill.name = "Pill_Life"
-	pill.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	var st := Estilos_UI.caja(color_pill_fondo, 8, TINTA, 2, 1)
-	st.content_margin_left = 10
-	st.content_margin_right = 10
-	st.content_margin_top = 2
-	st.content_margin_bottom = 3
-	pill.add_theme_stylebox_override("panel", st)
-	var lbl_sec := Estilos_UI.texto(texto_secundario, tamano_texto_secundario, color_pill_texto, 800)
-	lbl_sec.add_theme_font_override("font", Estilos_UI.fuente_logo())
-	pill.add_child(lbl_sec)
-	fila.add_child(pill)
+	var wordmark := TextureRect.new()
+	wordmark.name = "Wordmark_Logo"
+	wordmark.texture = textura
+	wordmark.custom_minimum_size = Vector2(
+		round(tamano_insignia * ALTO_WORDMARK * aspecto),
+		round(tamano_insignia * ALTO_WORDMARK))
+	wordmark.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	wordmark.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	wordmark.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	wordmark.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	col.add_child(wordmark)
 
 	if not subtitulo.is_empty():
-		var lbl_sub := Estilos_UI.texto(subtitulo, tamano_subtitulo, color_subtitulo, 600)
-		lbl_sub.name = "Subtitulo_Logo"
-		col.add_child(lbl_sub)
+		col.add_child(_crear_subtitulo())
 
 	return col
 
 
-## Insignia dibujada a mano: sombra, aro blanco, anillo rojo y aro interior de tinta.
-class Insignia_Logo extends Control:
-	const TINTA := Color("#111827")
-	var _tam: int = 92
+func _crear_subtitulo() -> Control:
+	var fila := HBoxContainer.new()
+	fila.name = "Subtitulo_Logo"
+	fila.add_theme_constant_override("separation", maxi(4, int(round(tamano_insignia * 0.055))))
+	fila.alignment = BoxContainer.ALIGNMENT_BEGIN
 
-	func _init(tam: int = 92) -> void:
-		_tam = tam
-		custom_minimum_size = Vector2(tam, tam)
-		mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var regla := Panel.new()
+	regla.name = "Regla_Subtitulo"
+	regla.custom_minimum_size = Vector2(
+		maxi(12, int(round(tamano_insignia * 0.22))),
+		maxi(2, int(round(tamano_insignia * 0.028))))
+	regla.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	regla.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var st := StyleBoxFlat.new()
+	st.bg_color = ORO_OSCURO if variante_oscura else ORO
+	st.set_corner_radius_all(99)
+	st.anti_aliasing = true
+	regla.add_theme_stylebox_override("panel", st)
+	fila.add_child(regla)
 
-	func _draw() -> void:
-		var centro := size * 0.5
-		var radio := minf(size.x, size.y) * 0.5
-		var tinta := TINTA
-		draw_circle(centro + Vector2(0.0, radio * 0.05), radio - 1.0, Color(0.04, 0.05, 0.09, 0.30))
-		draw_circle(centro, radio - 1.5, Color.WHITE)
-		draw_arc(centro, radio - 2.5, 0.0, TAU, 72, tinta, maxf(3.0, radio * 0.055), true)
-		draw_circle(centro, radio - radio * 0.10, Estilos_UI.ROJO_BIT)
-		draw_arc(centro, radio - radio * 0.10, 0.0, TAU, 72, tinta, maxf(2.0, radio * 0.035), true)
-		draw_circle(centro, radio - radio * 0.155, Color.WHITE)
-		draw_arc(centro, radio - radio * 0.155, 0.0, TAU, 72, tinta, maxf(1.8, radio * 0.026), true)
+	var lbl := Label.new()
+	lbl.name = "Subtitulo_Texto"
+	lbl.text = subtitulo
+	lbl.add_theme_font_override("font", FUENTE_SUBTITULO)
+	var tam_fuente := tamano_subtitulo if tamano_subtitulo > 0 else maxi(9, int(round(tamano_insignia * 0.125)))
+	lbl.add_theme_font_size_override("font_size", tam_fuente)
+	lbl.add_theme_color_override("font_color", _color_subtitulo_actual())
+	lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	fila.add_child(lbl)
+
+	return fila
+
+
+func _color_subtitulo_actual() -> Color:
+	if variante_oscura and color_subtitulo == CREMA_SUBTITULO:
+		return MARRON_SUBTITULO
+	return color_subtitulo

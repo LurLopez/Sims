@@ -3,19 +3,21 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dckpwx5rl25jm"
-path="res://.godot/imported/Bandejas_Apiladas.png-0d66c0781d61f6d90936d0de7185d80f.ctex"
+path.s3tc="res://.godot/imported/Bandejas_Apiladas.png-0d66c0781d61f6d90936d0de7185d80f.s3tc.ctex"
+path.etc2="res://.godot/imported/Bandejas_Apiladas.png-0d66c0781d61f6d90936d0de7185d80f.etc2.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://Imagenes/Minijuego_Cocina/Emplatado/Bandejas_Apiladas.png"
-dest_files=["res://.godot/imported/Bandejas_Apiladas.png-0d66c0781d61f6d90936d0de7185d80f.ctex"]
+dest_files=["res://.godot/imported/Bandejas_Apiladas.png-0d66c0781d61f6d90936d0de7185d80f.s3tc.ctex", "res://.godot/imported/Bandejas_Apiladas.png-0d66c0781d61f6d90936d0de7185d80f.etc2.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

@@ -3,19 +3,21 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://b1iehbn0wbj75"
-path="res://.godot/imported/Gema.png-b46a6de5a354bf2bb224a8d2a49412ec.ctex"
+path.s3tc="res://.godot/imported/Gema.png-b46a6de5a354bf2bb224a8d2a49412ec.s3tc.ctex"
+path.etc2="res://.godot/imported/Gema.png-b46a6de5a354bf2bb224a8d2a49412ec.etc2.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://Imagenes/Minijuego_Cocina/UI/Gema.png"
-dest_files=["res://.godot/imported/Gema.png-b46a6de5a354bf2bb224a8d2a49412ec.ctex"]
+dest_files=["res://.godot/imported/Gema.png-b46a6de5a354bf2bb224a8d2a49412ec.s3tc.ctex", "res://.godot/imported/Gema.png-b46a6de5a354bf2bb224a8d2a49412ec.etc2.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

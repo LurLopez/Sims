@@ -10,7 +10,11 @@ func test_bus_de_musica_y_bucles_configurados() -> void:
 		"El bus de música debe existir")
 	assert_true((Musica.PISTA_GENERAL as AudioStreamMP3).loop,
 		"La pista general debe estar importada con bucle")
-	assert_true((Musica.PISTA_MINIJUEGO as AudioStreamMP3).loop,
+	# La pista del minijuego se carga de forma diferida (no se precarga al
+	# arrancar); el test comprueba el recurso importado directamente.
+	var pista_minijuego := load(Musica.RUTA_PISTA_MINIJUEGO) as AudioStreamMP3
+	assert_not_null(pista_minijuego)
+	assert_true(pista_minijuego.loop,
 		"La pista del minijuego debe estar importada con bucle")
 
 

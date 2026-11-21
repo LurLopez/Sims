@@ -4,8 +4,8 @@ extends Node
 func Ejecutar_Actividad_Necesidades_Basicas_Array(efecto_necesidades_basicas, nombre_actividad: String = ""):
 	var multiplicador = _Obtener_Multiplicador(nombre_actividad)
 	var reduccion_higiene: float = 0.0
-	if Sistema_Cocina.Es_Trabajo_Hosteleria(nombre_actividad):
-		reduccion_higiene = Sistema_Cocina.Obtener_Reduccion_Higiene_Hosteleria()
+	if nombre_actividad.begins_with("Trabajar_"):
+		reduccion_higiene = Sistema_Cocina.Obtener_Reduccion_Higiene_Para_Trabajo(nombre_actividad)
 	Ejecutar_Actividad_Necesidades_Basicas(efecto_necesidades_basicas[0],0,30,multiplicador)
 	Ejecutar_Actividad_Necesidades_Basicas(efecto_necesidades_basicas[1],1,30,multiplicador)
 	Ejecutar_Actividad_Necesidades_Basicas(efecto_necesidades_basicas[2],2,12,multiplicador)

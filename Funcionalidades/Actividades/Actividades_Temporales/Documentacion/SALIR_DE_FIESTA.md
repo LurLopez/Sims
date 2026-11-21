@@ -160,15 +160,17 @@ Estimación según tus necesidades actuales y el desgaste previsto.
 
 Si el horario no es válido, el panel muestra el motivo en rojo y oculta las probabilidades.
 
-### Flujo de dos pasos
+### Flujo de creación
 
-El flujo existente elige primero la franja y después la actividad. Para que la vista previa conozca la actividad:
+La actividad se elige antes que el horario:
 
-1. Calendario → **Ocupar** → ajustar horas → **Crear Actividad** → lista de actividades.
-2. Pulsar **Salir de fiesta** → se reabre `Seleccionar_Horario` en modo Fiesta, con el panel de preview.
-3. **Crear Actividad** valida y escribe directamente en la matriz.
+1. **Actividades → Especiales → Salir de fiesta**.
+2. Se abre `Seleccionar_Horario` en modo Fiesta con el panel de vista previa y una franja propuesta dentro de la ventana 18:00–06:00 (o la franja que se hubiera marcado antes en el calendario).
+3. Ajustar inicio y final y pulsar **Crear actividad**: se valida la ventana y se escribe directamente en la matriz.
 
-El resto de actividades conserva su flujo actual.
+Si se parte del calendario, el botón **Elegir actividad** abre el catálogo y conserva la franja seleccionada como propuesta; al elegir la actividad se vuelve al selector para confirmar el horario.
+
+El resto de actividades sigue el mismo orden: primero la actividad en el catálogo y después el selector de horario.
 
 ## 6. Estados temporales
 
@@ -246,7 +248,7 @@ var Fiesta_Evento_Ocurrido: bool = false
 
 ### Botón
 
-- Nodo: `Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones/Necesidades_Basicas_Opciones/Salir_De_Fiesta`.
+- Nodo: `Actividades/Elegir_Actividad/Tipos_De_Actividades/Especiales_Opciones/Salir_De_Fiesta`.
 - Texto de escena: `🎉  SALIR DE FIESTA`.
 - Icono: `party-popper` (`Estilos_UI.ICONOS_BOTONES`).
 - Subtítulo: `Noche · 2–12 h · Prob. según estado`.
@@ -313,7 +315,7 @@ La tabla acumulada de 6 h (19,7 / 15,7 / 64,6 para NB=80) se mantiene exacta.
 | `Scripts/Logica/Escena_Principal/Actividades/Actividades_Necesidades_Basicas.gd` | Cap de Resacón |
 | `Escenas/Escena_Principal/Escena principal.tscn` | Botón y conexión |
 | `Scripts/GUI/Escena_Principal/Estilos_UI.gd` | Icono |
-| `Scripts/Globales/Script_Principal.gd` | Handler, flujo de dos pasos, preview, diálogo y label |
+| `Scripts/Globales/Script_Principal.gd` | Handler, flujo actividad → horario, preview, diálogo y label |
 | `Scripts/GUI/Escena_Principal/Actividades/Reloj/Auxiliar/SeleccionarHorarioReloj.gd` | Preview y normalización de día final |
 | `Scripts/GUI/Escena_Principal/Necesidades_Basicas/Necesidades_Basicas_GUI.gd` | Label de estado |
 | `Funcionalidades/Actividades/Actividades_Temporales/Tests/test_salir_de_fiesta.gd` | Tests GUT |

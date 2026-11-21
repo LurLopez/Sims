@@ -221,12 +221,13 @@ Tienda (Control, visible=false por defecto, z_index=5)
 ├── Flecha_Atras (Button)         ← arriba-izq, vuelve al menú
 ├── Titulo (Label)                ← "TIENDA"
 ├── Categorias (Control)
-│   ├── Tab_Dormir (Button)       ← 🛏️
-│   ├── Tab_Comer (Button)        ← 🍽️
-│   └── Tab_Duchar (Button)       ← 🚿
+│   ├── Tab_Dormir (Button)       ← icono bed-double
+│   ├── Tab_Comer (Button)        ← icono utensils
+│   └── Tab_Duchar (Button)       ← icono shower-head
 ├── Objetos_Dormir (Control)
 │   ├── Cama_Basica (Panel)
-│   └── Cama_Premium (Panel)
+│   ├── Cama_Premium (Panel)
+│   └── Cama_Lujo (Panel)
 ├── Objetos_Comer (Control)
 │   └── Mesa_Basica (Panel)
 └── Objetos_Duchar (Control)
@@ -235,10 +236,23 @@ Tienda (Control, visible=false por defecto, z_index=5)
 ```
 
 Cada `Panel` de objeto contiene:
-- `Imagen_Placeholder` (Panel) → `Imagen_Emoji` (Label con emoji grande, sustituible por TextureRect cuando haya sprites)
+- `Imagen_Placeholder` (Panel) → vitrina con el fondo tintado, la píldora de nivel (`BÁSICO`/`PREMIUM`/`LUJO`) y un `Icono_Item` (`TextureRect`) con la ilustración propia del mueble
 - `Nombre`, `Precio`, `Multiplicador` (Labels)
 - `En_Uso` (Label, "✓ En uso") — visible solo si seleccionado
 - `Comprar`, `Vender`, `Elegir` (Buttons superpuestos en el mismo slot)
+
+El layout final de las tarjetas se construye en `Script_Principal._Redisenar_Tienda()`: rejilla de 2 columnas (tarjeta 332×442), vitrina de 304×200 y una tarjeta única o la tercera de Dormir centradas.
+
+### Ilustraciones de los muebles
+
+Las tarjetas usan ilustraciones 2.5D propias en lugar de emojis o iconos Lucide:
+
+- **Originales:** JPG con fondo magenta plano en `Arte_Fuente/Tienda/Fuente/` (`Cama_Basica.jpg`, `Ducha_Premium.jpg`, …). Los prompts del lote están en `Arte_Fuente/Tienda/prompts.md`.
+- **Runtime:** PNG cuadrados 512×512 con alfa en `Imagenes/Tienda/Iconos/`, con el nombre exacto de la clave del catálogo (`Cama_Basica.png`, `Cama_Premium.png`, `Cama_Lujo.png`, `Mesa_Basica.png`, `Ducha_Basica.png`, `Ducha_Premium.png`).
+- **Pipeline:** `python3 tools/procesar_iconos_tienda.py [--preview preview.png]` recorta el magenta por croma, elimina el derrame del borde, limpia motas, recorta al contenido y centra cada objeto con un 5 % de margen transparente.
+- **Carga:** `Estilos_UI.icono_tienda(clave)` resuelve la ruta desde `Estilos_UI.RUTAS_ICONOS_TIENDA` y cachea la textura. Si falta el PNG, la tarjeta cae al icono Lucide anterior.
+
+Capturas de la tienda con las ilustraciones integradas: `Documentacion/Capturas/01_tienda_dormir.png`, `02_tienda_comer.png` y `03_tienda_duchar.png`.
 
 ### Estados Visuales del Panel
 
@@ -281,11 +295,10 @@ Mostrar_Categoria_Tienda(raiz, categoria)
 
 ### Limitaciones Actuales de la UI
 
-- Solo se muestran 2 objetos por categoría (Básico + Premium). `Cama_Lujo` existe en el catálogo pero **no tiene tarjeta en la UI**. Para añadirla habría que ampliar el layout (scroll horizontal o reducir tamaño de tarjeta).
-- Las imágenes son emojis placeholder (`🛏️`, `🛌`, `🍽️`, `🍱`, `🚿`, `🛁`). Sustituir por `TextureRect` con sprites reales cuando estén disponibles.
+- La vitrina está pensada para las seis ilustraciones actuales; un objeto nuevo sin PNG usa el respaldo Lucide, pero conviene añadir su ilustración y su entrada en `Estilos_UI.RUTAS_ICONOS_TIENDA`.
+- Las tarjetas usan posiciones fijas en coordenadas de diseño 720×1280 (el dock inferior empieza en `alto - 96`); una cuarta fila requeriría scroll.
 
 ## Estado Actual
 
-- **Implementado:** 6 objetos en catálogo, 3 categorías (Dormir, Comer, Duchar), backend completo (compra/venta/selección), aplicación de multiplicador en Dormir/Duchar, guardado/carga, UI de tienda funcional con tabs y estados visuales. La alimentación pasó a `Cocinar`/`Comer_Tupper`/`Comer_Basura`; las mesas ya no modulan comer.
-- **Pendiente en UI:** Tarjeta para `Cama_Lujo`, sprites reales en lugar de emojis.
+- **Implementado:** 6 objetos en catálogo, 3 categorías (Dormir, Comer, Duchar), backend completo (compra/venta/selección), aplicación de multiplicador en Dormir/Duchar, guardado/carga, UI de tienda funcional con tabs y estados visuales, y tarjetas con ilustraciones 2.5D propias (Cama Básica/Premium/Lujo, Mesa Básica, Ducha Básica/Premium). La alimentación pasó a `Cocinar`/`Comer_Tupper`/`Comer_Basura`; las mesas ya no modulan comer.
 - **Planeado:** Efectos negativos (multiplicador < 1.0), más categorías (Ocio, Trabajo).

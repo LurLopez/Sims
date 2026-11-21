@@ -42,6 +42,10 @@ func Ejecutar_Actividad_Progreso(sum_habilidades,indice_progreso,por_cuanto_ecua
 		# Maestría Culinaria Rango >= 5: +15% de eficiencia en Manualidades (indice 2).
 		if indice_progreso == 2 and Sistema_Cocina.Obtener_Rango_Logro() >= 5:
 			max_ajustado = maxi(1, int(floor(float(max_ajustado) / 1.15)))
+		# Atuendos con bonus de progreso (deporte, universidad, taller...).
+		var bonus_ropa: float = Sistema_Cocina.Obtener_Bonus_Progreso(indice_progreso)
+		if bonus_ropa > 0.0:
+			max_ajustado = maxi(1, int(floor(float(max_ajustado) / (1.0 + bonus_ropa))))
 		if(Funciones_Globales.Generar_Numero_Aleatorio_Entero_Es_Cero(max_ajustado)):
 			Cambiar_Progreso(indice_progreso)
 

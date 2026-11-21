@@ -20,8 +20,17 @@ func load_game():
 			Variables_Dinamicas.Matriz_Jugador = _RLE_A_Matriz(matriz_guardada)
 		else:
 			Variables_Dinamicas.Matriz_Jugador = _Strings_A_Matriz(matriz_guardada)
+		_Sanear_Matriz_Cargada()
 		Variables_Dinamicas.Progreso = game_data["Progreso"]
+		if Variables_Dinamicas.Progreso.size() > 3:
+			Variables_Dinamicas.Progreso = Variables_Dinamicas.Progreso.slice(0, 3)
+		while Variables_Dinamicas.Progreso.size() < 3:
+			Variables_Dinamicas.Progreso.append(1)
 		Variables_Dinamicas.Necesidades_Basicas = game_data["Necesidades_Basicas"]
+		if Variables_Dinamicas.Necesidades_Basicas.size() > 5:
+			Variables_Dinamicas.Necesidades_Basicas = Variables_Dinamicas.Necesidades_Basicas.slice(0, 5)
+		while Variables_Dinamicas.Necesidades_Basicas.size() < 5:
+			Variables_Dinamicas.Necesidades_Basicas.append(50)
 		for i in range(Variables_Dinamicas.Necesidades_Basicas.size()):
 			Variables_Dinamicas.Necesidades_Basicas[i] = clamp(Variables_Dinamicas.Necesidades_Basicas[i], 1, 100)
 		Variables_Dinamicas.Dinero = game_data["Dinero"]
@@ -41,12 +50,16 @@ func load_game():
 		else:
 			Variables_Dinamicas.Habilidades_Mostradas = [0, 0, 0, 0, 0, 0, 0]
 		# Fallback para saves antiguos con 6 entradas: añadir entrada para Sangre_Fria.
+		if Variables_Dinamicas.Habilidades_Mostradas.size() > 7:
+			Variables_Dinamicas.Habilidades_Mostradas = Variables_Dinamicas.Habilidades_Mostradas.slice(0, 7)
 		while Variables_Dinamicas.Habilidades_Mostradas.size() < 7:
 			Variables_Dinamicas.Habilidades_Mostradas.append(0)
 		if game_data.has("Habilidades_Cap_Notificado"):
 			Variables_Dinamicas.Habilidades_Cap_Notificado = game_data["Habilidades_Cap_Notificado"]
 		else:
 			Variables_Dinamicas.Habilidades_Cap_Notificado = [false, false, false, false, false, false, false]
+		if Variables_Dinamicas.Habilidades_Cap_Notificado.size() > 7:
+			Variables_Dinamicas.Habilidades_Cap_Notificado = Variables_Dinamicas.Habilidades_Cap_Notificado.slice(0, 7)
 		while Variables_Dinamicas.Habilidades_Cap_Notificado.size() < 7:
 			Variables_Dinamicas.Habilidades_Cap_Notificado.append(false)
 		Variables_Dinamicas.Ultimo_Uso_Progreso = game_data.get("Ultimo_Uso_Progreso", [-1, -1, -1])
@@ -69,8 +82,10 @@ func load_game():
 		Variables_Dinamicas.Objetos_Poseidos.erase("Mesa_Premium")
 		if str(Variables_Dinamicas.Objeto_Seleccionado.get("Comer", "")) == "Mesa_Premium":
 			Variables_Dinamicas.Objeto_Seleccionado["Comer"] = "Mesa_Basica"
-		# Ropa equipable — fallback seguro para saves antiguos.
+		# Ropa equipable — fallback seguro para saves antiguos y entrega de las
+		# prendas gratuitas del armario ampliado.
 		Variables_Dinamicas.Objetos_Poseidos["Ropa_Calle"] = true
+		Sistema_Cocina.Asegurar_Prendas_Iniciales()
 		var ropa_actual: String = str(Variables_Dinamicas.Objeto_Seleccionado.get("Ropa", ""))
 		if ropa_actual == "" or not Variables_Estaticas.Catalogo_Objetos.has(ropa_actual) \
 				or not bool(Variables_Dinamicas.Objetos_Poseidos.get(ropa_actual, false)):
@@ -113,6 +128,11 @@ func load_game():
 		else:
 			Variables_Dinamicas.Muerto = false
 			Variables_Dinamicas.Edad_Muerte = 0
+		# Rejuvenecimiento de la Tienda. Los saves anteriores no traen las claves.
+		Variables_Dinamicas.Rejuvenecimiento_Anios = clampi(
+			int(game_data.get("Rejuvenecimiento_Anios", 0)), 0, 200)
+		Variables_Dinamicas.Tratamientos_Rejuvenecimiento = maxi(
+			0, int(game_data.get("Tratamientos_Rejuvenecimiento", 0)))
 		Variables_Dinamicas.Prob_Supervivencia_Acumulada = game_data.get("Prob_Supervivencia_Acumulada", 1.0)
 		if game_data.has("Mensajes"):
 			Variables_Dinamicas.Mensajes = _Array_A_Mensajes(game_data["Mensajes"])
@@ -141,6 +161,31 @@ func load_game():
 		Variables_Dinamicas.Matriz_Sucia = true
 		save_file = null
 
+func _Sanear_Matriz_Cargada() -> void:
+	var matriz: Array = Variables_Dinamicas.Matriz_Jugador
+	if matriz.size() > 1440:
+		matriz = matriz.slice(0, 1440)
+	while matriz.size() < 1440:
+		var fila_vacia: Array = []
+		fila_vacia.resize(574)
+		fila_vacia.fill("")
+		matriz.append(fila_vacia)
+	for i in range(matriz.size()):
+		var fila = matriz[i]
+		if not (fila is Array):
+			var nueva: Array = []
+			nueva.resize(574)
+			nueva.fill("")
+			matriz[i] = nueva
+			continue
+		if fila.size() > 574:
+			fila = fila.slice(0, 574)
+			matriz[i] = fila
+		while fila.size() < 574:
+			fila.append("")
+	Variables_Dinamicas.Matriz_Jugador = matriz
+
+
 func game_data_func():
 	var game_data : Dictionary = {
 		"Matriz_Jugador": _Matriz_A_RLE(),
@@ -165,6 +210,8 @@ func game_data_func():
 		"Carrera_Deportiva_Pendiente": Variables_Dinamicas.Carrera_Deportiva_Pendiente,
 		"Muerto": Variables_Dinamicas.Muerto,
 		"Edad_Muerte": Variables_Dinamicas.Edad_Muerte,
+		"Rejuvenecimiento_Anios": Variables_Dinamicas.Rejuvenecimiento_Anios,
+		"Tratamientos_Rejuvenecimiento": Variables_Dinamicas.Tratamientos_Rejuvenecimiento,
 		"Prob_Supervivencia_Acumulada": Variables_Dinamicas.Prob_Supervivencia_Acumulada,
 		"Mensajes": _Mensajes_A_Array(),
 		"Trabajo_Actual": Variables_Dinamicas.Trabajo_Actual.nombre if Variables_Dinamicas.Trabajo_Actual != null else "",
@@ -326,7 +373,7 @@ func _Normalizar_Cocina_Estado(datos) -> Dictionary:
 	if not (datos is Dictionary):
 		return resultado
 
-	var restaurantes_validos: Array[String] = ["burger_street", "bistro_tradicional", "alta_cocina"]
+	var restaurantes_validos: Array = Sistema_Cocina.ORDEN_RESTAURANTES.duplicate()
 	var desbl_raw = datos.get("restaurantes_desbloqueados", [])
 	var desbl_norm: Array = []
 	if desbl_raw is Array:
@@ -450,6 +497,7 @@ func _Inicializar_Objetos_Por_Defecto():
 		"Duchar": "Ducha_Basica",
 		"Ropa": "Ropa_Calle"
 	}
+	Sistema_Cocina.Asegurar_Prendas_Iniciales()
 
 func _Matriz_A_RLE() -> Dictionary:
 	if not Variables_Dinamicas.Matriz_Sucia and not _rle_cache.is_empty():
@@ -461,7 +509,24 @@ func _Matriz_A_RLE() -> Dictionary:
 	var actual = null
 	var actual_str: String = ""
 	var contador: int = 0
+	# Atajo para las filas completamente vacías (la mayoría del calendario):
+	# se comparan en C++ y se añaden 574 celdas de golpe, sin recorrerlas una a una.
+	var fila_vacia: Array = []
+	fila_vacia.resize(columnas)
+	fila_vacia.fill("")
 	for fila in Variables_Dinamicas.Matriz_Jugador:
+		if fila == fila_vacia:
+			if tiene_actual and actual is String and actual == "":
+				contador += columnas
+			else:
+				if tiene_actual:
+					datos.append(actual_str)
+					datos.append(contador)
+				actual = ""
+				actual_str = ""
+				contador = columnas
+				tiene_actual = true
+			continue
 		for celda in fila:
 			if tiene_actual and typeof(celda) == typeof(actual) and celda == actual:
 				contador += 1
@@ -498,10 +563,11 @@ func _RLE_A_Matriz(rle: Dictionary) -> Array:
 	var catalogo = Variables_Estaticas.Catalogo_Actividades
 	var resultado: Array = []
 	resultado.resize(filas)
+	var fila_vacia: Array = []
+	fila_vacia.resize(columnas)
+	fila_vacia.fill("")
 	for f in range(filas):
-		var nueva_fila: Array = []
-		nueva_fila.resize(columnas)
-		resultado[f] = nueva_fila
+		resultado[f] = fila_vacia.duplicate()
 
 	var idx_celda: int = 0
 	var total_celdas: int = filas * columnas
@@ -517,6 +583,11 @@ func _RLE_A_Matriz(rle: Dictionary) -> Array:
 			valor = catalogo.get(clave_catalogo, null)
 		else:
 			valor = val_str
+		# Las filas ya vienen rellenas con "": no hace falta escribir las celdas
+		# de los tramos vacíos, que son la inmensa mayoría del calendario.
+		if valor is String and valor == "":
+			idx_celda += mini(count, total_celdas - idx_celda)
+			continue
 		for _k in range(count):
 			if idx_celda >= total_celdas:
 				break

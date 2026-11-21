@@ -3,19 +3,21 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cnohf73ee8mm3"
-path="res://.godot/imported/Pila_Monedas.png-4fbb40100d3794f8f7f29240bcbb31e3.ctex"
+path.s3tc="res://.godot/imported/Pila_Monedas.png-4fbb40100d3794f8f7f29240bcbb31e3.s3tc.ctex"
+path.etc2="res://.godot/imported/Pila_Monedas.png-4fbb40100d3794f8f7f29240bcbb31e3.etc2.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://Imagenes/Minijuego_Cocina/UI/Pila_Monedas.png"
-dest_files=["res://.godot/imported/Pila_Monedas.png-4fbb40100d3794f8f7f29240bcbb31e3.ctex"]
+dest_files=["res://.godot/imported/Pila_Monedas.png-4fbb40100d3794f8f7f29240bcbb31e3.s3tc.ctex", "res://.godot/imported/Pila_Monedas.png-4fbb40100d3794f8f7f29240bcbb31e3.etc2.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

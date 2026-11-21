@@ -1,4 +1,4 @@
-# SIMS — Sprites del escenario Cooking Fever (lote de prompts)
+# SIMS — Sprites del escenario de cocina casual (lote de prompts)
 
 Generar UNA imagen por prompt. Guardar cada resultado con el nombre indicado.
 Fondo magenta `#FF00FF` en todas las hojas (salvo fondo y efectos).
@@ -25,6 +25,14 @@ contornos limpios, colores saturados, iluminación cálida, perspectiva tres cua
 | P13 | `sheet_cocina_props.png` | 12 props pequeños de cocina |
 | P14 | `chef_poses.png` | 6 expresiones/poses de la chef (referencia P1) |
 | P15 | `escenario_mockup.png` | Composición final 16:9 de referencia |
+| P22 | `Mejoras/hoja_plancha.png` | 3 versiones de la plancha/sartén (Nv.1–Nv.3) |
+| P23 | `Mejoras/hoja_emplatado.png` | 3 versiones del servicio de platos y bebidas |
+| P24 | `Mejoras/hoja_termostato.png` | 3 versiones del termostato de la plancha |
+| P25 | `Mejoras/hoja_ingredientes.png` | 3 versiones de la caja/bandeja de ingredientes |
+| P26 | `Mejoras/hoja_ambiente.png` | 3 versiones del jukebox del local |
+
+> Fondos de los otros tres restaurantes (Bistró, Mercado y Alta Cocina):
+> `Arte_Fuente/Minijuego_Cocina/prompts_fondos_restaurantes.md`.
 
 ## P1 — Chef protagonista
 
@@ -148,7 +156,7 @@ The whole background is flat solid magenta #FF00FF, perfectly even: no shadow on
 ## P9 — Fondo del restaurante
 
 ```text
-A wide 16:9 painted background for a Cooking Fever style fast-food diner, with no characters and no kitchen equipment in the foreground. 2.5D casual mobile cooking-game art: polished vector-like shapes, smooth soft shading, crisp clean outlines, glossy highlights, rich saturated colors, warm cheerful lighting, premium restaurant game backdrop. Interior of a bright American diner: teal and cream walls, a long row of big windows with red-and-white striped awnings outside, red vinyl booths and chrome tables on a black-and-white checkered floor, hanging brass pendant lamps, framed pictures of burgers and shakes on the wall, a trophy shelf with golden trophies, potted green plants, a red jukebox, a dessert display case, warm light pools on the floor. Composition: the dining room fills the frame; the bottom quarter is a softly blurred empty foreground area of blurred stainless steel and dark floor so game sprites can be placed on top. Straight-on slightly elevated view, symmetrical and inviting. No magenta anywhere. No text, no lettering, no logos, no watermark, no people, no UI. This description is complete; do not ask for a reference image.
+A wide 16:9 painted background for a casual cooking-game fast-food diner, with no characters and no kitchen equipment in the foreground. 2.5D casual mobile cooking-game art: polished vector-like shapes, smooth soft shading, crisp clean outlines, glossy highlights, rich saturated colors, warm cheerful lighting, premium restaurant game backdrop. Interior of a bright American diner: teal and cream walls, a long row of big windows with red-and-white striped awnings outside, red vinyl booths and chrome tables on a black-and-white checkered floor, hanging brass pendant lamps, framed pictures of burgers and shakes on the wall, a trophy shelf with golden trophies, potted green plants, a red jukebox, a dessert display case, warm light pools on the floor. Composition: the dining room fills the frame; the bottom quarter is a softly blurred empty foreground area of blurred stainless steel and dark floor so game sprites can be placed on top. Straight-on slightly elevated view, symmetrical and inviting. No magenta anywhere. No text, no lettering, no logos, no watermark, no people, no UI. This description is complete; do not ask for a reference image.
 ```
 
 ## P10 — Efectos sobre negro
@@ -235,7 +243,7 @@ The whole background is flat solid magenta #FF00FF, perfectly even: no shadow, n
 ## P15 — Mockup final (sin texto)
 
 ```text
-A 16:9 gameplay composition for a Cooking Fever style fast-food restaurant game, no text and no UI labels. 2.5D casual mobile cooking-game art: polished vector-like shapes, smooth soft shading, crisp clean outlines, glossy highlights, rich saturated colors, warm cheerful lighting. The view is from behind a stainless steel kitchen counter looking into a bright diner: teal walls, big windows with red-and-white striped awnings, red booths, checkered floor, hanging lamps, trophies, plants. In the midground, three customers stand behind a glass display counter: a Black boy in a green jacket, a young woman with auburn hair in a red top, and an older man with a grey mustache. Above each customer floats a blank cream order ticket with a green strip and a clip (blank inside). On the left foreground stands a cheerful female chef with a black bob, white chef hat, white double-breasted jacket with red buttons, red neckerchief and red polka-dot apron, smiling with a hand on her hip. The foreground counter is packed with shiny cooking stations: a grill with burgers and sausages, a fryer with golden fries, a soda dispenser, stainless trays, white plates with burgers and hot dogs, lettuce, tomatoes, ketchup bottle, stacks of buns, small piles of gold coins. Everything complete, in natural proportions, appetizing, no cropped characters. No magenta anywhere. No text, no letters, no numbers, no logos, no watermark, no UI buttons. This description is complete; do not ask for a reference image.
+A 16:9 gameplay composition for a casual cooking-game fast-food restaurant, no text and no UI labels. 2.5D casual mobile cooking-game art: polished vector-like shapes, smooth soft shading, crisp clean outlines, glossy highlights, rich saturated colors, warm cheerful lighting. The view is from behind a stainless steel kitchen counter looking into a bright diner: teal walls, big windows with red-and-white striped awnings, red booths, checkered floor, hanging lamps, trophies, plants. In the midground, three customers stand behind a glass display counter: a Black boy in a green jacket, a young woman with auburn hair in a red top, and an older man with a grey mustache. Above each customer floats a blank cream order ticket with a green strip and a clip (blank inside). On the left foreground stands a cheerful female chef with a black bob, white chef hat, white double-breasted jacket with red buttons, red neckerchief and red polka-dot apron, smiling with a hand on her hip. The foreground counter is packed with shiny cooking stations: a grill with burgers and sausages, a fryer with golden fries, a soda dispenser, stainless trays, white plates with burgers and hot dogs, lettuce, tomatoes, ketchup bottle, stacks of buns, small piles of gold coins. Everything complete, in natural proportions, appetizing, no cropped characters. No magenta anywhere. No text, no letters, no numbers, no logos, no watermark, no UI buttons. This description is complete; do not ask for a reference image.
 ```
 
 ---
@@ -289,3 +297,112 @@ One single clear plastic water bottle with a blue cap and a plain blue label, no
 
 La botella salió con fondo azul degradado; se recortó con una máscara de
 silueta manual (perfil de anchura) y se guardó como `Comida/Extras/Agua.png`.
+
+## P20 — Fondo del banner de la tarjeta «Cocina»
+
+Generado con `openai/gpt-image-2.6-sunburst` (1913×822). El máster se guarda en
+`Fondos/banner_cocina_maestro.png` y el recorte final (1288×284) en
+`Imagenes/Minijuego_Cocina/Banner_Cocina.png`; el recorte va de `y=375` a
+`y=796` y lleva horneados el desenfoque del comedor, la viñeta y la luz cálida.
+
+```text
+Ultra-wide panoramic banner background for a casual mobile cooking game (Cooking Fever style), 21:9. Interior of a retro American diner, softly blurred with shallow depth of field behind a clean, completely empty service counter in the foreground. Teal painted walls, red vinyl booths with white piping, large windows with red-and-white striped awnings, warm brass pendant lamps with glowing bulbs, a red-and-gold jukebox on the right, potted green plants, black-and-cream checkered floor. Foreground: a black-and-cream checkered counter top in perspective with a brushed stainless-steel front edge, no objects on it. 2.5D casual mobile game art: polished vector-like shapes, smooth soft shading, crisp clean outlines, rich saturated colors, glossy highlights, warm cheerful lighting, premium restaurant game backdrop. Composition leaves the left side clear for a character cut-in and the counter band along the bottom third free for overlaying food items. No food, no plates, no drinks, no people, no characters, no text, no letters, no logos, no watermark, no UI, no frame, no border.
+```
+
+## P21 — Plato vacío en perspectiva (adjuntar `Hamburguesa_Sola.png`)
+
+Generado con `openai/gpt-image-2.6-sunburst`; se limpió la silueta con
+`cv2` (apertura/clausura + contorno mayor) para quitar el fleco blanco del
+borde. Máster en `plato_perspectiva_maestro.png`, runtime en
+`Imagenes/Minijuego_Cocina/Emplatado/Plato_Perspectiva.png` (640×297).
+
+```text
+The attached image shows a burger sitting on a white ceramic plate in a casual mobile cooking game art style. Redraw ONLY the empty white plate with the burger removed, seen from the exact same slightly elevated 3/4 angle and the same wide perspective. Glossy white ceramic plate with a raised rim, subtle ridged edge, a recessed shallow well, soft smooth shading, a gentle warm highlight from the upper left and a soft cool shadow at the lower right. Centered, filling most of the frame, on a completely flat solid magenta background (#FF00FF) with nothing else. No burger, no food, no cutlery, no napkins, no text, no watermark. 2.5D casual mobile game art: polished vector-like shapes, crisp clean outlines, smooth soft shading, rich saturated colors, high detail, transparent-ready isolated object.
+```
+
+El modelo devolvió alfa real en lugar del fondo magenta; por eso el keying se
+sustituyó por una limpieza de la silueta (se conserva el alfa del PNG original).
+
+## P22–P26 — Ilustraciones de la pantalla de Mejoras
+
+Las cinco hojas se generaron con el mismo estilo del pack (2.5D casual, acero pulido, rojo cereza, luz cálida y cámara tres cuartos ligeramente cenital) usando `hoja_plancha.png` como referencia de estilo y de composición de tres niveles. Cada hoja contiene tres objetos en fila, de básico a profesional, con fondo magenta plano. El recorte se hace con `python3 tools/procesar_mejoras_cocina.py`.
+
+### P22 — Plancha y Freidora (`Mejoras/hoja_plancha.png`)
+
+```text
+Use the attached images ONLY as the reference for art style, rendering, materials and lighting: glossy 3D casual mobile-game prop illustration, soft studio shading, polished stainless steel with warm highlights, cherry red accents, slightly top-down three-quarter camera. The subject is new and described below.
+
+Create ONE image with three separate versions of a burger griddle pan, arranged in a single horizontal row, evenly spaced with wide empty gaps between them, reading left to right from basic to professional. Each object is complete and in natural proportions, same camera angle and same scale, centered in its own space.
+
+The whole background is flat solid magenta #FF00FF, perfectly even: no shadows, no ground, no texture, no table. Do not use any pink, magenta, purple or violet anywhere in the art. No text, no labels, no numbers, no logos, no grid lines, no borders. No glow around anything.
+
+Left: a compact well-used cast-iron griddle pan with a thick cherry-red handle, two round cooking spots, two golden-brown burger patties sizzling on it, slightly worn dark metal.
+Center: a bigger, cleaner stainless-steel griddle pan with a cherry-red handle, three round cooking spots and three juicy burger patties, a few wisps of white steam, polished metal.
+Right: a professional heavy-duty stainless-steel double griddle with a thick cherry-red handle, four round cooking spots and four golden burger patties, mirror-polished steel, subtle golden heat shimmer on the metal (no glowing light), pristine and luxurious.
+
+The three pans must be clearly the same object family at three upgrade levels. Keep all edges crisp and easy to cut out. This description is complete.
+```
+
+### P23 — Emplatado y Bebidas (`Mejoras/hoja_emplatado.png`)
+
+```text
+Use the attached sheet ONLY as the reference for art style, rendering, materials, lighting and the three-tier layout. Use the attached plate, burger and cola images only as references for the food and prop design. The subject is new and described below.
+
+Create ONE image with three separate serving setups for a burger restaurant, arranged in a single horizontal row, evenly spaced with wide empty gaps, reading left to right from basic to professional. Each setup is complete and in natural proportions, same slightly top-down three-quarter camera angle, same scale, centered in its own space.
+
+The whole background is flat solid magenta #FF00FF, perfectly even: no shadows, no ground, no table, no texture. Do not use any pink, magenta, purple or violet anywhere in the art. No text, no labels, no numbers, no logos, no grid lines, no borders. No glow around anything.
+
+Left: a simple stainless-steel serving tray holding EXACTLY TWO white ceramic plates, each with a glossy burger (sesame bun, lettuce, tomato, cheese), and EXACTLY ONE clear plastic cup filled with iced cola and a black straw. Simple diner service with two plates and one drink.
+Center: a larger polished stainless-steel serving tray holding EXACTLY THREE white ceramic plates, each with a glossy burger, and EXACTLY TWO clear plastic cups with iced cola and black straws, arranged neatly. More generous and organized.
+Right: a large professional stainless-steel serving tray holding EXACTLY FOUR white ceramic plates, each with a glossy burger, and EXACTLY THREE clear plastic cups with iced cola and black straws, plus a folded cream napkin and a small steel sauce cup. Premium, abundant, perfectly arranged.
+
+Count the plates and cups carefully: 2 plates + 1 cup, then 3 plates + 2 cups, then 4 plates + 3 cups. All three setups must clearly be the same service evolving through three upgrade levels. Keep the edges crisp and easy to cut out. This description is complete.
+```
+
+### P24 — Termostato (`Mejoras/hoja_termostato.png`)
+
+```text
+Use the attached images ONLY as the reference for art style, rendering, materials and lighting: glossy 3D casual mobile-game prop illustration, soft studio shading, polished stainless steel, cherry red enamel, warm highlights, slightly top-down three-quarter camera. The attached sheet also shows the three-tier layout to follow. The subject is new and described below.
+
+Create ONE image with three separate grill thermostat control units, arranged in a single horizontal row, evenly spaced with wide empty gaps, reading left to right from basic to professional. Each unit is complete and in natural proportions, same camera angle and same scale, centered in its own space.
+
+The whole background is flat solid magenta #FF00FF, perfectly even: no shadows, no ground, no table, no texture. Do not use any pink, magenta, purple or violet anywhere in the art. No text, no letters, no digits, no labels, no logos, no grid lines, no borders. No glow around anything.
+
+Left: a compact, slightly worn red metal control box with one small round black analog dial, a simple metal pointer and two tiny indicator dots. Basic and honest.
+Center: a larger brushed stainless-steel control panel with one big polished round dial with a green safe zone and a red hot zone, two small amber indicator lights, crisp chrome bevels. Precise and reliable.
+Right: a professional digital thermostat panel in stainless steel and red enamel, with one large circular gauge (green arc fading to red), a blank dark display window with no text, chrome buttons and a small brass trim. Luxurious and high-tech.
+
+The three units must clearly be the same thermostat family at three upgrade levels. Keep all edges crisp and easy to cut out. This description is complete.
+```
+
+### P25 — Calidad de Ingredientes (`Mejoras/hoja_ingredientes.png`)
+
+```text
+Use the attached sheet ONLY as the reference for art style, rendering, materials, lighting and the three-tier layout. Use the attached cheese, tomato and lettuce images only as references for the ingredients. The subject is new and described below.
+
+Create ONE image with three separate containers of fresh burger ingredients, arranged in a single horizontal row, evenly spaced with wide empty gaps, reading left to right from basic to professional. Each container is complete and in natural proportions, same slightly top-down three-quarter camera angle, same scale, centered in its own space.
+
+The whole background is flat solid magenta #FF00FF, perfectly even: no shadows, no ground, no table, no texture. Do not use any pink, magenta, purple or violet anywhere in the art. No text, no labels, no numbers, no logos, no grid lines, no borders. No glow around anything.
+
+Left: a small plain wooden crate holding a ripe red tomato, a crisp green lettuce head, a wedge of yellow cheese and one raw beef patty. Simple and honest.
+Center: a larger brushed stainless-steel prep tray with neat compartments holding bright red tomato slices, fresh green lettuce, thick yellow cheese slices, white onion rings and two raw beef patties. Clean, organized and generous.
+Right: a premium dark-wood and brass ingredient basket with a small gold ribbon on the side, filled with perfect glossy tomatoes, vibrant lettuce, aged yellow cheese, pearl-white onion and two marbled beef patties. Luxurious market produce, abundant and pristine.
+
+All three must clearly be the same ingredient station at three upgrade levels. Keep the edges crisp and easy to cut out. This description is complete.
+```
+
+### P26 — Ambiente del Local (`Mejoras/hoja_ambiente.png`)
+
+```text
+Use the attached sheet ONLY as the reference for art style, rendering, materials, lighting and the three-tier layout. Use the attached lamp and gold star as references for the diner mood and the gold accents. The subject is new and described below.
+
+Create ONE image with three separate retro jukeboxes, arranged in a single horizontal row, evenly spaced with wide empty gaps, reading left to right from basic to professional. Each jukebox is complete and in natural proportions, same slightly top-down three-quarter camera angle, same scale, centered in its own space.
+
+The whole background is flat solid magenta #FF00FF, perfectly even: no shadows, no ground, no table, no texture. Do not use any pink, magenta, purple or violet anywhere in the art. No text, no letters, no labels, no logos, no grid lines, no borders. No glow around anything.
+
+Left: a small tabletop jukebox made of warm wood and cherry-red enamel, with a simple chrome arch and one warm amber light, modest and cozy.
+Center: a classic diner tabletop jukebox with polished chrome trim, cherry-red body, cream panels, two warm amber light strips and a small brass coin slot. Inviting and nostalgic.
+Right: a luxurious floor-standing jukebox in glossy cherry red, polished chrome and gold trim, with a tall arched top, warm amber light strips, a dark speaker grille with geometric chrome lines and a gold star emblem on the front. Grand and premium.
+
+All three must clearly be the same jukebox evolving through three upgrade levels. Keep all edges crisp and easy to cut out. This description is complete.
+```

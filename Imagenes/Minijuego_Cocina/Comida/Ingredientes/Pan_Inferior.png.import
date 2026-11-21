@@ -3,19 +3,21 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bph211awfdkfm"
-path="res://.godot/imported/Pan_Inferior.png-da4a468482792e0d81c4980eb82276ea.ctex"
+path.s3tc="res://.godot/imported/Pan_Inferior.png-da4a468482792e0d81c4980eb82276ea.s3tc.ctex"
+path.etc2="res://.godot/imported/Pan_Inferior.png-da4a468482792e0d81c4980eb82276ea.etc2.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://Imagenes/Minijuego_Cocina/Comida/Ingredientes/Pan_Inferior.png"
-dest_files=["res://.godot/imported/Pan_Inferior.png-da4a468482792e0d81c4980eb82276ea.ctex"]
+dest_files=["res://.godot/imported/Pan_Inferior.png-da4a468482792e0d81c4980eb82276ea.s3tc.ctex", "res://.godot/imported/Pan_Inferior.png-da4a468482792e0d81c4980eb82276ea.etc2.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

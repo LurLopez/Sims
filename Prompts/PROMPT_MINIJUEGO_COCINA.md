@@ -1,4 +1,4 @@
-# Prompt de Implementación — Minijuego Extenso de Cocina (*Cooking Fever*, `1280×720` Horizontal) + Apartado Minijuegos + Ropa Equipable
+# Prompt de Implementación — Minijuego Extenso de Cocina (gestión de pedidos, `1280×720` Horizontal) + Apartado Minijuegos + Ropa Equipable
 
 > **Cómo usarlo:** Copia todo el bloque a partir de `PROMPT (pegar desde aquí)` y pégalo en el agente implementador. Esta especificación está verificada contra el código real de `/home/lur/sims-0.33` (Godot 4.4 / GDScript 2.0) e incluye todas las decisiones cerradas.
 
@@ -6,11 +6,11 @@
 
 PROMPT (pegar desde aquí)
 
-### Tarea: Implementar Minijuego Extenso de Cocina estilo *Cooking Fever* (`1280×720` Horizontal) + Apartado de Minijuegos + Progresión Hostelería + Ropa Equipable
+### Tarea: Implementar Minijuego Extenso de Cocina de gestión de pedidos (`1280×720` Horizontal) + Apartado de Minijuegos + Progresión Hostelería + Ropa Equipable
 
 Actúa como **Game Designer Senior y Arquitecto de Godot 4.4 (GDScript 2.0)** en `/home/lur/sims-0.33` (**SIMS 0.33**). Implementa de principio a fin:
 1. El **Apartado de Minijuegos** (`Minijuegos_Button` en la barra superior junto a Perfil/Economía/Horario/Carrera + panel `Pantalla_Minijuegos` preparado para albergar varios minijuegos).
-2. El **Minijuego de Cocina estilo *Cooking Fever*** (`Minijuego_Cocina.tscn`) con rotación obligatoria a **horizontal (`1280×720`)** y retorno automático a **vertical (`720×1280`)**, manteniendo el reloj del Sim corriendo con normalidad en segundo plano.
+2. El **Minijuego de Cocina de gestión de pedidos** (`Minijuego_Cocina.tscn`) con rotación obligatoria a **horizontal (`1280×720`)** y retorno automático a **vertical (`720×1280`)**, manteniendo el reloj del Sim corriendo con normalidad en segundo plano.
 3. El **desbloqueo al primer minuto trabajado** en hostelería (nunca al programar el bloque) con **notificación visual en pantalla + mensaje en el buzón**.
 4. La integración con `Progreso_Cocina`, habilidades innatas, necesidades básicas, `Alimentacion.gd` (`Comer_Tupper` / `Comer_Basura`), `Eventos_Aleatorios.gd`, logros progresivos cada 5 niveles y **ropa equipable** en Perfil.
 
@@ -109,17 +109,18 @@ No pidas confirmación interactiva: lee los archivos reales antes de editar, imp
 Crear `Scripts/Logica/Escena_Principal/Minijuego_Cocina/Sistema_Cocina.gd` y registrarlo como autoload `Sistema_Cocina`:
 1. **Señal:** `signal restaurante_desbloqueado(restaurante_id: String, nombre_restaurante: String)`.
 2. **Desbloqueo en el primer minuto trabajado (CRÍTICO):**
-   * Mapeo trabajo → restaurante:
+   * Mapeo trabajo → mundo (1 mundo por trabajo):
      * `"Trabajar_En_Comida_Rapida"` → `"burger_street"` (*Burger & Street Food*)
-     * `"Trabajar_De_Ayudante_Cocina"` / `"Trabajar_De_Cocinero_Partida"` → `"bistro_tradicional"` (*Bistró Tradicional*)
+     * `"Trabajar_De_Ayudante_Cocina"` → `"bistro_tradicional"` (*Bistró Tradicional*)
+     * `"Trabajar_De_Cocinero_Partida"` → `"cocina_mercado"` (*Cocina de Mercado*)
      * `"Trabajar_De_Chef_Ejecutivo"` → `"alta_cocina"` (*Alta Cocina Gourmet*)
    * Función `Registrar_Minuto_Trabajo_Hosteleria(nombre_trabajo: String) -> bool`:
      * Se llama desde `Actividades.Ejecutar_Actividad()` **cuando pasa un minuto real ejecutando ese trabajo** (no al asignarlo en el calendario).
      * Si el restaurante asociado no está en `restaurantes_desbloqueados`, lo añade, guarda partida (`Guardar_Variables_Dinamicas.save_game()`), añade un `Mensaje.new()` al buzón (`Variables_Dinamicas.Mensajes`) avisando del desbloqueo en el apartado **Minijuegos**, y emite `restaurante_desbloqueado` para que la UI muestre la notificación en pantalla.
-3. **3 Restaurantes (data-driven):**
+3. **4 Mundos de Cocina (data-driven):**
    * `burger_street`: `implementado = true`, **15 niveles** completos (60–90 s, objetivos `1★ / 2★ / 3★`, pedidos de 1–3 ítems: *Hamburguesa sola, con queso, completa [lechuga+tomate+queso], doble, patatas fritas, refresco*).
-   * `bistro_tradicional` y `alta_cocina`: `implementado = false` (estructura lista para Fase 2, mostrando su estado y trabajo requerido).
-4. **5 Mejoras por Restaurante (Nv. 1 → Nv. 3 en `Fondos_Cocina`):**
+   * `bistro_tradicional`, `cocina_mercado` y `alta_cocina`: `implementado = false`; se muestran siempre como **botones bloqueados** con candado y píldora **Fase 2** (sin niveles ni partida).
+4. **5 Mejoras por Restaurante (Nv. 1 → Nv. 3 en la Caja del restaurante, €):**
    * `plancha`: Nv.1 (`2` huecos, `×1.00`) → Nv.2 (`120`, `3` huecos, `×0.80`) → Nv.3 (`320`, `4` huecos, `×0.65`).
    * `emplatado`: Nv.1 (`2` platos, `1` bebida `4.0 s`) → Nv.2 (`100`, `3` platos, `2` bebidas `2.5 s`) → Nv.3 (`280`, `4` platos, `3` bebidas `1.0 s`).
    * `termostato`: Nv.1 (`6.0 s`) → Nv.2 (`90`, `8.1 s`) → Nv.3 (`240`, `10.5 s` + aviso visual temprano).
@@ -132,8 +133,8 @@ Crear `Scripts/Logica/Escena_Principal/Minijuego_Cocina/Sistema_Cocina.gd` y reg
    * `Esta_En_Turno_Activo(restaurante_id)`: comprueba si la celda actual de `Matriz_Jugador` es `Actividad_Fija_Trabajo` asociada al restaurante.
    * Bloqueos de entrada: `restaurantes_desbloqueados` vacío, `Necesidades_Basicas[3] <= 5`, o examen universitario (P3) activo o en ≤5 min.
 6. **Micro-recompensas por cliente y fin de nivel:**
-   * Por cliente: `15%` base de `+1` `Progreso_Cocina` (`×2.0` en turno, **`×7.0` en `Modo_Rapido`**), `5%` base de `+1` `Progreso[2]` Manualidades (`×7.0` en `Modo_Rapido`), `12%` de `+1` Salud Mental o Hambre (respetando caps de calle/bancarrota/resacón), `10%` de micro-propina (`2–5 € * Multiplicador_Precios()`, tope `15 € * Multiplicador_Precios()` por partida).
-   * Fin de nivel (`Procesar_Fin_Nivel`): calcula `0..3★`, suma `Fondos_Cocina` (`×1.5` en turno), bono 1.ª vez por estrellas (`15/15/20 € * Multiplicador_Precios()`), propinas netas (tope 2 servicios/día en modo libre; ilimitado en turno + marca `plus_nomina_turno_hoy = true`, `+25%` si `"Traje_Estrella_Michelin"`). Actualiza `rango_logro` (cada 5 niveles superados), desbloquea prendas en `Objetos_Poseidos` y envía `Mensaje.new()` al buzón.
+   * Por cliente: `15%` base de `+1` `Progreso_Cocina` (`×2.0` en turno, **`×7.0` en `Modo_Rapido`**), `5%` base de `+1` `Progreso[2]` Manualidades (`×7.0` en `Modo_Rapido`), `12%` de `+1` Salud Mental o Hambre (respetando caps de calle/bancarrota/resacón), `10%` de micro-propina (`1–3 € * Multiplicador_Precios()`, tope `6 € * Multiplicador_Precios()` por partida, `×0.25` en práctica).
+   * Fin de nivel (`Procesar_Fin_Nivel`): calcula `0..3★` sobre el ticket (ventas + propinas); la Caja ingresa `ventas − 30% ingredientes − (6 € + 2 € × nivel) − 30% merma`; el Sim cobra propinas (`50%` del bote, `×1.5` en turno, `×0.25` en práctica), `5%` del beneficio neto (`×0.25` en práctica) y prima por nuevas estrellas (`10%` del umbral de cada estrella). Fuera de turno, los 2 primeros servicios/día con ≥1★ pagan paga completa; después, modo práctica. En turno: paga ilimitada + marca `plus_nomina_turno_hoy = true` (+10% nómina), `+25%` de propinas si `"Traje_Estrella_Michelin"`. Actualiza `rango_logro` (cada 5 niveles superados), desbloquea prendas en `Objetos_Poseidos` y envía `Mensaje.new()` al buzón.
 
 ##### 3.3. Integración con `Actividades.gd`, `Alimentacion.gd` y `Eventos_Aleatorios.gd`
 1. **En `Actividades.gd`:**
@@ -152,33 +153,33 @@ Crear `Scripts/Logica/Escena_Principal/Minijuego_Cocina/Sistema_Cocina.gd` y reg
 1. **Barra superior (`Escena principal.tscn`, `Script_Principal.gd`, `Gestionar_Visibilidad.gd`):**
    * Añadir `Minijuegos_Button` junto a `Boton_Perfil`, `Economia_Button`, `Calendario_Button`, `Carrera_Button` (reajustar las 5 posiciones y anchos de la fila en `_Estilizar_Header()` — p. ej. 5 botones de `136 px` con separación de `4 px` dentro de `720 px` — y añadirlo a `Gestionar_Visibilidad.Visibilizar_Lo_Basico()` y `_Actualizar_Nav_Activa()`).
    * Crear la vista `Pantalla_Minijuegos` (diseño modular con tarjetas en `VBoxContainer` dentro de `720×1280` portrait):
-     * Muestra la tarjeta de **Cocina (*Cooking Fever*)**:
+     * Muestra la tarjeta de **Cocina**:
        * Si está bloqueado: icono de candado + explicación (*"Trabaja al menos 1 minuto en Comida Rápida u hostelería para desbloquearlo"*).
        * Si está desbloqueado: muestra rango de *Maestría Culinaria*, niveles superados, estado `En Turno (+50%)` si aplica, y botón **Jugar** que abre `Minijuego_Cocina.tscn`.
      * Dejar el contenedor preparado para añadir futuros minijuegos (p. ej. Fútbol, Trading).
 2. **Notificación en pantalla al desbloquear:**
    * Conectar `Sistema_Cocina.restaurante_desbloqueado` en `Script_Principal.gd` para mostrar un **toast/banner animado no intrusivo** en la parte superior de la pantalla (`"¡Nuevo minijuego desbloqueado: Cocina!"`), además del mensaje en el buzón y badge en `Boton_Perfil` / `Minijuegos_Button`.
-3. **Perfil → Info y Ropa (`Pantalla_Mensajes.tscn` y `Script_Principal.gd`):**
+3. **Perfil → Info y Vestuario (`Pantalla_Mensajes.tscn`, `Pantalla_Vestuario.gd` y `Script_Principal.gd`):**
    * En **Perfil → Info**: añadir `Cocina: X / 100`, `Atuendo: <Nombre>` y `Maestría Culinaria: Rango X/9`.
-   * En **Perfil → Apuntes**: añadir conmutador superior `Apuntes | Ropa`. En `Ropa`, listar prendas de `Objetos_Poseidos` con su efecto y botón `Equipar` / `✓ Equipada`.
+   * En la sección **Vestuario** (barra superior; también desde Inicio y Perfil → Info): tarjetas de todos los atuendos (los no desbloqueados con candado y rango), vista previa animada con la prenda seleccionada y botón `Equipar atuendo` / `Atuendo equipado`.
 
 ##### 3.5. Escena del Minijuego (`Escenas/Minijuego_Cocina/Minijuego_Cocina.tscn` + `Minijuego_Cocina.gd`)
-Escena autocontenida en `1280×720` horizontal con estilo procedural limpio (`StyleBoxFlat` e iconos de `Imagenes/UI/Iconos/`):
-1. **Subvista 1 — Mapa de Niveles y Mejoras:** barra superior (`Fondos_Cocina`, rango, badge `En Turno`, `Mejoras`, `← Volver al Sim`), selector de 3 restaurantes, mapa de 15 niveles con estrellas `0–3★`, modal de inicio de nivel y modal de las 5 mejoras.
+Escena de **doble orientación**: mapa vertical `720×1280` y cocina horizontal `1280×720`, con estilo cartoon celeste/dorado en el mapa (`Selector_Niveles_Arte.gd`) y HUD azul en la partida:
+1. **Subvista 1 — Mapa de Niveles y Mejoras:** barra superior (`Caja` en €, rango, badge `En Turno`, `Mejoras`, `← Volver al Sim`), selector de **4 mundos** (3 bloqueados con etiqueta `Fase 2`), mapa de 15 niveles con estrellas `0–3★`, modal de inicio de nivel y **pantalla de Mejoras** a tamaño completo (`Mejoras_Cocina.gd`): lista de 5 mejoras con estrellas, escaparate de la siguiente versión, pestañas Nv.1–3 con coste, comparativa de rendimiento y compra pagada con la Caja del local.
 2. **Subvista 2 — Cocina Jugable (`1280×720`, *tap-to-move* a dos pulgares):**
    * HUD superior (reloj del servicio, barra de recaudación con marcas `1★/2★/3★`, combo `x2..x5`, badge `En Turno`).
    * Mostrador con **4 clientes simultáneos** (pedido 1–3 ítems, paciencia verde→amarillo→rojo, monedas+propina al entregar, combo `<2.5 s`, feedback flotante de micro-recompensas).
    * Encimera central: dispensador de refrescos (`1–3` vasos), platos de montaje (`2–4` huecos con capas visuales), plancha (`2–4` huecos) + freidora (`1–2` cestas) con 4 estados (*Cocinando → En su punto → Alerta quemado → Quemado*).
    * Bandeja inferior táctil: `Pan`, `Carne`, `Queso`, `Lechuga`, `Tomate`, `Patatas`, `Papelera`.
-3. **Subvista 3 — Modal de Resultados del Servicio:** estrellas, recaudación, `Fondos_Cocina`, `Dinero`, `Progreso_Cocina`, logro/prenda desbloqueada, botones `Siguiente Nivel`, `Repetir`, `Mapa`.
+3. **Subvista 3 — Modal de Resultados del Servicio:** estrellas, ticket, ventas, costes (ingredientes/servicio/merma), beneficio de la Caja, dinero del Sim (propinas + parte + prima + micro), `Progreso_Cocina`, logro/prenda desbloqueada, botones `Siguiente Nivel`, `Repetir`, `Mapa`.
 
 ---
 
 #### 4. Tests GUT Obligatorios (`Funcionalidades/Minijuego_Cocina/Tests/test_minijuego_cocina.gd`)
 1. Estado por defecto, retrocompatibilidad de saves y categoría `"Ropa"`.
 2. Desbloqueo solo tras `Registrar_Minuto_Trabajo_Hosteleria` (y emisión de señal + mensaje en buzón).
-3. Economía doble moneda (`Fondos_Cocina` vs `Dinero`), límite de 2 servicios/día en modo libre, tope `15 €` micro-propinas y `Multiplicador_Precios()` (`×0.1` en `Modo_Rapido`).
-4. Bonus `Esta_En_Turno_Activo` (`×1.5` dinero/fondos, `×2.0` progreso, `+10%` nómina).
+3. Economía de Caja + costes (Caja en € para las mejoras; el Sim cobra propinas, `5%` del beneficio y primas), paga completa 2 servicios/día fuera de turno y modo práctica al 25%, micro-propinas de `1–3 €` con tope `6 €` y `Multiplicador_Precios()` (`×0.1` en `Modo_Rapido`, solo dinero personal).
+4. Bonus `Esta_En_Turno_Activo` (propinas `×1.5`, paga completa ilimitada, `×2.0` progreso, `+10%` nómina).
 5. `Modo_Rapido`: drops de `Progreso_Cocina` y `Manualidades` multiplicados por `×7.0`.
 6. Fórmulas de `Destreza`, `Paciencia`, `Sangre_Fria`, `Descanso < 25`, `Salud_Mental < 25`, `Resacon`, bloqueo `Descanso <= 5`.
 7. Logros cada 5 niveles (Rangos 1–9), desbloqueo y equipamiento de prendas, efectos en salario/higiene/`Alimentacion.gd` e inmunidad a intoxicación en Rango ≥ 8.

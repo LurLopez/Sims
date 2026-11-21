@@ -8,23 +8,24 @@ extends Node
 #
 # Usa dos AudioStreamPlayer con fundido cruzado sobre el bus "Musica".
 # El estado del reproductor general se conserva (pausado) mientras dura el
-# minijuego y se reanuda justo donde se quedó al salir. Las preferencias de
-# silencio/volumen se guardan en user://configuracion_audio.cfg.
+# minijuego y se reanuda justo donde se quedó al salir. El volumen y el
+# silencio los gestiona el autoload Ajustes (user://configuracion_ajustes.cfg).
 # ============================================================================
 
 signal silencio_cambiado(silenciado: bool)
 
-const RUTA_CONFIG := "user://configuracion_audio.cfg"
-
+const RUTA_PISTA_GENERAL := "res://Sonidos/Musica/Lunchtime_Conspiracies.mp3"
+const RUTA_PISTA_MINIJUEGO := "res://Sonidos/Musica/Seven_Minutes_to_Service.mp3"
+# La pista general es la única que hace falta al arrancar. La del minijuego
+# (4,3 MB) se carga la primera vez que se entra a cocinar.
 const PISTA_GENERAL := preload("res://Sonidos/Musica/Lunchtime_Conspiracies.mp3")
-const PISTA_MINIJUEGO := preload("res://Sonidos/Musica/Seven_Minutes_to_Service.mp3")
+var _pista_minijuego: AudioStream = null
 
 const BUS_MUSICA := "Musica"
 const DURACION_FUNDIDO := 0.9
 const VOLUMEN_GENERAL_DB := -9.0
 const VOLUMEN_MINIJUEGO_DB := -7.0
 const VOLUMEN_APAGADO_DB := -80.0
-const VOLUMEN_PREDETERMINADO := 0.85
 
 enum Pista { GENERAL, MINIJUEGO }
 
@@ -32,22 +33,21 @@ var _reproductor_general: AudioStreamPlayer
 var _reproductor_minijuego: AudioStreamPlayer
 var _pista_activa: Pista = Pista.GENERAL
 var _tween_fundido: Tween
-var _volumen: float = VOLUMEN_PREDETERMINADO
-var _silenciado: bool = false
 var _app_pausada: bool = false
 
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_Asegurar_Bus()
-	_Cargar_Configuracion()
 
 	_reproductor_general = _Crear_Reproductor(
 		"Reproductor_General", PISTA_GENERAL, _on_general_finished)
+	# El reproductor del minijuego se crea sin pista: el MP3 se carga al entrar.
 	_reproductor_minijuego = _Crear_Reproductor(
-		"Reproductor_Minijuego", PISTA_MINIJUEGO, _on_minijuego_finished)
+		"Reproductor_Minijuego", null, _on_minijuego_finished)
 
-	_Aplicar_Volumen_Bus()
+	if not Ajustes.silencio_musica_cambiado.is_connected(_on_ajustes_silencio_musica):
+		Ajustes.silencio_musica_cambiado.connect(_on_ajustes_silencio_musica)
 	Reproducir_General()
 
 
@@ -74,33 +74,27 @@ func Reproducir_Minijuego() -> void:
 
 
 func Esta_Silenciado() -> bool:
-	return _silenciado
+	return Ajustes.Esta_Silenciado_Musica()
 
 
 func Obtener_Volumen() -> float:
-	return _volumen
+	return Ajustes.Obtener_Volumen_Musica()
 
 
 func Establecer_Silencio(valor: bool) -> void:
-	if _silenciado == valor:
-		return
-	_silenciado = valor
-	_Aplicar_Volumen_Bus()
-	_Guardar_Configuracion()
-	silencio_cambiado.emit(_silenciado)
+	Ajustes.Establecer_Silencio_Musica(valor)
 
 
 func Alternar_Silencio() -> void:
-	Establecer_Silencio(not _silenciado)
+	Ajustes.Alternar_Silencio_Musica()
 
 
 func Establecer_Volumen(volumen: float) -> void:
-	var nuevo := clampf(volumen, 0.0, 1.0)
-	if is_equal_approx(nuevo, _volumen):
-		return
-	_volumen = nuevo
-	_Aplicar_Volumen_Bus()
-	_Guardar_Configuracion()
+	Ajustes.Establecer_Volumen_Musica(volumen)
+
+
+func _on_ajustes_silencio_musica(silenciado: bool) -> void:
+	silencio_cambiado.emit(silenciado)
 
 
 # ----------------------------------------------------------------------------
@@ -113,6 +107,11 @@ func _Cambiar_Pista(pista: Pista) -> void:
 
 	var destino: AudioStreamPlayer = _reproductor_general if pista == Pista.GENERAL else _reproductor_minijuego
 	var origen: AudioStreamPlayer = _reproductor_minijuego if pista == Pista.GENERAL else _reproductor_general
+
+	if pista == Pista.MINIJUEGO and destino.stream == null:
+		if _pista_minijuego == null:
+			_pista_minijuego = load(RUTA_PISTA_MINIJUEGO) as AudioStream
+		destino.stream = _pista_minijuego
 
 	if _pista_activa == pista and destino.playing:
 		return
@@ -163,7 +162,7 @@ func _Volumen_Destino(pista: Pista) -> float:
 
 
 # ----------------------------------------------------------------------------
-# Reproductores, bus y preferencias
+# Reproductores y bus
 # ----------------------------------------------------------------------------
 
 func _Crear_Reproductor(nombre: String, pista: AudioStream,
@@ -186,29 +185,6 @@ func _Asegurar_Bus() -> void:
 	var indice := AudioServer.bus_count - 1
 	AudioServer.set_bus_name(indice, BUS_MUSICA)
 	AudioServer.set_bus_send(indice, "Master")
-
-
-func _Aplicar_Volumen_Bus() -> void:
-	var indice := AudioServer.get_bus_index(BUS_MUSICA)
-	if indice == -1:
-		return
-	AudioServer.set_bus_volume_db(indice, linear_to_db(maxf(_volumen, 0.0001)))
-	AudioServer.set_bus_mute(indice, _silenciado)
-
-
-func _Cargar_Configuracion() -> void:
-	var config := ConfigFile.new()
-	if config.load(RUTA_CONFIG) != OK:
-		return
-	_volumen = clampf(float(config.get_value("audio", "volumen", VOLUMEN_PREDETERMINADO)), 0.0, 1.0)
-	_silenciado = bool(config.get_value("audio", "silenciado", false))
-
-
-func _Guardar_Configuracion() -> void:
-	var config := ConfigFile.new()
-	config.set_value("audio", "volumen", _volumen)
-	config.set_value("audio", "silenciado", _silenciado)
-	config.save(RUTA_CONFIG)
 
 
 # ----------------------------------------------------------------------------

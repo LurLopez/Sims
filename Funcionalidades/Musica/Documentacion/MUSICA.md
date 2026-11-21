@@ -26,7 +26,10 @@ volver a marcar `loop=true` y reimportar (`godot --headless --path . --import`).
 - `Alternar_Silencio()` / `Establecer_Silencio(valor)`: silencia o restaura el
   bus de música. Emite `silencio_cambiado(silenciado)`.
 - `Establecer_Volumen(0.0–1.0)` / `Obtener_Volumen()`: volumen del bus.
-- Las preferencias se guardan en `user://configuracion_audio.cfg`.
+- Estas funciones delegan en el autoload `Ajustes`, que es el propietario del
+  bus y de las preferencias (`user://configuracion_ajustes.cfg`). El archivo
+  antiguo `user://configuracion_audio.cfg` se migra automáticamente la primera
+  vez. Ver `Funcionalidades/Ajustes/Documentacion/AJUSTES.md`.
 - En Android, la música se pausa con `NOTIFICATION_APPLICATION_PAUSED` y se
   reanuda con `NOTIFICATION_APPLICATION_RESUMED`.
 - Si un MP3 termina por cualquier motivo (por ejemplo, un import sin bucle), el
@@ -35,6 +38,11 @@ volver a marcar `loop=true` y reimportar (`godot --headless --path . --import`).
 Detalles del fundido: `0.9 s`, con `Tween` senoidal y volumen general `-9 dB` /
 minijuego `-7 dB`. El reproductor general no se detiene al entrar al minijuego:
 queda pausado (`stream_paused`) para conservar la posición.
+
+La pista general se precarga porque suena desde el menú. La del minijuego
+(`RUTA_PISTA_MINIJUEGO`, 4,3 MB) se carga de forma diferida en el primer
+`Reproducir_Minijuego()` y se guarda en `_pista_minijuego`: así el arranque del
+APK no lee ese MP3 ni crea el segundo reproductor con stream.
 
 ## Integración
 
@@ -46,6 +54,13 @@ queda pausado (`stream_paused`) para conservar la posición.
 - Botón de altavoz en el menú principal y en la cabecera de la escena principal
   (`Boton_Musica` / `Boton_Musica_Header`): alterna el silencio y actualiza el
   icono (`volume-2` / `x`).
+- Botón de engranaje (`Boton_Ajustes` / `Boton_Ajustes_Header`): abre
+  `Panel_Ajustes`, donde se regulan por separado el volumen de la música y el de
+  los efectos de sonido (bus `SFX`), con silencio y restablecimiento. El panel
+  mantiene el altavoz rápido de la cabecera sincronizado mediante
+  `Ajustes.silencio_musica_cambiado` → `Musica.silencio_cambiado`.
+- Los efectos del minijuego (`Sonidos_Cocina.gd`) usan el bus `SFX`, no el de
+  música; silenciar uno no afecta al otro.
 
 ## Añadir una pista nueva
 

@@ -439,18 +439,19 @@ func _Obtener_Multiplicador(nombre_actividad: String) -> float:
 ├── Flecha_Atras (Button)         ← arriba-izq, vuelve al menú
 ├── Titulo (Label)                ← "TIENDA"
 ├── Categorias (Control)
-│   ├── Tab_Dormir (Button)       ← 🛏️
-│   ├── Tab_Comer (Button)        ← 🍽️
-│   └── Tab_Duchar (Button)       ← 🚿
+│   ├── Tab_Dormir (Button)       ← icono bed-double
+│   ├── Tab_Comer (Button)        ← icono utensils
+│   └── Tab_Duchar (Button)       ← icono shower-head
 ├── Objetos_Dormir (Control)
 │   ├── Cama_Basica (Panel)
-│   │   ├── Imagen_Placeholder (Panel) → Imagen_Emoji (Label)
+│   │   ├── Imagen_Placeholder (Panel) → Tier_Pill + Icono_Item (TextureRect)
 │   │   ├── Nombre, Precio, Multiplicador (Labels)
 │   │   ├── En_Uso (Label, "✓ En uso")
 │   │   ├── Comprar (Button verde)
 │   │   ├── Vender (Button rojo)
 │   │   └── Elegir (Button azul)
-│   └── Cama_Premium (Panel)      ← misma estructura
+│   ├── Cama_Premium (Panel)      ← misma estructura
+│   └── Cama_Lujo (Panel)         ← misma estructura
 ├── Objetos_Comer (Control)
 │   ├── Mesa_Basica
 │   └── Mesa_Premium
@@ -548,8 +549,8 @@ func Mostrar_Categoria_Tienda(raiz, categoria):
         <h3>Limitaciones Actuales</h3>
         <div class="warning-box">
             <ul>
-                <li>Solo se muestran 2 objetos por categoría (Básico + Premium). <code>Cama_Lujo</code> existe en el catálogo pero <strong>no tiene tarjeta en la UI</strong>. Para añadirla habría que ampliar el layout (scroll horizontal o reducir tamaño de tarjeta).</li>
-                <li>Las imágenes son emojis placeholder (🛏️, 🛌, 🍽️, 🍱, 🚿, 🛁). Sustituir por <code>TextureRect</code> con sprites reales cuando estén disponibles.</li>
+                <li>El layout usa posiciones fijas en coordenadas 720×1280 (el dock inferior empieza en <code>alto - 96</code>); una cuarta fila de tarjetas requeriría scroll.</li>
+                <li>Un objeto nuevo sin PNG procesado usa el respaldo Lucide; conviene añadir su ilustración y su ruta en <code>Estilos_UI.RUTAS_ICONOS_TIENDA</code>.</li>
             </ul>
         </div>
 

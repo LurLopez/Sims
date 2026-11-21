@@ -3,19 +3,21 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bnmyki6t0pdb4"
-path="res://.godot/imported/Vasos_Rojos.png-7d7459e6ed5e19a4992937a431ee5dd5.ctex"
+path.s3tc="res://.godot/imported/Vasos_Rojos.png-7d7459e6ed5e19a4992937a431ee5dd5.s3tc.ctex"
+path.etc2="res://.godot/imported/Vasos_Rojos.png-7d7459e6ed5e19a4992937a431ee5dd5.etc2.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://Imagenes/Minijuego_Cocina/Emplatado/Vasos_Rojos.png"
-dest_files=["res://.godot/imported/Vasos_Rojos.png-7d7459e6ed5e19a4992937a431ee5dd5.ctex"]
+dest_files=["res://.godot/imported/Vasos_Rojos.png-7d7459e6ed5e19a4992937a431ee5dd5.s3tc.ctex", "res://.godot/imported/Vasos_Rojos.png-7d7459e6ed5e19a4992937a431ee5dd5.etc2.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

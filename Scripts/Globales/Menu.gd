@@ -7,6 +7,8 @@ const CREADOR_PERSONAJE := preload("res://Scripts/GUI/Menu/Creador_Personaje.gd"
 
 var _boton_principal: Button
 var _boton_musica: Button
+var _boton_ajustes: Button
+var _panel_ajustes: Panel_Ajustes
 var _intro_en_curso := false
 var _creador_abierto: CanvasLayer
 var _modal_confirmacion: CanvasLayer
@@ -44,6 +46,16 @@ func _alternar_musica() -> void:
 	_Actualizar_Boton_Musica()
 
 
+func _abrir_ajustes() -> void:
+	if _intro_en_curso or _creador_abierto != null or _modal_confirmacion != null:
+		return
+	if _panel_ajustes != null and is_instance_valid(_panel_ajustes):
+		return
+	_panel_ajustes = Panel_Ajustes.new()
+	_panel_ajustes.cerrado.connect(func(): _panel_ajustes = null)
+	add_child(_panel_ajustes)
+
+
 func _on_musica_silencio_cambiado(_silenciado: bool) -> void:
 	_Actualizar_Boton_Musica()
 
@@ -76,7 +88,7 @@ func _construir_menu() -> void:
 
 	var marca := Logo_Juego.new()
 	marca.name = "Logo_Juego"
-	marca.tamano_insignia = 92
+	marca.tamano_insignia = 104
 	marca.animar_retrato = true
 	marca.subtitulo = "Simulador de vida en tiempo real"
 	marca.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -92,6 +104,13 @@ func _construir_menu() -> void:
 	_boton_musica.pressed.connect(_alternar_musica)
 	header.add_child(_boton_musica)
 	_Actualizar_Boton_Musica()
+
+	_boton_ajustes = Estilos_UI.boton_icono("settings-2", Estilos_UI.ROJO_BIT, 40)
+	_boton_ajustes.name = "Boton_Ajustes"
+	_boton_ajustes.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	_boton_ajustes.tooltip_text = "Ajustes"
+	_boton_ajustes.pressed.connect(_abrir_ajustes)
+	header.add_child(_boton_ajustes)
 
 	# --- Tarjeta principal ---
 	var card := PanelContainer.new()
@@ -199,7 +218,7 @@ func _construir_tarjeta_partida_activa(v: VBoxContainer) -> void:
 	v.add_child(top)
 
 	var borde_av := Estilos_UI.PELIGRO if Variables_Dinamicas.En_La_Calle else Estilos_UI.EXITO
-	var avatar := Estilos_UI.avatar_personaje(60, borde_av, 3)
+	var avatar := Estilos_UI.avatar_personaje(60, borde_av, 3, {}, true)
 	top.add_child(avatar)
 
 	var info := VBoxContainer.new()
@@ -263,6 +282,19 @@ func _construir_tarjeta_partida_activa(v: VBoxContainer) -> void:
 		var nombre_c := str(Variables_Dinamicas.Carrera_Actual.nombre).replace("_", " ")
 		chips.add_child(Estilos_UI.pill_estado(nombre_c, Estilos_UI.ORO_SUAVE, Estilos_UI.ORO))
 
+	# Escenario animado en vivo del personaje elegido en la pantalla de inicio
+	var escenario_inicio := Escenario_Actividad.new()
+	escenario_inicio.custom_minimum_size = Vector2(0, 184)
+	v.add_child(escenario_inicio)
+	escenario_inicio.actualizar_estado(
+		_obtener_actividad_actual_menu(),
+		Variables_Dinamicas.En_La_Calle,
+		Sistema_Cocina.Obtener_Apariencia_Con_Ropa_Equipada(Variables_Estaticas.Apariencia),
+		int(Variables_Dinamicas.Minute_Minute),
+		str(Variables_Dinamicas.Objeto_Seleccionado.get("Comer", "Mesa_Basica")),
+		str(Variables_Estaticas.Personalidad)
+	)
+
 	v.add_child(Estilos_UI.divisor_horizontal())
 
 	# Barras estilo BitLife con iconos y profundidad
@@ -298,6 +330,24 @@ func _construir_tarjeta_partida_activa(v: VBoxContainer) -> void:
 	var nota := Estilos_UI.texto("Último registro: %s" % fecha_txt, 12, Estilos_UI.TINTA_FANTASMA)
 	nota.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	v.add_child(nota)
+
+
+func _obtener_actividad_actual_menu() -> String:
+	var dia: int = int(Variables_Dinamicas.Minute_Day)
+	var min_dia: int = int(Variables_Dinamicas.Minute_Minute)
+	if Variables_Dinamicas.Matriz_Jugador.size() <= min_dia or min_dia < 0:
+		return ""
+	var fila = Variables_Dinamicas.Matriz_Jugador[min_dia]
+	if not (fila is Array) or fila.size() <= dia or dia < 0:
+		return ""
+	var celda = fila[dia]
+	if celda is String:
+		if celda == "" or celda == "Actividad_Aleatoria":
+			return ""
+		return str(celda)
+	if celda is Actividad:
+		return str(celda.nombre)
+	return ""
 
 
 func _agregar_barra(parent: VBoxContainer, etiqueta: String, nombre_icono: String, valor: float, color_fill: Color) -> void:
@@ -341,7 +391,7 @@ func _animar_entrada() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if _intro_en_curso or _creador_abierto != null:
+	if _intro_en_curso or _creador_abierto != null or _panel_ajustes != null:
 		return
 	if _modal_confirmacion != null:
 		if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
@@ -355,7 +405,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _on_continuar() -> void:
-	if _intro_en_curso or _creador_abierto != null:
+	if _intro_en_curso or _creador_abierto != null or _panel_ajustes != null:
 		return
 	if Variables_Estaticas.First_Time:
 		_abrir_creador_personaje(false)
@@ -374,20 +424,27 @@ func _abrir_creador_personaje(reiniciar_al_confirmar: bool) -> void:
 			_reiniciar_partida_desde_cero()
 		Variables_Estaticas.Modo_Rapido = _modo_rapido_seleccionado
 		Variables_Estaticas.Apariencia = Apariencia_Personaje.normalizar(apariencia)
+		var pers_elegida := str(Variables_Estaticas.Apariencia.get("personalidad", ""))
+		if pers_elegida != "":
+			Variables_Estaticas.Personalidad = pers_elegida
 		_reproducir_intro_nueva_partida(origen_boton, Variables_Estaticas.Apariencia))
 	creador.cancelado.connect(func():
 		_creador_abierto = null)
 	add_child(creador)
 
 
-func _ir_a_escena_principal() -> void:
-	get_tree().change_scene_to_file("res://Escenas/Escena_Principal/Escena principal.tscn")
+func _ir_a_escena_principal(titulo: String = "Tu vida continúa",
+		subtitulo: String = "Cargando tu partida…",
+		pildora: String = "", fundido_entrada: bool = true) -> void:
+	Pantalla_Carga.Ir_A_Escena_Principal(titulo, subtitulo, pildora, fundido_entrada)
 
 
 # Animación de bienvenida que solo se ve al empezar una nueva partida.
 func _reproducir_intro_nueva_partida(origen_personalizado: Vector2 = Vector2(-1, -1),
 		apariencia_elegida: Dictionary = {}) -> void:
 	_intro_en_curso = true
+	# Ve cargando la escena principal mientras se disfruta del cómic.
+	Pantalla_Carga.Precargar(Pantalla_Carga.RUTA_ESCENA_PRINCIPAL)
 	var intro := INTRO_NUEVA_PARTIDA.new()
 	intro.apariencia = Apariencia_Personaje.normalizar(
 		apariencia_elegida if not apariencia_elegida.is_empty() else Variables_Estaticas.Apariencia
@@ -396,7 +453,12 @@ func _reproducir_intro_nueva_partida(origen_personalizado: Vector2 = Vector2(-1,
 		intro.origen = origen_personalizado
 	elif _boton_principal != null:
 		intro.origen = _boton_principal.get_global_rect().get_center()
-	intro.terminada.connect(_ir_a_escena_principal)
+	intro.terminada.connect(func():
+		_ir_a_escena_principal(
+			Pantalla_Carga.TITULO_NUEVA_VIDA,
+			Pantalla_Carga.SUB_NUEVA_VIDA,
+			Pantalla_Carga.PILL_NUEVA_VIDA,
+			false))
 	add_child(intro)
 
 
@@ -556,6 +618,7 @@ func _reiniciar_partida_desde_cero() -> void:
 	Variables_Dinamicas.Trabajo_Actual = null
 	Variables_Dinamicas.Objetos_Poseidos = {"Ropa_Calle": true}
 	Variables_Dinamicas.Objeto_Seleccionado = {"Ropa": "Ropa_Calle"}
+	Sistema_Cocina.Asegurar_Prendas_Iniciales()
 	Variables_Dinamicas.Cocina_Estado = Variables_Dinamicas.Cocina_Estado_Por_Defecto()
 	Variables_Dinamicas.Minute_Day = 0
 	Variables_Dinamicas.Minute_Minute = 0

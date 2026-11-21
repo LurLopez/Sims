@@ -153,13 +153,13 @@ p_nada = supervivencia</code></pre>
         Sustituye al mini calendario solo en modo Fiesta y se actualiza al cambiar día/hora/minuto.
     </div>
 
-    <h2>5. Flujo de dos pasos</h2>
+    <h2>5. Flujo de creación</h2>
     <div class="flow">
-        <div class="step"><b>1.</b> Calendario → Ocupar → ajustar horas → Crear Actividad → lista de actividades.</div>
-        <div class="step"><b>2.</b> Pulsar <b>Salir de fiesta</b> → se reabre el selector con el panel de preview.</div>
-        <div class="step"><b>3.</b> <b>Crear Actividad</b> valida con <code>Validar_Horario_Fiesta</code> y escribe en la matriz.</div>
+        <div class="step"><b>1.</b> Actividades → Especiales → <b>Salir de fiesta</b>.</div>
+        <div class="step"><b>2.</b> Se abre el selector en modo Fiesta con el panel de preview y una franja propuesta dentro de 18:00–06:00 (o la marcada antes en el calendario).</div>
+        <div class="step"><b>3.</b> Ajustar inicio y final → <b>Crear actividad</b>: valida con <code>Validar_Horario_Fiesta</code> y escribe en la matriz.</div>
     </div>
-    <p>El resto de actividades conserva su flujo actual.</p>
+    <p>Si se parte del calendario, <b>Elegir actividad</b> conserva la franja marcada y abre el catálogo; al elegir la actividad se vuelve al selector para confirmar el horario. El resto de actividades sigue el mismo orden: primero la actividad y después el horario.</p>
 
     <h2>6. Estados temporales</h2>
 
@@ -224,7 +224,7 @@ var Fiesta_Evento_Ocurrido: bool = false</code></pre>
 
     <h2>9. UI</h2>
     <ul>
-        <li><strong>Botón</strong>: <code>Necesidades_Basicas_Opciones/Salir_De_Fiesta</code>, texto <code>🎉  SALIR DE FIESTA</code>, icono <code>party-popper</code>, subtítulo <code>Noche · 2–12 h · Prob. según estado</code>.</li>
+        <li><strong>Botón</strong>: <code>Especiales_Opciones/Salir_De_Fiesta</code>, texto <code>🎉  SALIR DE FIESTA</code>, icono <code>party-popper</code>, subtítulo <code>Noche · 2–12 h · Prob. según estado</code>.</li>
         <li><strong>Layout</strong>: 5 botones × 78 px + 4 separaciones × 10 px = 430 px en un contenedor de 960 px. Sin scroll.</li>
         <li><strong>Preview</strong>: <code>Preview_Fiesta</code> dinámico, hijo de <code>Seleccionar_Horario</code>.</li>
         <li><strong>Label de estado</strong>: <code>Estado_Temporal_Label</code> en <code>Resumen_Necesidades</code>; <code>Euforia · 23h 59m</code> en verde, <code>Resacón · 18h 20m · límite 45</code> en rojo; oculto sin estados.</li>
@@ -269,7 +269,7 @@ var Fiesta_Evento_Ocurrido: bool = false</code></pre>
         <tr><td><code>Scripts/Logica/Escena_Principal/Actividades/Actividades_Necesidades_Basicas.gd</code></td><td>Cap de Resacón</td></tr>
         <tr><td><code>Escenas/Escena_Principal/Escena principal.tscn</code></td><td>Botón y conexión</td></tr>
         <tr><td><code>Scripts/GUI/Escena_Principal/Estilos_UI.gd</code></td><td>Icono</td></tr>
-        <tr><td><code>Scripts/Globales/Script_Principal.gd</code></td><td>Handler, flujo de dos pasos, preview, diálogo y label</td></tr>
+        <tr><td><code>Scripts/Globales/Script_Principal.gd</code></td><td>Handler, flujo actividad → horario, preview, diálogo y label</td></tr>
         <tr><td><code>Scripts/GUI/Escena_Principal/Actividades/Reloj/Auxiliar/SeleccionarHorarioReloj.gd</code></td><td>Preview y normalización de día final</td></tr>
         <tr><td><code>Scripts/GUI/Escena_Principal/Necesidades_Basicas/Necesidades_Basicas_GUI.gd</code></td><td>Label de estado</td></tr>
         <tr><td><code>Funcionalidades/Actividades/Actividades_Temporales/Tests/test_salir_de_fiesta.gd</code></td><td>Tests GUT</td></tr>

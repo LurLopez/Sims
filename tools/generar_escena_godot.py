@@ -5,8 +5,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 LAYOUT_PATH = ROOT / "Imagenes" / "Minijuego_Cocina" / "escenario_layout.json"
-OUT = ROOT / "Escenas" / "Minijuego_Cocina" / "Escenario_Cooking_Fever.tscn"
-SCRIPT = "res://Scripts/GUI/Minijuego_Cocina/Escenario_Cooking_Fever.gd"
+OUT = ROOT / "Escenas" / "Minijuego_Cocina" / "Escenario_Maqueta_Cocina.tscn"
+SCRIPT = "res://Scripts/GUI/Minijuego_Cocina/Escenario_Maqueta_Cocina.gd"
 FONT_TIT = "res://Fuentes/UI/Bricolage-800.ttf"
 FONT_UI = "res://Fuentes/UI/DMSans-700.ttf"
 
@@ -34,7 +34,7 @@ def main():
     lines.append("")
 
     lines += [
-        '[node name="Escenario_Cooking_Fever" type="Control"]',
+        '[node name="Escenario_Maqueta_Cocina" type="Control"]',
         "layout_mode = 3",
         "anchors_preset = 15",
         "anchor_right = 1.0",

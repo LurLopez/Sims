@@ -23,6 +23,11 @@
 | `Actividades_Habilidades` | `Scripts/Logica/Escena_Principal/Actividades/Actividades_Habilidades.gd` |
 | `Actividades_Necesidades_Basicas` | `Scripts/Logica/Escena_Principal/Actividades/Actividades_Necesidades_Basicas.gd` |
 | `Gestionar_Visibilidad` | `Scripts/GUI/Escena_Principal/Gestionar_Visibilidad.gd` |
+| `Ajustes` | `Scripts/Globales/Ajustes.gd` |
+| `Recompensas` | `Scripts/Globales/Recompensas.gd` |
+| `Sistema_Cocina` | `Scripts/Logica/Escena_Principal/Minijuego_Cocina/Sistema_Cocina.gd` |
+| `Musica` | `Scripts/Globales/Musica.gd` |
+| `Pantalla_Carga` | `Scripts/Globales/Pantalla_Carga.gd` |
 
 ---
 
@@ -31,7 +36,7 @@
 | Archivo | Líneas | Contenido |
 |---|---|---|
 | `Escenas/Escena_Principal/Escena principal.tscn` | ~1634 | Root + barra nav + paneles stats + calendario actividades |
-| `Escenas/Escena_Principal/Tienda.tscn` | ~869 | Pantalla tienda (objetos Dormir/Comer/Duchar) |
+| `Escenas/Escena_Principal/Tienda.tscn` | ~880 | Pantalla tienda (objetos Dormir/Comer/Duchar + pestaña Bienestar con anuncios y clínica de rejuvenecimiento) |
 | `Escenas/Escena_Principal/Pantalla_Mensajes.tscn` | ~235 | Pantalla perfil (Mensajes/Info/Apuntes) |
 
 `Tienda` y `Pantalla_Mensajes` son instancias en la escena principal. Los paths de nodo desde el root son idénticos (`$Tienda/Objetos_Dormir/Cama_Basica`, etc.) — los scripts no cambian.
@@ -51,17 +56,20 @@ Node2D (root, Script_Principal.gd)
 │   ├── Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones/[Necesidades_Basicas_Opciones|Progreso_Opciones]
 │   ├── Horario_Semanal/[OPCIONES_CALENDARIO|Cabezal_horario|Mover_Vertical/Todo calendario/Dias]
 │   └── Seleccionar_Horario/[Inicio|Final|Cancelar|Crear_Actividad]
-├── Boton_Perfil · Tienda_Button (oculto) · Economia_Button · Calendario_Button · Carrera_Button
+├── Boton_Perfil · Tienda_Button (oculto) · Economia_Button · Calendario_Button · Carrera_Button · Minijuegos_Button · Vestuario_Button
+├── Tienda [instancia Tienda.tscn] → Categorias/[Tab_Dormir|Tab_Comer|Tab_Duchar|Tab_Ventajas] · Objetos_Ventajas (Bienestar: anuncios y clínica)
+├── Pantalla_Minijuegos (generada en código; hub modular)
+├── Pantalla_Vestuario (generada en código; armario con vista previa y tarjetas)
 ├── Tienda [instancia Tienda.tscn]
 │   ├── Flecha_Atras · Titulo · Categorias/[Tab_Dormir|Tab_Comer|Tab_Duchar]
-│   ├── Objetos_Dormir/[Cama_Basica|Cama_Premium]/[Imagen_Placeholder|Nombre|Precio|Multiplicador|En_Uso|Comprar|Vender|Elegir]
+│   ├── Objetos_Dormir/[Cama_Basica|Cama_Premium|Cama_Lujo]/[Imagen_Placeholder(→Tier_Pill+Icono_Item)|Nombre|Precio|Multiplicador|En_Uso|Comprar|Vender|Elegir]
 │   ├── Objetos_Comer/[Mesa_Basica]/[...]
 │   └── Objetos_Duchar/[Ducha_Basica|Ducha_Premium]/[...]
 └── Pantalla_Mensajes [instancia Pantalla_Mensajes.tscn]
     ├── Fondo_Mensajes · Header_Bar · Titulo · Boton_Cerrar
     ├── Tab_Bar/[Tab_Mensajes|Tab_Info|Tab_Apuntes|Tab_Despensa]
     ├── Panel_Info/Scroll_Info/VBox_Info
-    ├── Panel_Apuntes/[Tabs_Libros|Texto_Apuntes|Sin_Apuntes_Label]
+    ├── Panel_Apuntes/[Scroll_Inventario/Grid_Libros|Sin_Apuntes_Label]
     ├── Panel_Despensa/Scroll_Tuppers/VBox_Tuppers
     ├── Lista_Mensajes/VBoxContainer
     └── Contenido_Mensaje/[Mensaje_Card|Boton_Volver|Hora_Mensaje_Label|Titulo_Mensaje_Label|Descripcion_Mensaje_Label]
@@ -72,7 +80,8 @@ Node2D (root, Script_Principal.gd)
 - **Nuevo objeto en Tienda** → `Tienda.tscn`. Copiar bloque `Cama_Basica`/`Cama_Premium`, ajustar nombre/precio/emoji/multiplicador. Añadir conexiones al final de `Escena principal.tscn`. Registrar en `Variables_Estaticas.gd`.
 - **Nueva actividad temporal** → botón en `Escena principal.tscn` dentro de `Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones/Necesidades_Basicas_Opciones` o `Progreso_Opciones`. Añadir al catálogo en `Variables_Estaticas.gd` y handler en `Script_Principal.gd`.
 - **Nueva pestaña en Perfil** → `Pantalla_Mensajes.tscn`: botón en `Tab_Bar` + panel hijo del root.
-- **Nuevo trabajo de nómina** → botón en `Escena principal.tscn` > `Actividades/Elegir_Actividad/Tipos_De_Actividades/Fijas_Opciones/Trabajo_Opciones` (y en `Trabajo/Actividades_Trabajo_Nomina_Opciones` por compatibilidad). Registrar como `Actividad_Fija_Trabajo` en `Variables_Estaticas.gd`. Si exige cocina, usar `requisito_cocina`. Lógica en `Trabajo.gd`.
+- **Nuevo atuendo o prenda equipable** → añadir un diccionario a `Ropa_Catalogo.DATOS` (`Scripts/Logica/Escena_Principal/Economia/Ropa_Catalogo.gd`) con `clave`, `precio`, `desbloqueo` (`inicio`/`tienda`/`rango`), `categoria` (`diario`/`deporte`/`elegante`/`trabajo`/`fiesta`/`cocina`), `estilo_visual`, `detalle_visual`, paleta y bonificaciones. Añadir la clave a `Sistema_Cocina.ORDEN_ROPA` y `NOMBRES_ROPA` y, si aplica, al campo `prenda` de `RANGOS_LOGRO`. La sección `Vestuario` lo muestra automáticamente con filtros y compra, y `Personaje_Visual._dibujar_atuendo_encima()` añade los detalles visuales del estilo (19 estilos disponibles).
+- **Nuevo trabajo de nómina** → botón en `Escena principal.tscn` > `Actividades/Elegir_Actividad/Tipos_De_Actividades/Fijas_Opciones/Trabajo_Opciones` o, si es de hostelería, dentro del submenú `Trabajo_Opciones/Cocinero_Opciones` (y en `Trabajo/Actividades_Trabajo_Nomina_Opciones` por compatibilidad). Registrar como `Actividad_Fija_Trabajo` en `Variables_Estaticas.gd`. Si exige cocina, usar `requisito_cocina`. Lógica en `Trabajo.gd`.
 - **Nueva pestaña de Despensa/Tuppers** → la lógica de filas reutilizables está en `Scripts/GUI/Escena_Principal/Tuppers/Tupper_UI.gd`; la despensa del Perfil en `Pantalla_Mensajes.tscn` y el selector modal en `Modal_Tuppers.gd`.
 
 ---
@@ -190,9 +199,9 @@ Cada carrera universitaria completada (`Variables_Dinamicas.Carreras_Completadas
 
 ## Marca y logo
 
-- **Logo dinámico in-game:** `Scripts/GUI/Menu/Logo_Juego.gd` compone insignia circular + `SIMS` + `LIFE`. La insignia usa `Personaje_Visual` en modo `retrato_cercano` con `Variables_Estaticas.Apariencia`, así que muestra la cara del Sim creado. Se usa en el menú principal (`Menu.gd`).
-- **Icono fijo Play Store:** `Imagenes/Marca/logo_play_store_512.png` (subir a Play Console); maestro `logo_play_store_1024.png`; `feature_graphic_1024x500.png` y lockups `logo_horizontal_*.png` para marketing. El icono de la ficha y el del lanzador Android son fijos: Android no permite generar un icono de lanzador arbitrario en runtime (solo `activity-alias` predefinidos).
-- **Iconos del APK:** `icon.svg` + `Iconos_Android/` generados con `Scripts/Otro/Herramientas/Generar_Iconos_Android.gd`. El lockup de marca se exporta con `Exportar_Logo_Marca.gd`.
+- **Logo dinámico in-game:** `Scripts/GUI/Menu/Logo_Juego.gd` compone un medallón ilustrado (marco PNG con centro transparente + `Personaje_Visual` en modo `retrato`, `margen_retrato=12`, expresión `sonrisa`) + wordmark oficial `SIMS` + etiqueta `LIFE` dorada. La cara sale de `Variables_Estaticas.Apariencia`, así que cambia con el Sim creado. Se usa en el menú principal (`Menu.gd`).
+- **Icono fijo Play Store:** `Imagenes/Marca/logo_play_store_512.png` (subir a Play Console); maestro `logo_play_store_1024.png`; `feature_graphic_1024x500.png`, lockups rojo/claro/oscuro y `logo_vertical_1024.png` para marketing. El icono de la ficha y el del lanzador Android son fijos: Android no permite generar un icono de lanzador arbitrario en runtime (solo `activity-alias` predefinidos).
+- **Iconos del APK:** `Iconos_Android/` generados desde los assets de `Arte_Fuente/Marca/` con `Scripts/Otro/Herramientas/Generar_Iconos_Android.gd`. Los assets oficiales de marca se generan con `python3 Arte_Fuente/Marca/generar_logo.py`; `Exportar_Logo_Marca.gd` crea variantes personalizadas.
 - Documentación completa en `Documentacion/Marca/README.md`.
 
 ---
@@ -211,7 +220,7 @@ Cada carrera universitaria completada (`Variables_Dinamicas.Carreras_Completadas
 - **Orientación (crítico):** `display/window/handheld/orientation=1` (entero). El exportador Android hace `int()` del valor; un string como `"portrait"` se convierte en `0` (**Landscape**). Valores: `0` landscape, `1` portrait.
 - **Pantalla completa:** `screen/immersive_mode=true` en `export_presets.cfg` añade `--fullscreen` al arranque (oculta barras del sistema). `screen/edge_to_edge=false`.
 - **Splash sin logo de Godot:** `application/boot_splash/show_image=false` en `project.godot` y `splash_screen/disable_godot_boot_splash=true` en el preset. El splash del sistema Android 12+ usa los iconos de `Iconos_Android/`.
-- **Iconos Android:** `Iconos_Android/icono_192.png`, `icono_adaptativo_frente_432.png`, `icono_adaptativo_fondo_432.png`, `icono_monocromo_432.png` y `splash_icon_512.png`. Se regeneran desde `icon.svg` con:
+- **Iconos Android:** `Iconos_Android/icono_192.png`, `icono_adaptativo_frente_432.png`, `icono_adaptativo_fondo_432.png`, `icono_monocromo_432.png` y `splash_icon_512.png`. Se regeneran con:
   `godot --headless --path . --script res://Scripts/Otro/Herramientas/Generar_Iconos_Android.gd`
 - **Compilar:** `./exportar_apk.sh` (debug) o `./exportar_apk.sh --release`; `--instalar` instala por ADB. Salida: `build/sims-0.33.apk` (arm64-v8a).
 - **Verificar orientación:** `aapt2 dump xmltree --file AndroidManifest.xml build/sims-0.33.apk | grep screenOrientation` debe devolver `1`.
@@ -248,6 +257,7 @@ Documentación detallada en `Funcionalidades/<ruta>/Documentacion/`.
 | Perfil/Informacion | `Perfil/Informacion` | Pantalla perfil 4 pestañas (Info, Mensajes, Apuntes, Despensa); datos en tiempo real |
 | Perfil/Mensajes | `Perfil/Mensajes` | Tab Mensajes dentro del perfil |
 | Perfil/Inventario | `Perfil/Inventario` | Tab Apuntes: libros desbloqueados por carrera |
+| Vestuario | `Vestuario` | Sección propia en la barra superior: vista previa animada, tarjetas de atuendos, candados por rango y equipado persistente; la ropa se dibuja en todas las animaciones |
 | Invertir_En_Bolsa | `Economia/Invertir_En_Bolsa` | Inversión pasiva; ~3 eventos/día; auto-venta si pánico (Sangre_Fría<30) |
 | Sistema_Objetos | `Economia/Sistema_Objetos_Muebles` | Compra/venta de objetos con multiplicadores de efectos |
 | Carreras | `Carreras` | Sistema de carreras universitarias |
@@ -256,10 +266,46 @@ Documentación detallada en `Funcionalidades/<ruta>/Documentacion/`.
 | Salir_De_Fiesta | `Actividades/Actividades_Temporales` | Fiesta 18:00–06:00 (2–12 h), ligar/resacón por minuto y estados Euforia/Resacón de 24 h |
 | Cocina_Y_Alimentacion | `Actividades/Cocina_Y_Alimentacion` | Cocinar, tuppers individuales, caducidad, intoxicación, comer tupper/basura y hostelería |
 | Eventos_Aleatorios | `Actividades/Eventos_Aleatorios` | Despido por higiene (cooldown 5 días) + 20 eventos generales con franja horaria |
-| Marca/Logo | `Documentacion/Marca` | Logo dinámico con la cara del Sim + icono fijo de Play Store/lanzador |
+| Marca/Logo | `Documentacion/Marca` | Medallón dinámico con la cara del Sim + wordmark SIMS/LIFE, icono fijo de Play Store/lanzador y lockups rojo/claro/oscuro |
 
 ---
 
 ## Mantenimiento del Mega Prompt de Contexto
 
 Al implementar o documentar una nueva funcionalidad, actualizar también `Prompts/MEGA_PROMPT_CONTEXTO.md` y su copia en `notebookLM/00_CONTEXTO_MAESTRO_Y_ROL.md` (nuevos autoloads, variables de `Variables_Dinamicas` / `Variables_Estaticas`, actividades, sistemas implementados y estado en el roadmap), así como la fuente correspondiente en `notebookLM/`, para que NotebookLM y los chats externos dispongan siempre del contexto al 100 %.
+
+
+---
+
+## Bienestar y rejuvenecimiento (pestaña Bienestar)
+
+- **Autoload de dominio:** `Scripts/Globales/Recompensas.gd`.
+- **Catálogo:** `Scripts/Globales/Recompensas/Recompensas_Catalogo.gd`.
+- **Interfaces:** `Proveedor_Anuncios.gd` y `Proveedor_Simulado_Anuncios.gd`.
+  Para producción se registra con `Recompensas.Configurar_Proveedor_Anuncios()`.
+- **UI:** `Scripts/GUI/Tienda/Tienda_Bienestar.gd`, `Modal_Tratamiento.gd`,
+  `Modal_Anuncio_Bienestar.gd` y `Visual_Bienestar.gd`, dentro de
+  `Tienda.tscn → Objetos_Ventajas`.
+- **Persistencia propia:** `user://recompensas.cfg` (esperas e historial); el
+  dinero, necesidades, tuppers y años de rejuvenecimiento se guardan con la
+  partida en `Guardar_Variables_Dinamicas.dat`.
+- **Recompensas:** euros, necesidades, tuppers y años de rejuvenecimiento.
+  No hay gemas, VIP, moneda premium ni pasarela de pago.
+- **Rejuvenecimiento:** `Variables_Dinamicas.Rejuvenecimiento_Anios` se resta en
+  `Variables_Estaticas.Calcular_Edad()` con suelo 18;
+  `Tratamientos_Rejuvenecimiento` escala el precio.
+- **Hooks:** `Script_Principal.gd` refresca HUD/necesidades/tienda al recibir
+  `recompensa_aplicada` y `_Actualizar_Home()` repinta la edad.
+- **Doc:** `Funcionalidades/Bienestar/Documentacion/BIENESTAR.md`.
+
+---
+
+## Minijuego de cocina y pantalla de Mejoras
+
+- **Lógica y estado:** autoload `Sistema_Cocina` (`Scripts/Logica/Escena_Principal/Minijuego_Cocina/Sistema_Cocina.gd`). La escena `Escenas/Minijuego_Cocina/Minijuego_Cocina.tscn` mantiene el selector vertical `720×1280` y la cocina horizontal `1280×720`.
+- **Pantalla de Mejoras:** `Scripts/GUI/Minijuego_Cocina/Mejoras_Cocina.gd` (`class_name Mejoras_Cocina`), instanciada por `Minijuego_Cocina._Construir_Modal_Mejoras()`. Modal a pantalla completa (tarjeta `696×1168`) con dos columnas: a la izquierda las 5 mejoras seleccionables con icono del nivel actual, tres estrellas, `Nv. X` y coste siguiente (o `MÁX.`), tarjeta **TU PROGRESO** y aviso de que paga la Caja; a la derecha escaparate grande de la siguiente versión, pestañas `Nv.1/Nv.2/Nv.3` con `INCLUIDO`/coste/`BLOQUEADO`, comparativa `AHORA / CON LA MEJORA` y CTA de compra.
+- **Compra:** `Sistema_Cocina.Comprar_Mejora` descuenta de la **Caja del local** (`fondos_cocina`), nunca de `Variables_Dinamicas.Dinero`. Si falta saldo, el CTA pasa a ámbar `FALTAN X € · SIRVE MÁS CLIENTES`. No hay gemas, diamantes ni moneda premium.
+- **Datos de presentación:** `Sistema_Cocina.MEJORAS_DEF` añade `nombre_corto`, `acento` y `niveles` (nombre, beneficios, ganancias y frase). Helpers: `Obtener_Info_Nivel_Mejora`, `Obtener_Nombre_Nivel_Mejora`, `Obtener_Beneficios_Nivel_Mejora`, `Obtener_Ganancias_Nivel_Mejora` y `Obtener_Frase_Nivel_Mejora`.
+- **Arte:** 15 PNG (3 variantes por mejora) en `Imagenes/Minijuego_Cocina/Mejoras/`, expuestos por `Arte_Cocina.TEXTURAS_MEJORAS` y `Arte_Cocina.textura_mejora(id, nivel)`. Se procesan con `python3 tools/procesar_mejoras_cocina.py` desde las hojas maestras `Arte_Fuente/Minijuego_Cocina/Mejoras/hoja_<mejora>.png` (prompts P22–P26).
+- **QA y tests:** `Escenas/Herramientas/Captura_Mejoras_Cocina.tscn` genera las capturas 01–08 en `user://capturas_mejoras_cocina`. La suite del minijuego suma **33/33 tests** con `test_12_mejoras_presentacion_y_compra_en_modal` y el pase de cuatro huecos con candados.
+- **Documentación de referencia:** `Funcionalidades/Minijuego_Cocina/Documentacion/MINIJUEGO_COCINA.md` y `ARTE_SPRITES.md`; capturas en `.../Documentacion/Capturas/06_mejoras*.png`.

@@ -2,7 +2,7 @@ class_name Sprites_Cocina
 extends RefCounted
 
 # ============================================================================
-# Sprites vectoriales 2.5D estilo Cooking Fever para Minijuego_Cocina.
+# Sprites vectoriales 2.5D de cocina casual para Minijuego_Cocina.
 # Todos los controles internos usan MOUSE_FILTER_IGNORE y _draw() nativo
 # para funcionar sin dependencias externas en Desktop, Android APK y GUT.
 # ============================================================================
@@ -517,7 +517,7 @@ class FondoDiner extends Control:
 
 
 # ============================================================================
-# 2. Personaje Cliente Expresivo + Burbuja de Pedido (estilo Cooking Fever)
+# 2. Personaje Cliente Expresivo + Burbuja de Pedido (estilo cocina casual)
 # ============================================================================
 
 class SpriteCliente extends Control:
@@ -749,7 +749,7 @@ class SpriteBurbujaPedido extends Control:
 		draw_line(cola[0], cola[1], Color("#cbd5e1"), 2.0, true)
 		draw_line(cola[1], cola[2], Color("#cbd5e1"), 2.0, true)
 
-		# Barra de paciencia vertical a la derecha de la burbuja (exacta a Cooking Fever)
+		# Barra de paciencia vertical a la derecha de la burbuja (estilo clásico de cocina)
 		var bar_x := rect_b.end.x - 16.0
 		var bar_y := rect_b.position.y + 10.0
 		var bar_h := rect_b.size.y - 20.0
@@ -814,7 +814,7 @@ class FondoEncimera extends Control:
 		var h := size.y
 		var y_trim := h - 14.0
 
-		# Encimera izquierda/central laminado burdeos/caoba cálido (como Cooking Fever)
+		# Encimera izquierda/central laminado burdeos/caoba cálido
 		draw_rect(Rect2(0.0, 0.0, w * 0.64, y_trim), Color("#7f1d1d"))
 		draw_rect(Rect2(0.0, 0.0, w * 0.64, 24.0), Color("#991b1b"))
 		draw_line(Vector2(0.0, 2.0), Vector2(w * 0.64, 2.0), Color("#fca5a5", 0.30), 3.0)
@@ -824,7 +824,7 @@ class FondoEncimera extends Control:
 			Color("#cbd5e1"), Color("#64748b"), 2.2)
 		draw_rect(Rect2(284.0, 14.0, 480.0, y_trim - 28.0), Color("#94a3b8", 0.35))
 
-		# Cocina / Plancha de acero inoxidable a la derecha (como Cooking Fever)
+		# Cocina / Plancha de acero inoxidable a la derecha
 		Sprites_Cocina.dibujar_caja(self, Rect2(822.0, 4.0, w - 834.0, y_trim - 8.0), 10.0,
 			Color("#cbd5e1"), Color("#475569"), 2.4)
 		draw_rect(Rect2(830.0, 12.0, w - 850.0, y_trim - 24.0), Color("#e2e8f0", 0.45))
@@ -939,7 +939,7 @@ class SpritePlato extends Control:
 
 		var centro := size * 0.5 + Vector2(0.0, 3.0)
 		if not pan:
-			# Silueta sutil de hamburguesa impresa en el papel (como en Cooking Fever)
+			# Silueta sutil de hamburguesa impresa en el papel
 			Sprites_Cocina.dibujar_elipse(self, centro, 26.0, 14.0, Color("#d4bc94", 0.65), Color("#b49a70", 0.7), 1.3)
 			draw_arc(centro - Vector2(0.0, 3.0), 15.0, PI, TAU, 14, Color("#a18458", 0.65), 1.4, true)
 			return

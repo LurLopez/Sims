@@ -1,10 +1,15 @@
 extends SceneTree
-## Exporta el lockup de marca con la cara del Sim guardado.
+## Exporta variantes personalizadas del lockup con la cara del Sim guardado.
+## Los assets oficiales de marca se generan con Arte_Fuente/Marca/generar_logo.py.
 ## Uso: godot --path . --script res://Scripts/Otro/Herramientas/Exportar_Logo_Marca.gd
+##
+## Salida: Imagenes/Marca/Personalizado/*.png (no sobrescribe los assets oficiales).
 
-const DIR_SALIDA := "res://Imagenes/Marca"
-const ROJO := Color("#d62828")
-const ROJO_OSCURO := Color("#a81c1c")
+const DIR_SALIDA := "res://Imagenes/Marca/Personalizado"
+const FONDO_ROJO := "res://Imagenes/Marca/Fondos/fondo_rojo_1024x240.png"
+const FONDO_CLARO := "res://Imagenes/Marca/Fondos/fondo_claro_1024x240.png"
+const FONDO_OSCURO := "res://Imagenes/Marca/Fondos/fondo_oscuro_1024x240.png"
+const FONDO_FEATURE := "res://Imagenes/Marca/Fondos/fondo_rojo_1024x500.png"
 const CREMA := Color("#f6f1e8")
 
 
@@ -18,51 +23,52 @@ func _exportar() -> void:
 	if guardar != null:
 		guardar.call("load_game")
 
-	await _capturar_lockup("logo_horizontal_1024x240.png", Vector2i(1024, 240), 168, 62, 22, 18, true)
-	await _capturar_lockup("logo_horizontal_claro_1024x240.png", Vector2i(1024, 240), 168, 62, 22, 18, false)
-	await _capturar_feature_graphic()
+	await _capturar_lockup("logo_horizontal_personalizado_1024x240.png",
+		Vector2i(1024, 240), FONDO_ROJO, false)
+	await _capturar_lockup("logo_horizontal_claro_personalizado_1024x240.png",
+		Vector2i(1024, 240), FONDO_CLARO, true)
+	await _capturar_lockup("logo_horizontal_oscuro_personalizado_1024x240.png",
+		Vector2i(1024, 240), FONDO_OSCURO, false)
+	await _capturar_feature("feature_graphic_personalizado_1024x500.png")
 
-	print("Logo de marca exportado en: ", DIR_SALIDA)
+	print("Variantes personalizadas exportadas en: ", DIR_SALIDA)
 	quit()
 
 
-func _capturar_lockup(nombre: String, tam: Vector2i, insignia: int, titulo: int,
-		secundario: int, sub: int, fondo_rojo: bool) -> void:
+func _capturar_lockup(nombre: String, tam: Vector2i, fondo: String, claro: bool) -> void:
 	var vp := _crear_viewport(tam)
-	if fondo_rojo:
-		var banda := Estilos_UI.BannerRayasBitLife.new(ROJO, ROJO_OSCURO, 4.0, 0.065)
-		banda.size = Vector2(tam)
-		vp.add_child(banda)
-	else:
-		var fondo := ColorRect.new()
-		fondo.color = CREMA
-		fondo.size = Vector2(tam)
-		vp.add_child(fondo)
-
-	var centrar := CenterContainer.new()
-	centrar.set_anchors_preset(Control.PRESET_FULL_RECT)
-	vp.add_child(centrar)
-
-	var logo := _crear_logo(insignia, titulo, secundario, sub, not fondo_rojo)
-	centrar.add_child(logo)
+	_add_fondo(vp, fondo, tam)
+	var logo := _crear_logo(200, claro)
+	logo.position = Vector2(172, 20)
+	vp.add_child(logo)
 	await _guardar(vp, nombre)
 
 
-func _capturar_feature_graphic() -> void:
+func _capturar_feature(nombre: String) -> void:
 	var tam := Vector2i(1024, 500)
 	var vp := _crear_viewport(tam)
-	var banda := Estilos_UI.BannerRayasBitLife.new(ROJO, ROJO_OSCURO, 5.0, 0.065)
-	banda.size = Vector2(tam)
-	vp.add_child(banda)
+	_add_fondo(vp, FONDO_FEATURE, tam)
+	var logo := _crear_logo(300, false)
+	logo.tamano_subtitulo = 31
+	logo.position = Vector2(52, 100)
+	vp.add_child(logo)
+	await _guardar(vp, nombre)
 
-	var centrar := CenterContainer.new()
-	centrar.set_anchors_preset(Control.PRESET_FULL_RECT)
-	vp.add_child(centrar)
 
-	var logo := _crear_logo(210, 82, 26, 22, false)
-	logo.tamano_subtitulo = 22
-	centrar.add_child(logo)
-	await _guardar(vp, "feature_graphic_1024x500.png")
+func _add_fondo(vp: SubViewport, ruta: String, tam: Vector2i) -> void:
+	var textura: Texture2D = load(ruta)
+	if textura != null:
+		var fondo := TextureRect.new()
+		fondo.texture = textura
+		fondo.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		fondo.stretch_mode = TextureRect.STRETCH_SCALE
+		fondo.size = Vector2(tam)
+		vp.add_child(fondo)
+	else:
+		var color := ColorRect.new()
+		color.color = CREMA
+		color.size = Vector2(tam)
+		vp.add_child(color)
 
 
 func _crear_viewport(tam: Vector2i) -> SubViewport:
@@ -74,27 +80,24 @@ func _crear_viewport(tam: Vector2i) -> SubViewport:
 	return vp
 
 
-func _crear_logo(insignia: int, titulo: int, secundario: int, sub: int, sobre_claro: bool) -> Logo_Juego:
+func _crear_logo(insignia: int, claro: bool) -> Logo_Juego:
 	var logo := Logo_Juego.new()
 	logo.tamano_insignia = insignia
-	logo.tamano_texto_principal = titulo
-	logo.tamano_texto_secundario = secundario
-	logo.tamano_subtitulo = sub
 	logo.animar_retrato = false
-	if sobre_claro:
-		logo.color_texto = Estilos_UI.TINTA
-		logo.color_subtitulo = Estilos_UI.TINTA_SUAVE
-		logo.color_pill_fondo = Estilos_UI.ROJO_BIT
-		logo.color_pill_texto = Color.WHITE
+	logo.variante_oscura = claro
+	logo.subtitulo = "Simulador de vida en tiempo real"
 	return logo
 
 
 func _guardar(vp: SubViewport, nombre: String) -> void:
-	for i in range(5):
+	for i in range(8):
 		await process_frame
 	var img := vp.get_texture().get_image()
 	if img == null or img.is_empty():
 		push_error("No se pudo capturar " + nombre)
 		return
-	img.save_png(ProjectSettings.globalize_path(DIR_SALIDA.path_join(nombre)))
-	print("Exportado: ", nombre, " ", img.get_size())
+	var error := img.save_png(ProjectSettings.globalize_path(DIR_SALIDA.path_join(nombre)))
+	if error != OK:
+		push_error("No se pudo guardar %s (error %d)" % [nombre, error])
+	else:
+		print("Exportado: ", nombre, " ", img.get_size())

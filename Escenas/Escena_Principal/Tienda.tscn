@@ -1,4 +1,6 @@
-[gd_scene load_steps=10 format=3 uid="uid://tv5r1khp3dx7"]
+[gd_scene load_steps=11 format=3 uid="uid://tv5r1khp3dx7"]
+
+[ext_resource type="Script" path="res://Scripts/GUI/Tienda/Tienda_Bienestar.gd" id="11_ventajas"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBox_Button_Hover"]
 bg_color = Color(0.15, 0.65, 0.85, 1)
@@ -181,6 +183,18 @@ theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
 theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
 text = "🚿
 DUCHAR"
+
+[node name="Tab_Ventajas" type="Button" parent="Categorias"]
+layout_mode = 0
+offset_left = 510.0
+offset_top = 150.0
+offset_right = 690.0
+offset_bottom = 240.0
+theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
+theme_override_font_sizes/font_size = 22
+theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
+theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
+text = "✨ BIENESTAR"
 
 [node name="Objetos_Dormir" type="Control" parent="."]
 layout_mode = 3
@@ -858,3 +872,8 @@ theme_override_font_sizes/font_size = 22
 theme_override_styles/hover = SubResource("StyleBox_Button_Hover")
 theme_override_styles/normal = SubResource("StyleBox_Button_Normal")
 text = "Elegir"
+
+[node name="Objetos_Ventajas" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("11_ventajas")

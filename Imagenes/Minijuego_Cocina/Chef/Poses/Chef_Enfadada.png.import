@@ -3,19 +3,21 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dmyuitxiytb77"
-path="res://.godot/imported/Chef_Enfadada.png-0bd155a666289833a3988d4ed61a977f.ctex"
+path.s3tc="res://.godot/imported/Chef_Enfadada.png-0bd155a666289833a3988d4ed61a977f.s3tc.ctex"
+path.etc2="res://.godot/imported/Chef_Enfadada.png-0bd155a666289833a3988d4ed61a977f.etc2.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://Imagenes/Minijuego_Cocina/Chef/Poses/Chef_Enfadada.png"
-dest_files=["res://.godot/imported/Chef_Enfadada.png-0bd155a666289833a3988d4ed61a977f.ctex"]
+dest_files=["res://.godot/imported/Chef_Enfadada.png-0bd155a666289833a3988d4ed61a977f.s3tc.ctex", "res://.godot/imported/Chef_Enfadada.png-0bd155a666289833a3988d4ed61a977f.etc2.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

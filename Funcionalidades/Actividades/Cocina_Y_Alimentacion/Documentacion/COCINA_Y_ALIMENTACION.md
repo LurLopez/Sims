@@ -117,7 +117,7 @@ La comprobación está en `Script_Principal._Cumple_Requisitos_Trabajo()`.
 ## 8. UI
 
 - Botón `🍳 COCINAR` en `Temporales → Necesidades_Basicas_Opciones`.
-- El botón `🍽️ COMER` abre el flujo de dos pasos en `Seleccionar_Horario` con pestañas **Comida casera** / **Comida rápida** y vista previa de coste, calidad, caducidad y avisos.
+- El botón `🍽️ COMER` abre directamente `Seleccionar_Horario` en modo Comida (pestañas **Comida casera** / **Comida rápida**) con vista previa de coste, calidad, caducidad y avisos. Primero se elige la actividad y después se ajusta el horario.
 - La pestaña **Despensa** del Perfil muestra todos los tuppers con porcentaje, calidad, caducidad, selección y descarte.
 - `Modal_Tuppers.gd` permite elegir/descartar desde el reloj. Se abre automáticamente al entrar en modo Comida casera.
 - Indicador `🍱 N` junto a Hambre en `Necesidades_Basicas_GUI`.

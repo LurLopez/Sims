@@ -28,6 +28,12 @@ var max_valor = max(1, int(1_875_000.0 * factor_nec / factor_edad))
 return randi() % max_valor == 0
 ```
 
+La edad real sale de `Variables_Estaticas.Calcular_Edad()`, que también resta
+los años comprados en la clínica de `Tienda → Bienestar`
+(`max(18, edad_natural - Rejuvenecimiento_Anios)`). Rejuvenecer, por tanto,
+reduce el riesgo de muerte de forma permanente hasta que el reloj vuelve a
+recuperar esos años.
+
 ### Parámetros clave
 
 | Parámetro | Valor | Significado |

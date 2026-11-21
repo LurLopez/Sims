@@ -110,6 +110,8 @@ func _Cliente_Con_Pedido(mini: Control, indice: int, items: Array) -> void:
 	mini._clientes[indice]["precio_total"] = 20
 	mini._clientes[indice]["variante"] = indice
 	mini._Actualizar_Cliente_UI(indice)
+	# Los tests simulan un cliente ya sentado en la mesa, no en plena caminata.
+	mini._slots_clientes_ui[indice]["fase"] = "esperando"
 
 
 # ============================================================================
@@ -226,7 +228,116 @@ func test_05_bebida_se_sirve_arrastrando_y_se_recarga() -> void:
 
 
 # ============================================================================
-# Utilidad: centros reales de los clientes del layout
+# 6. Servir soltando sobre el bocadillo del pedido, no solo sobre el cliente
 # ============================================================================
+
+func test_06_bocadillo_del_cliente_tambien_acepta_el_pedido() -> void:
+	var mini = await _Crear_Minijuego()
+	_Cliente_Con_Pedido(mini, 0, ["refresco"])
+
+	var rect_bocadillo: Rect2 = mini._Rect_Bocadillo_Cliente_Destino(0)
+	assert_true(rect_bocadillo.has_area(), "El bocadillo debe tener un área de destino")
+
+	var destino: Dictionary = mini._arrastre.resolver_destino(rect_bocadillo.get_center(),
+		{"tipo": "bebida", "indice": 0})
+	assert_true(bool(destino.get("aceptado", false)),
+		"El bocadillo debe aceptar lo que el cliente ha pedido")
+	assert_eq(str(destino.get("datos", {}).get("tipo", "")), "cliente")
+	assert_eq(int(destino.get("datos", {}).get("indice", -1)), 0)
+
+	assert_true(mini._Depositar_Payload({"tipo": "bebida", "indice": 0},
+		rect_bocadillo.get_center()))
+	assert_false(bool(mini._clientes[0]["activo"]),
+		"Servir en el bocadillo completa el pedido igual que servir en el personaje")
+	mini._Salir_Al_Sim()
+
+
+# ============================================================================
+# 7. Toque rápido: la carne salta sola a la plancha
+# ============================================================================
+
+func test_07_tocar_carne_la_pone_en_la_plancha() -> void:
+	var mini = await _Crear_Minijuego()
+	mini._on_origen_tocado({}, {"datos": {"tipo": "bandeja", "ingrediente": "carne"}})
+	assert_eq(str(mini._plancha[0]["estado"]), "cocinando",
+		"Tocar la carne debe empezar a cocinarla sin arrastrar")
+	mini._Salir_Al_Sim()
+
+
+# ============================================================================
+# 8. Toque rápido: el pan va al siguiente plato libre
+# ============================================================================
+
+func test_08_tocar_pan_lo_pona_en_el_plato() -> void:
+	var mini = await _Crear_Minijuego()
+	mini._on_origen_tocado({}, {"datos": {"tipo": "bandeja", "ingrediente": "pan"}})
+	assert_true(bool(mini._platos[0]["pan"]), "El primer toque de pan llena el primer plato")
+	mini._on_origen_tocado({}, {"datos": {"tipo": "bandeja", "ingrediente": "pan"}})
+	assert_true(bool(mini._platos[1]["pan"]), "El segundo toque llena el siguiente plato")
+	mini._Salir_Al_Sim()
+
+
+# ============================================================================
+# 9. Toque rápido: queso sobre un plato con pan y patatas a la freidora
+# ============================================================================
+
+func test_09_toques_de_queso_y_patatas() -> void:
+	var mini = await _Crear_Minijuego()
+	mini._on_origen_tocado({}, {"datos": {"tipo": "bandeja", "ingrediente": "queso"}})
+	assert_false(bool(mini._platos[0]["queso"]), "Sin pan no se puede añadir queso")
+
+	mini._on_origen_tocado({}, {"datos": {"tipo": "bandeja", "ingrediente": "pan"}})
+	mini._on_origen_tocado({}, {"datos": {"tipo": "bandeja", "ingrediente": "queso"}})
+	assert_true(bool(mini._platos[0]["queso"]), "El queso se añade al plato con pan")
+
+	mini._on_origen_tocado({}, {"datos": {"tipo": "bandeja", "ingrediente": "patatas"}})
+	assert_eq(str(mini._freidora[0]["estado"]), "cocinando",
+		"Tocar las patatas debe empezar a freírlas")
+	mini._Salir_Al_Sim()
+
+
+# ============================================================================
+# 10. Los puestos viven integrados en el mueble bajo la encimera
+# ============================================================================
+
+func test_10_puestos_integrados_dentro_de_pantalla_y_sin_solape() -> void:
+	var mini = await _Crear_Minijuego()
+	var rects: Array[Rect2] = []
+	for item in mini._bandeja_items_ui:
+		var r: Rect2 = item["rect"]
+		assert_true(r.position.x >= 0.0 and r.position.y >= 600.0,
+			"El puesto de %s debe estar en el mueble bajo la encimera" % item["ingrediente"])
+		assert_true(r.end.x <= 1280.0 and r.end.y <= 720.0,
+			"El puesto de %s no puede salirse de la pantalla" % item["ingrediente"])
+		for otro in rects:
+			assert_false(r.intersects(otro),
+				"Los puestos de ingredientes no deben solaparse")
+		rects.append(r)
+	mini._Salir_Al_Sim()
+
+
+# ============================================================================
+# 11. El pase muestra siempre 4 huecos; los cerrados se abren con Emplatado
+# ============================================================================
+
+func test_11_pase_con_cuatro_huecos_y_candados_por_mejora() -> void:
+	var mini = await _Crear_Minijuego()
+	assert_eq(mini._bandeja_emplatado.celdas.size(), 4,
+		"El pase debe dibujar siempre cuatro huecos")
+	assert_eq(mini._bandeja_emplatado.desbloqueados, 2,
+		"Nivel 1 de Emplatado: dos huecos abiertos")
+	assert_eq(mini._slots_platos_ui.size(), 2,
+		"Nivel 1 de Emplatado: solo dos platos jugables")
+	assert_eq(str(mini._lbl_estado_platos.text), "EMPLATADO · 0/2 listos",
+		"El HUD debe contar solo los platos desbloqueados")
+
+	Variables_Dinamicas.Cocina_Estado["mejoras"]["burger_street"]["emplatado"] = 3
+	mini._Iniciar_Nivel(1)
+	await get_tree().process_frame
+	assert_eq(mini._bandeja_emplatado.desbloqueados, 4,
+		"Nivel 3 de Emplatado: los cuatro huecos quedan abiertos")
+	assert_eq(mini._slots_platos_ui.size(), 4,
+		"Nivel 3 de Emplatado: cuatro platos jugables")
+	mini._Salir_Al_Sim()
 
 const CENTROS_PRUEBA: Array[float] = [402.0, 636.0, 870.0, 1104.0]

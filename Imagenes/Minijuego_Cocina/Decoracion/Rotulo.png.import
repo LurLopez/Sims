@@ -3,19 +3,21 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://77n44q2vtxng"
-path="res://.godot/imported/Rotulo.png-bc3f37344307b96ef06cab35d47bd4c4.ctex"
+path.s3tc="res://.godot/imported/Rotulo.png-bc3f37344307b96ef06cab35d47bd4c4.s3tc.ctex"
+path.etc2="res://.godot/imported/Rotulo.png-bc3f37344307b96ef06cab35d47bd4c4.etc2.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://Imagenes/Minijuego_Cocina/Decoracion/Rotulo.png"
-dest_files=["res://.godot/imported/Rotulo.png-bc3f37344307b96ef06cab35d47bd4c4.ctex"]
+dest_files=["res://.godot/imported/Rotulo.png-bc3f37344307b96ef06cab35d47bd4c4.s3tc.ctex", "res://.godot/imported/Rotulo.png-bc3f37344307b96ef06cab35d47bd4c4.etc2.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

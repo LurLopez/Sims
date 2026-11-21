@@ -3,19 +3,21 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dw0eqashg08f7"
-path="res://.godot/imported/Carne_Quemada.png-843f0ac1322fdb54b7381652cc6cd293.ctex"
+path.s3tc="res://.godot/imported/Carne_Quemada.png-843f0ac1322fdb54b7381652cc6cd293.s3tc.ctex"
+path.etc2="res://.godot/imported/Carne_Quemada.png-843f0ac1322fdb54b7381652cc6cd293.etc2.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://Imagenes/Minijuego_Cocina/Comida/Ingredientes/Carne_Quemada.png"
-dest_files=["res://.godot/imported/Carne_Quemada.png-843f0ac1322fdb54b7381652cc6cd293.ctex"]
+dest_files=["res://.godot/imported/Carne_Quemada.png-843f0ac1322fdb54b7381652cc6cd293.s3tc.ctex", "res://.godot/imported/Carne_Quemada.png-843f0ac1322fdb54b7381652cc6cd293.etc2.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

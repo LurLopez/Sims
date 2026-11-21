@@ -479,9 +479,11 @@ func test_ui_escena_principal_tiene_boton_cocinar_y_hosteleria() -> void:
 		"Actividades/Elegir_Actividad/Tipos_De_Actividades/Temporales_Opciones/Necesidades_Basicas_Opciones/Cocinar")
 	assert_not_null(cocinar)
 	assert_true(cocinar.pressed.is_connected(Callable(raiz, "Actividad_Terminada_Cocinar")))
-	for nombre in ["Ayudante_Cocina", "Cocinero_Partida", "Chef_Ejecutivo"]:
+	assert_not_null(raiz.get_node_or_null(
+		"Actividades/Elegir_Actividad/Tipos_De_Actividades/Fijas_Opciones/Trabajo_Opciones/Cocinero"))
+	for nombre in ["Comida_Rapida", "Ayudante_Cocina", "Cocinero_Partida", "Chef_Ejecutivo"]:
 		assert_not_null(raiz.get_node_or_null(
-			"Actividades/Elegir_Actividad/Tipos_De_Actividades/Fijas_Opciones/Trabajo_Opciones/" + nombre))
+			"Actividades/Elegir_Actividad/Tipos_De_Actividades/Fijas_Opciones/Trabajo_Opciones/Cocinero_Opciones/" + nombre))
 	# Ejercita los rediseños que tocan las nuevas barras/pestañas.
 	raiz._Redisenar_Perfil()
 	raiz._Redisenar_Progreso()

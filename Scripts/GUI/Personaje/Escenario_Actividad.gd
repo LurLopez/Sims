@@ -53,6 +53,18 @@ const VARIACIONES: Dictionary = {
 		["pincelada_rapida", "¡A toda velocidad!", "feliz", "pincel", 2.5],
 		["admirar", "Admirando su obra", "sonrisa", "pincel", 2.6],
 	],
+	"cocinar": [
+		["saltear", "¡Salteando con estilo!", "feliz", "espatula", 2.5],
+		["probar", "Probando el punto", "satisfecho", "espatula", 2.4],
+	],
+	"fiesta": [
+		["bailar", "¡Dándolo todo!", "feliz", "ninguno", 2.6],
+		["brindar", "¡A disfrutar!", "feliz_cerrado", "vaso", 2.6],
+	],
+	"futbol": [
+		["toques", "¡Haciendo toques!", "concentrado", "ninguno", 2.5],
+		["celebrar_gol", "¡Golazo!", "feliz", "ninguno", 2.4],
+	],
 	"trabajar": [
 		["cafe", "Pausa para café", "feliz_cerrado", "taza", 2.6],
 		["mirar_reloj", "Mirando la hora...", "neutral", "ninguno", 2.2],
@@ -63,10 +75,13 @@ const VARIACIONES: Dictionary = {
 		["mirar_movil", "Mirando el móvil", "sonrisa", "movil", 3.0],
 		["estirarse", "Estirándose", "feliz_cerrado", "ninguno", 2.3],
 		["silbar", "Silbando...", "soplando", "ninguno", 2.5],
+		["flexionar", "¡A tope de energía!", "feliz", "ninguno", 2.4],
+		["tomar_notas", "Apuntando ideas", "concentrado", "lapiz", 2.6],
 	],
 }
 
 var _pose_actual: String = "idle"
+var _personalidad: String = ""
 var _en_la_calle: bool = false
 var _apariencia: Dictionary = Apariencia_Personaje.por_defecto()
 var _minuto_dia: int = 780
@@ -90,6 +105,7 @@ var _rng := RandomNumberGenerator.new()
 var _escena_clip: Control
 var _capa_fondo: _CapaFondoActividad
 var _personaje: Personaje_Visual
+var _capa_mostrador: _CapaMostradorIdle
 var _capa_mesa: _CapaMesaComer
 var _personaje_brazos: Personaje_Visual
 var _capa_frente: _CapaFrenteActividad
@@ -143,6 +159,13 @@ func _construir() -> void:
 	_personaje.animar_idle = true
 	_escena_clip.add_child(_personaje)
 
+	# Mostrador de la zona de tiempo libre: tapa la parte baja del Sim, que queda
+	# de pie detrás de la barra sin necesidad de dibujar piernas ni manos.
+	_capa_mostrador = _CapaMostradorIdle.new(self)
+	_capa_mostrador.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_capa_mostrador.visible = false
+	_escena_clip.add_child(_capa_mostrador)
+
 	# Capas exclusivas de "comer": la mesa/plato queda delante del torso pero detrás de brazos y cubiertos
 	_capa_mesa = _CapaMesaComer.new(self)
 	_capa_mesa.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -184,10 +207,24 @@ func _construir() -> void:
 	_aplicar_layout_personaje()
 
 
-func actualizar_estado(nombre_actividad: String, esta_en_calle: bool, apariencia_actual: Dictionary, minuto_del_dia: int = -1, objeto_comer: String = "") -> void:
+func actualizar_estado(nombre_actividad: String, esta_en_calle: bool, apariencia_actual: Dictionary, minuto_del_dia: int = -1, objeto_comer: String = "", personalidad: String = "") -> void:
+	# Override de QA: Debug_Pose_Inicio permite fijar una pose sin programar la
+	# actividad. Con POSE_FORZADA = "0" esto no hace nada.
+	var actividad_forzada := Debug_Pose_Inicio.actividad_forzada()
+	if actividad_forzada != "":
+		nombre_actividad = actividad_forzada
+		var calle_forzada := Debug_Pose_Inicio.calle_forzada()
+		if calle_forzada >= 0:
+			esta_en_calle = (calle_forzada == 1)
+
 	var nueva_pose := Apariencia_Personaje.pose_para_actividad(nombre_actividad)
 	var ap_norm := Apariencia_Personaje.normalizar(apariencia_actual)
+	var calle_anterior: bool = _en_la_calle
 	_en_la_calle = esta_en_calle
+	if personalidad != "":
+		_personalidad = personalidad
+	elif str(ap_norm.get("personalidad", "")) != "":
+		_personalidad = str(ap_norm.get("personalidad", ""))
 	if minuto_del_dia >= 0:
 		_minuto_dia = minuto_del_dia % 1440
 	if objeto_comer != "":
@@ -210,6 +247,10 @@ func actualizar_estado(nombre_actividad: String, esta_en_calle: bool, apariencia
 		_espera_siguiente = _rng.randf_range(2.6, 4.4)
 		_ocultar_pill()
 		_restaurar_base_personaje()
+		_aplicar_layout_personaje()
+	elif calle_anterior != _en_la_calle:
+		# La vivienda cambia el encuadre del tiempo libre (mostrador o calle),
+		# aunque la actividad siga siendo la misma.
 		_aplicar_layout_personaje()
 
 
@@ -311,6 +352,8 @@ func _process(delta: float) -> void:
 
 	if _capa_fondo != null:
 		_capa_fondo.queue_redraw()
+	if _capa_mostrador != null and _capa_mostrador.visible:
+		_capa_mostrador.queue_redraw()
 	if _capa_mesa != null and _capa_mesa.visible:
 		_capa_mesa.queue_redraw()
 	if _personaje_brazos != null and _personaje_brazos.visible:
@@ -331,14 +374,23 @@ func _aplicar_layout_personaje() -> void:
 	var h: float = maxf(160.0, size.y - 4.0)
 	var es_comer := (_pose_actual == "comer")
 	match _pose_actual:
-		"correr":
+		"correr", "futbol", "fiesta":
 			_personaje.modo = "cuerpo_completo"
 			_personaje.position = Vector2(w * 0.5 - 76.0, 4.0)
 			_personaje.size = Vector2(152.0, h - 10.0)
 		"idle":
-			_personaje.modo = "cuerpo_completo"
-			_personaje.position = Vector2(w * 0.5 - 72.0, 6.0)
-			_personaje.size = Vector2(144.0, h - 8.0)
+			if _en_la_calle:
+				_personaje.modo = "cuerpo_completo"
+				_personaje.position = Vector2(w * 0.5 - 72.0, 6.0)
+				_personaje.size = Vector2(144.0, h - 8.0)
+			else:
+				# En casa el Sim queda de pie detrás de la encimera: encuadre de
+				# busto para que cabeza y torso asomen por encima de la barra.
+				_personaje.modo = "busto"
+				var alto_pj: float = h * 0.80
+				var ancho_pj: float = alto_pj * (144.0 / 196.0)
+				_personaje.position = Vector2(w * 0.5 - ancho_pj * 0.5, h * 0.72 - alto_pj + 4.0)
+				_personaje.size = Vector2(ancho_pj, alto_pj)
 		"dormir":
 			_personaje.modo = "busto"
 			_personaje.position = Vector2(w * 0.5 - 82.0, 10.0)
@@ -347,6 +399,10 @@ func _aplicar_layout_personaje() -> void:
 			_personaje.modo = "busto"
 			_personaje.position = Vector2(w * 0.5 - 82.0, -4.0)
 			_personaje.size = Vector2(164.0, h + 14.0)
+		"cocinar":
+			_personaje.modo = "busto"
+			_personaje.position = Vector2(w * 0.5 - 82.0, -8.0)
+			_personaje.size = Vector2(164.0, h + 12.0)
 		"duchar":
 			_personaje.modo = "busto"
 			_personaje.position = Vector2(w * 0.5 - 82.0, 4.0)
@@ -357,12 +413,17 @@ func _aplicar_layout_personaje() -> void:
 			_personaje.size = Vector2(164.0, h + 12.0)
 
 	_personaje.modo_capa = "sin_brazos_delanteros" if es_comer else "completo"
+	var es_tiempo_libre := (_pose_actual == "idle" and not _en_la_calle)
+	if _capa_mostrador != null:
+		_capa_mostrador.visible = es_tiempo_libre
 	if _capa_mesa != null:
 		_capa_mesa.visible = es_comer
 	if _personaje_brazos != null:
 		_personaje_brazos.visible = es_comer
 		_personaje_brazos.position = _personaje.position
 		_personaje_brazos.size = _personaje.size
+	if _pill_accion != null:
+		_pill_accion.position = Vector2(10.0, maxf(8.0, h - 32.0))
 
 
 func _restaurar_base_personaje() -> void:
@@ -396,6 +457,13 @@ func _restaurar_base_personaje() -> void:
 		"manualidades":
 			_personaje.expresion = "concentrado"
 			_personaje.prop_mano = "pincel"
+		"cocinar":
+			_personaje.expresion = "feliz"
+			_personaje.prop_mano = "espatula"
+		"fiesta":
+			_personaje.expresion = "feliz"
+		"futbol":
+			_personaje.expresion = "concentrado"
 		"trabajar":
 			_personaje.expresion = "concentrado"
 		_:
@@ -412,8 +480,15 @@ func _disparar_variacion_aleatoria() -> void:
 	var candidatas: Array = []
 	for v: Array in lista:
 		var vid: String = v[0]
+		if _pose_actual == "idle":
+			if vid == "flexionar" and _personalidad != "Deportista":
+				continue
+			if vid == "tomar_notas" and _personalidad != "Trabajador_Compulsivo":
+				continue
 		if vid != _ultima_variacion or lista.size() == 1:
 			candidatas.append(v)
+	if candidatas.is_empty():
+		candidatas = lista.duplicate()
 
 	var elegida: Array = candidatas[_rng.randi_range(0, candidatas.size() - 1)]
 	_variacion_activa = str(elegida[0])
@@ -490,6 +565,12 @@ class _CapaFondoActividad extends Control:
 				_fondo_tv(w, h, t)
 			"manualidades":
 				_fondo_manualidades(w, h)
+			"cocinar":
+				_fondo_cocinar(w, h, t)
+			"fiesta":
+				_fondo_fiesta(w, h, t)
+			"futbol":
+				_fondo_futbol(w, h, t)
 			"trabajar":
 				_fondo_trabajar(w, h)
 			_:
@@ -803,6 +884,68 @@ class _CapaFondoActividad extends Control:
 		draw_circle(Vector2(w - 68.0, 72.0), 16.0, Color("#38bdf8", 0.75), true, -1.0, true)
 		draw_rect(lienzo, TINTA, false, 2.4)
 
+	func _fondo_cocinar(w: float, h: float, _t: float) -> void:
+		draw_rect(Rect2(0.0, 0.0, w, h), Color("#fffbeb"))
+		var y_az := h - 88.0
+		draw_rect(Rect2(0.0, y_az, w, 88.0), Color("#fef3c7"))
+		var gx: float = 0.0
+		while gx < w:
+			draw_line(Vector2(gx, y_az), Vector2(gx, h), Color("#f59e0b", 0.25), 1.2)
+			gx += 28.0
+		# Campana extractora arriba en el centro
+		var cx := w * 0.5
+		var camp := PackedVector2Array([
+			Vector2(cx - 56.0, 26.0), Vector2(cx + 56.0, 26.0),
+			Vector2(cx + 28.0, 0.0), Vector2(cx - 28.0, 0.0),
+		])
+		draw_colored_polygon(camp, Color("#cbd5e1"))
+		draw_polyline(camp, TINTA, 2.0, true)
+		# Estante con sartenes colgadas
+		draw_rect(Rect2(24.0, 44.0, 94.0, 6.0), Color("#b45309"))
+		draw_circle(Vector2(w - 62.0, 44.0), 18.0, Color("#475569"), true, -1.0, true)
+		draw_arc(Vector2(w - 62.0, 44.0), 18.0, 0.0, TAU, 18, TINTA, 2.0, true)
+
+	func _fondo_fiesta(w: float, h: float, t: float) -> void:
+		draw_rect(Rect2(0.0, 0.0, w, h), Color("#1e1b4b"))
+		# Focos de colores animándose
+		var cols_f := [Color("#ec4899", 0.24), Color("#38bdf8", 0.22), Color("#a855f7", 0.24)]
+		for i in range(3):
+			var lx := w * (0.2 + float(i) * 0.3) + sin(t * 2.4 + float(i) * 2.0) * 32.0
+			var haz := PackedVector2Array([
+				Vector2(w * (0.2 + float(i) * 0.3), 0.0),
+				Vector2(lx - 48.0, h),
+				Vector2(lx + 48.0, h),
+			])
+			draw_colored_polygon(haz, cols_f[i])
+		# Bola de discoteca
+		var cx := w * 0.5
+		draw_line(Vector2(cx, 0.0), Vector2(cx, 18.0), Color("#cbd5e1"), 2.0)
+		draw_circle(Vector2(cx, 28.0), 14.0, Color("#e2e8f0"), true, -1.0, true)
+		draw_arc(Vector2(cx, 28.0), 14.0, 0.0, TAU, 18, TINTA, 2.0, true)
+		# Pista de baile
+		draw_rect(Rect2(0.0, h - 34.0, w, 34.0), Color("#312e81"))
+		draw_line(Vector2(0.0, h - 34.0), Vector2(w, h - 34.0), TINTA, 2.2)
+
+	func _fondo_futbol(w: float, h: float, t: float) -> void:
+		draw_rect(Rect2(0.0, 0.0, w, h), Color("#bae6fd"))
+		# Gradas sutiles al fondo
+		draw_rect(Rect2(0.0, h - 76.0, w, 34.0), Color("#475569"))
+		# Césped del campo
+		draw_rect(Rect2(0.0, h - 44.0, w, 44.0), Color("#22c55e"))
+		var sx: float = 0.0
+		while sx < w:
+			draw_rect(Rect2(sx, h - 44.0, 36.0, 44.0), Color("#16a34a", 0.35))
+			sx += 72.0
+		draw_line(Vector2(0.0, h - 44.0), Vector2(w, h - 44.0), Color.WHITE, 2.4)
+		# Portería a la derecha
+		draw_rect(Rect2(w - 72.0, h - 104.0, 56.0, 60.0), Color(1.0, 1.0, 1.0, 0.25))
+		draw_polyline(PackedVector2Array([
+			Vector2(w - 72.0, h - 44.0), Vector2(w - 72.0, h - 104.0), Vector2(w - 16.0, h - 104.0), Vector2(w - 16.0, h - 44.0),
+		]), Color.WHITE, 3.2, true)
+		var nube_x: float = 54.0 + sin(t * 0.45) * 14.0
+		draw_circle(Vector2(nube_x, 34.0), 14.0, Color.WHITE, true, -1.0, true)
+		draw_circle(Vector2(nube_x + 16.0, 34.0), 11.0, Color.WHITE, true, -1.0, true)
+
 	func _fondo_trabajar(w: float, h: float) -> void:
 		draw_rect(Rect2(0.0, 0.0, w, h), Color("#f1f5f9"))
 		# Ventanal moderno de oficina/local
@@ -821,31 +964,321 @@ class _CapaFondoActividad extends Control:
 
 	func _fondo_idle(w: float, h: float, t: float) -> void:
 		if _padre._en_la_calle:
-			# Calle urbana si está sin vivienda
-			draw_rect(Rect2(0.0, 0.0, w, h), Color("#cbd5e1"))
-			draw_rect(Rect2(0.0, h - 38.0, w, 38.0), Color("#64748b"))
-			draw_line(Vector2(0.0, h - 38.0), Vector2(w, h - 38.0), TINTA, 2.2)
-			# Farola
-			draw_line(Vector2(76.0, h - 38.0), Vector2(76.0, 24.0), Color("#334155"), 5.0)
-			draw_circle(Vector2(76.0, 24.0), 10.0, Color("#fef08a"), true, -1.0, true)
-		else:
-			# Apartamento luminoso y acogedor
-			draw_rect(Rect2(0.0, 0.0, w, h), Color("#f0f9ff"))
-			draw_rect(Rect2(0.0, h - 36.0, w, 36.0), Color("#e2e8f0"))
-			draw_line(Vector2(0.0, h - 36.0), Vector2(w, h - 36.0), Color("#cbd5e1"), 2.0)
-			# Ventana luminosa
-			var win := Rect2(32.0, 20.0, 104.0, 78.0)
-			draw_rect(win, Color("#bae6fd"))
-			var nube_x: float = 54.0 + sin(t * 0.5) * 14.0
-			draw_circle(Vector2(nube_x, 48.0), 12.0, Color.WHITE, true, -1.0, true)
-			draw_circle(Vector2(nube_x + 14.0, 48.0), 10.0, Color.WHITE, true, -1.0, true)
-			draw_rect(win, Color("#94a3b8"), false, 2.6)
-			# Planta en maceta a la derecha
-			var px := w - 68.0
-			draw_rect(Rect2(px - 14.0, h - 68.0, 28.0, 32.0), Color("#ea580c"))
-			draw_rect(Rect2(px - 14.0, h - 68.0, 28.0, 32.0), TINTA, false, 2.0)
-			draw_circle(Vector2(px - 8.0, h - 80.0), 14.0, Color("#22c55e"), true, -1.0, true)
-			draw_circle(Vector2(px + 10.0, h - 84.0), 15.0, Color("#16a34a"), true, -1.0, true)
+			_fondo_idle_calle(w, h, t)
+			return
+
+		# Salón cálido inspirado en la lámina de referencia: pared crema con
+		# luz suave, ventana cuadrada a la izquierda y planta frondosa a la
+		# derecha sobre una encimera de madera. Sin comida, platos ni cubertería.
+		var y_encimera: float = h * 0.715
+		var lado_ventana: float = clampf(h * 0.46, 58.0, 124.0)
+		var ventana := Rect2(clampf(w * 0.035, 10.0, 34.0), h * 0.075, lado_ventana, lado_ventana)
+
+		_dibujar_pared_idle(w, h, y_encimera)
+		_dibujar_ventana_idle(ventana, t)
+		_dibujar_haz_luz_idle(ventana, w, h)
+		_dibujar_planta_idle(Vector2(w - maxf(54.0, h * 0.20), y_encimera), h, t)
+		_dibujar_motas_idle(w, h, t)
+
+	func _dibujar_pared_idle(w: float, h: float, _y_encimera: float) -> void:
+		# Degradado vertical muy suave: crema claro arriba, beige cálido abajo.
+		var bandas := 24
+		for i in range(bandas):
+			var u := float(i) / float(bandas - 1)
+			var col := Color("#f9f1e3").lerp(Color("#eedcc4"), u)
+			draw_rect(Rect2(0.0, h * float(i) / float(bandas), w, h / float(bandas) + 1.0), col)
+		# Foco de luz central difuso.
+		draw_circle(Vector2(w * 0.54, h * 0.42), h * 0.78, Color(1.0, 0.98, 0.91, 0.09), true, -1.0, true)
+		draw_circle(Vector2(w * 0.54, h * 0.42), h * 0.48, Color(1.0, 0.99, 0.94, 0.12), true, -1.0, true)
+		# Sombra suave justo bajo el alféizar de la ventana.
+		draw_rect(Rect2(0.0, h * 0.68, w, h * 0.04), Color(0.45, 0.30, 0.14, 0.035))
+
+	func _dibujar_ventana_idle(marco: Rect2, t: float) -> void:
+		# Sombra proyectada sobre la pared.
+		draw_rect(Rect2(marco.position + Vector2(5.0, 6.0), marco.size), Color(0.32, 0.22, 0.12, 0.10))
+		# Marco exterior gris cálido y moldura clara.
+		draw_rect(marco, Color("#c8ccd0"))
+		draw_rect(marco.grow(-1.0), Color("#e6e8ea"), false, 2.0)
+		var interior := marco.grow(-6.0)
+		# Cielo con degradado.
+		var bandas := 10
+		for i in range(bandas):
+			var u := float(i) / float(bandas - 1)
+			draw_rect(
+				Rect2(interior.position.x, interior.position.y + interior.size.y * float(i) / float(bandas),
+					  interior.size.x, interior.size.y / float(bandas) + 1.0),
+				Color("#9ed4f5").lerp(Color("#dcefFB"), u)
+			)
+		# Halo de sol.
+		var sol := interior.position + Vector2(interior.size.x * 0.73, interior.size.y * 0.20)
+		draw_circle(sol, interior.size.x * 0.25, Color(1.0, 0.98, 0.85, 0.22), true, -1.0, true)
+		draw_circle(sol, interior.size.x * 0.13, Color(1.0, 0.99, 0.91, 0.34), true, -1.0, true)
+		# Nubes suaves que se mecen lentamente dentro del cristal.
+		var c1 := Vector2(
+			interior.position.x + interior.size.x * (0.27 + sin(t * 0.32) * 0.045),
+			interior.position.y + interior.size.y * 0.30
+		)
+		var c2 := Vector2(
+			interior.position.x + interior.size.x * (0.66 + sin(t * 0.24 + 1.8) * 0.035),
+			interior.position.y + interior.size.y * 0.62
+		)
+		_dibujar_nube_idle(c1, interior.size.x * 0.105, 0.86)
+		_dibujar_nube_idle(c2, interior.size.x * 0.075, 0.72)
+		# Cruceta del marco.
+		var barra: float = maxf(3.0, marco.size.x * 0.045)
+		draw_rect(Rect2(interior.position.x, marco.position.y + marco.size.y * 0.5 - barra * 0.5, marco.size.x, barra), Color("#d7dade"))
+		draw_rect(Rect2(marco.position.x + marco.size.x * 0.5 - barra * 0.5, marco.position.y, barra, marco.size.y), Color("#d7dade"))
+		draw_line(Vector2(interior.position.x, marco.position.y + marco.size.y * 0.5 - barra * 0.5),
+			Vector2(interior.end.x, marco.position.y + marco.size.y * 0.5 - barra * 0.5), Color(1.0, 1.0, 1.0, 0.65), 1.0)
+		# Bisel interior y contorno.
+		draw_rect(interior, Color(1.0, 1.0, 1.0, 0.42), false, 1.4)
+		draw_rect(marco, Color("#8f959a"), false, 1.2)
+		# Alféizar con sombra inferior.
+		var alto_alf: float = maxf(4.0, marco.size.y * 0.045)
+		var alfeizar := Rect2(marco.position.x - 6.0, marco.end.y - 1.0, marco.size.x + 12.0, alto_alf)
+		draw_rect(alfeizar, Color("#ded8cc"))
+		draw_line(Vector2(alfeizar.position.x, alfeizar.position.y), Vector2(alfeizar.end.x, alfeizar.position.y), Color("#b7af9f"), 1.1)
+		draw_rect(Rect2(alfeizar.position.x + 2.0, alfeizar.end.y, alfeizar.size.x - 4.0, 2.0), Color(0.3, 0.2, 0.1, 0.12))
+
+	func _dibujar_nube_idle(centro: Vector2, r: float, alpha: float) -> void:
+		var col := Color(1.0, 1.0, 1.0, alpha)
+		draw_circle(centro + Vector2(-r * 0.9, r * 0.10), r * 0.60, col, true, -1.0, true)
+		draw_circle(centro + Vector2(0.0, -r * 0.18), r * 0.86, col, true, -1.0, true)
+		draw_circle(centro + Vector2(r * 0.9, r * 0.06), r * 0.64, col, true, -1.0, true)
+		draw_rect(Rect2(centro.x - r * 1.2, centro.y + r * 0.06, r * 2.4, r * 0.52), col)
+
+	func _dibujar_haz_luz_idle(ventana: Rect2, w: float, h: float) -> void:
+		var y_salida := ventana.position.y + ventana.size.y * 0.52
+		var haz := PackedVector2Array([
+			Vector2(ventana.position.x + 7.0, y_salida),
+			Vector2(ventana.end.x - 3.0, y_salida),
+			Vector2(minf(w, ventana.end.x + w * 0.26), h * 0.80),
+			Vector2(ventana.position.x + w * 0.02, h * 0.80),
+		])
+		draw_colored_polygon(haz, Color(1.0, 0.96, 0.82, 0.10))
+		draw_colored_polygon(PackedVector2Array([
+			Vector2(ventana.position.x + 12.0, y_salida + 4.0),
+			Vector2(ventana.end.x - 10.0, y_salida + 4.0),
+			Vector2(minf(w, ventana.end.x + w * 0.16), h * 0.78),
+			Vector2(ventana.position.x + w * 0.07, h * 0.78),
+		]), Color(1.0, 0.97, 0.86, 0.07))
+
+	func _dibujar_planta_idle(base: Vector2, h: float, t: float) -> void:
+		var alto_maceta: float = h * 0.105
+		var ancho_maceta: float = h * 0.135
+		var hoja_h: float = h * 1.18
+		var cima_maceta := base.y - alto_maceta
+		var borde_izq := base.x - ancho_maceta * 0.5
+		# Sombra de contacto sobre la madera (la tapa el mostrador delantero).
+		draw_circle(Vector2(base.x + 3.0, base.y + 1.0), ancho_maceta * 0.72, Color(0.18, 0.09, 0.03, 0.18), true, -1.0, true)
+		# Tallos curvos.
+		var tallos: Array = [
+			[Vector2(base.x, cima_maceta), Vector2(base.x - hoja_h * 0.030, cima_maceta - hoja_h * 0.120), Vector2(base.x - hoja_h * 0.060, cima_maceta - hoja_h * 0.225)],
+			[Vector2(base.x, cima_maceta), Vector2(base.x + hoja_h * 0.014, cima_maceta - hoja_h * 0.150), Vector2(base.x + hoja_h * 0.020, cima_maceta - hoja_h * 0.245)],
+			[Vector2(base.x, cima_maceta), Vector2(base.x + hoja_h * 0.040, cima_maceta - hoja_h * 0.100), Vector2(base.x + hoja_h * 0.058, cima_maceta - hoja_h * 0.200)],
+		]
+		for tallo: Array in tallos:
+			draw_polyline(PackedVector2Array(tallo), Color("#2f6b31"), maxf(1.4, hoja_h * 0.010), true)
+		# Hojas traseras (tono más oscuro).
+		_dibujar_hoja_idle(Vector2(base.x - hoja_h * 0.030, cima_maceta - hoja_h * 0.100), -1.30, hoja_h * 0.120, hoja_h * 0.070, Color("#3d853b"), Color("#2b632d"), Color("#68ad52"), t, 0.4)
+		_dibujar_hoja_idle(Vector2(base.x + hoja_h * 0.035, cima_maceta - hoja_h * 0.120), 1.25, hoja_h * 0.120, hoja_h * 0.070, Color("#428b3f"), Color("#2b632d"), Color("#70b45a"), t, 1.1)
+		_dibujar_hoja_idle(Vector2(base.x - hoja_h * 0.050, cima_maceta - hoja_h * 0.060), -1.55, hoja_h * 0.100, hoja_h * 0.062, Color("#367a36"), Color("#275b29"), Color("#5fa34b"), t, 2.2)
+		_dibujar_hoja_idle(Vector2(base.x + hoja_h * 0.050, cima_maceta - hoja_h * 0.070), 1.52, hoja_h * 0.100, hoja_h * 0.062, Color("#3a8038"), Color("#275b29"), Color("#64a94f"), t, 2.8)
+		# Hojas delanteras, más vivas y con brillo.
+		_dibujar_hoja_idle(Vector2(base.x - hoja_h * 0.020, cima_maceta - hoja_h * 0.180), -0.68, hoja_h * 0.130, hoja_h * 0.076, Color("#54a447"), Color("#337636"), Color("#91cf70"), t, 0.8)
+		_dibujar_hoja_idle(Vector2(base.x + hoja_h * 0.020, cima_maceta - hoja_h * 0.200), 0.62, hoja_h * 0.130, hoja_h * 0.076, Color("#5aab4c"), Color("#337636"), Color("#99d77a"), t, 1.5)
+		_dibujar_hoja_idle(Vector2(base.x, cima_maceta - hoja_h * 0.245), 0.02, hoja_h * 0.140, hoja_h * 0.080, Color("#62b453"), Color("#3a7f3c"), Color("#a3de82"), t, 0.2)
+		_dibujar_hoja_idle(Vector2(base.x - hoja_h * 0.045, cima_maceta - hoja_h * 0.140), -1.02, hoja_h * 0.120, hoja_h * 0.072, Color("#4b9a42"), Color("#2f7033"), Color("#86c969"), t, 1.9)
+		_dibujar_hoja_idle(Vector2(base.x + hoja_h * 0.045, cima_maceta - hoja_h * 0.150), 0.98, hoja_h * 0.120, hoja_h * 0.072, Color("#4f9f45"), Color("#2f7033"), Color("#8bcd6d"), t, 2.5)
+		_dibujar_hoja_idle(Vector2(base.x - hoja_h * 0.012, cima_maceta - hoja_h * 0.070), -0.32, hoja_h * 0.100, hoja_h * 0.062, Color("#59aa4b"), Color("#337636"), Color("#97d477"), t, 3.2)
+		# Maceta de terracota con labio y tierra.
+		var ancho_base := ancho_maceta * 0.78
+		var maceta := PackedVector2Array([
+			Vector2(borde_izq, cima_maceta),
+			Vector2(borde_izq + ancho_maceta, cima_maceta),
+			Vector2(base.x + ancho_base * 0.5, base.y),
+			Vector2(base.x - ancho_base * 0.5, base.y),
+		])
+		draw_colored_polygon(maceta, Color("#b96a3d"))
+		draw_colored_polygon(PackedVector2Array([
+			Vector2(base.x, cima_maceta),
+			Vector2(borde_izq + ancho_maceta, cima_maceta),
+			Vector2(base.x + ancho_base * 0.5, base.y),
+			Vector2(base.x, base.y),
+		]), Color("#9c4f2a"))
+		var maceta_cerrada := PackedVector2Array(maceta)
+		maceta_cerrada.append(maceta[0])
+		draw_polyline(maceta_cerrada, Color("#743719"), 1.6, true)
+		# Tierra.
+		draw_rect(Rect2(base.x - ancho_maceta * 0.40, cima_maceta + 0.5, ancho_maceta * 0.80, maxf(2.0, h * 0.010)), Color("#4a2a16"))
+		# Labio de la maceta.
+		var labio := Rect2(borde_izq - 2.0, cima_maceta - maxf(3.0, h * 0.018), ancho_maceta + 4.0, maxf(3.0, h * 0.020))
+		draw_rect(labio, Color("#c97d4d"))
+		draw_rect(labio, Color("#743719"), false, 1.4)
+		draw_line(Vector2(labio.position.x + 2.0, labio.position.y + 1.0), Vector2(labio.end.x - 2.0, labio.position.y + 1.0), Color(1.0, 0.85, 0.65, 0.45), 1.0)
+
+	func _dibujar_hoja_idle(base: Vector2, angulo: float, largo: float, ancho: float,
+			relleno: Color, borde: Color, brillo: Color, t: float, fase: float) -> void:
+		var vaiven: float = sin(t * 0.85 + fase) * 0.035
+		var a: float = angulo + vaiven
+		var dir := Vector2(sin(a), -cos(a))
+		var perp := Vector2(cos(a), sin(a))
+		var curva: float = largo * 0.10
+		var pts := PackedVector2Array()
+		var segmentos := 8
+		for i in range(segmentos + 1):
+			var u := float(i) / float(segmentos)
+			var semi: float = sin(u * PI) * ancho * 0.5 * (1.0 - 0.18 * u)
+			pts.append(base + dir * (u * largo) + perp * (semi + sin(u * PI) * curva))
+		for i in range(segmentos, -1, -1):
+			var u := float(i) / float(segmentos)
+			var semi: float = sin(u * PI) * ancho * 0.5 * (1.0 - 0.18 * u)
+			pts.append(base + dir * (u * largo) - perp * (semi - sin(u * PI) * curva))
+		draw_colored_polygon(pts, relleno)
+		var cerrado := PackedVector2Array(pts)
+		cerrado.append(pts[0])
+		draw_polyline(cerrado, borde, 1.15, true)
+		# Nervio central y vena lateral.
+		var punta := base + dir * (largo * 0.90)
+		draw_line(base + dir * (largo * 0.04), punta, Color(brillo, 0.72), 1.1, true)
+		for lado: float in [-1.0, 1.0]:
+			var u_v := 0.52
+			var p_v := base + dir * (largo * u_v) + perp * (lado * ancho * 0.22)
+			draw_line(base + dir * (largo * 0.24), p_v, Color(brillo, 0.35), 0.9, true)
+		# Brillo en la mitad superior de la hoja.
+		var h_base := base + dir * (largo * 0.12) + perp * (ancho * 0.16)
+		var h_fin := base + dir * (largo * 0.66) + perp * (ancho * 0.10)
+		draw_line(h_base, h_fin, Color(1.0, 1.0, 0.90, 0.22), maxf(1.0, ancho * 0.10), true)
+
+	func _dibujar_motas_idle(w: float, h: float, t: float) -> void:
+		# Diminutas partículas de polvo flotando en el haz de luz.
+		for i in range(7):
+			var px: float = w * 0.10 + fmod(t * (3.5 + float(i % 3) * 1.8) + float(i) * 71.0, w * 0.42)
+			var py: float = h * 0.18 + fmod(float(i) * 43.0 + sin(t * 0.40 + float(i) * 1.7) * 16.0, h * 0.50)
+			var r: float = 0.7 + float(i % 3) * 0.45
+			draw_circle(Vector2(px, py), r, Color(1.0, 0.97, 0.84, 0.30), true, -1.0, true)
+
+	func _fondo_idle_calle(w: float, h: float, t: float) -> void:
+		var franja: String = _padre._franja_horaria()
+		var cielo := Color("#b7dcf3")
+		if franja == "atardecer":
+			cielo = Color("#f6c08b")
+		elif franja == "noche":
+			cielo = Color("#242a4a")
+		draw_rect(Rect2(0.0, 0.0, w, h), cielo)
+		# Estrellas tenues de noche.
+		if franja == "noche":
+			for sp: Vector2 in [Vector2(w * 0.16, h * 0.16), Vector2(w * 0.32, h * 0.10), Vector2(w * 0.72, h * 0.18), Vector2(w * 0.88, h * 0.12)]:
+				var br: float = 0.45 + sin(t * 2.6 + sp.x) * 0.35
+				draw_circle(sp, 1.5, Color(1.0, 0.98, 0.82, br), true, -1.0, true)
+		# Skyline lejano.
+		var col_edif := Color("#8ea6ba") if franja != "noche" else Color("#333b5e")
+		var x_edif: float = 0.0
+		var idx := 0
+		while x_edif < w:
+			var ancho := 36.0 + float((idx * 29) % 54)
+			var alto := h * (0.16 + float((idx * 17) % 18) * 0.010)
+			draw_rect(Rect2(x_edif, h * 0.58 - alto, ancho, alto), col_edif)
+			if franja == "noche":
+				for vy in range(3):
+					draw_rect(Rect2(x_edif + 8.0 + float(vy) * 10.0, h * 0.58 - alto + 8.0 + float(vy) * 12.0, 3.0, 4.0), Color("#fde68a", 0.55))
+			x_edif += ancho + 9.0
+			idx += 1
+		# Acerado y bordillo.
+		draw_rect(Rect2(0.0, h * 0.58, w, h * 0.42), Color("#cfd4d8"))
+		draw_rect(Rect2(0.0, h * 0.58, w, maxf(2.0, h * 0.012)), Color("#aeb6bd"))
+		draw_rect(Rect2(0.0, h * 0.78, w, h * 0.22), Color("#8f989f"))
+		draw_line(Vector2(0.0, h * 0.78), Vector2(w, h * 0.78), Color("#727c84"), 1.6)
+		# Farola.
+		var lx: float = clampf(w * 0.12, 24.0, 90.0)
+		draw_line(Vector2(lx, h * 0.78), Vector2(lx, h * 0.20), Color("#3f4b57"), maxf(3.0, h * 0.024))
+		draw_line(Vector2(lx, h * 0.20), Vector2(lx + maxf(12.0, h * 0.070), h * 0.20), Color("#3f4b57"), maxf(2.0, h * 0.016))
+		draw_circle(Vector2(lx + maxf(12.0, h * 0.070), h * 0.225), maxf(4.0, h * 0.024), Color("#fef08a"), true, -1.0, true)
+		if franja in ["atardecer", "noche"]:
+			draw_circle(Vector2(lx + maxf(12.0, h * 0.070), h * 0.225), maxf(12.0, h * 0.10), Color(1.0, 0.94, 0.65, 0.16), true, -1.0, true)
+		# Banco público detrás del personaje, con patas y sombra de contacto.
+		var y_banco: float = h * 0.63
+		for i in range(2):
+			draw_rect(Rect2(w * 0.30, y_banco + float(i) * h * 0.045, w * 0.40, maxf(4.0, h * 0.025)), Color("#8a5a32"))
+			draw_line(Vector2(w * 0.30, y_banco + float(i) * h * 0.045), Vector2(w * 0.70, y_banco + float(i) * h * 0.045), Color("#5c3a1e"), 1.2)
+		for lx_pata: float in [w * 0.33, w * 0.67]:
+			draw_rect(Rect2(lx_pata, y_banco + h * 0.09, maxf(3.0, w * 0.010), h * 0.09), Color("#5c3a1e"))
+		draw_rect(Rect2(w * 0.30, y_banco + h * 0.17, w * 0.40, maxf(2.0, h * 0.010)), Color(0.18, 0.12, 0.07, 0.16))
+		# Seto y maceta urbana a la derecha.
+		draw_rect(Rect2(w * 0.82, h * 0.58, w * 0.18, h * 0.20), Color("#4f8b45"))
+		draw_circle(Vector2(w * 0.88, h * 0.58), h * 0.08, Color("#5a9a4f"), true, -1.0, true)
+		draw_circle(Vector2(w * 0.95, h * 0.60), h * 0.07, Color("#4a8742"), true, -1.0, true)
+
+
+# ---------------------------------------------------------------- mostrador del tiempo libre (delante del torso)
+
+class _CapaMostradorIdle extends Control:
+	var _padre: Escenario_Actividad
+
+	func _init(padre: Escenario_Actividad) -> void:
+		_padre = padre
+		mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	func _draw() -> void:
+		if _padre == null or size.x <= 1.0 or size.y <= 1.0:
+			return
+		var w := size.x
+		var h := size.y
+		var y_atras := h * 0.715
+		var y_borde := h * 0.795
+		var y_frente := h * 0.865
+
+		# 1. Tapa de la encimera: madera cálida con degradado y brillo superior.
+		draw_rect(Rect2(0.0, y_atras, w, y_borde - y_atras), Color("#c97a35"))
+		var bandas := 7
+		for i in range(bandas):
+			var u := float(i) / float(bandas - 1)
+			var col := Color("#dd9147").lerp(Color("#b46325"), u)
+			draw_rect(
+				Rect2(0.0, y_atras + (y_borde - y_atras) * float(i) / float(bandas),
+					  w, (y_borde - y_atras) / float(bandas) + 1.0),
+				col
+			)
+		draw_rect(Rect2(0.0, y_atras + 1.0, w, maxf(1.5, h * 0.010)), Color(1.0, 0.82, 0.55, 0.38))
+		for i in range(3):
+			var gy: float = y_atras + (y_borde - y_atras) * (0.28 + float(i) * 0.22)
+			draw_line(Vector2(w * 0.04, gy), Vector2(w * 0.96, gy), Color(0.45, 0.22, 0.07, 0.16), 1.0, true)
+		# Reflejo suave de la ventana sobre la madera.
+		draw_colored_polygon(PackedVector2Array([
+			Vector2(w * 0.10, y_atras), Vector2(w * 0.27, y_atras),
+			Vector2(w * 0.34, y_borde), Vector2(w * 0.16, y_borde),
+		]), Color(1.0, 0.93, 0.75, 0.10))
+		draw_line(Vector2(0.0, y_atras), Vector2(w, y_atras), Color("#8a4a18"), 1.4)
+
+		# 2. Canto frontal grueso con brillo y sombra.
+		draw_rect(Rect2(0.0, y_borde, w, y_frente - y_borde), Color("#8a451d"))
+		draw_rect(Rect2(0.0, y_borde, w, maxf(2.0, h * 0.012)), Color("#d1813a"))
+		draw_line(Vector2(0.0, y_borde), Vector2(w, y_borde), Color("#6f3414"), 1.6)
+		draw_rect(Rect2(0.0, y_frente - maxf(1.5, h * 0.008), w, maxf(1.5, h * 0.008)), Color(0.25, 0.11, 0.03, 0.35))
+
+		# 3. Mueble bajo con paneles rehundidos.
+		draw_rect(Rect2(0.0, y_frente, w, h - y_frente), Color("#4a2411"))
+		var paneles: int = maxi(2, int(round(w / 170.0)))
+		var ancho_p: float = w / float(paneles)
+		for i in range(paneles):
+			var x0: float = ancho_p * float(i)
+			var margen_x: float = maxf(5.0, ancho_p * 0.10)
+			var margen_y: float = maxf(3.0, h * 0.014)
+			var panel := Rect2(
+				x0 + margen_x,
+				y_frente + margen_y,
+				ancho_p - margen_x * 2.0,
+				maxf(6.0, h - y_frente - margen_y * 2.0)
+			)
+			draw_rect(panel, Color("#5c2d15"))
+			draw_rect(panel, Color("#351808"), false, maxf(1.2, h * 0.008))
+			draw_line(panel.position + Vector2(2.0, 2.0), Vector2(panel.end.x - 2.0, panel.position.y + 2.0),
+				Color(0.55, 0.30, 0.14, 0.45), 1.2, true)
+		for i in range(paneles + 1):
+			var sx: float = ancho_p * float(i)
+			draw_line(Vector2(sx, y_frente), Vector2(sx, h), Color(0.18, 0.08, 0.02, 0.55), 1.4)
+		draw_rect(Rect2(0.0, y_frente, w, maxf(2.0, h * 0.012)), Color(0.15, 0.06, 0.01, 0.28))
+		draw_rect(Rect2(0.0, h - maxf(3.0, h * 0.018), w, maxf(3.0, h * 0.018)), Color(0.12, 0.05, 0.01, 0.35))
 
 
 # ---------------------------------------------------------------- capa intermedia de mesa (delante del torso, detrás de brazos y cubiertos)
@@ -1250,6 +1683,12 @@ class _CapaFrenteActividad extends Control:
 				_frente_tv(w, h, cx, t, variacion)
 			"manualidades":
 				_frente_manualidades(w, h, cx, t, variacion)
+			"cocinar":
+				_frente_cocinar(w, h, cx, t, variacion)
+			"fiesta":
+				_frente_fiesta(w, h, cx, t, variacion)
+			"futbol":
+				_frente_futbol(w, h, cx, t, variacion)
 			"trabajar":
 				_frente_trabajar(w, h, cx, t, variacion)
 			_:
@@ -1525,6 +1964,42 @@ class _CapaFrenteActividad extends Control:
 			for i in range(3):
 				var p: Vector2 = Vector2(cx + 54.0 + float(i) * 16.0, 54.0 + float(i % 2) * 24.0)
 				_dibujar_estrella(p, 5.0 + sin(t * 9.0 + float(i)) * 2.0, cols[i])
+
+	func _frente_cocinar(w: float, h: float, cx: float, t: float, variacion: String) -> void:
+		var y_m := h - 42.0
+		draw_rect(Rect2(0.0, y_m, w, 42.0), Color("#d97706"))
+		draw_line(Vector2(0.0, y_m), Vector2(w, y_m), TINTA, 2.4)
+		# Sartén delante sobre fogón
+		draw_rect(Rect2(cx - 38.0, y_m - 6.0, 76.0, 12.0), Color("#334155"))
+		draw_rect(Rect2(cx - 38.0, y_m - 6.0, 76.0, 12.0), TINTA, false, 2.0)
+		draw_line(Vector2(cx - 38.0, y_m), Vector2(cx - 64.0, y_m - 5.0), TINTA, 4.5, true)
+		var pulso := 1.0 + sin(t * 10.0) * 0.25
+		for i in range(3):
+			var p: float = fmod(t * 0.9 + float(i) * 0.33, 1.0)
+			draw_circle(Vector2(cx - 12.0 + float(i) * 12.0 + sin(t * 4.0 + float(i)) * 4.0, y_m - 12.0 - p * 34.0), 4.0 * pulso * (1.0 - p * 0.5), Color(1.0, 1.0, 1.0, (1.0 - p) * 0.7), true, -1.0, true)
+		if variacion == "saltear":
+			for k in range(3):
+				var p_s := fmod(t * 2.2 + float(k) * 0.3, 1.0)
+				draw_circle(Vector2(cx - 10.0 + float(k) * 10.0, y_m - 10.0 - sin(p_s * PI) * 28.0), 4.5, Color("#f59e0b"), true, -1.0, true)
+
+	func _frente_fiesta(_w: float, _h: float, cx: float, t: float, _variacion: String) -> void:
+		var cols := [Color("#f43f5e"), Color("#38bdf8"), Color("#fde047")]
+		for i in range(3):
+			var p: float = fmod(t * 0.75 + float(i) * 0.33, 1.0)
+			var nx: float = cx + (-68.0 if i % 2 == 0 else 64.0) + sin(t * 4.0 + float(i)) * 8.0
+			var ny: float = 96.0 - p * 56.0
+			_dibujar_nota_musical(Vector2(nx, ny), Color(cols[i], 1.0 - p))
+
+	func _frente_futbol(_w: float, h: float, cx: float, t: float, variacion: String) -> void:
+		var bote := absf(sin(t * 6.5)) * 22.0
+		var bx := cx + 38.0 + (sin(t * 3.0) * 16.0 if variacion == "toques" else 0.0)
+		var by := h - 22.0 - bote
+		draw_circle(Vector2(bx, by), 11.0, Color.WHITE, true, -1.0, true)
+		draw_circle(Vector2(bx, by), 4.2, TINTA, true, -1.0, true)
+		draw_arc(Vector2(bx, by), 11.0, 0.0, TAU, 18, TINTA, 2.0, true)
+		if variacion == "celebrar_gol":
+			_dibujar_estrella(Vector2(cx - 58.0, 44.0), 8.0 + sin(t * 10.0) * 2.0, Color("#facc15"))
+			_dibujar_estrella(Vector2(cx + 62.0, 50.0), 7.0 + cos(t * 10.0) * 2.0, Color("#facc15"))
 
 	func _frente_trabajar(w: float, h: float, cx: float, t: float, variacion: String) -> void:
 		var y_m := h - 40.0

@@ -3,19 +3,21 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://c638w7fruitno"
-path="res://.godot/imported/Tarro_Pepinillos.png-3afafd44484d2083e8d30fb67a62f125.ctex"
+path.s3tc="res://.godot/imported/Tarro_Pepinillos.png-3afafd44484d2083e8d30fb67a62f125.s3tc.ctex"
+path.etc2="res://.godot/imported/Tarro_Pepinillos.png-3afafd44484d2083e8d30fb67a62f125.etc2.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://Imagenes/Minijuego_Cocina/Emplatado/Tarro_Pepinillos.png"
-dest_files=["res://.godot/imported/Tarro_Pepinillos.png-3afafd44484d2083e8d30fb67a62f125.ctex"]
+dest_files=["res://.godot/imported/Tarro_Pepinillos.png-3afafd44484d2083e8d30fb67a62f125.s3tc.ctex", "res://.godot/imported/Tarro_Pepinillos.png-3afafd44484d2083e8d30fb67a62f125.etc2.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

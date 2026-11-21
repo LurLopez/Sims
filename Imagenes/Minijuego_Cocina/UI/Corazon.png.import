@@ -3,19 +3,21 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cgcbrldp8v37a"
-path="res://.godot/imported/Corazon.png-c675931dd82b96026e6cdfba6d2104b1.ctex"
+path.s3tc="res://.godot/imported/Corazon.png-c675931dd82b96026e6cdfba6d2104b1.s3tc.ctex"
+path.etc2="res://.godot/imported/Corazon.png-c675931dd82b96026e6cdfba6d2104b1.etc2.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://Imagenes/Minijuego_Cocina/UI/Corazon.png"
-dest_files=["res://.godot/imported/Corazon.png-c675931dd82b96026e6cdfba6d2104b1.ctex"]
+dest_files=["res://.godot/imported/Corazon.png-c675931dd82b96026e6cdfba6d2104b1.s3tc.ctex", "res://.godot/imported/Corazon.png-c675931dd82b96026e6cdfba6d2104b1.etc2.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

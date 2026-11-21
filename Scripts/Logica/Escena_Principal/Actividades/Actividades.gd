@@ -49,6 +49,8 @@ func Ejecutar_Actividad(actividad: Actividad, es_aleatoria: bool = false):
 	if actividad is Actividad_Fija_Trabajo and Variables_Dinamicas.Minute_Minute == actividad.hora_final - 1:
 		var horas_trabajadas: float = float(actividad.hora_final - actividad.hora_inicio) / 60.0
 		var salario_jornada: float = Variables_Estaticas.Obtener_Salario_Hora(actividad) * horas_trabajadas
+		# La ropa elegante o de trabajo puede mejorar la nómina de cualquier empleo.
+		salario_jornada *= 1.0 + maxf(0.0, Sistema_Cocina.Obtener_Bonus_Salario_General())
 		if Sistema_Cocina.Es_Trabajo_Hosteleria(actividad.nombre):
 			var bonus_ropa: float = Sistema_Cocina.Obtener_Bonus_Salario_Hosteleria()
 			var plus_turno: bool = bool(Variables_Dinamicas.Cocina_Estado.get("plus_nomina_turno_hoy", false))

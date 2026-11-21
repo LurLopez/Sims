@@ -90,7 +90,10 @@ func Dias_Por_Anio() -> int:
 
 func Calcular_Edad(dia_actual: int = -1) -> int:
 	var dia: int = dia_actual if dia_actual >= 0 else Variables_Dinamicas.Minute_Day
-	return 18 + int(maxi(0, dia - First_Time_Minute_Day) / float(Dias_Por_Anio()))
+	var edad_natural: int = 18 + int(maxi(0, dia - First_Time_Minute_Day) / float(Dias_Por_Anio()))
+	# La clínica de la Tienda resta años reales. Nunca baja de los 18.
+	var rejuvenecido: int = maxi(0, int(Variables_Dinamicas.Rejuvenecimiento_Anios))
+	return maxi(18, edad_natural - rejuvenecido)
 
 func Multiplicador_Precios() -> float:
 	return 0.1 if Modo_Rapido else 1.0
@@ -415,63 +418,7 @@ func _Inicializar_Catalogo_Objetos():
 	ducha_premium.es_basico = false
 	Catalogo_Objetos["Ducha_Premium"] = ducha_premium
 
-	# Ropa equipable (desbloqueada por Maestría Culinaria; afecta_a = "Ropa")
-	var ropa_calle := Objeto_Ropa.new()
-	ropa_calle.nombre = "Ropa_Calle"
-	ropa_calle.precio = 0.0
-	ropa_calle.multiplicador = 1.0
-	ropa_calle.afecta_a = "Ropa"
-	ropa_calle.es_basico = true
-	ropa_calle.bonus_salario_hosteleria = 0.0
-	ropa_calle.reduccion_higiene_trabajo = 0.0
-	ropa_calle.bonus_propinas_minijuego = 0.0
-	ropa_calle.descripcion_efecto = "Ropa diaria estándar sin bonificaciones."
-	Catalogo_Objetos["Ropa_Calle"] = ropa_calle
-
-	var delantal_aprendiz := Objeto_Ropa.new()
-	delantal_aprendiz.nombre = "Delantal_Aprendiz"
-	delantal_aprendiz.precio = 0.0
-	delantal_aprendiz.multiplicador = 1.0
-	delantal_aprendiz.afecta_a = "Ropa"
-	delantal_aprendiz.es_basico = true
-	delantal_aprendiz.bonus_salario_hosteleria = 0.0
-	delantal_aprendiz.reduccion_higiene_trabajo = 0.05
-	delantal_aprendiz.bonus_propinas_minijuego = 0.0
-	delantal_aprendiz.descripcion_efecto = "-5% desgaste de Higiene en trabajos de hostelería."
-	Catalogo_Objetos["Delantal_Aprendiz"] = delantal_aprendiz
-
-	var chaqueta_chef := Objeto_Ropa.new()
-	chaqueta_chef.nombre = "Chaqueta_Chef"
-	chaqueta_chef.precio = 0.0
-	chaqueta_chef.multiplicador = 1.0
-	chaqueta_chef.afecta_a = "Ropa"
-	chaqueta_chef.es_basico = true
-	chaqueta_chef.bonus_salario_hosteleria = 0.10
-	chaqueta_chef.reduccion_higiene_trabajo = 0.05
-	chaqueta_chef.bonus_propinas_minijuego = 0.0
-	chaqueta_chef.descripcion_efecto = "+10% salario en hostelería y -5% desgaste de Higiene."
-	Catalogo_Objetos["Chaqueta_Chef"] = chaqueta_chef
-
-	var atuendo_gala := Objeto_Ropa.new()
-	atuendo_gala.nombre = "Atuendo_Chef_Gala"
-	atuendo_gala.precio = 0.0
-	atuendo_gala.multiplicador = 1.0
-	atuendo_gala.afecta_a = "Ropa"
-	atuendo_gala.es_basico = true
-	atuendo_gala.bonus_salario_hosteleria = 0.20
-	atuendo_gala.reduccion_higiene_trabajo = 0.05
-	atuendo_gala.bonus_propinas_minijuego = 0.0
-	atuendo_gala.descripcion_efecto = "+20% salario en hostelería y -5% desgaste de Higiene."
-	Catalogo_Objetos["Atuendo_Chef_Gala"] = atuendo_gala
-
-	var traje_michelin := Objeto_Ropa.new()
-	traje_michelin.nombre = "Traje_Estrella_Michelin"
-	traje_michelin.precio = 0.0
-	traje_michelin.multiplicador = 1.0
-	traje_michelin.afecta_a = "Ropa"
-	traje_michelin.es_basico = true
-	traje_michelin.bonus_salario_hosteleria = 0.30
-	traje_michelin.reduccion_higiene_trabajo = 0.05
-	traje_michelin.bonus_propinas_minijuego = 0.25
-	traje_michelin.descripcion_efecto = "+30% salario en hostelería, -5% desgaste de Higiene y +25% propinas en minijuego."
-	Catalogo_Objetos["Traje_Estrella_Michelin"] = traje_michelin
+	# Ropa equipable: datos centralizados en Ropa_Catalogo.gd.
+	# Las prendas de inicio son gratis, las de tienda se compran con dinero y
+	# las de rango se desbloquean con Maestría Culinaria.
+	Ropa_Catalogo.Registrar_En(Catalogo_Objetos)

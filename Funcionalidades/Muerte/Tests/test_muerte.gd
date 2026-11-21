@@ -105,7 +105,7 @@ func _Test_Max_Valor_Edad18_Nec50() -> void:
 
 	var esperado  := _Max_Valor_Esperado(18, 50.0)
 	var obtenido  := int(round(1.0 / Actividades._ultima_prob_muerte_minuto))
-	var dif_rel   := abs(obtenido - esperado) / float(esperado)
+	var dif_rel: float = absf(float(obtenido) - float(esperado)) / float(esperado)
 
 	_OK(dif_rel < _TOLERANCIA_REL,
 		"Max_Valor_Edad18_Nec50",
@@ -130,7 +130,7 @@ func _Test_Max_Valor_Edad75_Nec50() -> void:
 
 	var esperado  := _Max_Valor_Esperado(75, 50.0)
 	var obtenido  := int(round(1.0 / Actividades._ultima_prob_muerte_minuto))
-	var dif_rel   := abs(obtenido - esperado) / float(esperado)
+	var dif_rel: float = absf(float(obtenido) - float(esperado)) / float(esperado)
 
 	_OK(dif_rel < _TOLERANCIA_REL,
 		"Max_Valor_Edad75_Nec50",

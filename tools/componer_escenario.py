@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Compose a 1280x720 preview of the Cooking Fever style kitchen from the sprite pack.
+"""Compose a 1280x720 preview of the casual cooking-game kitchen from the sprite pack.
 
 Not shipped in the game: this is the layout guide used to place the sprites and to
 check scale and readability before building the Godot scene.

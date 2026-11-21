@@ -1,12 +1,17 @@
-# Minijuego de Cocina (*Cooking Fever*) + Apartado Minijuegos + Ropa Equipable
+# Minijuego de Cocina (gestión de pedidos) + Apartado Minijuegos + Ropa Equipable
 
 ## 1. Resumen
 
 Funcionalidad completa en Godot 4.4+ (GDScript 2.0) que añade:
-- **Apartado modular de Minijuegos** (`Minijuegos_Button` en la barra superior de 5 botones + vista `Pantalla_Minijuegos` preparada para futuros minijuegos).
-- **Minijuego de Cocina estilo *Cooking Fever*** (`Escenas/Minijuego_Cocina/Minijuego_Cocina.tscn`) con rotación obligatoria a **horizontal (`1280×720`)** y retorno automático a **vertical (`720×1280`)**, ejecutado como overlay `CanvasLayer` sobre `Script_Principal` para que el reloj del Sim siga avanzando en tiempo real.
-- **Desbloqueo al primer minuto real trabajado en hostelería** (`Trabajar_En_Comida_Rapida`, `Trabajar_De_Ayudante_Cocina`, `Trabajar_De_Cocinero_Partida`, `Trabajar_De_Chef_Ejecutivo`), nunca al programar el bloque, con notificación toast en pantalla, badge y mensaje en buzón.
-- **Economía de doble moneda** (`Fondos_Cocina` para mejoras vs. `Dinero` del Sim para propinas/bonos), logros progresivos cada 5 niveles (**Rangos 0–9**) y **ropa equipable** (`Objeto_Ropa`, categoría `"Ropa"`) gestionable en **Perfil → Apuntes → Ropa**.
+
+- **Apartado modular de Minijuegos** (`Minijuegos_Button` en la barra superior de 6 botones + vista `Pantalla_Minijuegos` preparada para futuros minijuegos).
+- **Minijuego de Cocina de gestión de pedidos** (`Escenas/Minijuego_Cocina/Minijuego_Cocina.tscn`) con **selector de niveles en vertical** (`720×1280`) y **pantalla de carga + partida en horizontal** (`1280×720`), ejecutado como overlay `CanvasLayer` sobre `Script_Principal` para que el reloj del Sim siga avanzando.
+- **Cocina jugable con arrastrar y soltar + toque rápido**: los ingredientes, la carne cocinada, las patatas, los platos montados y los refrescos se arrastran con el dedo/ratón hasta la plancha, la freidora, el plato, el cliente (o su bocadillo de pedido) o la papelera. Tocar un recipiente hace su acción principal (carne → plancha, patatas → freidora, pan → siguiente plato y queso/lechuga/tomate → plato con pan) y la carne cocinada se arrastra hasta el pan. Los ingredientes viven en un **mueble bajo la encimera** con recipientes reales, no en una botonera inferior.
+- **Niveles por clientes, no por tiempo**: cada nivel tiene un número fijo de clientes (11 en el nivel 1 y hasta 31 en el 15) y el servicio termina cuando ya no queda ninguno por llegar ni sentado. El HUD muestra los clientes restantes, el reloj cuenta el tiempo transcurrido y un botón de **pausa** permite seguir, repetir el nivel o salir.
+- **Arte del pack de sprites PNG** (`Imagenes/Minijuego_Cocina/`): fondo de diner 1280×720, 8 clientes + 8 versiones enfadadas, 7 poses de chef, estaciones, comida, UI y efectos.
+- **Animaciones de personajes y cocina**: llegada y saludo del cliente, pedido que aparece con rebote, paciencia con cambio de cara y avisos, masticación/celebración y salida airada; reacciones del chef; volteo de la carne al estar lista; vapor, humo, fuego, chispas, monedas y estrellas.
+- **Efectos de sonido originales** sintetizados (15 WAV) con pool de voces en el bus `SFX` (volumen/silencio en Ajustes); música del minijuego a través del autoload `Musica`.
+- **Economía de Caja + costes** (la Caja del restaurante recibe ventas menos ingredientes/gastos/merma y paga las 5 mejoras; el Sim cobra propinas, una parte del beneficio y primas por estrellas), **dos servicios con paga completa al día** fuera de turno y modo práctica al 25% después, logros progresivos cada 5 niveles (**Rangos 0–9**) y **ropa equipable** (`Objeto_Ropa`, categoría `"Ropa"`) gestionable en la sección **Vestuario** de la barra superior (también accesible desde Inicio y Perfil → Info).
 
 ---
 
@@ -14,42 +19,76 @@ Funcionalidad completa en Godot 4.4+ (GDScript 2.0) que añade:
 
 | Archivo | Rol |
 |---|---|
-| `Scripts/Logica/Escena_Principal/Minijuego_Cocina/Sistema_Cocina.gd` | Autoload `Sistema_Cocina`. Catálogo data-driven de 3 restaurantes (15 niveles de `burger_street`), 5 mejoras, fórmulas puras `static func`, desbloqueo, micro-recompensas, fin de nivel, logros y helpers de ropa. |
-| `Scripts/Logica/Escena_Principal/Economia/Herencia/Objeto_Ropa.gd` | Subclase `Objeto_Ropa extends Objeto` (`bonus_salario_hosteleria`, `reduccion_higiene_trabajo`, `bonus_propinas_minijuego`, `descripcion_efecto`). |
-| `Scripts/GUI/Minijuego_Cocina/Minijuego_Cocina.gd` | Controlador de la escena horizontal `1280×720`: Subvista 1 (Mapa + Modal Inicio + Modal 5 Mejoras), Subvista 2 (Cocina Jugable *tap-to-move*), Subvista 3 (Modal de Resultados) y rotación segura con salvaguarda en `_exit_tree()`. |
-| `Scripts/GUI/Minijuego_Cocina/Sprites_Cocina.gd` | Sprites vectoriales 2.5D estilo *Cooking Fever*: fondo de diner con suelo ajedrezado y barra turquesa, 8 arquetipos de clientes expresivos, burbujas de pedido con barra de paciencia vertical, platos de cerámica con papel encerado, hamburguesas por capas, sartenes de hierro, freidora, dispensador de refrescos y bandejas de ingredientes. |
-| `Escenas/Minijuego_Cocina/Minijuego_Cocina.tscn` | Escena autocontenida del minijuego. |
+| `Scripts/Logica/Escena_Principal/Minijuego_Cocina/Sistema_Cocina.gd` | Autoload `Sistema_Cocina`. Catálogo data-driven de 4 mundos de cocina, uno por trabajo de hostelería (15 niveles jugables en `burger_street`; los otros 3 se muestran como botones bloqueados de Fase 2), 5 mejoras, fórmulas puras `static func`, desbloqueo, micro-recompensas, fin de nivel, logros y helpers de ropa. |
+| `Scripts/GUI/Minijuego_Cocina/Minijuego_Cocina.gd` | Controlador de doble orientación: selector de mundos y mapa de niveles vertical `720×1280` como vistas separadas, pantalla de carga y cocina jugable horizontal `1280×720` con arrastrar/soltar, HUD (reloj transcurrido y clientes restantes), modales de pausa, resultados y confirmación de salida, y rotación segura. El mapa delega el dibujo en `Selector_Niveles_Arte.gd`. |
+| `Scripts/GUI/Minijuego_Cocina/Mejoras_Cocina.gd` | Pantalla de Mejoras a tamaño completo: lista de 5 mejoras con estrellas, escaparate grande de la siguiente versión (`Escaparate_Mejora`), pestañas de nivel con coste, comparativa de rendimiento, CTA de compra con la Caja y animaciones de apertura/celebración. |
+| `Scripts/GUI/Minijuego_Cocina/Selector_Niveles_Arte.gd` | Arte cartoon del selector: `Fondo_Mapa` (foto desenfocada + viñeteado), `Marco_Mapa` (marco celeste/tablero azul), `Titulo_Dorado` (degradado con shader), `Boton_Nivel` (moneda verde + estrellas + candado), `Boton_Atras`, `Boton_Siguiente` y `Barra_Scroll_Niveles`. |
+| `Scripts/GUI/Minijuego_Cocina/Arte_Cocina.gd` | Registro de texturas del pack, composición de hamburguesas por capas, tickets/bocadillos, platos, puntos de cocción, bebidas, mueble/recipientes de ingredientes (`Puesto_Ingrediente` y `Fondo_Despensa`) y capa de partículas. |
+| `Scripts/GUI/Minijuego_Cocina/Arrastre_Cocina.gd` | Gestor de arrastrar y soltar: zonas de origen/destino, fantasma animado, resaltado de destino y señales de soltado. |
+| `Scripts/GUI/Minijuego_Cocina/Sonidos_Cocina.gd` | Pool de 12 `AudioStreamPlayer` en el bus `SFX` para los 15 SFX originales; volumen y silencio se configuran en `Ajustes`. |
+| `Scripts/GUI/Minijuego_Cocina/Sprites_Cocina.gd` | **Legacy**: sprites vectoriales 2.5D usados antes de integrar el pack PNG. El minijuego ya no lo carga; se conserva como referencia/fallback. |
+| `Sonidos/SFX/*.wav` | Efectos sintetizados: click, pop, drop, sizzle, ding, burn, coin, happy, angry, trash, pour, star, combo, start y level_end. |
+| `Imagenes/UI/Iconos/triangle-alert.svg` | Icono Lucide de aviso (triángulo con exclamación) usado por el modal de confirmación de salida. Se resuelve con `Estilos_UI.badge_icono("triangle-alert", …)`. |
+| `Scripts/Logica/Escena_Principal/Economia/Herencia/Objeto_Ropa.gd` | Subclase `Objeto_Ropa extends Objeto` (`desbloqueo`, `categoria`, bonificaciones de salario general/hostelería, progreso, higiene y propinas, `descripcion_efecto`) y campos visuales (`estilo_visual`, `detalle_visual`, `prenda_superior`, `prenda_inferior`, `calzado`, paleta). |
+| `Scripts/Logica/Escena_Principal/Economia/Ropa_Catalogo.gd` | Catálogo central de las 25 prendas: inicio gratis, tienda con precio y rango de cocina. |
 | `Scripts/Globales/Principales_Variables/Variables_Dinamicas.gd` | `Cocina_Estado` (`COCINA_ESTADO_BASE` y `Cocina_Estado_Por_Defecto()`), defaults de `"Ropa_Calle"` y `Objeto_Seleccionado["Ropa"]`. |
-| `Scripts/Globales/Principales_Variables/Variables_Estaticas.gd` | `Record_Max_Niveles_Cocina` y registro de las 5 prendas `Objeto_Ropa` en `Catalogo_Objetos`. |
+| `Scripts/Globales/Principales_Variables/Variables_Estaticas.gd` | `Record_Max_Niveles_Cocina` y llamada a `Ropa_Catalogo.Registrar_En()` para construir las 25 prendas en `Catalogo_Objetos`. |
 | `Scripts/Otro/Guardar/Guardar_Variables_Dinamicas.gd` | Guardado/carga con merge recursivo (`_Normalizar_Cocina_Estado`) y fallback `"Ropa_Calle"` / `"Ropa"`. |
 | `Scripts/Otro/Guardar/Guardar_Variables_Estaticas.gd` | Persistencia de `Record_Max_Niveles_Cocina` (fallback `0`). |
 | `Scripts/Globales/Menu.gd` & `First_Time.gd` | Reseteo/inicialización limpia de `Cocina_Estado` y `"Ropa"` en nuevas partidas. |
 | `Scripts/Logica/Escena_Principal/Actividades/Actividades.gd` | Desbloqueo al primer minuto trabajado y pago de nómina con bonus de ropa + `+10%` de `plus_nomina_turno_hoy`. |
-| `Scripts/Logica/Escena_Principal/Actividades/Actividades_Necesidades_Basicas.gd` | Reducción de desgaste de Higiene (`-5%`) en empleos de hostelería según prenda equipada. |
+| `Scripts/Logica/Escena_Principal/Actividades/Actividades_Necesidades_Basicas.gd` | Reducción de desgaste de Higiene en trabajos: `-5%` de hostelería o `-10%` de uniformes generales, según la prenda equipada. |
 | `Scripts/Logica/Escena_Principal/Actividades/Actividades_Habilidades.gd` | Bono Rango ≥ 5 (`+15%` eficiencia en `Progreso[2]` Manualidades y `Progreso_Cocina`). |
 | `Scripts/Logica/Escena_Principal/Actividades/Alimentacion.gd` | Bonos Rango ≥ 2 (`+2` Salud Mental), Rango ≥ 4 (`-20%` coste comida rápida, `+15%` saciedad tupper) y Rango ≥ 7 (`+15%` recuperación Hambre y `+1` Salud Física). |
 | `Scripts/Logica/Escena_Principal/Actividades/Eventos_Aleatorios.gd` | Inmunidad a `"Intoxicación alimentaria"` con Rango ≥ 8 (40 niveles). |
-| `Escenas/Escena_Principal/Escena principal.tscn`, `Pantalla_Mensajes.tscn`, `Script_Principal.gd`, `Estilos_UI.gd`, `Gestionar_Visibilidad.gd` | Barra superior de 5 pestañas (`Minijuegos_Button`), `Pantalla_Minijuegos`, toast de desbloqueo, `Atuendo` y `Maestría Culinaria` en Perfil → Info, conmutador `Apuntes | Ropa` en Perfil → Apuntes. |
+| `Escenas/Escena_Principal/Escena principal.tscn`, `Pantalla_Mensajes.tscn`, `Script_Principal.gd`, `Estilos_UI.gd`, `Gestionar_Visibilidad.gd`, `Scripts/GUI/Escena_Principal/Vestuario/Pantalla_Vestuario.gd` | Barra superior de 6 pestañas (`Minijuegos_Button`, `Vestuario_Button`), `Pantalla_Minijuegos` (banner con arte del minijuego), toast de desbloqueo, `Atuendo` y `Maestría Culinaria` en Perfil → Info y armario independiente en Vestuario (vista previa, tarjetas y progreso). |
 | `export_presets.cfg` | `permissions/set_orientation=true` en preset Android. |
-| `Funcionalidades/Minijuego_Cocina/Tests/test_minijuego_cocina.gd` | Suite GUT (11 tests, 336 asserts). |
+| `Funcionalidades/Minijuego_Cocina/Tests/test_minijuego_cocina.gd` | Suite GUT de economía, fórmulas, desbloqueo, logros y UI, incluida la navegación selector de mundos ↔ mapa de niveles, la confirmación de salida, la pausa, el fin por clientes, el HUD superior (menú/clientes/dinero), el marco cartoon y las monedas con número (15 tests). |
+| `Funcionalidades/Minijuego_Cocina/Tests/test_arrastre_cocina.gd` | Suite GUT del gesto de arrastre, flujo carne→plancha→plato→cliente, rechazos, papelera, bebidas, toques rápidos, disposición de los puestos y pase de cuatro huecos con candados (11 tests). |
+| `Funcionalidades/Minijuego_Cocina/Tests/test_pedidos_cocina.gd` | Test de determinismo de la secuencia de pedidos entre partidas (1 test). |
+| `Funcionalidades/Minijuego_Cocina/Tests/test_alineacion_arte_cocina.gd` | Tests de recorte/alineación del arte por capas (6 tests). |
+| `Escenas/Herramientas/Captura_Selector_Cocina.tscn` + `Scripts/Otro/Herramientas/Captura_Selector_Cocina.gd` | Herramienta de QA visual del selector (mundos, niveles y modal) en `SubViewport`; acepta `CAPTURA_ANCHO`/`CAPTURA_ALTO` y guarda en `/tmp/opencode/capturas_selector`. |
+| `tools/generar_fondo_selector.py` | Regenera `Fondo_Restaurante_Selector.png` (360×640) desde el fondo de la cocina: recorte vertical, desenfoque, tinte azul y reducción. |
 
 ---
 
 ## 3. Reglas de Juego y Fórmulas
 
-### Restaurantes y Desbloqueo
-| Restaurante (`id`) | Trabajo requerido | Estado |
+### Mundos de Cocina y Desbloqueo
+Cada uno de los 4 trabajos de hostelería tiene su propio mundo. Solo `burger_street` tiene contenido jugable; el resto son botones bloqueados con la etiqueta **Fase 2**.
+| Mundo (`id`) | Trabajo requerido | Estado |
 |---|---|---|
-| `burger_street` (*Burger & Street Food*) | `Trabajar_En_Comida_Rapida` | Implementado (15 niveles, 60–90 s) |
-| `bistro_tradicional` (*Bistró Tradicional*) | `Trabajar_De_Ayudante_Cocina` / `Trabajar_De_Cocinero_Partida` | Fase 2 (estructura preparada) |
-| `alta_cocina` (*Alta Cocina Gourmet*) | `Trabajar_De_Chef_Ejecutivo` | Fase 2 (estructura preparada) |
+| `burger_street` (*Burger & Street Food*) | `Trabajar_En_Comida_Rapida` | Implementado (15 niveles, 11–31 clientes) |
+| `bistro_tradicional` (*Bistró Tradicional*) | `Trabajar_De_Ayudante_Cocina` | Fase 2 (botón bloqueado) |
+| `cocina_mercado` (*Cocina de Mercado*) | `Trabajar_De_Cocinero_Partida` | Fase 2 (botón bloqueado) |
+| `alta_cocina` (*Alta Cocina Gourmet*) | `Trabajar_De_Chef_Ejecutivo` | Fase 2 (botón bloqueado) |
 
-### 5 Mejoras por Restaurante (`Fondos_Cocina`)
-- **`plancha`**: Nv.1 (`2` huecos, `1` cesta, `×1.00`) → Nv.2 (`120`, `3` huecos, `2` cestas, `×0.80`) → Nv.3 (`320`, `4` huecos, `2` cestas, `×0.65`).
-- **`emplatado`**: Nv.1 (`2` platos, `1` bebida `4.0 s`) → Nv.2 (`100`, `3` platos, `2` bebidas `2.5 s`) → Nv.3 (`280`, `4` platos, `3` bebidas `1.0 s`).
-- **`termostato`**: Nv.1 (`6.0 s`) → Nv.2 (`90`, `8.1 s`) → Nv.3 (`240`, `10.5 s` + aviso temprano al 45%).
-- **`ingredientes`**: Nv.1 (`×1.00`) → Nv.2 (`140`, `×1.25`) → Nv.3 (`360`, `×1.50`).
-- **`ambiente`**: Nv.1 (`×1.00` paciencia/propinas) → Nv.2 (`110`, `×1.15` / `×1.20`) → Nv.3 (`300`, `×1.30` / `×1.40`).
+### 5 Mejoras por Restaurante (Caja del restaurante, €)
+- **`plancha`**: Nv.1 (`2` huecos, `1` cesta, `×1.00`) → Nv.2 (`120 €`, `3` huecos, `2` cestas, `×0.80`) → Nv.3 (`320 €`, `4` huecos, `2` cestas, `×0.65`).
+- **`emplatado`**: Nv.1 (`2` platos, `1` bebida `4.0 s`) → Nv.2 (`100 €`, `3` platos, `2` bebidas `2.5 s`) → Nv.3 (`280 €`, `4` platos, `3` bebidas `1.0 s`).
+- **`termostato`**: Nv.1 (`6.0 s`) → Nv.2 (`90 €`, `8.1 s`) → Nv.3 (`240 €`, `10.5 s` + aviso temprano al 45%).
+- **`ingredientes`**: Nv.1 (`×1.00`) → Nv.2 (`140 €`, `×1.25`) → Nv.3 (`360 €`, `×1.50`).
+- **`ambiente`**: Nv.1 (`×1.00` paciencia/propinas) → Nv.2 (`110 €`, `×1.15` / `×1.20`) → Nv.3 (`300 €`, `×1.30` / `×1.40`).
+
+La **Caja** (`fondos_cocina`) es un monedero de euros separado de `Variables_Dinamicas.Dinero`:
+- Ingresa `ventas − costes` al cerrar cada servicio.
+- Paga las 5 mejoras (90–360 €).
+- Las propinas no se quedan en la Caja: se reparten entre el Sim (50%) y el equipo (50%).
+
+### Pantalla de Mejoras (`Mejoras_Cocina.gd`)
+
+El botón **Mejoras** del mapa abre una pantalla propia a tamaño completo (`696×1168` en el espacio vertical de `720×1280`), construida como componente independiente (`Scripts/GUI/Minijuego_Cocina/Mejoras_Cocina.gd`) y montada desde `Minijuego_Cocina._Construir_Modal_Mejoras()`.
+
+- **Cabecera:** título dorado «MEJORAS DE COCINA», nombre del restaurante, píldora **CAJA DEL LOCAL** con el saldo real y botón circular de cierre. El velo de detrás se puede tocar para cerrar.
+- **Columna izquierda:** las 5 mejoras en filas seleccionables con el icono de su **nivel actual**, nombre corto, tres estrellas, `Nv. X` y el coste del siguiente nivel (o `MÁX.` en verde). La fila activa lleva marco dorado; al llegar a Nv.3 aparece un check verde. Debajo, una tarjeta de **TU PROGRESO** (rango, estrellas, niveles superados y barra hacia el siguiente rango) y el recordatorio «La Caja del local paga las mejoras».
+- **Escaparate derecho:** muestra la **siguiente versión** de la mejora (o la actual si ya está al máximo) con el arte grande, rayos y destellos del color de acento, sombra de contacto y movimiento de flotación suave. La píldora `SIGUIENTE MEJORA` / `TU MEJOR VERSIÓN` y las tres estrellas del nivel completan el marco.
+- **Pestañas de nivel:** `Nv.1` / `Nv.2` / `Nv.3` con estado **INCLUIDO** (verde), **coste siguiente** (verde brillante) o **precio futuro** atenuado con candado. Al comprar, la pestaña correspondiente pasa a INCLUIDO y la siguiente muestra su precio.
+- **Panel de rendimiento:** fondo crema con chips de los beneficios actuales (`AHORA · Nv. X`) y de lo que aporta la compra (`CON LA MEJORA · Nv. X`), más una frase editorial que invita a subir de nivel.
+- **Compra:** CTA verde `MEJORAR A NV. X · coste`; si la Caja no llega, pasa a ámbar con `FALTAN X € · SIRVE MÁS CLIENTES` y sacude el botón al tocarlo. Nunca se descuenta el dinero personal del Sim. Al comprar se actualiza la Caja, suena `coin` (y `star` al llegar a Nv.3), se lanza el aviso `¡NIVEL X!` y se refresca el mapa.
+- **Datos de presentación:** `MEJORAS_DEF` conserva costes y efectos y añade `nombre_corto`, `acento` y `niveles` (nombre, `beneficios`, `ganancias` y `frase`). Los helpers `Obtener_Info_Nivel_Mejora`, `Obtener_Nombre_Nivel_Mejora`, `Obtener_Beneficios_Nivel_Mejora`, `Obtener_Ganancias_Nivel_Mejora` y `Obtener_Frase_Nivel_Mejora` alimentan la pantalla sin duplicar textos.
+- **Sprites:** 15 PNG nuevos (3 por mejora) en `Imagenes/Minijuego_Cocina/Mejoras/` (`<mejora>_nv1.png` … `_nv3.png`). Se cargan con `Arte_Cocina.TEXTURAS_MEJORAS` / `Arte_Cocina.textura_mejora(id, nivel)` y se generan desde las hojas maestras de `Arte_Fuente/Minijuego_Cocina/Mejoras/` con `python3 tools/procesar_mejoras_cocina.py`.
+- **QA:** `godot --path . res://Escenas/Herramientas/Captura_Mejoras_Cocina.tscn` genera en `user://capturas_mejoras_cocina` una captura por mejora, el estado sin Caja, el nivel máximo y la compra recién realizada.
+
 
 ### Fórmulas Puras (`Sistema_Cocina`)
 - **Cocción:** `max(0.5, base * mult_plancha * (1 - 0.15 * Destreza/100))`
@@ -59,11 +98,19 @@ Funcionalidad completa en Godot 4.4+ (GDScript 2.0) que añade:
   - `Progreso_Cocina`: `0.15 * (2.0 si En Turno) * (7.0 si Modo Rápido)`
   - `Progreso[2]` (Manualidades): `0.05 * (7.0 si Modo Rápido)`
   - Necesidad (`Salud_Mental` o `Hambre`): `12%` de `+1` (respetando caps de calle/bancarrota/resacón/intoxicación)
-  - Micro-propina: `10%` de `2–5 € * Multiplicador_Precios()` con tope `15 € * Multiplicador_Precios()` por servicio.
-- **Fin de nivel:**
-  - `Fondos_Cocina += round(recaudacion * (1.5 si En Turno))`
-  - Bono 1.ª vez por estrellas: `[15, 15, 20] € * Multiplicador_Precios()`
-  - Propinas netas: `propinas_servicio * 0.50 * (1.5 si En Turno) * (1 + bonus_ropa_propinas) * Multiplicador_Precios()` (tope 2 servicios/día en modo libre; ilimitado en turno + marca `plus_nomina_turno_hoy = true`).
+  - Micro-propina: `10%` de `1–3 € * Multiplicador_Precios()` con tope `6 € * Multiplicador_Precios()` por servicio (`×0.25` en modo práctica).
+- **Fin de nivel:** la partida se cierra cuando `clientes_pendientes == 0` y no queda ningún cliente activo ni animación de entrada/salida (`_Nivel_Completado()`). No hay límite de tiempo: el reloj del HUD solo cuenta lo que dura el servicio.
+  - **Ticket** = ventas de platos/bebidas + propinas. Las propinas también suman para las estrellas (bonus de servicio).
+  - **Ventas** = `ticket − propinas_servicio`.
+  - **Costes** = `round(ventas * 0.30)` (ingredientes) + `6 € + 2 € * nivel` (servicio) + `round(valor_descartado * 0.30)` (merma).
+  - **Beneficio neto** = `max(0, ventas − costes)`.
+  - **Caja** += `beneficio_neto − reparto_sim`.
+  - **Reparto al Sim** = `round(beneficio_neto * 0.05)` con paga completa; `25%` de esa cifra en modo práctica.
+  - **Propinas netas** = `propinas_servicio * 0.50 * (1.5 si En Turno) * (1 + bonus_ropa_propinas) * Multiplicador_Precios() * (0.25 si práctica)`.
+  - **Prima de estrellas** (solo al mejorar el récord del nivel, se paga al Sim): `suma(meta[s] * 0.10 por cada nueva estrella) * Multiplicador_Precios()`.
+  - **Tirar comida** (plato, carne, patatas o bebida a la papelera) suma el valor de venta del descarte a la merma; se descuenta el 30% al cerrar el servicio.
+
+**Paga completa y modo práctica:** fuera de turno, los 2 primeros servicios del día con ≥1 estrella pagan el 100% de propinas y reparto; a partir del tercero se aplica el modo práctica (25% para el Sim, la Caja sigue al 100%). En turno activo no hay límite, las propinas son ×1.5 y se marca `plus_nomina_turno_hoy` (+10% de nómina al terminar el turno). Un servicio de 0 estrellas no paga propinas ni reparto, pero la Caja conserva el beneficio neto. `Multiplicador_Precios()` (`×0.1` en Modo Rápido) solo escala el dinero personal, no los costes ni las mejoras de la Caja.
 
 ### Bloqueos de Entrada
 No permite iniciar un servicio si:
@@ -84,11 +131,130 @@ No permite iniciar un servicio si:
 | 8 | 40 | Inmunidad total al evento aleatorio `"Intoxicación alimentaria"` |
 | 9 | 45 | `Traje_Estrella_Michelin` (`+30%` salario hostelería, `-5%` Higiene, `+25%` propinas) |
 
+Las prendas desbloqueadas se prueban y equipan en la sección **Vestuario** (barra superior, Inicio y Perfil → Info). Véase `Funcionalidades/Vestuario/Documentacion/VESTUARIO.md`.
+
 ---
 
-## 4. Tests GUT
+## 4. Presentación y Animaciones
 
-Ejecución:
+### 4.0 Orientación y pantalla de carga
+
+- El **selector de mundos** se abre en **vertical `720×1280`** para seguir la orientación del resto del juego. La vista contiene la barra superior (mundo/rango, Caja, dinero, píldora `EN TURNO` y Mejoras) y el panel cartoon con las **4 tarjetas de mundo** (una por trabajo de hostelería). El mapa de 15 niveles es una vista aparte que sustituye a la lista al entrar en un mundo.
+- Al pulsar **«¡Empezar Servicio!»** se gira a **horizontal `1280×720`** y aparece `Vista_Carga`: barra de progreso animada (~2 s), porcentaje, pasos («Calentando la plancha…», «Picando los ingredientes…», «Preparando las mesas…», «¡Abriendo el restaurante!») y botón **Cancelar** que vuelve al mapa vertical.
+- Al completar la barra arranca la cocina en horizontal. El botón **MENÚ** del HUD (con «Al mapa» y confirmación si hay partida en curso, ver 4.0.2), el **Mapa** del modal de resultados y **ATRÁS** del panel restauran la vertical.
+- `_Centrar_Contenido()` adapta el mapa al viewport real y centra cocina/carga; el panel, el `Grid_Niveles` (envuelto en `Centro_Niveles`) y la botonera se recolocan con `_Ajustar_Disposicion_Mapa()` tras la rotación o un cambio de resolución.
+
+### 4.0.1 Navegación entre el selector de mundos y el mapa de niveles
+
+- El mapa vertical usa un **único panel cartoon celeste** dibujado por `Selector_Niveles_Arte.Marco_Mapa`: marco turquesa con brillo, tablero azul embutido, título dorado con contorno azul marino (`Titulo_Dorado`), botón **ATRÁS** en la esquina inferior izquierda y botón circular verde en la inferior derecha. El fondo es una foto desenfocada del restaurante (`Fondo_Restaurante_Selector.png`).
+- Al abrir el mapa **solo se muestran los 4 mundos**: `_restaurante_expandido` empieza vacía, `_lista_restaurantes` está visible y `_contenedor_niveles` permanece oculta. Cada mundo es una tarjeta crema con borde dorado, icono, nombre, progreso `X/45 ★` y una píldora **Fase 2** si no está implementado; la chef Michelle decora la parte baja del tablero.
+- Al tocar un mundo jugable se asigna su `id` a `_restaurante_expandido`, se oculta la lista y se construye en `Grid_Niveles` (3 columnas) un tablero de **monedas de nivel**: placa verde con marco dorado, número central, tres estrellas superpuestas y candado en los niveles bloqueados. Las monedas se revelan con una animación escalonada (`_Animar_Revelado_Niveles()`).
+- El panel de niveles incluye una **barra de desplazamiento** dibujada a la izquierda (`Barra_Scroll_Niveles`) y un pie con `X / 45 ★ · Y / 15 niveles`; el botón verde derecho abre el **siguiente nivel pendiente** (`_Abrir_Siguiente_Nivel()`).
+- La barra superior reúne el mundo activo, el rango, la **Caja**, el **dinero del Sim**, la píldora **EN TURNO** y el botón **Mejoras** (dorado). Este último permanece **deshabilitado** mientras no haya un mundo abierto, desbloqueado e implementado (`_btn_mapa_mejoras.disabled = not rest_jugable`).
+- **ATRÁS** llama a `_Volver_Mapa()`: dentro de un mundo regresa al selector sin cerrar el minijuego; en el selector sale al Sim. La misma cascada se usa con el botón atrás físico/Escape (ver 4.0.2).
+- `Bistró Tradicional`, `Cocina de Mercado` y `Alta Cocina Gourmet` aparecen como **botones deshabilitados** (`btn.disabled = true`), con icono de candado, fondo azul grisáceo, el trabajo asociado en el subtítulo y la píldora **Fase 2**. No se pueden abrir ni iniciar partida.
+
+### 4.0.2 Confirmación al abandonar una partida y botón atrás
+
+- El botón **MENÚ** del HUD horizontal (sustituye a los antiguos «Mapa» y pausa) llama a `_Abrir_Modal_Pausa()` y congela la partida. `_Intentar_Volver_Al_Mapa()` sigue existiendo para el botón atrás y las pruebas: sin partida activa va al mapa y con `_jugando` o `_pausado_por_confirmacion` abre `Modal_Confirmar_Salida`.
+- `Modal_Pausa` muestra el resumen «Nivel N · Ticket X € · Meta M € · Quedan N clientes» y tres acciones: **Seguir cocinando** (`_Reanudar_Partida()`), **Repetir** (`_Repetir_Desde_Pausa()`, relanza la carga del mismo nivel) y **Al mapa** (`_Salir_Desde_Pausa()`, encadena la confirmación de salida). Mientras está abierto, `_jugando = false` y `_pausado_por_confirmacion = true`: el `_process` de cocina no avanza y el arrastre queda deshabilitado.
+- El modal se compone de velo oscuro, cabecera con el icono **`triangle-alert`** de `Imagenes/UI/Iconos/triangle-alert.svg` (estilo Lucide) sobre badge ámbar (`Estilos_UI.AVISO`), título **«¿Seguro que quieres salir?»**, el aviso de que se perderán las ventas, el progreso, las estrellas, las propinas y la Caja, el resumen **«Ticket actual: X € · N clientes atendidos»** y dos botones: **«Seguir cocinando»** (verde) y **«Salir y perder progreso»** (rojo).
+- Al abrirlo, la partida queda **pausada**: `_pausado_por_confirmacion = true`, `_jugando = false` (el `_process` de cocina sale de inmediato y se detienen reloj, clientes y cocción), se cancela el arrastre en curso y se deshabilita `_arrastre`.
+- **«Seguir cocinando»** cierra el modal, reactiva `_jugando` y vuelve a habilitar el arrastre registrando las zonas (`_Registrar_Zonas_Arrastre()`). **«Salir y perder progreso»** cierra el modal y llama a `_Mostrar_Mapa()` **sin pasar por `Sistema_Cocina.Procesar_Fin_Nivel()`**: no se otorgan estrellas, propinas, Caja ni guardado del nivel.
+- El **Mapa del modal de resultados** sigue yendo directo al mapa, porque el nivel ya terminó y las recompensas ya se procesaron.
+- **Botón atrás físico/Android y `Escape`:** `_notification(NOTIFICATION_WM_GO_BACK_REQUEST)` y `_unhandled_input("ui_cancel")` llaman a `_Volver_Atras()`, que resuelve en cascada: reanuda si el modal de pausa está abierto, cierra el modal de salida (equivale a seguir cocinando), abre la confirmación si hay partida, cancela la carga pendiente, cierra los modales de inicio/mejoras/resultados y, ya en el mapa, si hay un mundo abierto vuelve al selector de mundos y, si no, sale al Sim. Así Android no cierra la app de golpe.
+- **«Quit On Go Back» desactivado mientras dura el minijuego:** `_ready()` guarda el valor previo de `SceneTree.is_quit_on_go_back()` en `_quit_on_go_back_previo` y llama a `get_tree().set_quit_on_go_back(false)`; `_exit_tree()` restaura el valor guardado. De este modo, aunque el proyecto tenga «Quit On Go Back» activado por defecto, el botón atrás de Android llega al minijuego como `NOTIFICATION_WM_GO_BACK_REQUEST` en lugar de cerrar la aplicación.
+- Captura: `Documentacion/Capturas/13_confirmar_salida.png`.
+
+### 4.0.3 Transición entre el juego principal y el minijuego
+
+- La entrada y la salida ya no son instantáneas: `Scripts/GUI/Transiciones/Transicion_Minijuego.gd` crea un `CanvasLayer` (`layer = 120`) con un **telón de cocina** que sube desde el borde inferior, cubre la pantalla y continúa subiendo hasta salir por arriba para descubrir la vista nueva.
+- **Entrada:** `Script_Principal._Abrir_Minijuego_Cocina()` valida el acceso, crea el telón y espera a `Cubrir("Cocina", "Preparando los fogones…")`. Con la pantalla cubierta instancia el minijuego (`_Instanciar_Minijuego_Cocina()`), deja `0,12 s` de margen y llama a `Descubrir("¡A cocinar!")`.
+- **Salida:** al emitirse `cerrado`, `Script_Principal._on_minijuego_cocina_cerrado()` espera a `Cubrir("Volviendo al Sim", "Recogiendo la cocina…")`, libera la capa del minijuego, ejecuta `_Refrescar_Tras_Minijuego_Cocina()` y descubre la escena principal con `Descubrir("¡De vuelta a casa!")`.
+- **Composición del telón:** fondo `#0b1220` (el mismo del mapa de la cocina), borde superior naranja `#ea580c`, esquinas inferiores redondeadas, 16 rayos cálidos girando lentamente, el chef `Chef_Pulgar_Arriba.png` con balanceo, título, subtítulo ámbar y tres puntos rebotando.
+- **Tiempos:** `0,34 s` para cubrir, `0,12 s` de espera mientras se prepara la siguiente vista y `0,40 s` para descubrir. La música hace su fundido cruzado de `0,9 s` debajo del telón.
+- **Bloqueo de entrada:** el telón usa `MOUSE_FILTER_STOP`, por lo que no se puede pulsar nada mientras dura la animación. La bandera `_transicion_minijuego_activa` impide aperturas o cierres duplicados y el telón se libera solo al terminar `Descubrir()`.
+
+### 4.1 Escenario y reparto
+- **Fondo:** `Fondo_Restaurante.png` a 1280×720 con el diner completo y la encimera de acero en primer plano.
+- **Clientes:** 4 puestos en las mesas/booths del fondo. Cada puesto tiene un retrato (190×170) y un **bocadillo de pedido** (160×134) sobre la cabeza.
+- **Mostrador (y ≈ 430–616):** plancha (hasta 4 fogones), freidora (hasta 2 cestas), dispensador de refrescos (hasta 3 vasos), bandeja de emplatado (hasta 4 platos), papelera y bote de propinas.
+- **Bandeja de emplatado:** el pase es un puesto 3D: una **bandeja metálica** renderizada (`Bandeja_Metal.png`) con borde, paredes interiores y sombra de contacto, una alfombrilla beige hundida y, detrás, una **mampara de cristal** con marco cromado, filo verde y reflejos (`Fondo_Pase`). Al empezar solo se abren dos de los **cuatro huecos**; la mejora `emplatado` abre el tercero en Nv.2 y el cuarto en Nv.3. Los cerrados son rebajes metálicos oscuros con un **candado dorado** y una pastilla `Nv.2`/`Nv.3`, de modo que la progresión se ve sin abrir la pantalla de Mejoras. La fila mantiene el mismo eje vertical y cada plato se escala al hueco. Cada hueco activo contiene un **plato de cerámica 3/4** (`Plato_Perspectiva.png`) con filo celeste grueso y sombra de contacto; los platos vacíos muestran un **fantasma de pan cerrado** y un botón «+» centrado en el propio pan para indicar dónde colocar el pan.
+- **Mueble bajo la encimera con los ingredientes (y ≈ 620–716):** frente de armario teal con zócalo de acero y estante de madera, como la despensa de la cocina de referencia. No hay tarjetas ni botonera: cada alimento tiene su recipiente y su placa grabada. La **panera de madera** ocupa el centro bajo el pase y tiene **dos huecos** con panecillos; a la izquierda quedan la bandeja metálica de carne cruda y la cesta roja de patatas; a la derecha, el bol de lechuga, la bandeja de tomate y la tabla de queso. El hueco libre se rellena con pilas de platos y bandejas apiladas. Al pasar el ratón/dedo el recipiente se ilumina con un halo cálido y la pieza se levanta ligeramente; el nombre va en una placa pequeña en el estante, no en una tarjeta. Tocar un recipiente ejecuta su acción principal (carne → plancha, patatas → freidora, pan → siguiente plato libre, topping → plato con pan) y arrastrar sigue disponible para colocar la carne cocinada en el pan o servir.
+- **Chef:** cut-in en la zona izquierda, por delante del fondo y por detrás de la barra; reacciona con 7 poses.
+- **Banner de la tarjeta «Cocina» (`Pantalla_Minijuegos`):** la tarjeta usa un fondo propio, `Imagenes/Minijuego_Cocina/Banner_Cocina.png` (1288×284, ≈4,5:1): mostrador de diner en primer plano con damero crema/negro, borde metálico inferior y comedor desenfocado detrás; el desenfoque, la viñeta y la luz cálida van horneados en el PNG. Sobre él se compone en 3/4 el chef (104×142), la hamburguesa (104×104), el plato (124×58), las patatas (90×96), el refresco (62×112) y la plancha (146×100); los cinco objetos apoyados en el mostrador llevan una **sombra elíptica de contacto** (5 en total). En el banner, el plato ya no es el `Plato_Vacio.png` cenital: se usa `Emplatado/Plato_Perspectiva.png` (640×297), cerámica blanca en perspectiva con ala, hueco y brillos. Código: `Arte_Cocina.TEX_BANNER`, `TEX_PLATO_PERSPECTIVA` y `textura_sombra_contacto()` (degradado radial cacheado); `Script_Principal._Actualizar_Pantalla_Minijuegos()` y los helpers `_Anadir_Item_Banner()` / `_Anadir_Sombra_Banner()`. Es un cambio solo visual: la suite del minijuego sigue en **33/33 tests**.
+
+### 4.2 Estados y animaciones de los clientes
+Cada cliente pasa por `inactivo → entrando → esperando → saliendo`:
+
+| Fase | Animación |
+|---|---|
+| `entrando` | **Camina desde el borde izquierdo de la pantalla** hasta su mesa con ciclo de paso (rebote, balanceo, micro-squash y sombra en el suelo). Al llegar, aparece el pedido con rebote y saluda con la cabeza y la burbuja «¡Hola!». La paciencia no baja durante el paseo. |
+| `esperando` | Balanceo suave, respiración, mirada que se desplaza y el bocadillo se ladea/tambalea conforme baja la paciencia. |
+| Paciencia < 50% | La cara cambia a la versión enfadada (<45%), el corazón de la barra pasa a ámbar y aparece «¿Cuánto falta?». |
+| Paciencia < 25% | El bocadillo se tiñe de rojo, vibra, emite nubes de enfado y aparece «¡Tengo prisa!». |
+| Servido (`feliz`) | Rebote + masticación (squash 3 veces), «¡Gracias!», estrellas y monedas; después **camina hacia el borde derecho** y sale de la pantalla. El ticket se queda en la mesa y se desvanece. |
+| Paciencia agotada (`enfadado`) | «¡Me voy!», nubes de enfado, temblor y sacudida de pantalla; después **camina hacia el borde derecho** con paso más marcado. |
+
+El puesto queda bloqueado hasta que termina la caminata de salida para que no se solapen dos clientes. La entrada/salida se hace a velocidad constante (~620 px/s de entrada, ~450 px/s de salida) y el cliente se dibuja por delante de los demás retratos mientras camina.
+
+Cada nivel reparte un número **finito** de clientes (`clientes` en la configuración: 11 en el nivel 1 y 31 en el 15). `_Intentar_Spawnear_Cliente()` descuenta uno de la cola al sentarse y el servicio se cierra en cuanto la cola y las mesas quedan vacías (`_Nivel_Completado()`); los clientes que se marchan enfadados también consumen su turno. El HUD muestra los que faltan en la píldora azul de clientes (solo el número, con insignia verde de comensales).
+
+### 4.3 Chef
+Poses usadas: `sirviendo` (inicio/nivel), `pulgar` (servicio rápido), `celebra` (combo), `sorprendida` (comida a punto de quemarse) y `enfadada` (comida quemada / cliente perdido). Entra desde la izquierda con rebote, burbuja de texto y se retira solo.
+
+### 4.4 Estaciones y comida
+- **Carne:** crossfade cruda → hecha → quemada, anillo de progreso, vapor, chispas, humo y **voltereta** de 0,3 s al quedar lista (con etiqueta «¡LISTO!»).
+- **Patatas:** cesta con aceite, burbujas, vapor y anillo; se sirven arrastrando al cliente.
+- **Refrescos:** llenado animado por recorte de la textura, chorro, burbujas y anillo de «pop» al completarse.
+- **Pan cerrado:** `Arte_Cocina.dibujar_pan_cerrado()` compone el panecillo con el canto inferior de `Pan_Inferior.png` (recorte `REGION_PAN_CERRADO`, sin la cara de miga) y la tapa de `Pan_Superior.png`, con sombra de contacto y sombra de unión. Se usa en el pase cuando el plato solo lleva pan, en el fantasma del plato vacío y en la panera. Para hamburguesas montadas se mantiene `dibujar_hamburguesa()` con todas las capas.
+
+- **Platos:** el pase tiene una bandeja metálica 3D con alfombrilla beige y una mampara de cristal detrás; los cuatro huecos se dibujan siempre y los que aún no se han desbloqueado llevan candado y su nivel de mejora. Cada plato activo es una pieza de cerámica blanca en perspectiva 3/4 (`Plato_Perspectiva.png`) con filo celeste y sombra de contacto. La hamburguesa se compone por capas reales (pan, carne, queso, lechuga, tomate) con pop al añadir cada ingrediente; el pan solo se dibuja cerrado. Cada capa tiene ancho, alto y solape normalizados sobre un eje vertical común (`Arte_Cocina._capas_hamburguesa`), de modo que la pila queda compacta y proporcionada en cualquier tamaño de hueco. Un plato vacío muestra el fantasma del pan cerrado y un «+» centrado en él; cuando coincide con un pedido se marca con anillo verde, halo pulsante y check, y al servir vuela hasta el cliente.
+- **Papelera:** humo y rebote de la tapa al descartar.
+- **Bote de propinas:** rebote y monedas volando hacia él.
+
+### 4.5 HUD y feedback
+- **HUD superior clonado de la referencia:** botón azul **MENÚ** (icono `menu.svg`) que abre el modal de pausa con «Seguir cocinando», «Repetir» y «Al mapa»; píldora azul de **clientes restantes** con insignia verde de comensales (`users`) y el número en grande; y **contador de dinero** con moneda dorada grande, importe en amarillo y barra de meta con las 3 estrellas. El resto de la barra (nivel, reloj de servicio, propinas y hora del Sim) mantiene el estilo propio del minijuego.
+- Reloj de servicio con el **tiempo transcurrido** (cuenta hacia arriba) y contador de clientes que faltan por llegar o atender (solo el número, como en la referencia).
+- Barra de recaudación con 3 estrellas troqueladas; al ganar una estrella, la estrella hace pop y sale una lluvia de estrellas.
+- Combo con píldora roja, pulso y **barra de tiempo restante**.
+- Monedas que vuelan del cliente al HUD y al bote de propinas.
+- Sacudida de pantalla al quemar comida o al perder un cliente.
+- Modal de resultados con estrellas PNG animadas y entrada con rebote.
+
+### 4.6 Tutorial contextual (nivel 1)
+En la primera partida, antes de superar el nivel 1, aparece una barra de tutorial que cambia según el estado real de la cocina:
+- «Toca el PAN para ponerlo en el plato».
+- «Toca la CARNE para cocinarla».
+- «Espera a que la carne esté lista» / «Arrastra la carne al pan».
+- «Sirve el plato al cliente».
+- «Arrastra el REFRESCO / las PATATAS al cliente».
+- «Tira lo quemado a la BASURA» / «Nadie pide ese plato: tíralo a la BASURA».
+
+El origen y el destino de cada paso se marcan con un **halo cálido pulsante y dos destellos**, sin marcos ni cuadros amarillos. El tutorial no bloquea la interacción y desaparece en cuanto se supera el nivel 1.
+
+### 4.7 Arrastrar y soltar + toque rápido
+- **Orígenes:** puestos de ingredientes del mueble bajo la encimera, fogones con carne lista/quemada, cestas con patatas, vasos llenos y platos con contenido.
+- **Destinos:** plancha, freidora, platos, clientes y papelera. El cliente acepta el pedido tanto si se suelta sobre **su personaje** como sobre **su bocadillo de pedido** (ambas zonas comparten la misma validación).
+- **Toque rápido:** tocar un puesto de ingrediente ejecuta su acción principal sin arrastrar: la carne va a la plancha, las patatas a la freidora, el pan al siguiente plato libre y el queso/lechuga/tomate al primer plato con pan que no los tenga. Un pequeño vuelo del ingrediente hasta la estación confirma la acción. La carne cocinada sigue necesitando arrastrarse hasta el pan (o tocarse en la plancha para pasarla al plato, como atajo).
+- El fantasma sigue al dedo con sombra, inclinación por velocidad y escala 1,10; el destino válido se resalta en **cian** y el inválido en rojo.
+- Si el objeto no se puede coger (carne aún cruda, plato vacío, vaso llenándose), se muestra un aviso y no se inicia el arrastre.
+- Al soltar: se aplica la acción, se reproduce el SFX correspondiente y el objeto vuela si va al cliente.
+
+---
+
+## 5. Sonido y Música
+
+- **Música:** el autoload `Musica` reproduce `Seven_Minutes_to_Service.mp3` al abrir el minijuego (`Musica.Reproducir_Minijuego()`) y restaura la música general al salir.
+- **SFX:** `Sonidos_Cocina.gd` precarga los 15 WAV de `Sonidos/SFX/` (sintetizados para el proyecto, sin samples externos) y los reproduce con un pool de 12 voces.
+- Eventos: click al levantar, pop al colocar, sizzle al cocinar, ding al estar listo, burn al quemarse, coin al servir, happy/angry en las reacciones, trash al descartar, pour al llenar el vaso, star al ganar estrella, combo al encadenar, start y level_end.
+- Todos los SFX usan el bus `SFX` de `Ajustes`, independiente del silencio de la música.
+
+---
+
+## 6. Tests GUT
+
+Ejecución de la suite del minijuego:
 ```bash
 godot --headless --path . -s addons/gut/gut_cmdln.gd -gdir=res://Funcionalidades/Minijuego_Cocina/Tests -gexit
 ```
@@ -97,15 +263,85 @@ Suite completa de no regresión:
 godot --headless --path . -s addons/gut/gut_cmdln.gd -gdir=res://Funcionalidades -ginclude_subdirs -gexit
 ```
 
+Cobertura:
+- 15 tests de economía, fórmulas, desbloqueo, logros, ropa, UI, pausa y fin de nivel por clientes. `test_10_selector_restaurantes_y_confirmacion_salida` comprueba que el mapa abre sin `Grid_Niveles`, que tocar `Burger & Street Food` revela sus 15 niveles en el marco cartoon con barra lateral y monedas numeradas, que la flecha verde abre el siguiente nivel pendiente, que volver al mapa en plena partida abre `Modal_Confirmar_Salida` y pausa `_jugando`, que «Seguir cocinando» reanuda y que «Salir y perder progreso» vuelve al mapa sin guardar estrellas.
+- 11 tests de arrastre y toque rápido: gesto real desde la bandeja, flujo carne→plancha→plato→cliente, rechazo de queso sin pan / cliente equivocado, papelera, bebida, servicio soltando sobre el bocadillo, toques rápidos y pase de cuatro huecos (2 abiertos con Nv.1, 4 con Nv.3).
+- 1 test de determinismo de la secuencia de pedidos entre dos partidas.
+- 6 tests de arte y alineación: regiones de contenido sin margen transparente, iconos de la bandeja con la misma línea de base y centro, pan de la bandeja = pan superior, pila de hamburguesa compacta y proporcional, orden de capas con panes iguales e inversa `ancho_para_alto`.
+- Resultado actual: **33 tests** en la suite del minijuego (15 de minijuego/UI + 11 de arrastre y toque rápido + 6 de alineación + 1 de pedidos), todos en verde también en headless (incluye el flujo vertical → carga horizontal → partida → vuelta al mapa vertical, la confirmación de salida, la pausa, el HUD superior, la compra de mejoras con la Caja y el pase de cuatro huecos con candados).
+
 ---
 
-## 10. Pack de sprites del escenario
+## 7. Capturas
 
-Además del sistema jugable, el proyecto incluye un pack de **134 sprites PNG** y una escena de muestra a `1280×720` con la composición del restaurante: chef, clientes, tickets, vitrina, estaciones y primer plano de acero inoxidable.
+En `Funcionalidades/Minijuego_Cocina/Documentacion/Capturas/`:
 
-- Sprites: `Imagenes/Minijuego_Cocina/` (chef + 6 poses, 8 clientes + 8 enfadados, 32 comidas, 8 estaciones, 8 piezas de mostrador, 22 de emplatado/props, 24 de UI, 8 de decoración, 8 efectos y fondo).
-- Layout: `Imagenes/Minijuego_Cocina/escenario_layout.json` (58 entradas).
-- Escena editable: `Escenas/Minijuego_Cocina/Escenario_Cooking_Fever.tscn`; se abre con `./ver_escenario.sh` (o `./ver_escenario.sh --captura` para guardar una captura y cerrar).
-- Captura y catálogos: `Arte_Fuente/Minijuego_Cocina/` (fuera de `res://` por `.gdignore`).
-- Documentación detallada: [`ARTE_SPRITES.md`](ARTE_SPRITES.md) — inventario completo, estilo, pipeline, integración en Godot, tamaños, limitaciones y aviso legal.
-- La escena es una **maqueta visual independiente**: no se instancia desde el minijuego jugable ni modifica su lógica, y este sigue usando los sprites vectoriales de `Sprites_Cocina.gd`.
+| Archivo | Contenido |
+|---|---|
+| `01b_selector_mundos.png` | Pantalla inicial del minijuego con el panel cartoon celeste: las 4 tarjetas de mundo (3 bloqueadas con **Fase 2**), la chef decorativa y el botón **ATRÁS**; los niveles no se muestran hasta entrar. |
+| `01_mapa_niveles.png` | Mapa de niveles de `Burger & Street Food` en vertical `720×1280`: título dorado «SELECCIONA UN NIVEL», monedas verdes de 1–15 con sus tres estrellas, candados, barra de desplazamiento, pie de progreso y botones **ATRÁS**/siguiente. |
+| `02_arrastrar_ingrediente.png` | Arrastre de un tomate a un plato con el destino resaltado. |
+| `03_clientes_combo.png` | Dos clientes servidos, combo x2, monedas y reacción del chef. |
+| `04_coccion_plancha.png` | Plancha con carne lista, carne quemándose y avisos. |
+| `05_resultados.png` | Modal de resultados con 3 estrellas. |
+| `06_mejoras.png` | Pantalla de Mejoras rediseñada: lista de mejoras con estrellas a la izquierda y escaparate grande de la plancha (Nv.2) a la derecha, con pestañas de nivel, comparativa «AHORA / CON LA MEJORA» y CTA verde. |
+| `06b_mejoras_maximo.png` | Misma pantalla con la plancha en Nv.3: check verde en la lista, escaparate con las cuatro hamburguesas, pestañas INCLUIDO y CTA «NIVEL MÁXIMO». |
+| `06c_mejoras_compra.png` | Aviso «¡NIVEL 2!» tras comprar el jukebox del Ambiente del Local; la Caja baja de 900 € a 790 € y la siguiente pestaña muestra 300 €. |
+| `06d_mejoras_sin_caja.png` | Estado con 40 € en Caja: CTA ámbar «FALTAN 80 € · SIRVE MÁS CLIENTES» y la compra deshabilitada por saldo. |
+| `06e_mejoras_ingredientes.png` | Escaparate de Calidad de Ingredientes (Nv.2) con acento verde, bandeja de acero y chips de precio +25%. |
+| `06f_mejoras_emplatado.png` | Escaparate de Emplatado y Bebidas (Nv.2) con la bandeja de acero, **3 platos y 2 refrescos**, coherente con los 3 platos / 2 vasos del sistema. |
+| `07_tutorial.png` | Tutorial contextual del nivel 1 con anillos dorados sobre origen y destino. |
+| `08_clientes_caminando.png` | Cliente cruzando la pantalla caminando desde la izquierda antes de sentarse. |
+| `09_pantalla_carga.png` | Transición a horizontal con la barra de progreso, el chef, el nivel y el botón Cancelar. |
+| `11_emplatado_bandeja.png` | Pase de nivel 1 con la bandeja metálica 3D, la mampara de cristal, dos platos en perspectiva y dos huecos cerrados con candado `Nv.2`/`Nv.3`. |
+| `12_emplatado_detalle.png` | Detalle ampliado del pase con Emplatado Nv.3: bandeja metálica, alfombrilla beige, mampara de cristal y cuatro platos en perspectiva con panecillos cerrados. |
+| `13_confirmar_salida.png` | Modal «¿Seguro que quieres salir?» durante una partida: aviso de pérdida de progreso, recaudación actual y botones «Seguir cocinando» / «Salir y perder progreso». |
+| `14_banner_cocina.png` | Banner de la tarjeta «Cocina» en `Pantalla_Minijuegos` (render 2×): mostrador de diner con damero, chef, hamburguesa, plato vacío en perspectiva, patatas, refresco y plancha, todos con sombra de contacto. |
+| `15_despensa_y_hud.png` | Cocina del nivel 1 con el mueble bajo la encimera (panera de dos huecos con panecillos cerrados, bandeja de carne, cesta de patatas, bol de lechuga, bandeja de tomate y tabla de queso), el pase 3D con bandeja metálica, mampara de cristal, cuatro huecos y candados, y el HUD superior clonado de la referencia (MENÚ, píldora de clientes y dinero). |
+| `16_toque_rapido.png` | Flujo de toque rápido: dos carnes en la plancha, panes en los platos, una hamburguesa completa montada y un panecillo en el segundo plato. |
+
+Herramienta de QA: `godot --path . --resolution 1280x720 res://Escenas/Herramientas/Captura_Minijuego_Cocina.tscn` genera `minijuego_cocina_nivel1.png` (nivel 1 limpio), `minijuego_cocina_tap.png` (toque rápido), `minijuego_cocina_pase.png` (pase con dos huecos activos) y `minijuego_cocina_pase_nv3.png` (pase con los cuatro huecos) en `user://capturas_minijuego_cocina`. Para la pantalla de Mejoras, `godot --path . res://Escenas/Herramientas/Captura_Mejoras_Cocina.tscn` genera `01`–`08` en `user://capturas_mejoras_cocina` (una por mejora, sin Caja, máximo y compra).
+
+---
+
+## 8. Pack de sprites del escenario
+
+El pack de **149 PNG** vive en `Imagenes/Minijuego_Cocina/` y **ya está integrado en el minijuego jugable** a través de `Arte_Cocina.gd`:
+
+- Chef + 6 poses.
+- 8 clientes + 8 versiones enfadadas.
+- 32 comidas (platos, ingredientes y extras).
+- 8 estaciones, 8 piezas de mostrador, 22 de emplatado/props.
+- 24 de UI, 8 de decoración y 8 de efectos.
+- 15 ilustraciones de mejoras (3 variantes por cada una de las 5 mejoras) en `Mejoras/`.
+- Fondo `Fondo_Restaurante.png` 1280×720.
+- Layout de referencia: `Imagenes/Minijuego_Cocina/escenario_layout.json`.
+
+La escena de muestra `Escenas/Minijuego_Cocina/Escenario_Maqueta_Cocina.tscn` sigue siendo una maqueta visual independiente que se abre con `./ver_escenario.sh`; sirve para revisar el pack completo, pero el juego real ya consume los mismos sprites. Inventario y pipeline en [`ARTE_SPRITES.md`](ARTE_SPRITES.md).
+
+Fuera de esos 149 sprites, el juego usa tres **recursos de composición**: `Banner_Cocina.png` (1288×284, en la raíz), `Emplatado/Plato_Perspectiva.png` (640×297) y `Fondo_Restaurante_Selector.png` (360×640, generado desde el fondo del restaurante para el selector cartoon). No forman parte del pack; su inventario, tamaños y maestros están en [`ARTE_SPRITES.md`](ARTE_SPRITES.md).
+
+---
+
+## 9. Rendimiento
+
+- El bucle de cocina es O(1) por frame y **no llama a `save_game()`**; el guardado se hace al cerrar el nivel.
+- Los sprites se dibujan con `_draw` nativo y texturas precargadas; no hay `load()` en caliente.
+- La capa de partículas está limitada a 240 partículas y los SFX a 12 voces.
+- `_Animar_Escena` solo redibuja los nodos activos; los puestos del mueble de ingredientes se redibujan al cambiar el hover y, mientras el dedo está encima, para animar el halo y el leve balanceo.
+
+---
+
+## 10. Mantenimiento
+
+- **Duración y dificultad de un nivel:** editar su entrada en `Sistema_Cocina._Inicializar_Restaurantes()`: `clientes` fija cuántos clientes reparte la partida (el nivel acaba cuando se agotan), `intervalo_spawn` el ritmo de llegada, `paciencia_base` el margen de cada cliente y `meta_1/2/3` las estrellas. No hay clave `duracion`: el reloj del HUD es solo informativo. Para ajustar la pausa o el fin de nivel, `_Abrir_Modal_Pausa()`/`_Reanudar_Partida()` y `_Nivel_Completado()` en `Minijuego_Cocina.gd`.
+- **Nuevo ingrediente/receta:** añadir la textura a `Arte_Cocina` y la composición a `dibujar_item` / `_Puede_Anadir_A_Plato`; registrar el plato en `Sistema_Cocina.RECETAS_BURGER_STREET`.
+- **Nueva estación:** añadir el sprite a `Arte_Cocina`, el rectángulo de origen/destino en `_Registrar_Zonas_Arrastre` y la acción en `_Aplicar_Soltar`.
+- **Nuevo SFX:** generar/colocar el WAV en `Sonidos/SFX/`, añadirlo a `STREAMS` en `Sonidos_Cocina.gd` y llamarlo desde el evento.
+- **Nuevo cliente:** añadir el PNG a `CLIENTES` y su versión enfadada a `CLIENTES_ENOJADOS`; el reparto de variantes es automático.
+- Al cambiar el layout de estaciones, ajustar las constantes `ZONA_*` y los centros de fogones/cestas en `_Reconstruir_Estaciones`.
+- **Fondo del selector:** `Fondo_Restaurante_Selector.png` se genera con `python3 tools/generar_fondo_selector.py` a partir de `Fondo_Restaurante.png`; si cambia la foto de la cocina, vuelve a ejecutarse y se reimporta solo en Godot. El resto del panel se dibuja en código en `Selector_Niveles_Arte.gd`.
+- **Selector de restaurantes y arte cartoon:** `_restaurante_expandido` guarda el mundo abierto (vacío = selector de mundos). `_Ajustar_Disposicion_Mapa()` alterna las dos vistas excluyentes dentro del marco `Marco_Selector_Niveles`: `_lista_restaurantes` visible en el selector y `_contenedor_niveles` visible al entrar en un mundo. `_Volver_Mapa()` cierra el mundo abierto o sale al Sim si ya está el selector; `_Volver_Atras()` reutiliza esa cascada para Android/Escape. Los estados visuales de las tarjetas se generan en `_Refrescar_Lista_Mundos()`; el tablero se compone en `Centro_Niveles` + `Grid_Niveles` con `Boton_Nivel` y se revela con `_Animar_Revelado_Niveles()`. «Mejoras» se habilita solo con un mundo jugable abierto. Todo el dibujo del panel, las monedas, la botonera y la barra de scroll vive en `Scripts/GUI/Minijuego_Cocina/Selector_Niveles_Arte.gd`; el fondo desenfocado se genera aparte en `Imagenes/Minijuego_Cocina/Fondo_Restaurante_Selector.png`.
+- **Salidas y botón atrás:** el **Mapa** del HUD usa `_Intentar_Volver_Al_Mapa()` y `Modal_Confirmar_Salida`; añadir una salida nueva debe pasar por `_Volver_Atras()` para que Android/Escape no cierren la app. Los iconos de UI (incluido `triangle-alert.svg`) se resuelven por nombre desde `Imagenes/UI/Iconos/` con `Estilos_UI.badge_icono`/`icono_rect`.
+- **Emplatado:** la bandeja y sus huecos viven en `Arte_Cocina.Bandeja_Emplatado` y `_Disposicion_Bandeja_Platos()` (cuatro huecos fijos, con 2/3/4 abiertos según `emplatado`); la base es `Bandeja_Metal.png` y la mampara es `Arte_Cocina.Fondo_Pase`. La geometría de la alfombrilla y las celdas se comparte con `Arte_Cocina.rect_liner_emplatado()` / `celdas_emplatado()`. Los platos se dibujan en `Arte_Cocina.Plato` con `dibujar_plato_hamburguesa()` y `Plato_Perspectiva.png`, y el ancho se acota con `min(size.x * 0.96, size.y * 0.68)` para que la hamburguesa quepa siempre. Los huecos cerrados se pintan como rebajes con `TEX_CANDADO_CERRADO` y la pastilla de nivel; el número de huecos abiertos se pasa con `configurar(celdas, desbloqueados)`. Los recipientes del mueble bajo la encimera (`Arte_Cocina.Puesto_Ingrediente`) se dibujan a mano con las texturas del pack (panera, bandeja, tabla, bol, cesta) y comparten una placa pequeña con el nombre; si se cambia el pack, no hace falta retocar offsets. Actualiza las capturas 11/12 si cambia el número de platos y las capturas del mueble si cambian los recipientes.
+- **Banner de la tarjeta:** `Script_Principal._Actualizar_Pantalla_Minijuegos()` reconstruye el banner; el fondo se cambia en `Arte_Cocina.TEX_BANNER` y las posiciones/tamaños de los 6 sprites en las llamadas a `_Anadir_Item_Banner()`. Las 5 sombras se añaden antes que los sprites con `_Anadir_Sombra_Banner()`, de atrás a delante. El plato usa `TEX_PLATO_PERSPECTIVA` (640×297) y no `Plato_Vacio.png`, para conservar la perspectiva 3/4. `textura_sombra_contacto()` cachea el degradado radial, así que reconstruir la tarjeta no recrea la textura.

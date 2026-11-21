@@ -1,6 +1,6 @@
 extends GutTest
 
-# Tests GUT completos del Minijuego de Cocina (estilo Cooking Fever),
+# Tests GUT completos del Minijuego de Cocina (gestión de pedidos),
 # Apartado Minijuegos, Progresión Hostelería y Ropa Equipable.
 
 const DIA_PRUEBA: int = 12
@@ -149,7 +149,7 @@ func test_01_estado_por_defecto_y_catalogo_ropa() -> void:
 	assert_eq(int(est["fondos_cocina"]), 0)
 	assert_eq(int(est["rango_logro"]), 0)
 	assert_false(bool(est["plus_nomina_turno_hoy"]))
-	for rest_id in ["burger_street", "bistro_tradicional", "alta_cocina"]:
+	for rest_id in ["burger_street", "bistro_tradicional", "cocina_mercado", "alta_cocina"]:
 		assert_true((est["mejoras"] as Dictionary).has(rest_id))
 		for m_id in ["plancha", "emplatado", "termostato", "ingredientes", "ambiente"]:
 			assert_eq(int(est["mejoras"][rest_id][m_id]), 1)
@@ -243,77 +243,138 @@ func test_02_programar_trabajo_no_desbloquea_pero_primer_minuto_si() -> void:
 	assert_eq(_senales_desbloqueo.size(), 1)
 	assert_eq(Variables_Dinamicas.Mensajes.size(), 1)
 
-	# Verificar los otros dos restaurantes con sus trabajos correspondientes
+	# Cada trabajo de hostelería tiene su propio mundo de cocina
 	assert_true(Sistema_Cocina.Registrar_Minuto_Trabajo_Hosteleria("Trabajar_De_Ayudante_Cocina"))
 	assert_true(Sistema_Cocina.Esta_Desbloqueado_Restaurante("bistro_tradicional"))
-	assert_false(Sistema_Cocina.Registrar_Minuto_Trabajo_Hosteleria("Trabajar_De_Cocinero_Partida"),
-		"bistro_tradicional ya estaba desbloqueado")
+	assert_true(str(Variables_Dinamicas.Mensajes.back().descripcion).contains("Fase 2"),
+		"Los mundos aún no implementados deben avisar de la Fase 2")
+	assert_true(Sistema_Cocina.Registrar_Minuto_Trabajo_Hosteleria("Trabajar_De_Cocinero_Partida"))
+	assert_true(Sistema_Cocina.Esta_Desbloqueado_Restaurante("cocina_mercado"))
 	assert_true(Sistema_Cocina.Registrar_Minuto_Trabajo_Hosteleria("Trabajar_De_Chef_Ejecutivo"))
 	assert_true(Sistema_Cocina.Esta_Desbloqueado_Restaurante("alta_cocina"))
+	assert_eq(Sistema_Cocina.ORDEN_RESTAURANTES.size(), 4,
+		"Deben existir 4 mundos, uno por trabajo de hostelería")
 
 
 # ============================================================================
-# 3. Doble moneda, mejoras, tope 2 servicios/día, micro-propinas y Modo Rápido
+# 3. Economía de Caja + costes, paga completa 2/día, modo práctica y Modo Rápido
 # ============================================================================
 
-func test_03_economia_doble_moneda_mejoras_y_limite_diario() -> void:
+func test_03_economia_caja_costes_y_modo_practica() -> void:
 	Sistema_Cocina.Registrar_Minuto_Trabajo_Hosteleria("Trabajar_En_Comida_Rapida")
 	Variables_Dinamicas.Dinero = 100.0
 
-	# Servicio 1 (Nivel 1, 3 estrellas: 115 monedas, 20 propinas)
-	var r1: Dictionary = Sistema_Cocina.Procesar_Fin_Nivel("burger_street", 1, 115, 20, false)
+	# Servicio 1 (Nivel 1, 3★: 170 € de ticket = 150 € ventas + 20 € propinas)
+	var r1: Dictionary = Sistema_Cocina.Procesar_Fin_Nivel("burger_street", 1, 170, 20, false)
 	assert_eq(int(r1["estrellas"]), 3)
-	assert_eq(int(r1["fondos_ganados"]), 115)
-	assert_eq(Sistema_Cocina.Obtener_Fondos_Cocina(), 115)
-	# Bono 1ª vez 3★ = 15 + 15 + 20 = 50 €; propinas = 20 * 0.5 = 10 €
-	assert_almost_eq(float(r1["bono_estrellas_eur"]), 50.0, 0.01)
+	assert_eq(int(r1["coste_ingredientes"]), 45)
+	assert_eq(int(r1["coste_servicio"]), 8)
+	assert_eq(int(r1["costes_totales"]), 53)
+	assert_eq(int(r1["beneficio_neto"]), 97)
+	assert_eq(int(r1["reparto_sim"]), 5)
+	assert_eq(int(r1["caja_ganada"]), 92)
+	assert_eq(Sistema_Cocina.Obtener_Caja_Restaurante(), 92)
+	# Prima 0→3★ = (55+85+115)*0.10 = 25.50 €; propinas = 20*0.5 = 10 €; parte = 5 €
+	assert_almost_eq(float(r1["bono_estrellas_eur"]), 25.5, 0.01)
 	assert_almost_eq(float(r1["propinas_eur"]), 10.0, 0.01)
-	assert_almost_eq(Variables_Dinamicas.Dinero, 160.0, 0.01)
+	assert_almost_eq(float(r1["dinero_ganado"]), 40.5, 0.01)
+	assert_almost_eq(Variables_Dinamicas.Dinero, 140.5, 0.01)
 
-	# Comprar mejora termostato (cuesta 90 Fondos_Cocina, no toca Dinero)
+	# Comprar mejora termostato (90 € de la Caja, no toca el dinero del Sim)
 	var compra: Dictionary = Sistema_Cocina.Comprar_Mejora("burger_street", "termostato")
 	assert_true(bool(compra["exito"]))
 	assert_eq(Sistema_Cocina.Obtener_Nivel_Mejora("burger_street", "termostato"), 2)
-	assert_eq(Sistema_Cocina.Obtener_Fondos_Cocina(), 25)
-	assert_almost_eq(Variables_Dinamicas.Dinero, 160.0, 0.01, "Comprar mejora NO debe tocar Dinero del Sim")
+	assert_eq(Sistema_Cocina.Obtener_Caja_Restaurante(), 2)
+	assert_almost_eq(Variables_Dinamicas.Dinero, 140.5, 0.01,
+		"Comprar una mejora NO debe tocar Dinero del Sim")
 
-	# Servicio 2 del mismo día (repetir Nivel 1: 0 bono 1ª vez, sí paga propinas)
-	var r2: Dictionary = Sistema_Cocina.Procesar_Fin_Nivel("burger_street", 1, 115, 20, false)
+	# Servicio 2 del mismo día: paga completa y no repite la prima de estrellas
+	var r2: Dictionary = Sistema_Cocina.Procesar_Fin_Nivel("burger_street", 1, 170, 20, false)
 	assert_almost_eq(float(r2["bono_estrellas_eur"]), 0.0, 0.01)
 	assert_almost_eq(float(r2["propinas_eur"]), 10.0, 0.01)
-	assert_false(bool(r2["limite_diario_alcanzado"]))
+	assert_false(bool(r2["modo_practica"]))
+	assert_eq(int(r2["caja_ganada"]), 92)
 
-	# Servicio 3 del mismo día en modo libre: tope diario de 2 alcanzado -> 0 € propinas
-	var r3: Dictionary = Sistema_Cocina.Procesar_Fin_Nivel("burger_street", 1, 115, 20, false)
-	assert_almost_eq(float(r3["propinas_eur"]), 0.0, 0.01)
+	# Servicio 3: cuota agotada -> modo práctica (25% para el Sim, Caja al 100%)
+	var r3: Dictionary = Sistema_Cocina.Procesar_Fin_Nivel("burger_street", 1, 170, 20, false)
+	assert_true(bool(r3["modo_practica"]))
 	assert_true(bool(r3["limite_diario_alcanzado"]))
+	assert_eq(int(r3["reparto_sim"]), 1)
+	assert_almost_eq(float(r3["propinas_eur"]), 2.5, 0.01)
+	assert_eq(int(r3["caja_ganada"]), 96,
+		"El modo práctica no recorta el beneficio que entra en la Caja")
+	assert_eq(Sistema_Cocina.Obtener_Caja_Restaurante(), 2 + 92 + 96)
 
 
-func test_03_tope_micro_propinas_y_modo_rapido_precios() -> void:
-	# Normal: tope 15 €
+func test_03b_formulas_de_costes_primas_y_propinas() -> void:
+	# Costes: 30% de ingredientes + gasto fijo por nivel + 30% de la merma
+	assert_eq(Sistema_Cocina.Calcular_Coste_Ingredientes(150), 45)
+	assert_eq(Sistema_Cocina.Calcular_Coste_Servicio(1), 8)
+	assert_eq(Sistema_Cocina.Calcular_Coste_Servicio(15), 36)
+	assert_eq(Sistema_Cocina.Calcular_Coste_Merma(100), 30)
+	assert_eq(Sistema_Cocina.Calcular_Beneficio_Neto(150, 1, 100), 67)
+	assert_eq(Sistema_Cocina.Calcular_Reparto_Sim(67, false), 3)
+	assert_eq(Sistema_Cocina.Calcular_Reparto_Sim(67, true), 1)
+	assert_eq(Sistema_Cocina.Calcular_Caja_Ganada(67, 3), 64)
+	assert_eq(Sistema_Cocina.Calcular_Estrellas(114, 55, 85, 115), 2)
+	assert_eq(Sistema_Cocina.Calcular_Estrellas(115, 55, 85, 115), 3)
+
+	# La prima escala con los umbrales del nivel (no es plana)
+	assert_almost_eq(Sistema_Cocina.Calcular_Bono_Estrellas_Eur(0, 3, 55, 85, 115, 1.0), 25.5, 0.01)
+	assert_almost_eq(Sistema_Cocina.Calcular_Bono_Estrellas_Eur(1, 3, 55, 85, 115, 1.0), 20.0, 0.01)
+	assert_almost_eq(Sistema_Cocina.Calcular_Bono_Estrellas_Eur(3, 3, 55, 85, 115, 1.0), 0.0, 0.01)
+	assert_almost_eq(Sistema_Cocina.Calcular_Bono_Estrellas_Eur(0, 1, 295, 415, 535, 1.0), 29.5, 0.01)
+
+	# Propinas: 50% del bote; práctica x0.25; turno x1.5
+	assert_almost_eq(Sistema_Cocina.Calcular_Propinas_Netas_Eur(20, 3, false, 1.0, 0.0, false), 10.0, 0.01)
+	assert_almost_eq(Sistema_Cocina.Calcular_Propinas_Netas_Eur(20, 3, false, 1.0, 0.0, true), 2.5, 0.01)
+	assert_almost_eq(Sistema_Cocina.Calcular_Propinas_Netas_Eur(20, 3, true, 1.0, 0.0, false), 15.0, 0.01)
+
+	# Integración de la merma en el cierre de nivel: 100 € ventas, 40 € descartados
+	var res_merma: Dictionary = Sistema_Cocina.Procesar_Fin_Nivel("burger_street", 1, 100, 0, false, 40)
+	assert_eq(int(res_merma["estrellas"]), 2)
+	assert_eq(int(res_merma["coste_ingredientes"]), 30)
+	assert_eq(int(res_merma["coste_servicio"]), 8)
+	assert_eq(int(res_merma["coste_merma"]), 12)
+	assert_eq(int(res_merma["beneficio_neto"]), 50)
+	assert_eq(int(res_merma["reparto_sim"]), 3)
+	assert_eq(int(res_merma["caja_ganada"]), 47)
+
+
+func test_03c_tope_micro_propinas_y_modo_rapido_precios() -> void:
+	# Normal: tope 6 €
 	var acum: float = 0.0
 	for _i in range(10):
 		var m: Dictionary = Sistema_Cocina.Procesar_Micro_Recompensa_Cliente(
-			false, acum, {"cocina": 0.99, "manualidades": 0.99, "necesidad": 0.99, "propina": 0.01, "propina_base": 5.0})
+			false, acum, {"cocina": 0.99, "manualidades": 0.99, "necesidad": 0.99, "propina": 0.01, "propina_base": 3.0})
 		acum += float(m["micro_propina_eur"])
-	assert_almost_eq(acum, 15.0, 0.01, "Las micro-propinas deben respetar el tope de 15 €")
+	assert_almost_eq(acum, 6.0, 0.01, "Las micro-propinas deben respetar el tope de 6 €")
 
-	# Modo Rápido (Multiplicador_Precios = 0.1): tope 1.50 € y bono 1ª vez x0.1
+	# Modo práctica: tope 1.50 € (6 € * 0.25)
+	var acum_p: float = 0.0
+	for _i in range(10):
+		var mp: Dictionary = Sistema_Cocina.Procesar_Micro_Recompensa_Cliente(
+			false, acum_p, {"cocina": 0.99, "manualidades": 0.99, "necesidad": 0.99, "propina": 0.01, "propina_base": 3.0}, true)
+		acum_p += float(mp["micro_propina_eur"])
+	assert_almost_eq(acum_p, 1.50, 0.01, "En práctica el tope de micro-propinas debe ser 1.50 €")
+
+	# Modo Rápido (Multiplicador_Precios = 0.1): tope 0.60 € y primas x0.1
 	Variables_Estaticas.Modo_Rapido = true
 	var acum_r: float = 0.0
 	for _i in range(10):
 		var mr: Dictionary = Sistema_Cocina.Procesar_Micro_Recompensa_Cliente(
-			false, acum_r, {"cocina": 0.99, "manualidades": 0.99, "necesidad": 0.99, "propina": 0.01, "propina_base": 5.0})
+			false, acum_r, {"cocina": 0.99, "manualidades": 0.99, "necesidad": 0.99, "propina": 0.01, "propina_base": 3.0})
 		acum_r += float(mr["micro_propina_eur"])
-	assert_almost_eq(acum_r, 1.50, 0.01, "En Modo Rápido el tope de micro-propinas debe ser 1.50 €")
+	assert_almost_eq(acum_r, 0.60, 0.01, "En Modo Rápido el tope de micro-propinas debe ser 0.60 €")
 
 	var res_r: Dictionary = Sistema_Cocina.Procesar_Fin_Nivel("burger_street", 2, 140, 20, false)
-	assert_almost_eq(float(res_r["bono_estrellas_eur"]), 5.0, 0.01, "50 € * 0.1 = 5.0 €")
+	assert_almost_eq(float(res_r["bono_estrellas_eur"]), 3.15, 0.01,
+		"(70+105+140) * 0.10 * 0.1 = 3.15 €")
 	assert_almost_eq(float(res_r["propinas_eur"]), 1.0, 0.01, "10 € * 0.1 = 1.0 €")
 
 
 # ============================================================================
-# 4. Bonus Esta_En_Turno_Activo (x1.5 dinero/fondos, x2.0 progreso, +10% nómina)
+# 4. Bonus Esta_En_Turno_Activo (propinas x1.5, paga ilimitada, +10% nómina)
 # ============================================================================
 
 func test_04_bonus_en_turno_activo_y_plus_nomina() -> void:
@@ -322,13 +383,15 @@ func test_04_bonus_en_turno_activo_y_plus_nomina() -> void:
 	assert_true(Sistema_Cocina.Esta_En_Turno_Activo("burger_street"))
 	assert_false(Sistema_Cocina.Esta_En_Turno_Activo("alta_cocina"))
 
-	# Agotar primero los 2 servicios libres del día; en turno sigue siendo ilimitado
+	# La cuota libre está agotada, pero en turno la paga es completa e ilimitada
 	Variables_Dinamicas.Cocina_Estado["servicios_remunerados_hoy"] = 2
 	Variables_Dinamicas.Cocina_Estado["ultimo_dia_remunerado"] = DIA_PRUEBA
 
-	var res: Dictionary = Sistema_Cocina.Procesar_Fin_Nivel("burger_street", 1, 100, 20, true)
-	assert_eq(int(res["fondos_ganados"]), 150, "En turno Fondos_Cocina x1.5")
-	assert_almost_eq(float(res["propinas_eur"]), 15.0, 0.01, "En turno propinas ilimitadas y x1.5 (20*0.5*1.5)")
+	var res: Dictionary = Sistema_Cocina.Procesar_Fin_Nivel("burger_street", 1, 170, 20, true)
+	assert_eq(int(res["caja_ganada"]), 92, "La Caja cobra beneficio neto, sin x1.5 artificial")
+	assert_almost_eq(float(res["propinas_eur"]), 15.0, 0.01, "En turno propinas x1.5 (20*0.5*1.5)")
+	assert_eq(int(res["reparto_sim"]), 5)
+	assert_false(bool(res["modo_practica"]))
 	assert_true(bool(res["plus_nomina_activado"]))
 	assert_true(bool(Variables_Dinamicas.Cocina_Estado["plus_nomina_turno_hoy"]))
 
@@ -520,7 +583,7 @@ func test_07_logros_prendas_efectos_alimentacion_e_inmunidad() -> void:
 
 
 # ============================================================================
-# 8. Integración de UI (Minijuego_Cocina 1280x720 + Escena principal + Perfil)
+# 8. Integración de UI (Minijuego_Cocina: mapa vertical + partida horizontal)
 # ============================================================================
 
 func test_08_ui_minijuego_cocina_y_escena_principal() -> void:
@@ -531,30 +594,46 @@ func test_08_ui_minijuego_cocina_y_escena_principal() -> void:
 	var mini = escena_mini.instantiate()
 	add_child_autofree(mini)
 	await get_tree().process_frame
-	assert_eq(get_window().content_scale_size, Vector2i(1280, 720),
-		"Al abrir el minijuego la resolución debe pasar a 1280x720 horizontal")
-	assert_not_null(mini.get_node_or_null("Vista_Mapa"))
+	assert_eq(get_window().content_scale_size, Vector2i(720, 1280),
+		"El selector de niveles debe abrirse en vertical 720x1280")
+	assert_true(mini.get_node("Vista_Mapa").visible, "El mapa de niveles debe verse al abrir")
 	assert_not_null(mini.get_node_or_null("Vista_Cocina"))
+	assert_not_null(mini.get_node_or_null("Vista_Carga"))
 	assert_not_null(mini.get_node_or_null("Modal_Mejoras"))
 	assert_not_null(mini.get_node_or_null("Modal_Resultados"))
-	mini._Iniciar_Nivel(1)
-	assert_true(mini.get_node("Vista_Cocina").visible)
+
+	mini._Comenzar_Carga_Nivel(1)
+	assert_eq(get_window().content_scale_size, Vector2i(1280, 720),
+		"Al entrar a una partida la pantalla de carga debe pasar a 1280x720 horizontal")
+	assert_true(mini.get_node("Vista_Carga").visible, "La barra de progreso debe mostrarse al cargar")
+
+	mini._Finalizar_Carga()
+	await get_tree().process_frame
+	assert_true(mini.get_node("Vista_Cocina").visible, "Tras la carga debe verse la cocina")
+
+	mini._Mostrar_Mapa()
+	assert_eq(get_window().content_scale_size, Vector2i(720, 1280),
+		"Al volver al mapa debe restaurarse 720x1280 vertical")
+	assert_false(mini.get_node("Vista_Carga").visible, "La pantalla de carga debe ocultarse al volver")
+
 	mini._Salir_Al_Sim()
 	assert_eq(get_window().content_scale_size, Vector2i(720, 1280),
 		"Al salir del minijuego debe restaurarse 720x1280 vertical")
 
-	# Escena principal: Minijuegos_Button, Pantalla_Minijuegos y SubTab Apuntes|Ropa
+	# Escena principal: Vestuario como sección propia (ya no dentro de Apuntes)
 	var raiz = load("res://Escenas/Escena_Principal/Escena principal.tscn").instantiate()
 	assert_not_null(raiz.get_node_or_null("Minijuegos_Button"))
-	assert_not_null(raiz.get_node_or_null("Pantalla_Mensajes/Panel_Apuntes/SubTab_Bar/SubTab_Ropa"))
-	assert_not_null(raiz.get_node_or_null("Pantalla_Mensajes/Panel_Apuntes/Scroll_Ropa/VBox_Ropa"))
+	assert_not_null(raiz.get_node_or_null("Vestuario_Button"), "El Vestuario debe tener su propia pestaña superior")
+	assert_null(raiz.get_node_or_null("Pantalla_Mensajes/Panel_Apuntes/SubTab_Bar/SubTab_Ropa"),
+		"Ropa ya no debe estar dentro de Apuntes")
+	assert_null(raiz.get_node_or_null("Pantalla_Mensajes/Panel_Apuntes/Scroll_Ropa"))
 	raiz._Crear_Pantalla_Minijuegos()
+	raiz._Crear_Pantalla_Vestuario()
 	raiz._Redisenar_Superior()
 	raiz._Redisenar_Perfil()
 	raiz._Renderizar_Info()
-	raiz._on_subtab_ropa_pressed()
-	assert_true(raiz.get_node("Pantalla_Mensajes/Panel_Apuntes/Scroll_Ropa").visible)
 	assert_not_null(raiz.get_node_or_null("Pantalla_Minijuegos"))
+	assert_not_null(raiz.get_node_or_null("Pantalla_Vestuario"))
 	raiz.free()
 
 
@@ -599,6 +678,7 @@ func test_09_gameplay_tap_to_move_y_fin_servicio() -> void:
 	assert_false(bool(mini._clientes[0]["activo"]), "El pedido completo debe liberar al cliente")
 	assert_eq(mini._clientes_atendidos, 1)
 	assert_gt(mini._recaudacion, 18, "Debe sumar precio + propina")
+	assert_gt(mini._propinas_servicio, 0, "La propina se contabiliza aparte")
 	assert_eq(str(mini._bebidas[0]["estado"]), "llenando")
 
 	# 6. Verificar estado quemado y papelera
@@ -614,4 +694,197 @@ func test_09_gameplay_tap_to_move_y_fin_servicio() -> void:
 	mini._Finalizar_Servicio()
 	assert_true(mini.get_node("Modal_Resultados").visible)
 	assert_eq(Sistema_Cocina.Obtener_Estrellas_Nivel("burger_street", 1), 1)
+	mini._Salir_Al_Sim()
+
+
+func test_10_selector_restaurantes_y_confirmacion_salida() -> void:
+	Sistema_Cocina.Registrar_Minuto_Trabajo_Hosteleria("Trabajar_En_Comida_Rapida")
+	var mini = load("res://Escenas/Minijuego_Cocina/Minijuego_Cocina.tscn").instantiate()
+	add_child_autofree(mini)
+	await get_tree().process_frame
+
+	assert_null(mini._contenedor_niveles.get_node_or_null("Grid_Niveles"),
+		"Los niveles deben estar ocultos hasta que se toque un restaurante")
+	assert_not_null(mini.get_node_or_null("Modal_Confirmar_Salida"),
+		"Debe existir el modal de confirmación de salida")
+	assert_eq(mini._lista_restaurantes.get_child_count(), 4,
+		"Deben mostrarse los 4 mundos de cocina")
+	for i in range(1, 4):
+		assert_true(mini._lista_restaurantes.get_child(i).disabled,
+			"Los mundos de Fase 2 deben estar bloqueados")
+
+	# Tocar la tarjeta de Burger & Street Food revela sus 15 niveles.
+	mini._lista_restaurantes.get_child(0).emit_signal("pressed")
+	await get_tree().process_frame
+	var grid = mini._contenedor_niveles.find_child("Grid_Niveles", true, false)
+	assert_not_null(grid, "Al tocar Burger & Street Food deben aparecer los niveles")
+	assert_eq(grid.get_child_count(), 15, "Burger & Street Food debe mostrar sus 15 niveles")
+	assert_not_null(mini.find_child("Marco_Selector_Niveles", true, false),
+		"El selector debe usar el marco celeste cartoon")
+	assert_not_null(mini._contenedor_niveles.find_child("Barra_Scroll_Niveles", true, false),
+		"El tablero debe incluir la barra de desplazamiento lateral")
+	var primer_nivel = grid.get_child(0)
+	assert_not_null(primer_nivel.get_node_or_null("Numero_Nivel"),
+		"Cada moneda de nivel debe mostrar su número sobre la placa verde")
+	assert_eq(primer_nivel.get_node("Numero_Nivel").text, "1",
+		"La primera moneda debe rotularse como nivel 1")
+	for i in range(grid.get_child_count()):
+		var moneda = grid.get_child(i)
+		assert_eq(moneda.name, "Nivel_%d" % (i + 1),
+			"Las monedas deben conservar el orden de los niveles")
+		assert_eq(moneda.get_node("Numero_Nivel").text, str(i + 1),
+			"Cada moneda debe rotular su nivel correctamente")
+	assert_true(mini._contenedor_niveles.visible, "El mapa de niveles debe mostrarse al entrar")
+	assert_false(mini._lista_restaurantes.visible, "El selector debe ocultarse al entrar en un mundo")
+
+	# «Volver» dentro de un mundo regresa al selector sin cerrar el minijuego.
+	mini._Volver_Mapa()
+	assert_false(mini._contenedor_niveles.visible,
+		"El mapa de niveles debe ocultarse al volver al selector")
+	assert_true(mini._lista_restaurantes.visible, "El selector de mundos debe reaparecer")
+	assert_null(mini._contenedor_niveles.find_child("Grid_Niveles", true, false),
+		"El selector no debe conservar los niveles al volver")
+	assert_eq(mini._lista_restaurantes.get_child_count(), 4,
+		"Volver debe restaurar los 4 mundos")
+	assert_eq(mini._lbl_mapa_titulo.text, "Cocina · Mundos")
+
+	# Volver a entrar en Burger & Street Food para el resto de la prueba.
+	mini._lista_restaurantes.get_child(0).emit_signal("pressed")
+	await get_tree().process_frame
+	assert_true(mini._contenedor_niveles.visible)
+
+	# La flecha verde del panel abre el siguiente nivel pendiente.
+	mini._Abrir_Siguiente_Nivel()
+	assert_true(mini._modal_inicio.visible,
+		"La flecha verde debe abrir la ficha del siguiente nivel")
+	assert_eq(mini._nivel_seleccionado, 1,
+		"Sin estrellas previas, el siguiente nivel pendiente es el 1")
+	mini._modal_inicio.visible = false
+
+	# Dentro de una partida, volver al mapa exige confirmación y pausa el nivel.
+	mini._Iniciar_Nivel(1)
+	assert_true(mini._jugando)
+	mini._Intentar_Volver_Al_Mapa()
+	assert_true(mini.get_node("Modal_Confirmar_Salida").visible,
+		"Volver al mapa en plena partida debe abrir la confirmación")
+	assert_false(mini._jugando, "La partida debe pausarse mientras se decide")
+
+	# Seguir cocinando reanuda la partida.
+	mini._Cancelar_Salida_Partida()
+	assert_true(mini._jugando, "Cancelar la salida debe reanudar la partida")
+	assert_false(mini.get_node("Modal_Confirmar_Salida").visible)
+
+	# Salir y perder progreso vuelve al mapa sin otorgar recompensas.
+	var estrellas_antes: int = Sistema_Cocina.Obtener_Estrellas_Nivel("burger_street", 1)
+	mini._Intentar_Volver_Al_Mapa()
+	mini._Confirmar_Salida_Partida()
+	assert_true(mini.get_node("Vista_Mapa").visible, "Confirmar la salida debe volver al mapa")
+	assert_false(mini.get_node("Vista_Cocina").visible)
+	assert_eq(Sistema_Cocina.Obtener_Estrellas_Nivel("burger_street", 1), estrellas_antes,
+		"Abandonar el nivel no debe guardar estrellas")
+	mini._Salir_Al_Sim()
+
+
+# ============================================================================
+# 11. HUD superior inspirado en la referencia: menú, clientes y dinero
+# ============================================================================
+
+func test_11_hud_superior_menu_clientes_y_dinero() -> void:
+	Sistema_Cocina.Registrar_Minuto_Trabajo_Hosteleria("Trabajar_En_Comida_Rapida")
+	var mini = load("res://Escenas/Minijuego_Cocina/Minijuego_Cocina.tscn").instantiate()
+	add_child_autofree(mini)
+	await get_tree().process_frame
+	mini._Iniciar_Nivel(1)
+
+	var btn_menu: Button = mini.find_child("Boton_Menu", true, false)
+	assert_not_null(btn_menu, "El HUD debe tener un botón de menú azul")
+	assert_not_null(mini.find_child("Pill_Clientes", true, false),
+		"El HUD debe tener la píldora de clientes restantes")
+	assert_eq(mini._lbl_cocina_clientes.text, "11",
+		"El contador de clientes debe mostrar solo el número, como la referencia")
+	assert_true(mini._lbl_cocina_recaudacion.text.ends_with("€"),
+		"El contador de dinero debe mostrar el importe con moneda")
+
+	btn_menu.emit_signal("pressed")
+	assert_true(mini._modal_pausa.visible,
+		"El botón Menú debe abrir el menú de pausa (seguir, repetir, al mapa)")
+	mini._Reanudar_Partida()
+	assert_false(mini._modal_pausa.visible)
+	mini._Salir_Al_Sim()
+
+
+# ============================================================================
+# 12. Pantalla de Mejoras: datos de presentación, compra y estado máximo
+# ============================================================================
+
+func test_12_mejoras_presentacion_y_compra_en_modal() -> void:
+	# Cada mejora tiene tres escalones completos para la pantalla.
+	for mejora_id in Sistema_Cocina.ORDEN_MEJORAS:
+		var def: Dictionary = Sistema_Cocina.MEJORAS_DEF[mejora_id]
+		assert_true(def.has("nombre_corto"), "%s debe tener nombre corto de lista" % mejora_id)
+		assert_eq((def.get("costes", []) as Array).size(), 3,
+			"%s debe tener tres costes" % mejora_id)
+		var niveles: Array = def.get("niveles", [])
+		assert_eq(niveles.size(), 3, "%s debe tener tres niveles descritos" % mejora_id)
+		for i in range(niveles.size()):
+			var info: Dictionary = niveles[i]
+			assert_true(str(info.get("nombre", "")) != "",
+				"%s Nv.%d debe tener nombre de nivel" % [mejora_id, i + 1])
+			assert_gte((info.get("beneficios", []) as Array).size(), 2,
+				"%s Nv.%d debe listar al menos dos beneficios" % [mejora_id, i + 1])
+			assert_true(Sistema_Cocina.Obtener_Frase_Nivel_Mejora(mejora_id, i + 1) != "",
+				"%s Nv.%d debe tener frase de mejora" % [mejora_id, i + 1])
+			if i == 0:
+				assert_true((info.get("ganancias", []) as Array).is_empty(),
+					"El nivel básico no tiene ganancias previas")
+			else:
+				assert_gte((info.get("ganancias", []) as Array).size(), 1,
+					"%s Nv.%d debe indicar qué gana" % [mejora_id, i + 1])
+		assert_not_null(Arte_Cocina.textura_mejora(mejora_id, 1))
+		assert_not_null(Arte_Cocina.textura_mejora(mejora_id, 3))
+
+	Sistema_Cocina.Registrar_Minuto_Trabajo_Hosteleria("Trabajar_En_Comida_Rapida")
+	Variables_Dinamicas.Cocina_Estado["fondos_cocina"] = 0
+
+	var mini = load("res://Escenas/Minijuego_Cocina/Minijuego_Cocina.tscn").instantiate()
+	add_child_autofree(mini)
+	await get_tree().process_frame
+	mini._Mostrar_Mapa()
+	await get_tree().process_frame
+	mini._lista_restaurantes.get_child(0).emit_signal("pressed")
+	await get_tree().process_frame
+	assert_false(mini._btn_mapa_mejoras.disabled,
+		"Con un mundo jugable abierto, el botón Mejoras debe estar habilitado")
+	mini._btn_mapa_mejoras.emit_signal("pressed")
+	await get_tree().process_frame
+
+	var modal: Control = mini._modal_mejoras
+	assert_true(modal.visible, "El botón Mejoras debe abrir la pantalla nueva")
+	var cta := modal.find_child("Boton_Comprar_Mejora", true, false) as Button
+	assert_not_null(cta, "La pantalla debe tener un botón de compra")
+	assert_true(cta.text.contains("FALTAN"), "Sin Caja debe invitar a servir otro turno")
+	cta.emit_signal("pressed")
+	await get_tree().process_frame
+	assert_eq(Sistema_Cocina.Obtener_Nivel_Mejora("burger_street", "plancha"), 1,
+		"Sin Caja suficiente no se compra la mejora")
+
+	Variables_Dinamicas.Cocina_Estado["fondos_cocina"] = 500
+	modal.call("abrir", "burger_street")
+	modal.call("seleccionar_mejora", "plancha")
+	await get_tree().process_frame
+	assert_true(cta.text.contains("120 €"), "Nv.1 debe ofrecer la mejora por 120 €")
+	cta.emit_signal("pressed")
+	await get_tree().process_frame
+	assert_eq(Sistema_Cocina.Obtener_Nivel_Mejora("burger_street", "plancha"), 2,
+		"La compra debe subir la plancha a Nv.2")
+	assert_true(cta.text.contains("NV. 3"), "Tras comprar debe ofrecer el Nv.3")
+
+	Variables_Dinamicas.Cocina_Estado["mejoras"]["burger_street"]["plancha"] = 3
+	modal.call("abrir", "burger_street")
+	await get_tree().process_frame
+	assert_true(cta.disabled, "En Nv.3 el botón de compra debe estar desactivado")
+	assert_true(cta.text.contains("NIVEL MÁXIMO"), "En Nv.3 debe mostrar el estado máximo")
+	modal.call("cerrar")
+	await get_tree().process_frame
+	assert_false(modal.visible, "Cerrar la pantalla de mejoras debe ocultarla")
 	mini._Salir_Al_Sim()

@@ -4,6 +4,10 @@
 
 Sistema de prioridades que regula qué actividades pueden coexistir o reemplazarse en la matriz del jugador. Evita que el jugador coloque actividades triviales encima de compromisos importantes (trabajo, examen), y garantiza que al programar trabajo este ocupe el horario respetando únicamente el examen.
 
+## Flujo de creación
+
+El jugador elige **primero la actividad** en el catálogo (`Actividades → Temporales/Fijas/Especiales`) y **después el horario** en `Seleccionar_Horario`. El selector propone una franja automática (hora actual en la semana actual, 09:00 en semanas futuras, ventana 18:00–06:00 para `Salir_De_Fiesta`) o reutiliza la franja marcada previamente en el calendario. `Crear_Actividad` valida y escribe en `Matriz_Jugador`; `Cancelar` vuelve al submenú exacto del catálogo. `Temporales` ya no abre el calendario: despliega sus submenús de actividades.
+
 ---
 
 ## Clases / Resources
@@ -870,9 +874,9 @@ Actividad temporal P1 `Salir_De_Fiesta` con ventana 18:00–06:00, duración 2�
 - **Un evento por bloque:** `Fiesta_Evento_Ocurrido`; dos bloques adyacentes cuentan como uno.
 - **Estados:** `Euforia` (suelo Mental 100→50) y `Resacon` (techo Física/Mental 30→100), 1440 min, mutuamente excluyentes. Curvas: `suelo = floor(100 - p*50)`, `cap = 30 + floor(p*70)`. En calle/bancarrota, efecto máximo 20.
 - **Mensajes:** `Has ligado`, `Resacón`, `Fin de la euforia`, `Fin del resacón`; `leido=false` para el badge del perfil.
-- **Preview:** `Actividades.Simular_Preview_Fiesta(...)` con riesgos competitivos; `p_ligar + p_resacon + p_nada = 1`. Panel `Preview_Fiesta` en `Seleccionar_Horario` (688×584) y flujo de dos pasos para Fiesta.
+- **Preview:** `Actividades.Simular_Preview_Fiesta(...)` con riesgos competitivos; `p_ligar + p_resacon + p_nada = 1`. Panel `Preview_Fiesta` en `Seleccionar_Horario` (688×584) y flujo actividad → horario para Fiesta.
 - **Persistencia:** `Estados_Temporales` y `Fiesta_Evento_Ocurrido` con fallback `{}`/`false`, filtrado y saneado.
-- **Tests:** `Funcionalidades/Actividades/Actividades_Temporales/Tests/test_salir_de_fiesta.gd`; suite GUT 100/100.
+- **Tests:** `Funcionalidades/Actividades/Actividades_Temporales/Tests/test_salir_de_fiesta.gd`; suite GUT 63/63 (Fiesta) y 200/200 (Funcionalidades).
 - **Ficha completa:** `Funcionalidades/Actividades/Actividades_Temporales/Documentacion/SALIR_DE_FIESTA.md`.
 
 ---
