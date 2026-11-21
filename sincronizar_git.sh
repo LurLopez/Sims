@@ -36,7 +36,7 @@ warn() { printf '%sAVISO%s %s\n' "$C_WARN" "$C_OFF" "$*" >&2; }
 err()  { printf '%sERROR%s %s\n' "$C_ERR" "$C_OFF" "$*" >&2; }
 
 uso() {
-	sed -n '2,20p' "$0" | sed 's/^# \{0,1\}//'
+	awk 'NR > 1 && /^#/ { sub(/^# ?/, ""); print; next } NR > 1 { exit }' "$0"
 	exit "${1:-0}"
 }
 
