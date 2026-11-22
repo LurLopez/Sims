@@ -37,15 +37,15 @@ const C_AMBAR := Color("#f59e0b")
 
 const FUENTE_CARTOON := preload("res://Fuentes/UI/TitanOne-400.ttf")
 
-const ANCHO_TARJETA := 696.0
-const ALTO_TARJETA := 1168.0
-const ALTO_CABECERA := 104.0
-const ANCHO_IZQUIERDA := 238.0
-const ALTO_FILA := 146.0
-const ALTO_ESCENARIO_MIN := 330.0
-const ALTO_PESTANAS := 64.0
-const ALTO_BENEFICIOS := 228.0
-const ALTO_CTA := 68.0
+const ANCHO_TARJETA := 1180.0
+const ALTO_TARJETA := 640.0
+const ALTO_CABECERA := 78.0
+const ANCHO_IZQUIERDA := 340.0
+const ALTO_FILA := 64.0
+const ALTO_ESCENARIO_MIN := 160.0
+const ALTO_PESTANAS := 54.0
+const ALTO_BENEFICIOS := 158.0
+const ALTO_CTA := 56.0
 
 var restaurante_id: String = Sistema_Cocina.RESTAURANTE_BURGER
 var mejora_seleccionada: String = "plancha"
@@ -171,7 +171,7 @@ func _Construir() -> void:
 	margen.add_theme_constant_override("margin_left", 18)
 	margen.add_theme_constant_override("margin_right", 18)
 	margen.add_theme_constant_override("margin_top", 0)
-	margen.add_theme_constant_override("margin_bottom", 18)
+	margen.add_theme_constant_override("margin_bottom", 14)
 	margen.mouse_filter = Control.MOUSE_FILTER_PASS
 	_tarjeta.add_child(margen)
 
@@ -205,8 +205,8 @@ func _Construir_Cabecera() -> Control:
 	m.set_anchors_preset(Control.PRESET_FULL_RECT)
 	m.add_theme_constant_override("margin_left", 2)
 	m.add_theme_constant_override("margin_right", 2)
-	m.add_theme_constant_override("margin_top", 16)
-	m.add_theme_constant_override("margin_bottom", 12)
+	m.add_theme_constant_override("margin_top", 10)
+	m.add_theme_constant_override("margin_bottom", 8)
 	m.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	cab.add_child(m)
 
@@ -214,7 +214,7 @@ func _Construir_Cabecera() -> Control:
 	h.add_theme_constant_override("separation", 12)
 	m.add_child(h)
 
-	h.add_child(Estilos_UI.badge_icono("chef-hat", 50, 27, C_ORO, C_FONDO, 15))
+	h.add_child(Estilos_UI.badge_icono("chef-hat", 46, 24, C_ORO, C_FONDO, 15))
 
 	var titulos := VBoxContainer.new()
 	titulos.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -222,7 +222,7 @@ func _Construir_Cabecera() -> Control:
 	titulos.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	h.add_child(titulos)
 
-	var tit := Estilos_UI.titulo("MEJORAS DE COCINA", 27, C_ORO_CLARO)
+	var tit := Estilos_UI.titulo("MEJORAS DE COCINA", 25, C_ORO_CLARO)
 	tit.add_theme_font_override("font", FUENTE_CARTOON)
 	tit.add_theme_color_override("font_outline_color", Color("#06131f"))
 	tit.add_theme_constant_override("outline_size", 5)
@@ -283,7 +283,7 @@ func _Construir_Columna_Izquierda() -> Control:
 	izq.name = "Columna_Izquierda"
 	izq.custom_minimum_size = Vector2(ANCHO_IZQUIERDA, 0)
 	izq.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	izq.add_theme_constant_override("separation", 8)
+	izq.add_theme_constant_override("separation", 6)
 
 	var cab_lista := HBoxContainer.new()
 	cab_lista.add_theme_constant_override("separation", 6)
@@ -295,7 +295,7 @@ func _Construir_Columna_Izquierda() -> Control:
 
 	_lista_mejoras = VBoxContainer.new()
 	_lista_mejoras.name = "Lista_Mejoras"
-	_lista_mejoras.add_theme_constant_override("separation", 8)
+	_lista_mejoras.add_theme_constant_override("separation", 6)
 	izq.add_child(_lista_mejoras)
 
 	for mejora_id in Sistema_Cocina.ORDEN_MEJORAS:
@@ -313,7 +313,7 @@ func _Construir_Columna_Izquierda() -> Control:
 	var ic_info := Estilos_UI.icono_rect("info", 12, C_MUTED_OSCURO)
 	ic_info.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 	hint.add_child(ic_info)
-	var lbl_hint := Estilos_UI.parrafo("La Caja del local paga las mejoras. Se llena con cada servicio.", 10, C_MUTED_OSCURO)
+	var lbl_hint := Estilos_UI.parrafo("La Caja del local paga las mejoras. Se llena con cada servicio.", 9, C_MUTED_OSCURO)
 	lbl_hint.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	hint.add_child(lbl_hint)
 	izq.add_child(hint)
@@ -339,21 +339,21 @@ func _Construir_Fila_Mejora(mejora_id: String) -> Button:
 
 	var m := MarginContainer.new()
 	m.set_anchors_preset(Control.PRESET_FULL_RECT)
-	m.add_theme_constant_override("margin_left", 11)
-	m.add_theme_constant_override("margin_right", 11)
-	m.add_theme_constant_override("margin_top", 10)
-	m.add_theme_constant_override("margin_bottom", 10)
+	m.add_theme_constant_override("margin_left", 9)
+	m.add_theme_constant_override("margin_right", 9)
+	m.add_theme_constant_override("margin_top", 6)
+	m.add_theme_constant_override("margin_bottom", 6)
 	m.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	btn.add_child(m)
 
 	var h := HBoxContainer.new()
-	h.add_theme_constant_override("separation", 9)
+	h.add_theme_constant_override("separation", 8)
 	h.alignment = BoxContainer.ALIGNMENT_CENTER
 	h.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	m.add_child(h)
 
 	var grupo_icono := Control.new()
-	grupo_icono.custom_minimum_size = Vector2(60, 60)
+	grupo_icono.custom_minimum_size = Vector2(48, 48)
 	grupo_icono.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	grupo_icono.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	h.add_child(grupo_icono)
@@ -362,23 +362,22 @@ func _Construir_Fila_Mejora(mejora_id: String) -> Button:
 	marco.set_anchors_preset(Control.PRESET_FULL_RECT)
 	marco.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var st_marco := Estilos_UI.caja(Color("#071a2a"), 13, Color("#2a5978"), 1, 0)
-	st_marco.content_margin_left = 5
-	st_marco.content_margin_right = 5
-	st_marco.content_margin_top = 5
-	st_marco.content_margin_bottom = 5
+	st_marco.content_margin_left = 4
+	st_marco.content_margin_right = 4
+	st_marco.content_margin_top = 4
+	st_marco.content_margin_bottom = 4
 	marco.add_theme_stylebox_override("panel", st_marco)
 	grupo_icono.add_child(marco)
 
-	var icono := TextureRect.new()
-	icono.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	icono.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	var icono := Arte_Cocina.Icono_Mejora.new()
+	icono.name = "Icono_Mejora"
 	icono.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	marco.add_child(icono)
 
 	var check := PanelContainer.new()
 	check.name = "Check_Maximo"
-	check.position = Vector2(39, 39)
-	check.size = Vector2(22, 22)
+	check.position = Vector2(31, 31)
+	check.size = Vector2(20, 20)
 	check.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	check.visible = false
 	var st_check := Estilos_UI.caja(C_VERDE, 999, Color("#0a1f31"), 2, 0)
@@ -393,11 +392,11 @@ func _Construir_Fila_Mejora(mejora_id: String) -> Button:
 	var info := VBoxContainer.new()
 	info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	info.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	info.add_theme_constant_override("separation", 5)
+	info.add_theme_constant_override("separation", 3)
 	info.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	h.add_child(info)
 
-	var lbl_nombre := Estilos_UI.texto(str(def.get("nombre_corto", def.get("nombre", mejora_id))), 14, C_CREMA, 700)
+	var lbl_nombre := Estilos_UI.texto(Sistema_Cocina.Obtener_Nombre_Corto_Mejora(restaurante_id, mejora_id), 13, C_CREMA, 700)
 	lbl_nombre.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	lbl_nombre.max_lines_visible = 2
 	lbl_nombre.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
@@ -410,8 +409,8 @@ func _Construir_Fila_Mejora(mejora_id: String) -> Button:
 	info.add_child(pie)
 
 	var pips := Pips_Mejora.new()
-	pips.tam = 7.5
-	pips.custom_minimum_size = Vector2(42, 16)
+	pips.tam = 6.5
+	pips.custom_minimum_size = Vector2(36, 14)
 	pips.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	pips.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	pie.add_child(pips)
@@ -436,6 +435,7 @@ func _Construir_Fila_Mejora(mejora_id: String) -> Button:
 		"btn": btn,
 		"icono": icono,
 		"pips": pips,
+		"nombre": lbl_nombre,
 		"nivel": lbl_nivel,
 		"coste": lbl_coste,
 		"coin": ic_moneda,
@@ -447,12 +447,12 @@ func _Construir_Fila_Mejora(mejora_id: String) -> Button:
 func _Construir_Tarjeta_Progreso() -> Control:
 	var pc := PanelContainer.new()
 	pc.name = "Tarjeta_Progreso"
-	pc.custom_minimum_size = Vector2(0, 150)
+	pc.custom_minimum_size = Vector2(0, 104)
 	var st := Estilos_UI.caja(Color("#0d2a3e"), 14, C_LINEA, 1, 0)
-	st.content_margin_left = 12
-	st.content_margin_right = 12
-	st.content_margin_top = 10
-	st.content_margin_bottom = 10
+	st.content_margin_left = 10
+	st.content_margin_right = 10
+	st.content_margin_top = 8
+	st.content_margin_bottom = 8
 	pc.add_theme_stylebox_override("panel", st)
 
 	var v := VBoxContainer.new()
@@ -486,7 +486,7 @@ func _Construir_Tarjeta_Progreso() -> Control:
 	_barra_progreso.add_theme_stylebox_override("fill", Estilos_UI.caja(C_ORO, 999, C_ORO.darkened(0.18), 0, 0))
 	v.add_child(_barra_progreso)
 
-	_lbl_siguiente_rango = Estilos_UI.texto("0 / 5 niveles para el primer rango", 9, C_MUTED_OSCURO, 500)
+	_lbl_siguiente_rango = Estilos_UI.texto("0 / 20 ★ para el primer rango", 9, C_MUTED_OSCURO, 500)
 	_lbl_siguiente_rango.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	v.add_child(_lbl_siguiente_rango)
 	return pc
@@ -497,7 +497,7 @@ func _Construir_Columna_Derecha() -> Control:
 	der.name = "Columna_Derecha"
 	der.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	der.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	der.add_theme_constant_override("separation", 10)
+	der.add_theme_constant_override("separation", 8)
 
 	var fila_tit := HBoxContainer.new()
 	fila_tit.add_theme_constant_override("separation", 8)
@@ -683,8 +683,8 @@ func _Construir_Toast() -> void:
 	_toast.set_anchors_preset(Control.PRESET_TOP_WIDE)
 	_toast.offset_left = 74
 	_toast.offset_right = -74
-	_toast.offset_top = 112
-	_toast.offset_bottom = 164
+	_toast.offset_top = 82
+	_toast.offset_bottom = 134
 	_toast.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_tarjeta.add_child(_toast)
 
@@ -739,7 +739,16 @@ func _Refrescar_Lista() -> void:
 		var seleccionada: bool = (mejora_id == mejora_seleccionada)
 
 		if fila["icono"] != null:
-			fila["icono"].texture = Arte_Cocina.textura_mejora(mejora_id, nv)
+			var tex_mejora: Texture2D = null
+			if restaurante_id != Sistema_Cocina.RESTAURANTE_BISTRO:
+				tex_mejora = Arte_Cocina.textura_mejora(mejora_id, nv)
+			if fila["icono"] is Arte_Cocina.Icono_Mejora:
+				(fila["icono"] as Arte_Cocina.Icono_Mejora).configurar(
+					restaurante_id, mejora_id, nv, tex_mejora)
+			elif fila["icono"] is TextureRect:
+				fila["icono"].texture = tex_mejora
+		if fila.get("nombre") != null:
+			fila["nombre"].text = Sistema_Cocina.Obtener_Nombre_Corto_Mejora(restaurante_id, mejora_id)
 		if fila["pips"] != null:
 			fila["pips"].set_nivel(nv)
 		if fila["nivel"] != null:
@@ -797,7 +806,7 @@ func _Refrescar_Detalle() -> void:
 	var nivel_vista: int = mini(nv + 1, 3)
 	var acento := Color(str(def.get("acento", "#f59e0b")))
 
-	_lbl_nombre_mejora.text = str(def.get("nombre", mejora_seleccionada))
+	_lbl_nombre_mejora.text = Sistema_Cocina.Obtener_Nombre_Mejora(restaurante_id, mejora_seleccionada)
 	_lbl_pill_nivel.text = "ACTUAL · Nv. %d/3" % nv
 	_lbl_pill_nivel.add_theme_color_override("font_color",
 		C_VERDE_CLARO if nv >= 3 else C_ORO_CLARO)
@@ -807,17 +816,19 @@ func _Refrescar_Detalle() -> void:
 
 	if nv >= 3:
 		_lbl_subtitulo_mejora.text = "TU MEJOR VERSIÓN · Nv. 3 · %s" % \
-			Sistema_Cocina.Obtener_Nombre_Nivel_Mejora(mejora_seleccionada, 3).to_upper()
+			Sistema_Cocina.Obtener_Nombre_Nivel_Mejora(mejora_seleccionada, 3, restaurante_id).to_upper()
 	else:
 		_lbl_subtitulo_mejora.text = "ASÍ SERÁ TU COCINA · Nv. %d · %s" % [
 			nivel_vista,
-			Sistema_Cocina.Obtener_Nombre_Nivel_Mejora(mejora_seleccionada, nivel_vista).to_upper()
+			Sistema_Cocina.Obtener_Nombre_Nivel_Mejora(mejora_seleccionada, nivel_vista, restaurante_id).to_upper()
 		]
 
 	_escaparate.configurar(
 		Arte_Cocina.textura_mejora(mejora_seleccionada, nivel_vista),
 		acento,
-		nivel_vista)
+		nivel_vista,
+		restaurante_id,
+		mejora_seleccionada)
 	_pips_escenario.set_nivel(nivel_vista)
 
 	if nv >= 3:
@@ -876,9 +887,9 @@ func _Refrescar_Pestanas(nv: int, coste: int) -> void:
 
 
 func _Refrescar_Beneficios(nv: int) -> void:
-	var actual: Array = Sistema_Cocina.Obtener_Beneficios_Nivel_Mejora(mejora_seleccionada, nv)
+	var actual: Array = Sistema_Cocina.Obtener_Beneficios_Nivel_Mejora(mejora_seleccionada, nv, restaurante_id)
 	_lbl_benef_actual.text = "AHORA · Nv. %d · %s" % [
-		nv, Sistema_Cocina.Obtener_Nombre_Nivel_Mejora(mejora_seleccionada, nv).to_upper()
+		nv, Sistema_Cocina.Obtener_Nombre_Nivel_Mejora(mejora_seleccionada, nv, restaurante_id).to_upper()
 	]
 	_Limpiar_Contenedor(_flow_actual)
 	for txt in actual:
@@ -891,9 +902,9 @@ func _Refrescar_Beneficios(nv: int) -> void:
 		_flow_ganancias.add_child(_Crear_Chip("Mejora completada · aprovecha el nivel 3", true))
 		_barra_ganancias.visible = true
 	else:
-		var ganancias: Array = Sistema_Cocina.Obtener_Ganancias_Nivel_Mejora(mejora_seleccionada, nv + 1)
+		var ganancias: Array = Sistema_Cocina.Obtener_Ganancias_Nivel_Mejora(mejora_seleccionada, nv + 1, restaurante_id)
 		_lbl_benef_siguiente.text = "CON LA MEJORA · Nv. %d · %s" % [
-			nv + 1, Sistema_Cocina.Obtener_Nombre_Nivel_Mejora(mejora_seleccionada, nv + 1).to_upper()
+			nv + 1, Sistema_Cocina.Obtener_Nombre_Nivel_Mejora(mejora_seleccionada, nv + 1, restaurante_id).to_upper()
 		]
 		_lbl_benef_siguiente.add_theme_color_override("font_color", C_VERDE_OSCURO)
 		if ganancias.is_empty():
@@ -902,7 +913,7 @@ func _Refrescar_Beneficios(nv: int) -> void:
 			for txt in ganancias:
 				_flow_ganancias.add_child(_Crear_Chip(str(txt), true))
 
-	_lbl_frase.text = "“%s”" % Sistema_Cocina.Obtener_Frase_Nivel_Mejora(mejora_seleccionada, mini(nv + 1, 3))
+	_lbl_frase.text = "“%s”" % Sistema_Cocina.Obtener_Frase_Nivel_Mejora(mejora_seleccionada, mini(nv + 1, 3), restaurante_id)
 
 
 func _Refrescar_CTA(nv: int, coste: int, caja: int) -> void:
@@ -935,21 +946,24 @@ func _Refrescar_CTA(nv: int, coste: int, caja: int) -> void:
 
 
 func _Refrescar_Progreso() -> void:
-	var rango: int = Sistema_Cocina.Obtener_Rango_Logro()
-	var info: Dictionary = Sistema_Cocina.Obtener_Info_Rango(rango)
-	var niveles: int = Sistema_Cocina.Contar_Niveles_Superados()
-	var estrellas: int = Sistema_Cocina.Contar_Estrellas_Totales()
+	var p: Dictionary = Sistema_Cocina.Obtener_Progreso_Maestria()
+	var rango: int = int(p.get("rango", 0))
+	var estrellas: int = int(p.get("estrellas", 0))
+	var info: Dictionary = p.get("info", {})
+	var maximo: bool = bool(p.get("maximo", false))
 	_lbl_rango.text = "RANGO %d/9 · %d ★" % [rango, estrellas]
 	_lbl_niveles.text = str(info.get("nombre", "Aprendiz"))
-	if rango >= 9:
-		_barra_progreso.max_value = 45
-		_barra_progreso.value = 45
-		_lbl_siguiente_rango.text = "Rango máximo · %d niveles superados" % niveles
+	if maximo:
+		_barra_progreso.max_value = 100.0
+		_barra_progreso.value = 100.0
+		_lbl_siguiente_rango.text = "Rango máximo · %d / %d ★" % [
+			estrellas, Sistema_Cocina.ESTRELLAS_TOTALES_MAX]
 	else:
-		var siguiente: int = int(Sistema_Cocina.RANGOS_LOGRO[rango + 1].get("niveles", 45))
-		_barra_progreso.max_value = maxi(1, siguiente)
-		_barra_progreso.value = mini(niveles, siguiente)
-		_lbl_siguiente_rango.text = "%d / %d niveles para el siguiente rango" % [niveles, siguiente]
+		_barra_progreso.max_value = 100.0
+		_barra_progreso.value = clampf(
+			float(p.get("progreso", 0.0)) * 100.0, 0.0, 100.0)
+		_lbl_siguiente_rango.text = "%d / %d ★ para el Rango %d" % [
+			estrellas, int(p.get("umbral_siguiente", 0)), rango + 1]
 
 
 # ============================================================================
@@ -1083,7 +1097,8 @@ func _Celebrar_Nivel(nivel: int) -> void:
 	tit.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	v.add_child(tit)
 
-	var sub := Estilos_UI.texto(str(Sistema_Cocina.MEJORAS_DEF[mejora_seleccionada].get("nombre", "")).to_upper(), 12, C_CREMA, 700)
+	var sub := Estilos_UI.texto(Sistema_Cocina.Obtener_Nombre_Mejora(
+		restaurante_id, mejora_seleccionada).to_upper(), 12, C_CREMA, 700)
 	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	sub.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	v.add_child(sub)
@@ -1266,6 +1281,9 @@ class Escaparate_Mejora:
 	var textura: Texture2D
 	var acento: Color = Color("#f59e0b")
 	var zoom: float = 1.0
+	var restaurante: String = ""
+	var mejora_id: String = ""
+	var nivel: int = 1
 	var _t: float = 0.0
 	var _st_base: StyleBoxFlat
 	var _st_borde: StyleBoxFlat
@@ -1274,9 +1292,13 @@ class Escaparate_Mejora:
 		mouse_filter = Control.MOUSE_FILTER_IGNORE
 		set_process(true)
 
-	func configurar(tex: Texture2D, color_acento: Color, _nv: int) -> void:
+	func configurar(tex: Texture2D, color_acento: Color, nv: int,
+			rest: String = "", mejora: String = "") -> void:
 		textura = tex
 		acento = color_acento
+		restaurante = rest
+		mejora_id = mejora
+		nivel = clampi(nv, 1, 3)
 		queue_redraw()
 
 	func _process(delta: float) -> void:
@@ -1353,7 +1375,13 @@ class Escaparate_Mejora:
 		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
 		# Objeto.
-		if textura != null:
+		if restaurante == Sistema_Cocina.RESTAURANTE_BISTRO:
+			var lado_bistro: float = minf(w * 0.88,
+				maxf(120.0, (h - 14.0) / 0.60))
+			Arte_Cocina.dibujar_mejora_bistro(self,
+				Vector2(w * 0.5, h * 0.51 + sin(_t * 1.5) * 3.5),
+				lado_bistro, mejora_id, nivel)
+		elif textura != null:
 			var tex_size := textura.get_size()
 			var disponible := Vector2(w - 62.0, h - 86.0)
 			var escala := minf(disponible.x / maxf(1.0, tex_size.x),

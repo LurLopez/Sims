@@ -17,6 +17,7 @@ func before_all() -> void:
 
 func before_each() -> void:
 	_backup = _Backup_Globales()
+	Sistema_Cocina.desbloqueo_total_qa = false
 	_senales_desbloqueo.clear()
 	Variables_Estaticas.Modo_Rapido = false
 	Variables_Estaticas.Habilidades = [50, 50, 50, 50, 50, 50, 50]
@@ -110,6 +111,7 @@ func _Backup_Globales() -> Dictionary:
 		"objetos_poseidos": Variables_Dinamicas.Objetos_Poseidos.duplicate(true),
 		"objeto_seleccionado": Variables_Dinamicas.Objeto_Seleccionado.duplicate(true),
 		"cocina_estado": Variables_Dinamicas.Cocina_Estado.duplicate(true),
+		"qa_desbloqueo": Sistema_Cocina.desbloqueo_total_qa,
 		"save_din": Guardar_Variables_Dinamicas.save_path,
 		"save_est": Guardar_Variables_Estaticas.save_path
 	}
@@ -134,6 +136,7 @@ func _Restaurar_Globales(b: Dictionary) -> void:
 	Variables_Dinamicas.Objetos_Poseidos = b["objetos_poseidos"]
 	Variables_Dinamicas.Objeto_Seleccionado = b["objeto_seleccionado"]
 	Variables_Dinamicas.Cocina_Estado = b["cocina_estado"]
+	Sistema_Cocina.desbloqueo_total_qa = b["qa_desbloqueo"]
 	Guardar_Variables_Dinamicas.save_path = b["save_din"]
 	Guardar_Variables_Estaticas.save_path = b["save_est"]
 	Guardar_Variables_Dinamicas._rle_cache = {}
@@ -182,6 +185,7 @@ func test_01_retrocompatibilidad_save_antiguo_y_merge_recursivo() -> void:
 	}
 	var f := FileAccess.open(RUTA_SAVE_DIN, FileAccess.WRITE)
 	f.store_var(save_antiguo)
+	f.flush()
 	f = null
 
 	Guardar_Variables_Dinamicas.load_game()
@@ -207,6 +211,7 @@ func test_01_retrocompatibilidad_save_antiguo_y_merge_recursivo() -> void:
 	}
 	var fe := FileAccess.open(RUTA_SAVE_EST, FileAccess.WRITE)
 	fe.store_var(est_antiguo)
+	fe.flush()
 	fe = null
 	Variables_Estaticas.Record_Max_Niveles_Cocina = 99
 	Guardar_Variables_Estaticas.load_game()
@@ -246,8 +251,9 @@ func test_02_programar_trabajo_no_desbloquea_pero_primer_minuto_si() -> void:
 	# Cada trabajo de hostelería tiene su propio mundo de cocina
 	assert_true(Sistema_Cocina.Registrar_Minuto_Trabajo_Hosteleria("Trabajar_De_Ayudante_Cocina"))
 	assert_true(Sistema_Cocina.Esta_Desbloqueado_Restaurante("bistro_tradicional"))
-	assert_true(str(Variables_Dinamicas.Mensajes.back().descripcion).contains("Fase 2"),
-		"Los mundos aún no implementados deben avisar de la Fase 2")
+	var desc_bistro: String = str(Variables_Dinamicas.Mensajes.back().descripcion)
+	assert_true(desc_bistro.contains("Bistró Tradicional") or desc_bistro.contains("Fase 2"),
+		"El desbloqueo de un mundo debe indicar su nombre o avisar de la Fase 2")
 	assert_true(Sistema_Cocina.Registrar_Minuto_Trabajo_Hosteleria("Trabajar_De_Cocinero_Partida"))
 	assert_true(Sistema_Cocina.Esta_Desbloqueado_Restaurante("cocina_mercado"))
 	assert_true(Sistema_Cocina.Registrar_Minuto_Trabajo_Hosteleria("Trabajar_De_Chef_Ejecutivo"))
@@ -490,25 +496,27 @@ func test_06_formulas_puras_y_bloqueos_de_entrada() -> void:
 
 
 # ============================================================================
-# 7. Logros cada 5 niveles (Rangos 1-9), prendas, Alimentacion e Inmunidad
+# 7. Logros cada 20 estrellas (Rangos 1-9), prendas, Alimentacion e Inmunidad
 # ============================================================================
 
 func test_07_logros_prendas_efectos_alimentacion_e_inmunidad() -> void:
 	Sistema_Cocina.Registrar_Minuto_Trabajo_Hosteleria("Trabajar_En_Comida_Rapida")
 
-	# Superar 5 niveles -> Rango 1 y Delantal_Aprendiz
-	for n in range(1, 6):
-		Sistema_Cocina.Procesar_Fin_Nivel("burger_street", n, 200, 10, false)
+	# 19 ★ + una actuación de 3 ★ = 21 ★ -> Rango 1 y Delantal_Aprendiz
+	_Fijar_Estrellas_Totales(19)
+	Sistema_Cocina.Procesar_Fin_Nivel("burger_street", 7, 999, 10, false)
+	assert_eq(Sistema_Cocina.Contar_Estrellas_Totales(), 21)
 	assert_eq(Sistema_Cocina.Obtener_Rango_Logro(), 1)
 	assert_true(bool(Variables_Dinamicas.Objetos_Poseidos.get("Delantal_Aprendiz", false)))
-	assert_eq(Variables_Estaticas.Record_Max_Niveles_Cocina, 5)
+	assert_eq(Variables_Estaticas.Record_Max_Niveles_Cocina, 7)
 	assert_true(Sistema_Cocina.Equipar_Ropa("Delantal_Aprendiz"))
 	assert_almost_eq(Sistema_Cocina.Obtener_Reduccion_Higiene_Hosteleria(), 0.05, 0.0001)
 	assert_almost_eq(Sistema_Cocina.Calcular_Probabilidad_Desgaste_Higiene(0.05, 0.05), 0.0475, 0.0001)
 
-	# Superar hasta 15 niveles -> Rango 3 y Chaqueta_Chef (+10% salario)
-	for n in range(6, 16):
-		Sistema_Cocina.Procesar_Fin_Nivel("burger_street", n, 600, 10, false)
+	# 59 ★ + una actuación de 3 ★ = 62 ★ -> Rango 3 y Chaqueta_Chef (+10% salario)
+	_Fijar_Estrellas_Totales(59)
+	Sistema_Cocina.Procesar_Fin_Nivel("alta_cocina", 15, 99999, 40, false)
+	assert_eq(Sistema_Cocina.Contar_Estrellas_Totales(), 62)
 	assert_eq(Sistema_Cocina.Obtener_Rango_Logro(), 3)
 	assert_true(bool(Variables_Dinamicas.Objetos_Poseidos.get("Chaqueta_Chef", false)))
 	assert_true(Sistema_Cocina.Equipar_Ropa("Chaqueta_Chef"))
@@ -521,12 +529,12 @@ func test_07_logros_prendas_efectos_alimentacion_e_inmunidad() -> void:
 	Actividades.Ejecutar_Actividad(act_cr, false)
 	assert_almost_eq(Variables_Dinamicas.Dinero, 88.0, 0.01)
 
-	# Simular niveles hasta 45 (Rango 9) -> Atuendo_Chef_Gala (30) y Traje_Estrella_Michelin (45)
-	for n in range(1, 16):
-		Variables_Dinamicas.Cocina_Estado["estrellas_nivel"]["bistro_tradicional_%d" % n] = 1
-		Variables_Dinamicas.Cocina_Estado["estrellas_nivel"]["alta_cocina_%d" % n] = 1
-	var res45: Dictionary = Sistema_Cocina.Procesar_Fin_Nivel("burger_street", 15, 600, 40, true)
-	assert_eq(int(res45["rango_nuevo"]), 9)
+	# 179 ★ + 1 ★ = 180 ★ (todas las estrellas del juego) -> Rango 9 y todas las prendas
+	_Fijar_Estrellas_Totales(179)
+	var res_rank9: Dictionary = Sistema_Cocina.Procesar_Fin_Nivel(
+		"alta_cocina", 15, 99999, 40, true)
+	assert_eq(int(res_rank9["rango_nuevo"]), 9)
+	assert_eq(Sistema_Cocina.Contar_Estrellas_Totales(), Sistema_Cocina.ESTRELLAS_TOTALES_MAX)
 	assert_true(bool(Variables_Dinamicas.Objetos_Poseidos.get("Atuendo_Chef_Gala", false)))
 	assert_true(bool(Variables_Dinamicas.Objetos_Poseidos.get("Traje_Estrella_Michelin", false)))
 	assert_true(Sistema_Cocina.Equipar_Ropa("Traje_Estrella_Michelin"))
@@ -538,31 +546,31 @@ func test_07_logros_prendas_efectos_alimentacion_e_inmunidad() -> void:
 		12.5, 0.01, "10 € base + 25% = 12.50 €")
 
 	# Alimentacion.gd por rangos: 0 vs 2 vs 4 vs 7
-	Variables_Dinamicas.Cocina_Estado["rango_logro"] = 0
+	_Fijar_Estrellas_Totales(0)
 	var ef_t0: Array = Alimentacion.Obtener_Efectos_Comer_Tupper(50)
 	var ef_b0: Array = Alimentacion.Obtener_Efectos_Comer_Basura()
 	var coste_b0: float = Alimentacion.Coste_Comida_Basura()
 
-	Variables_Dinamicas.Cocina_Estado["rango_logro"] = 2
+	_Fijar_Estrellas_Totales(40)
 	var ef_t2: Array = Alimentacion.Obtener_Efectos_Comer_Tupper(50)
 	var ef_b2: Array = Alimentacion.Obtener_Efectos_Comer_Basura()
 	assert_eq(int(ef_t2[1]), int(ef_t0[1]) + 2, "Rango >= 2: +2 Salud Mental en Comer_Tupper")
 	assert_eq(int(ef_b2[1]), int(ef_b0[1]) + 2, "Rango >= 2: +2 Salud Mental en Comer_Basura")
 
-	Variables_Dinamicas.Cocina_Estado["rango_logro"] = 4
+	_Fijar_Estrellas_Totales(80)
 	assert_almost_eq(Alimentacion.Coste_Comida_Basura(), coste_b0 * 0.80, 0.01, "Rango >= 4: -20% coste Comer_Basura")
 	var ef_t4: Array = Alimentacion.Obtener_Efectos_Comer_Tupper(50)
 	assert_gt(int(ef_t4[2]), int(ef_t0[2]), "Rango >= 4: +15% saciedad en Comer_Tupper")
 
 	# Rango >= 5: +15% eficiencia en Progreso_Cocina
 	Variables_Dinamicas.Progreso_Cocina = 20
-	Variables_Dinamicas.Cocina_Estado["rango_logro"] = 0
+	_Fijar_Estrellas_Totales(0)
 	var max_c0: int = Actividades_Habilidades.Calcular_Max_Progreso_Cocina()
-	Variables_Dinamicas.Cocina_Estado["rango_logro"] = 5
+	_Fijar_Estrellas_Totales(100)
 	var max_c5: int = Actividades_Habilidades.Calcular_Max_Progreso_Cocina()
 	assert_lt(max_c5, max_c0, "Rango >= 5 debe reducir el máximo aleatorio de Progreso_Cocina (+15% eficiencia)")
 
-	Variables_Dinamicas.Cocina_Estado["rango_logro"] = 7
+	_Fijar_Estrellas_Totales(140)
 	var ef_t7: Array = Alimentacion.Obtener_Efectos_Comer_Tupper(50)
 	var ef_b7: Array = Alimentacion.Obtener_Efectos_Comer_Basura()
 	assert_eq(int(ef_t7[0]), int(ef_t0[0]) + 1, "Rango >= 7: +1 Salud Física en Comer_Tupper")
@@ -571,7 +579,7 @@ func test_07_logros_prendas_efectos_alimentacion_e_inmunidad() -> void:
 	assert_gt(int(ef_b7[2]), int(ef_b0[2]), "Rango >= 7: +15% recuperación Hambre en Comer_Basura")
 
 	# Rango >= 8: Inmunidad total a "Intoxicación alimentaria" en Eventos_Aleatorios.gd
-	Variables_Dinamicas.Cocina_Estado["rango_logro"] = 8
+	_Fijar_Estrellas_Totales(160)
 	assert_true(Sistema_Cocina.Es_Inmune_Intoxicacion())
 	Variables_Dinamicas.Minute_Minute = 700 # Dentro de franja 8:00-22:00
 	var ev_mgr = get_node("/root/Eventos_Aleatorios")
@@ -583,7 +591,7 @@ func test_07_logros_prendas_efectos_alimentacion_e_inmunidad() -> void:
 
 
 # ============================================================================
-# 8. Integración de UI (Minijuego_Cocina: mapa vertical + partida horizontal)
+# 8. Integración de UI (Minijuego_Cocina: selector y partida horizontales)
 # ============================================================================
 
 func test_08_ui_minijuego_cocina_y_escena_principal() -> void:
@@ -594,9 +602,14 @@ func test_08_ui_minijuego_cocina_y_escena_principal() -> void:
 	var mini = escena_mini.instantiate()
 	add_child_autofree(mini)
 	await get_tree().process_frame
-	assert_eq(get_window().content_scale_size, Vector2i(720, 1280),
-		"El selector de niveles debe abrirse en vertical 720x1280")
+	assert_eq(get_window().content_scale_size, Vector2i(1280, 720),
+		"El selector de niveles debe abrirse en horizontal 1280x720")
 	assert_true(mini.get_node("Vista_Mapa").visible, "El mapa de niveles debe verse al abrir")
+	assert_not_null(mini.get_node_or_null("Modal_Maestria"))
+	assert_not_null(mini.find_child("Panel_Maestria_Mapa", true, false),
+		"El selector de mundos debe mostrar el progreso de Maestría")
+	assert_not_null(mini.find_child("Boton_Maestria_Mapa", true, false),
+		"La cabecera debe abrir el detalle de Maestría")
 	assert_not_null(mini.get_node_or_null("Vista_Cocina"))
 	assert_not_null(mini.get_node_or_null("Vista_Carga"))
 	assert_not_null(mini.get_node_or_null("Modal_Mejoras"))
@@ -612,8 +625,8 @@ func test_08_ui_minijuego_cocina_y_escena_principal() -> void:
 	assert_true(mini.get_node("Vista_Cocina").visible, "Tras la carga debe verse la cocina")
 
 	mini._Mostrar_Mapa()
-	assert_eq(get_window().content_scale_size, Vector2i(720, 1280),
-		"Al volver al mapa debe restaurarse 720x1280 vertical")
+	assert_eq(get_window().content_scale_size, Vector2i(1280, 720),
+		"Al volver al mapa debe mantenerse 1280x720 horizontal")
 	assert_false(mini.get_node("Vista_Carga").visible, "La pantalla de carga debe ocultarse al volver")
 
 	mini._Salir_Al_Sim()
@@ -652,6 +665,10 @@ func test_09_gameplay_tap_to_move_y_fin_servicio() -> void:
 	mini._clientes[0]["paciencia"] = 30.0
 	mini._clientes[0]["precio_total"] = 18
 	mini._Actualizar_Cliente_UI(0)
+	# El cliente entra caminando con un tween; para probar el servicio sin
+	# depender del reloj de animación lo dejamos ya sentado en la mesa.
+	mini._slots_clientes_ui[0]["visible_antes"] = true
+	mini._slots_clientes_ui[0]["fase"] = "esperando"
 
 	# 1. Poner pan en plato 0 y carne en plancha 0
 	mini._on_ingrediente_pan()
@@ -663,18 +680,24 @@ func test_09_gameplay_tap_to_move_y_fin_servicio() -> void:
 	mini._Tick_Slots_Coccion(mini._plancha, mini._slots_plancha_ui, mini._tiempo_coccion_carne, "Carne", mini._tiempo_coccion_carne + 0.1)
 	assert_eq(str(mini._plancha[0]["estado"]), "listo")
 
-	# 3. Tocar plancha -> pasa carne al plato 0 -> forma burger_sola
+	# 3. Tocar plancha NO mueve la carne; arrastrarla al plato 0 forma burger_sola
 	mini._on_plancha_pulsada(0)
+	assert_eq(str(mini._plancha[0]["estado"]), "listo", "Tocar carne lista no debe moverla automáticamente")
+	assert_true(mini._Soltar_En_Plato({"tipo": "carne_lista", "indice": 0}, 0))
 	assert_eq(str(mini._plancha[0]["estado"]), "vacio")
 	assert_eq(mini._Receta_De_Plato(mini._platos[0]), "burger_sola")
 
-	# 4. Tocar plato -> sirve burger_sola al cliente 0
+	# 4. Tocar plato NO sirve; arrastrarlo al cliente 0 entrega burger_sola
 	mini._on_plato_pulsado(0)
+	assert_false(bool(mini._clientes[0]["entregados"][0]), "Tocar el plato no debe entregarlo")
+	assert_true(mini._Soltar_En_Cliente({"tipo": "plato", "indice": 0, "receta": "burger_sola"}, 0))
 	assert_true(bool(mini._clientes[0]["entregados"][0]))
 	assert_false(bool(mini._platos[0]["pan"]))
 
-	# 5. Tocar bebida -> sirve refresco -> completa pedido y suma recaudación + propina
+	# 5. Tocar bebida NO sirve; arrastrarla al cliente completa el pedido y suma propina
 	mini._on_bebida_pulsada(0)
+	assert_true(bool(mini._clientes[0]["activo"]), "Tocar la bebida no debe entregarla")
+	assert_true(mini._Soltar_En_Cliente({"tipo": "bebida", "indice": 0, "item": "refresco"}, 0))
 	assert_false(bool(mini._clientes[0]["activo"]), "El pedido completo debe liberar al cliente")
 	assert_eq(mini._clientes_atendidos, 1)
 	assert_gt(mini._recaudacion, 18, "Debe sumar precio + propina")
@@ -709,6 +732,10 @@ func test_10_selector_restaurantes_y_confirmacion_salida() -> void:
 		"Debe existir el modal de confirmación de salida")
 	assert_eq(mini._lista_restaurantes.get_child_count(), 4,
 		"Deben mostrarse los 4 mundos de cocina")
+	assert_true(mini._lista_restaurantes is GridContainer,
+		"El selector horizontal debe colocar los mundos en cuadrícula")
+	assert_eq((mini._lista_restaurantes as GridContainer).columns, 2,
+		"Los 4 mundos deben repartirse en 2 columnas")
 	for i in range(1, 4):
 		assert_true(mini._lista_restaurantes.get_child(i).disabled,
 			"Los mundos de Fase 2 deben estar bloqueados")
@@ -719,6 +746,8 @@ func test_10_selector_restaurantes_y_confirmacion_salida() -> void:
 	var grid = mini._contenedor_niveles.find_child("Grid_Niveles", true, false)
 	assert_not_null(grid, "Al tocar Burger & Street Food deben aparecer los niveles")
 	assert_eq(grid.get_child_count(), 15, "Burger & Street Food debe mostrar sus 15 niveles")
+	assert_eq((grid as GridContainer).columns, 5,
+		"Los 15 niveles deben verse en 5 columnas × 3 filas")
 	assert_not_null(mini.find_child("Marco_Selector_Niveles", true, false),
 		"El selector debe usar el marco celeste cartoon")
 	assert_not_null(mini._contenedor_niveles.find_child("Barra_Scroll_Niveles", true, false),
@@ -759,6 +788,10 @@ func test_10_selector_restaurantes_y_confirmacion_salida() -> void:
 		"La flecha verde debe abrir la ficha del siguiente nivel")
 	assert_eq(mini._nivel_seleccionado, 1,
 		"Sin estrellas previas, el siguiente nivel pendiente es el 1")
+	assert_not_null(mini._modal_inicio.find_child("Marco_Modal", true, false),
+		"La ficha de nivel debe usar el marco cartoon azul")
+	assert_not_null(mini._modal_inicio.find_child("Boton_Empezar_Servicio", true, false),
+		"La ficha de nivel debe conservar el botón de empezar servicio")
 	mini._modal_inicio.visible = false
 
 	# Dentro de una partida, volver al mapa exige confirmación y pausa el nivel.
@@ -767,6 +800,10 @@ func test_10_selector_restaurantes_y_confirmacion_salida() -> void:
 	mini._Intentar_Volver_Al_Mapa()
 	assert_true(mini.get_node("Modal_Confirmar_Salida").visible,
 		"Volver al mapa en plena partida debe abrir la confirmación")
+	assert_not_null(mini._modal_salida.find_child("Marco_Modal", true, false),
+		"La confirmación de salida debe usar el marco cartoon azul")
+	assert_not_null(mini._modal_salida.find_child("Boton_Confirmar_Salida", true, false),
+		"La confirmación de salida debe conservar el botón de salir")
 	assert_false(mini._jugando, "La partida debe pausarse mientras se decide")
 
 	# Seguir cocinando reanuda la partida.
@@ -808,6 +845,10 @@ func test_11_hud_superior_menu_clientes_y_dinero() -> void:
 	btn_menu.emit_signal("pressed")
 	assert_true(mini._modal_pausa.visible,
 		"El botón Menú debe abrir el menú de pausa (seguir, repetir, al mapa)")
+	assert_not_null(mini._modal_pausa.find_child("Marco_Modal", true, false),
+		"El menú de pausa debe usar el marco cartoon azul")
+	assert_not_null(mini._modal_pausa.find_child("Boton_Seguir", true, false),
+		"El menú de pausa debe conservar el botón Seguir cocinando")
 	mini._Reanudar_Partida()
 	assert_false(mini._modal_pausa.visible)
 	mini._Salir_Al_Sim()
@@ -888,3 +929,20 @@ func test_12_mejoras_presentacion_y_compra_en_modal() -> void:
 	await get_tree().process_frame
 	assert_false(modal.visible, "Cerrar la pantalla de mejoras debe ocultarla")
 	mini._Salir_Al_Sim()
+
+
+## Coloca el progreso del minijuego en un total exacto de estrellas repartidas
+## entre todos los restaurantes. Sirve para probar los umbrales de Maestría.
+func _Fijar_Estrellas_Totales(total: int) -> void:
+	var restante: int = clampi(total, 0, Sistema_Cocina.ESTRELLAS_TOTALES_MAX)
+	var dict: Dictionary = {}
+	for rest_id in Sistema_Cocina.ORDEN_RESTAURANTES:
+		for n in range(1, 16):
+			if restante <= 0:
+				break
+			var valor: int = mini(3, restante)
+			dict["%s_%d" % [rest_id, n]] = valor
+			restante -= valor
+		if restante <= 0:
+			break
+	Variables_Dinamicas.Cocina_Estado["estrellas_nivel"] = dict

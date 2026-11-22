@@ -66,7 +66,7 @@ const ORDEN_MEJORAS: Array[String] = [
 const MEJORAS_DEF: Dictionary = {
 	"plancha": {
 		"nombre": "Plancha y Freidora",
-		"nombre_corto": "Plancha y Freidora",
+		"nombre_corto": "Cocción",
 		"icono": "flame",
 		"acento": "#f97316",
 		"costes": [0, 120, 320],
@@ -74,28 +74,28 @@ const MEJORAS_DEF: Dictionary = {
 		"cestas_freidora": [1, 2, 2],
 		"mult_tiempo": [1.00, 0.80, 0.65],
 		"descripciones": [
-			"2 huecos de plancha · 1 cesta · Vel. x1.00",
-			"3 huecos de plancha · 2 cestas · Cocción -20%",
-			"4 huecos de plancha · 2 cestas · Cocción -35%"
+			"2 huecos de cocción · 1 auxiliar · Vel. x1.00",
+			"3 huecos de cocción · 2 auxiliares · Cocción -20%",
+			"4 huecos de cocción · 2 auxiliares · Cocción -35%"
 		],
 		"niveles": [
 			{
 				"nombre": "Básica",
-				"beneficios": ["2 huecos de plancha", "1 cesta de fritura", "Cocción a velocidad normal"],
+				"beneficios": ["2 huecos de cocción", "1 auxiliar de fritura/salsa", "Cocción a velocidad normal"],
 				"ganancias": [],
-				"frase": "Dos hamburguesas a la vez para arrancar. Sube a tres huecos en cuanto puedas."
+				"frase": "Dos huecos para arrancar. Sube a tres en cuanto puedas."
 			},
 			{
 				"nombre": "Mejorada",
-				"beneficios": ["3 huecos de plancha", "2 cestas de fritura", "Cocción un 20% más rápida"],
-				"ganancias": ["+1 hueco de plancha", "+1 cesta de fritura", "−20% tiempo de cocción"],
-				"frase": "Tres huecos y dos cestas: el ritmo ya es de diner de verdad."
+				"beneficios": ["3 huecos de cocción", "2 auxiliares", "Cocción un 20% más rápida"],
+				"ganancias": ["+1 hueco de cocción", "+1 auxiliar", "−20% tiempo de cocción"],
+				"frase": "Tres huecos y dos auxiliares: el ritmo ya es de restaurante."
 			},
 			{
 				"nombre": "Profesional",
-				"beneficios": ["4 huecos de plancha", "2 cestas de fritura", "Cocción un 35% más rápida"],
-				"ganancias": ["+1 hueco de plancha", "−15% tiempo de cocción"],
-				"frase": "Cuatro huecos a pleno rendimiento. La plancha ya no te frena."
+				"beneficios": ["4 huecos de cocción", "2 auxiliares", "Cocción un 35% más rápida"],
+				"ganancias": ["+1 hueco de cocción", "−15% tiempo de cocción"],
+				"frase": "Cuatro huecos a pleno rendimiento. La cocina ya no te frena."
 			}
 		]
 	},
@@ -290,17 +290,482 @@ const RECETAS_BURGER_STREET: Dictionary = {
 	}
 }
 
+# ============================================================================
+# Catálogo de recetas de los otros tres mundos
+# ============================================================================
+# Cada receta declara sus componentes para que el pase pueda identificarla
+# sin lógica especial en la GUI. Los campos `tipo` son:
+#   plato  · se monta en el pase (proteína/guiso + guarnición + salsa)
+#   bebida · se sirve desde la estación de bebidas
+#   postre · se sirve directamente desde la vitrina de la despensa
+const RECETAS_BISTRO: Dictionary = {
+	"filete_punto": {
+		"id": "filete_punto",
+		"nombre": "Filete al punto",
+		"nombre_corto": "Al punto",
+		"detalle": "Filete al punto",
+		"precio_base": 14,
+		"tipo": "plato",
+		"proteina": "filete",
+		"punto": "al_punto",
+		"guarnicion": "",
+		"salsa": ""
+	},
+	"filete_patatas": {
+		"id": "filete_patatas",
+		"nombre": "Filete al punto con patatas",
+		"nombre_corto": "Punto + patatas",
+		"detalle": "Filete al punto + patatas",
+		"precio_base": 20,
+		"tipo": "plato",
+		"proteina": "filete",
+		"punto": "al_punto",
+		"guarnicion": "patatas",
+		"salsa": ""
+	},
+	"filete_completo": {
+		"id": "filete_completo",
+		"nombre": "Filete completo",
+		"nombre_corto": "Completo",
+		"detalle": "Filete al punto + patatas + salsa",
+		"precio_base": 24,
+		"tipo": "plato",
+		"proteina": "filete",
+		"punto": "al_punto",
+		"guarnicion": "patatas",
+		"salsa": "salsa"
+	},
+	"solomillo_jugoso": {
+		"id": "solomillo_jugoso",
+		"nombre": "Solomillo jugoso",
+		"nombre_corto": "Jugoso",
+		"detalle": "Poco hecho + patatas + salsa",
+		"precio_base": 26,
+		"tipo": "plato",
+		"proteina": "filete",
+		"punto": "poco_hecho",
+		"guarnicion": "patatas",
+		"salsa": "salsa"
+	},
+	"entrecot_hecho": {
+		"id": "entrecot_hecho",
+		"nombre": "Entrecot hecho con patatas",
+		"nombre_corto": "Hecho",
+		"detalle": "Hecho + patatas",
+		"precio_base": 22,
+		"tipo": "plato",
+		"proteina": "filete",
+		"punto": "hecho",
+		"guarnicion": "patatas",
+		"salsa": ""
+	},
+	"cafe": {
+		"id": "cafe",
+		"nombre": "Café",
+		"nombre_corto": "Café",
+		"detalle": "Cafetera",
+		"precio_base": 6,
+		"tipo": "bebida"
+	},
+	"tarta_cereza": {
+		"id": "tarta_cereza",
+		"nombre": "Tarta de cereza",
+		"nombre_corto": "Tarta",
+		"detalle": "Vitrina de postres",
+		"precio_base": 9,
+		"tipo": "postre"
+	}
+}
+
+const RECETAS_MERCADO: Dictionary = {
+	"fabada": {
+		"id": "fabada",
+		"nombre": "Fabada asturiana",
+		"nombre_corto": "Fabada",
+		"detalle": "Alubias + chorizo",
+		"precio_base": 16,
+		"tipo": "plato",
+		"guiso": "fabada",
+		"extra": ""
+	},
+	"pisto": {
+		"id": "pisto",
+		"nombre": "Pisto manchego",
+		"nombre_corto": "Pisto",
+		"detalle": "Tomate + pimiento",
+		"precio_base": 14,
+		"tipo": "plato",
+		"guiso": "pisto",
+		"extra": ""
+	},
+	"pisto_huevo": {
+		"id": "pisto_huevo",
+		"nombre": "Pisto con huevo",
+		"nombre_corto": "Pisto y huevo",
+		"detalle": "Pisto + huevo frito",
+		"precio_base": 18,
+		"tipo": "plato",
+		"guiso": "pisto",
+		"extra": "huevo"
+	},
+	"arroz_senyoret": {
+		"id": "arroz_senyoret",
+		"nombre": "Arroz del senyoret",
+		"nombre_corto": "Arroz",
+		"detalle": "Arroz + marisco",
+		"precio_base": 20,
+		"tipo": "plato",
+		"guiso": "arroz",
+		"extra": ""
+	},
+	"agua": {
+		"id": "agua",
+		"nombre": "Agua",
+		"nombre_corto": "Agua",
+		"detalle": "Barra de bebidas",
+		"precio_base": 4,
+		"tipo": "bebida"
+	},
+	"sangria": {
+		"id": "sangria",
+		"nombre": "Sangría",
+		"nombre_corto": "Sangría",
+		"detalle": "Barra de bebidas",
+		"precio_base": 7,
+		"tipo": "bebida"
+	}
+}
+
+const RECETAS_ALTA: Dictionary = {
+	"solomillo_tinto": {
+		"id": "solomillo_tinto",
+		"nombre": "Solomillo al vino tinto",
+		"nombre_corto": "Solomillo",
+		"detalle": "Solomillo + salsa + puré",
+		"precio_base": 32,
+		"tipo": "plato",
+		"proteina": "solomillo",
+		"salsa": "reduccion",
+		"guarnicion": "pure",
+		"maridaje": "vino_tinto"
+	},
+	"lubina_blanca": {
+		"id": "lubina_blanca",
+		"nombre": "Lubina con beurre blanc",
+		"nombre_corto": "Lubina",
+		"detalle": "Lubina + salsa + espárragos",
+		"precio_base": 30,
+		"tipo": "plato",
+		"proteina": "lubina",
+		"salsa": "reduccion",
+		"guarnicion": "esparragos",
+		"maridaje": "vino_blanco"
+	},
+	"pato_tinto": {
+		"id": "pato_tinto",
+		"nombre": "Pato al Pedro Ximénez",
+		"nombre_corto": "Pato",
+		"detalle": "Pato + salsa + puré",
+		"precio_base": 36,
+		"tipo": "plato",
+		"proteina": "pato",
+		"salsa": "reduccion",
+		"guarnicion": "pure",
+		"maridaje": "vino_tinto"
+	},
+	"vino_tinto": {
+		"id": "vino_tinto",
+		"nombre": "Copa de tinto",
+		"nombre_corto": "Tinto",
+		"detalle": "Bodega",
+		"precio_base": 10,
+		"tipo": "bebida"
+	},
+	"vino_blanco": {
+		"id": "vino_blanco",
+		"nombre": "Copa de blanco",
+		"nombre_corto": "Blanco",
+		"detalle": "Bodega",
+		"precio_base": 10,
+		"tipo": "bebida"
+	}
+}
+
+const RECETAS_POR_RESTAURANTE: Dictionary = {
+	"burger_street": RECETAS_BURGER_STREET,
+	"bistro_tradicional": RECETAS_BISTRO,
+	"cocina_mercado": RECETAS_MERCADO,
+	"alta_cocina": RECETAS_ALTA
+}
+
+# Combinaciones de la olla de mercado. El orden no importa.
+const COMBOS_OLLA: Dictionary = {
+	"fabada": ["alubias", "chorizo"],
+	"pisto": ["tomate", "pimiento"],
+	"arroz": ["arroz", "marisco"]
+}
+
+# Umbrales de punto del filete (progreso 0..1). El quemado se controla aparte.
+const PUNTO_FILETE_UMBRALES: Array[float] = [0.30, 0.55, 0.78, 1.0]
+const VENTANA_ALTA_INICIO: float = 0.62
+const VENTANA_ALTA_FIN: float = 0.88
+
+# Perfil de cada mundo: qué se cocina, cómo se llama y qué hay en la despensa.
+# La GUI lee este diccionario para construir estaciones, bebidas y puestos.
+const PERFILES_RESTAURANTE: Dictionary = {
+	"burger_street": {
+		"mecanica": "montaje",
+		"mecanica_titulo": "Montaje de hamburguesas",
+		"mecanica_texto": "Cocina la carne, fríe patatas y monta cada hamburguesa en el pase.",
+		"fondo": "res://Imagenes/Minijuego_Cocina/Fondo_Restaurante.png",
+		"fondo_selector": "res://Imagenes/Minijuego_Cocina/Fondo_Restaurante_Selector.png",
+		"estacion_a": {"tipo": "plancha", "nombre": "PLANCHA"},
+		"estacion_b": {"tipo": "freidora", "nombre": "FREIDORA"},
+		"bebida": {"tipo": "refresco", "nombre": "REFRESCOS", "items": ["refresco"]},
+		"emplatado": "hamburguesa",
+		"tinte_mostrador": "#ffffff",
+		"puestos": [
+			{"id": "pan", "nombre": "Pan", "estilo": "pan"},
+			{"id": "carne", "nombre": "Carne", "estilo": "carne"},
+			{"id": "patatas", "nombre": "Patatas", "estilo": "patatas"},
+			{"id": "queso", "nombre": "Queso", "estilo": "queso"},
+			{"id": "lechuga", "nombre": "Lechuga", "estilo": "lechuga"},
+			{"id": "tomate", "nombre": "Tomate", "estilo": "tomate"}
+		]
+	},
+	"bistro_tradicional": {
+		"mecanica": "punto",
+		"mecanica_titulo": "Punto de la carne",
+		"mecanica_texto": "Deja el filete en su punto exacto: poco hecho, al punto o hecho. La barra de la parrilla marca cada tramo.",
+		"fondo": "res://Imagenes/Minijuego_Cocina/Fondos/Fondo_Bistro.png",
+		"fondo_selector": "res://Imagenes/Minijuego_Cocina/Fondos/Fondo_Bistro.png",
+		"estacion_a": {"tipo": "parrilla", "nombre": "PARRILLA"},
+		"estacion_b": {"tipo": "freidora", "nombre": "FREIDORA"},
+		"bebida": {"tipo": "cafetera", "nombre": "CAFETERA", "items": ["cafe"]},
+		"emplatado": "bistro",
+		"tinte_mostrador": "#f3e3c3",
+		"puestos": [
+			{"id": "carne", "nombre": "Filete", "estilo": "filete_crudo"},
+			{"id": "patatas", "nombre": "Patatas", "estilo": "patatas"},
+			{"id": "salsa", "nombre": "Salsa", "estilo": "salsa"},
+			{"id": "tarta_cereza", "nombre": "Tarta", "estilo": "tarta"}
+		]
+	},
+	"cocina_mercado": {
+		"mecanica": "lote",
+		"mecanica_titulo": "Guisos por lotes",
+		"mecanica_texto": "Añade los ingredientes a la olla, cocina una tanda de 4 raciones y sírvelas una a una.",
+		"fondo": "res://Imagenes/Minijuego_Cocina/Fondos/Fondo_Mercado.png",
+		"fondo_selector": "res://Imagenes/Minijuego_Cocina/Fondos/Fondo_Mercado.png",
+		"estacion_a": {"tipo": "olla", "nombre": "OLLA"},
+		"estacion_b": {"tipo": "plancha", "nombre": "PLANCHA"},
+		"bebida": {"tipo": "barra", "nombre": "BEBIDAS", "items": ["agua", "sangria"]},
+		"emplatado": "mercado",
+		"tinte_mostrador": "#e8c9a0",
+		"puestos": [
+			{"id": "alubias", "nombre": "Alubias", "estilo": "alubias"},
+			{"id": "chorizo", "nombre": "Chorizo", "estilo": "chorizo"},
+			{"id": "tomate", "nombre": "Tomate", "estilo": "tomate"},
+			{"id": "pimiento", "nombre": "Pimiento", "estilo": "pimiento"},
+			{"id": "arroz", "nombre": "Arroz", "estilo": "arroz"},
+			{"id": "marisco", "nombre": "Marisco", "estilo": "marisco"},
+			{"id": "huevo", "nombre": "Huevo", "estilo": "huevo"}
+		]
+	},
+	"alta_cocina": {
+		"mecanica": "precision",
+		"mecanica_titulo": "Alta precisión",
+		"mecanica_texto": "Retira la proteína dentro de la ventana dorada, remueve la salsa para que no se queme y sirve el vino del maridaje.",
+		"fondo": "res://Imagenes/Minijuego_Cocina/Fondos/Fondo_Alta_Cocina.png",
+		"fondo_selector": "res://Imagenes/Minijuego_Cocina/Fondos/Fondo_Alta_Cocina.png",
+		"estacion_a": {"tipo": "horno", "nombre": "HORNO"},
+		"estacion_b": {"tipo": "sarten", "nombre": "SALSAS"},
+		"bebida": {"tipo": "bodega", "nombre": "BODEGA", "items": ["vino_tinto", "vino_blanco"]},
+		"emplatado": "alta",
+		"tinte_mostrador": "#cfd8e8",
+		"puestos": [
+			{"id": "solomillo", "nombre": "Solomillo", "estilo": "solomillo"},
+			{"id": "lubina", "nombre": "Lubina", "estilo": "lubina"},
+			{"id": "pato", "nombre": "Pato", "estilo": "pato"},
+			{"id": "pure", "nombre": "Puré", "estilo": "pure"},
+			{"id": "esparragos", "nombre": "Espárragos", "estilo": "esparragos"},
+			{"id": "flor", "nombre": "Flor", "estilo": "flor"}
+		]
+	}
+}
+
+# Nombres de las 5 mejoras adaptados a la estación de cada mundo. Los números
+# y costes son los mismos; solo cambia cómo se llama la mejora en la pantalla.
+const NOMBRES_MEJORAS_POR_RESTAURANTE: Dictionary = {
+	"bistro_tradicional": {
+		"plancha": {"nombre": "Parrilla y Freidora", "nombre_corto": "Parrilla"},
+		"emplatado": {"nombre": "Pase y Cafetera", "nombre_corto": "Pase y Café"},
+		"termostato": {"nombre": "Punto de la Carne", "nombre_corto": "Punto"},
+		"ingredientes": {"nombre": "Género Seleccionado", "nombre_corto": "Género"},
+		"ambiente": {"nombre": "Ambiente del Bistró", "nombre_corto": "Ambiente"}
+	},
+	"cocina_mercado": {
+		"plancha": {"nombre": "Olla y Plancha", "nombre_corto": "Olla y Plancha"},
+		"emplatado": {"nombre": "Pase y Bebidas", "nombre_corto": "Pase y Bebidas"},
+		"termostato": {"nombre": "Fuego de la Olla", "nombre_corto": "Fuego"},
+		"ingredientes": {"nombre": "Producto de Mercado", "nombre_corto": "Producto"},
+		"ambiente": {"nombre": "Ambiente de Taberna", "nombre_corto": "Ambiente"}
+	},
+	"alta_cocina": {
+		"plancha": {"nombre": "Horno y Sartén", "nombre_corto": "Horno y Sartén"},
+		"emplatado": {"nombre": "Pase y Bodega", "nombre_corto": "Pase y Bodega"},
+		"termostato": {"nombre": "Precisión del Horno", "nombre_corto": "Precisión"},
+		"ingredientes": {"nombre": "Producto de Autor", "nombre_corto": "Producto"},
+		"ambiente": {"nombre": "Ambiente Gourmet", "nombre_corto": "Ambiente"}
+	}
+}
+
+# Textos completos de la pantalla de Mejoras para cada mundo. Los números y
+# costes siguen viviendo en MEJORAS_DEF; aquí solo se adapta el relato y los
+# beneficios a las estaciones reales de cada restaurante, para que el Bistró no
+# siga mostrando «vasos de refresco» ni una parrilla con hamburguesas.
+const MEJORAS_UI_POR_RESTAURANTE: Dictionary = {
+	"bistro_tradicional": {
+		"plancha": {
+			"nombre": "Parrilla y Freidora",
+			"nombre_corto": "Parrilla",
+			"niveles": [
+				{
+					"nombre": "Básica",
+					"beneficios": ["2 filetes a la parrilla", "1 cesta de patatas", "Punto de la carne visible"],
+					"ganancias": [],
+					"frase": "Dos filetes y una cesta. La parrilla ya está caliente."
+				},
+				{
+					"nombre": "Mejorada",
+					"beneficios": ["3 filetes a la parrilla", "2 cestas de patatas", "Cocción un 20% más rápida"],
+					"ganancias": ["+1 filete a la parrilla", "+1 cesta de patatas", "−20% tiempo de cocción"],
+					"frase": "Tres filetes y dos cestas: el bistró empieza a llenarse."
+				},
+				{
+					"nombre": "Profesional",
+					"beneficios": ["4 filetes a la parrilla", "2 cestas de patatas", "Cocción un 35% más rápida"],
+					"ganancias": ["+1 filete a la parrilla", "−15% tiempo de cocción"],
+					"frase": "Cuatro filetes a la vez. La parrilla ya no te frena."
+				}
+			]
+		},
+		"emplatado": {
+			"nombre": "Pase y Cafetera",
+			"nombre_corto": "Pase y Café",
+			"niveles": [
+				{
+					"nombre": "Básico",
+					"beneficios": ["2 platos de pase", "1 taza de café a la vez", "Café en 4.0 s"],
+					"ganancias": [],
+					"frase": "Dos platos y una taza para empezar. Con tres platos el pase respira."
+				},
+				{
+					"nombre": "Mejorado",
+					"beneficios": ["3 platos de pase", "2 tazas a la vez", "Café en 2.5 s"],
+					"ganancias": ["+1 plato de pase", "+1 taza a la vez", "−1.5 s por café"],
+					"frase": "Tres platos y dos tazas: sirve sin cruzar pedidos ni esperar."
+				},
+				{
+					"nombre": "Profesional",
+					"beneficios": ["4 platos de pase", "3 tazas a la vez", "Café en 1.0 s"],
+					"ganancias": ["+1 plato de pase", "+1 taza a la vez", "−1.5 s por café"],
+					"frase": "Cuatro platos y tres tazas. El pase del bistró ya vuela."
+				}
+			]
+		},
+		"termostato": {
+			"nombre": "Punto de la Carne",
+			"nombre_corto": "Punto",
+			"niveles": [
+				{
+					"nombre": "Manual",
+					"beneficios": ["6.0 s de margen antes de quemarse", "Punto visible en la parrilla", "Dial de control básico"],
+					"ganancias": [],
+					"frase": "Seis segundos de margen para retirar el filete a tiempo."
+				},
+				{
+					"nombre": "Precisión",
+					"beneficios": ["8.1 s de margen antes de quemarse", "Punto visible en la parrilla", "Dial de precisión"],
+					"ganancias": ["+2.1 s de margen", "Dial de precisión"],
+					"frase": "Ocho segundos y un dial fino: el punto sale perfecto."
+				},
+				{
+					"nombre": "Digital",
+					"beneficios": ["10.5 s de margen antes de quemarse", "Aviso visual temprano", "Panel digital del punto"],
+					"ganancias": ["+2.4 s de margen", "Aviso visual temprano"],
+					"frase": "Diez segundos y aviso visual: quemar el filete es cosa del pasado."
+				}
+			]
+		},
+		"ingredientes": {
+			"nombre": "Género Seleccionado",
+			"nombre_corto": "Género",
+			"niveles": [
+				{
+					"nombre": "De proximidad",
+					"beneficios": ["Precio base x1.00", "Filete de proximidad", "Sin bonificación"],
+					"ganancias": [],
+					"frase": "Producto de mercado, precio justo. Con el género seleccionado cada filete sube de categoría."
+				},
+				{
+					"nombre": "Seleccionado",
+					"beneficios": ["Precio por plato x1.25", "Filete seleccionado", "+25% en cada ticket"],
+					"ganancias": ["+25% precio por plato", "Filete seleccionado"],
+					"frase": "Buen género, mejor ticket. El premium está a un paso."
+				},
+				{
+					"nombre": "Premium",
+					"beneficios": ["Precio por plato x1.50", "Filete premium", "+50% en cada ticket"],
+					"ganancias": ["+25% precio por plato", "Filete premium"],
+					"frase": "Género premium y tickets un 50% más altos. Se nota en la Caja."
+				}
+			]
+		},
+		"ambiente": {
+			"nombre": "Ambiente del Bistró",
+			"nombre_corto": "Ambiente",
+			"niveles": [
+				{
+					"nombre": "Acogedor",
+					"beneficios": ["Paciencia x1.00", "Propinas x1.00", "Manteles y luz cálida"],
+					"ganancias": [],
+					"frase": "Un bistró agradable ya suma. Con la lámpara de mesa esperan mejor."
+				},
+				{
+					"nombre": "Con lámpara",
+					"beneficios": ["Paciencia x1.15", "Propinas x1.20", "Lámpara y mantel de cuadros"],
+					"ganancias": ["+15% paciencia", "+20% propinas"],
+					"frase": "Luz cálida y mantel de cuadros: los clientes aguantan más y dejan más."
+				},
+				{
+					"nombre": "De lujo",
+					"beneficios": ["Paciencia x1.30", "Propinas x1.40", "Candelabro y terciopelo"],
+					"ganancias": ["+15% paciencia", "+20% propinas"],
+					"frase": "El bistró de lujo: esperan con gusto y dejan propinas de estrella."
+				}
+			]
+		}
+	}
+}
+
+## La Maestría Culinaria se mide en estrellas, no en niveles superados: cada
+## rango exige 20 ★ más. Con 4 mundos × 15 niveles × 3 ★ el máximo son 180 ★,
+## justo el umbral del Rango 9.
+const ESTRELLAS_POR_RANGO: int = 20
+const ESTRELLAS_TOTALES_MAX: int = 180
+
 const RANGOS_LOGRO: Array[Dictionary] = [
-	{"rango": 0, "niveles": 0, "nombre": "Aprendiz", "beneficio": "Supera 5 niveles para tu primer rango.", "prenda": ""},
-	{"rango": 1, "niveles": 5, "nombre": "Pinche de Cocina", "beneficio": "Desbloquea Delantal de Aprendiz (-5% desgaste Higiene en hostelería).", "prenda": "Delantal_Aprendiz"},
-	{"rango": 2, "niveles": 10, "nombre": "Paladar Feliz", "beneficio": "+2 extra en Salud Mental al comer (Tupper y Comida rápida).", "prenda": ""},
-	{"rango": 3, "niveles": 15, "nombre": "Cocinero Oficial", "beneficio": "Desbloquea Chaqueta de Chef (+10% salario hostelería y -5% Higiene).", "prenda": "Chaqueta_Chef"},
-	{"rango": 4, "niveles": 20, "nombre": "Compra Inteligente", "beneficio": "-20% coste en Comida rápida y +15% saciedad en Comida casera.", "prenda": ""},
-	{"rango": 5, "niveles": 25, "nombre": "Manos Expertas", "beneficio": "+15% eficiencia en Manualidades y Cocina.", "prenda": ""},
-	{"rango": 6, "niveles": 30, "nombre": "Jefe de Cocina", "beneficio": "Desbloquea Atuendo de Chef de Gala (+20% salario hostelería y -5% Higiene).", "prenda": "Atuendo_Chef_Gala"},
-	{"rango": 7, "niveles": 35, "nombre": "Nutrición Superior", "beneficio": "Comer recupera Hambre +15% más rápido y suma +1 Salud Física.", "prenda": ""},
-	{"rango": 8, "niveles": 40, "nombre": "Estómago de Hierro", "beneficio": "Inmunidad total al evento aleatorio de Intoxicación alimentaria.", "prenda": ""},
-	{"rango": 9, "niveles": 45, "nombre": "Estrella Michelin", "beneficio": "Desbloquea Traje Estrella Michelin (+30% salario, -5% Higiene, +25% propinas).", "prenda": "Traje_Estrella_Michelin"}
+	{"rango": 0, "estrellas": 0, "nombre": "Aprendiz", "beneficio": "Consigue 20 ★ para tu primer rango.", "corta": "Primer rango con 20 ★", "prenda": ""},
+	{"rango": 1, "estrellas": 20, "nombre": "Pinche de Cocina", "beneficio": "Desbloquea Delantal de Aprendiz (-5% desgaste Higiene en hostelería).", "corta": "Delantal de Aprendiz", "prenda": "Delantal_Aprendiz"},
+	{"rango": 2, "estrellas": 40, "nombre": "Paladar Feliz", "beneficio": "+2 extra en Salud Mental al comer (Tupper y Comida rápida).", "corta": "+2 Salud Mental al comer", "prenda": ""},
+	{"rango": 3, "estrellas": 60, "nombre": "Cocinero Oficial", "beneficio": "Desbloquea Chaqueta de Chef (+10% salario hostelería y -5% Higiene).", "corta": "Chaqueta de Chef", "prenda": "Chaqueta_Chef"},
+	{"rango": 4, "estrellas": 80, "nombre": "Compra Inteligente", "beneficio": "-20% coste en Comida rápida y +15% saciedad en Comida casera.", "corta": "-20% en comida rápida", "prenda": ""},
+	{"rango": 5, "estrellas": 100, "nombre": "Manos Expertas", "beneficio": "+15% eficiencia en Manualidades y Cocina.", "corta": "+15% en Manualidades y Cocina", "prenda": ""},
+	{"rango": 6, "estrellas": 120, "nombre": "Jefe de Cocina", "beneficio": "Desbloquea Atuendo de Chef de Gala (+20% salario hostelería y -5% Higiene).", "corta": "Atuendo de Chef de Gala", "prenda": "Atuendo_Chef_Gala"},
+	{"rango": 7, "estrellas": 140, "nombre": "Nutrición Superior", "beneficio": "Comer recupera Hambre +15% más rápido y suma +1 Salud Física.", "corta": "+1 Salud Física al comer", "prenda": ""},
+	{"rango": 8, "estrellas": 160, "nombre": "Estómago de Hierro", "beneficio": "Inmunidad total al evento aleatorio de Intoxicación alimentaria.", "corta": "Inmunidad a intoxicación", "prenda": ""},
+	{"rango": 9, "estrellas": 180, "nombre": "Estrella Michelin", "beneficio": "Desbloquea Traje Estrella Michelin (+30% salario, -5% Higiene, +25% propinas).", "corta": "Traje Estrella Michelin", "prenda": "Traje_Estrella_Michelin"}
 ]
 
 const DESBLOQUEO_INICIO: String = "inicio"
@@ -379,6 +844,10 @@ const NOMBRES_ROPA: Dictionary = {
 
 var _restaurantes: Dictionary = {}
 
+## MODO PRUEBA: desbloquea los 4 mundos y sus 15 niveles sin exigir los
+## trabajos de hostelería ni las estrellas. Ponlo en `false` antes de publicar.
+var desbloqueo_total_qa: bool = true
+
 
 func _ready() -> void:
 	_Inicializar_Restaurantes()
@@ -403,12 +872,72 @@ func _Inicializar_Restaurantes() -> void:
 		{"nivel": 15, "clientes": 31, "meta_1": 295, "meta_2": 415, "meta_3": 535, "intervalo_spawn": 3.1, "paciencia_base": 18.0, "max_items": 3, "menu": ["burger_sola", "burger_queso", "burger_completa", "burger_doble", "patatas", "refresco"]}
 	]
 
+	# --- Generadores de los 15 niveles de los mundos 2, 3 y 4 -----------------
+	# La curva de clientes, paciencia y metas es la misma que en Burger Street
+	# para que la progresión se sienta coherente; lo que cambia es el menú y,
+	# sobre todo, la mecánica de cada mundo.
+	var menus_bistro: Array = [
+		["filete_punto", "cafe"],
+		["filete_punto", "cafe"],
+		["filete_punto", "filete_patatas", "cafe"],
+		["filete_punto", "filete_patatas", "cafe"],
+		["filete_punto", "filete_patatas", "entrecot_hecho", "cafe"],
+		["filete_punto", "filete_patatas", "entrecot_hecho", "cafe"],
+		["filete_punto", "filete_patatas", "entrecot_hecho", "filete_completo", "cafe"],
+		["filete_punto", "filete_patatas", "entrecot_hecho", "filete_completo", "cafe"],
+		["filete_punto", "filete_patatas", "entrecot_hecho", "filete_completo", "solomillo_jugoso", "cafe"],
+		["filete_punto", "filete_patatas", "entrecot_hecho", "filete_completo", "solomillo_jugoso", "cafe"],
+		["filete_punto", "filete_patatas", "entrecot_hecho", "filete_completo", "solomillo_jugoso", "cafe", "tarta_cereza"],
+		["filete_punto", "filete_patatas", "entrecot_hecho", "filete_completo", "solomillo_jugoso", "cafe", "tarta_cereza"],
+		["filete_punto", "filete_patatas", "entrecot_hecho", "filete_completo", "solomillo_jugoso", "cafe", "tarta_cereza"],
+		["filete_punto", "filete_patatas", "entrecot_hecho", "filete_completo", "solomillo_jugoso", "cafe", "tarta_cereza"],
+		["filete_punto", "filete_patatas", "entrecot_hecho", "filete_completo", "solomillo_jugoso", "cafe", "tarta_cereza"]
+	]
+	var menus_mercado: Array = [
+		["fabada", "agua"],
+		["fabada", "agua"],
+		["fabada", "pisto", "agua"],
+		["fabada", "pisto", "agua"],
+		["fabada", "pisto", "pisto_huevo", "agua"],
+		["fabada", "pisto", "pisto_huevo", "agua"],
+		["fabada", "pisto", "pisto_huevo", "arroz_senyoret", "agua"],
+		["fabada", "pisto", "pisto_huevo", "arroz_senyoret", "agua"],
+		["fabada", "pisto", "pisto_huevo", "arroz_senyoret", "agua", "sangria"],
+		["fabada", "pisto", "pisto_huevo", "arroz_senyoret", "agua", "sangria"],
+		["fabada", "pisto", "pisto_huevo", "arroz_senyoret", "agua", "sangria"],
+		["fabada", "pisto", "pisto_huevo", "arroz_senyoret", "agua", "sangria"],
+		["fabada", "pisto", "pisto_huevo", "arroz_senyoret", "agua", "sangria"],
+		["fabada", "pisto", "pisto_huevo", "arroz_senyoret", "agua", "sangria"],
+		["fabada", "pisto", "pisto_huevo", "arroz_senyoret", "agua", "sangria"]
+	]
+	var menus_alta: Array = [
+		["solomillo_tinto", "vino_tinto"],
+		["solomillo_tinto", "vino_tinto"],
+		["solomillo_tinto", "lubina_blanca", "vino_tinto"],
+		["solomillo_tinto", "lubina_blanca", "vino_tinto"],
+		["solomillo_tinto", "lubina_blanca", "vino_tinto", "vino_blanco"],
+		["solomillo_tinto", "lubina_blanca", "vino_tinto", "vino_blanco"],
+		["solomillo_tinto", "lubina_blanca", "pato_tinto", "vino_tinto", "vino_blanco"],
+		["solomillo_tinto", "lubina_blanca", "pato_tinto", "vino_tinto", "vino_blanco"],
+		["solomillo_tinto", "lubina_blanca", "pato_tinto", "vino_tinto", "vino_blanco"],
+		["solomillo_tinto", "lubina_blanca", "pato_tinto", "vino_tinto", "vino_blanco"],
+		["solomillo_tinto", "lubina_blanca", "pato_tinto", "vino_tinto", "vino_blanco"],
+		["solomillo_tinto", "lubina_blanca", "pato_tinto", "vino_tinto", "vino_blanco"],
+		["solomillo_tinto", "lubina_blanca", "pato_tinto", "vino_tinto", "vino_blanco"],
+		["solomillo_tinto", "lubina_blanca", "pato_tinto", "vino_tinto", "vino_blanco"],
+		["solomillo_tinto", "lubina_blanca", "pato_tinto", "vino_tinto", "vino_blanco"]
+	]
+	var niveles_bistro: Array = _Generar_Niveles_Mundo(menus_bistro, 75)
+	var niveles_mercado: Array = _Generar_Niveles_Mundo(menus_mercado, 85)
+	var niveles_alta: Array = _Generar_Niveles_Mundo(menus_alta, 100)
+
 	_restaurantes = {
 		RESTAURANTE_BURGER: {
 			"id": RESTAURANTE_BURGER,
 			"nombre": "Burger & Street Food",
 			"subtitulo": "Hamburguesas, patatas fritas y refrescos",
 			"implementado": true,
+			"mecanica": "montaje",
 			"trabajo_requerido": "Comida Rápida",
 			"trabajos_ids": ["Trabajar_En_Comida_Rapida"],
 			"niveles": niveles_burger
@@ -416,31 +945,56 @@ func _Inicializar_Restaurantes() -> void:
 		RESTAURANTE_BISTRO: {
 			"id": RESTAURANTE_BISTRO,
 			"nombre": "Bistró Tradicional",
-			"subtitulo": "Filetes al punto, salsas artesanas y postres",
-			"implementado": false,
+			"subtitulo": "Filetes al punto, patatas y café de máquina",
+			"implementado": true,
+			"mecanica": "punto",
 			"trabajo_requerido": "Ayudante de Cocina",
 			"trabajos_ids": ["Trabajar_De_Ayudante_Cocina"],
-			"niveles": []
+			"niveles": niveles_bistro
 		},
 		RESTAURANTE_MERCADO: {
 			"id": RESTAURANTE_MERCADO,
 			"nombre": "Cocina de Mercado",
-			"subtitulo": "Producto fresco, arroces y guisos de temporada",
-			"implementado": false,
+			"subtitulo": "Guisos por lotes, pisto y arroces de temporada",
+			"implementado": true,
+			"mecanica": "lote",
 			"trabajo_requerido": "Cocinero de Partida",
 			"trabajos_ids": ["Trabajar_De_Cocinero_Partida"],
-			"niveles": []
+			"niveles": niveles_mercado
 		},
 		RESTAURANTE_ALTA: {
 			"id": RESTAURANTE_ALTA,
 			"nombre": "Alta Cocina Gourmet",
-			"subtitulo": "Platos de autor y servicio de estrellas",
-			"implementado": false,
+			"subtitulo": "Platos de autor, salsas y maridaje de vinos",
+			"implementado": true,
+			"mecanica": "precision",
 			"trabajo_requerido": "Chef Ejecutivo",
 			"trabajos_ids": ["Trabajar_De_Chef_Ejecutivo"],
-			"niveles": []
+			"niveles": niveles_alta
 		}
 	}
+
+
+## Curva común de 15 niveles. `meta_base` ajusta el ticket medio del mundo.
+func _Generar_Niveles_Mundo(menus: Array, meta_base: int) -> Array:
+	var niveles: Array = []
+	for i in range(15):
+		var clientes: int = 11 + int(round(float(i) * 1.43))
+		var meta_1: int = int(round(float(meta_base) * (1.0 + 0.19 * float(i))))
+		var meta_2: int = int(round(float(meta_1) * 1.42))
+		var meta_3: int = int(round(float(meta_1) * 1.82))
+		niveles.append({
+			"nivel": i + 1,
+			"clientes": clientes,
+			"meta_1": meta_1,
+			"meta_2": meta_2,
+			"meta_3": meta_3,
+			"intervalo_spawn": maxf(3.1, 6.5 - 0.23 * float(i)),
+			"paciencia_base": maxf(18.0, 28.0 - 0.7 * float(i)),
+			"max_items": 2 if i < 5 else 3,
+			"menu": menus[clampi(i, 0, menus.size() - 1)]
+		})
+	return niveles
 
 
 # ============================================================================
@@ -512,30 +1066,59 @@ static func Obtener_Multiplicador_Propinas_Ambiente(nivel_ambiente: int) -> floa
 
 # --- Datos de presentación de las mejoras (pantalla de Mejoras) ------------
 
-static func Obtener_Info_Nivel_Mejora(mejora_id: String, nivel: int) -> Dictionary:
-	if not MEJORAS_DEF.has(mejora_id):
-		return {}
-	var niveles: Array = MEJORAS_DEF[mejora_id].get("niveles", [])
+static func Obtener_Nombre_Mejora(restaurante_id: String, mejora_id: String) -> String:
+	var alias: Dictionary = MEJORAS_UI_POR_RESTAURANTE.get(restaurante_id, {}).get(mejora_id, {})
+	if alias.has("nombre"):
+		return str(alias["nombre"])
+	var alias_corto: Dictionary = NOMBRES_MEJORAS_POR_RESTAURANTE.get(restaurante_id, {}).get(mejora_id, {})
+	if alias_corto.has("nombre"):
+		return str(alias_corto["nombre"])
+	return str(MEJORAS_DEF.get(mejora_id, {}).get("nombre", mejora_id))
+
+
+static func Obtener_Nombre_Corto_Mejora(restaurante_id: String, mejora_id: String) -> String:
+	var alias: Dictionary = MEJORAS_UI_POR_RESTAURANTE.get(restaurante_id, {}).get(mejora_id, {})
+	if alias.has("nombre_corto"):
+		return str(alias["nombre_corto"])
+	var alias_corto: Dictionary = NOMBRES_MEJORAS_POR_RESTAURANTE.get(restaurante_id, {}).get(mejora_id, {})
+	if alias_corto.has("nombre_corto"):
+		return str(alias_corto["nombre_corto"])
+	return str(MEJORAS_DEF.get(mejora_id, {}).get("nombre_corto", mejora_id))
+
+
+static func Obtener_Info_Nivel_Mejora(mejora_id: String, nivel: int,
+		restaurante_id: String = "") -> Dictionary:
+	var niveles: Array = []
+	var alias: Dictionary = MEJORAS_UI_POR_RESTAURANTE.get(restaurante_id, {}).get(mejora_id, {})
+	if alias.has("niveles"):
+		niveles = alias["niveles"]
+	elif MEJORAS_DEF.has(mejora_id):
+		niveles = MEJORAS_DEF[mejora_id].get("niveles", [])
 	var idx: int = clampi(nivel, 1, 3) - 1
 	if idx < 0 or idx >= niveles.size():
 		return {}
 	return niveles[idx]
 
 
-static func Obtener_Nombre_Nivel_Mejora(mejora_id: String, nivel: int) -> String:
-	return str(Obtener_Info_Nivel_Mejora(mejora_id, nivel).get("nombre", NOMBRES_NIVEL_MEJORA[clampi(nivel, 1, 3) - 1]))
+static func Obtener_Nombre_Nivel_Mejora(mejora_id: String, nivel: int,
+		restaurante_id: String = "") -> String:
+	return str(Obtener_Info_Nivel_Mejora(mejora_id, nivel, restaurante_id).get(
+		"nombre", NOMBRES_NIVEL_MEJORA[clampi(nivel, 1, 3) - 1]))
 
 
-static func Obtener_Beneficios_Nivel_Mejora(mejora_id: String, nivel: int) -> Array:
-	return Obtener_Info_Nivel_Mejora(mejora_id, nivel).get("beneficios", [])
+static func Obtener_Beneficios_Nivel_Mejora(mejora_id: String, nivel: int,
+		restaurante_id: String = "") -> Array:
+	return Obtener_Info_Nivel_Mejora(mejora_id, nivel, restaurante_id).get("beneficios", [])
 
 
-static func Obtener_Ganancias_Nivel_Mejora(mejora_id: String, nivel: int) -> Array:
-	return Obtener_Info_Nivel_Mejora(mejora_id, nivel).get("ganancias", [])
+static func Obtener_Ganancias_Nivel_Mejora(mejora_id: String, nivel: int,
+		restaurante_id: String = "") -> Array:
+	return Obtener_Info_Nivel_Mejora(mejora_id, nivel, restaurante_id).get("ganancias", [])
 
 
-static func Obtener_Frase_Nivel_Mejora(mejora_id: String, nivel: int) -> String:
-	return str(Obtener_Info_Nivel_Mejora(mejora_id, nivel).get("frase", ""))
+static func Obtener_Frase_Nivel_Mejora(mejora_id: String, nivel: int,
+		restaurante_id: String = "") -> String:
+	return str(Obtener_Info_Nivel_Mejora(mejora_id, nivel, restaurante_id).get("frase", ""))
 
 
 static func Calcular_Tiempo_Coccion(base_seg: float, nivel_plancha: int, destreza_innata: float) -> float:
@@ -679,8 +1262,8 @@ static func Resolver_Drops_Enteros(tasa: float, roll: float = -1.0) -> int:
 	return garantizados + extra
 
 
-static func Calcular_Rango_Logro(niveles_superados: int) -> int:
-	return clampi(maxi(0, niveles_superados) / 5, 0, 9)
+static func Calcular_Rango_Logro(estrellas_totales: int) -> int:
+	return clampi(maxi(0, estrellas_totales) / ESTRELLAS_POR_RANGO, 0, 9)
 
 
 static func Obtener_Prenda_Por_Rango(rango: int) -> String:
@@ -719,6 +1302,156 @@ static func Identificar_Hamburguesa(tiene_pan: bool, carnes: int, queso: bool,
 	if carnes == 2 and queso and not lechuga and not tomate:
 		return "burger_doble"
 	return ""
+
+
+# ============================================================================
+# Recetas y mecánicas de los mundos 2, 3 y 4
+# ============================================================================
+
+static func Obtener_Recetas_Restaurante(restaurante_id: String) -> Dictionary:
+	return RECETAS_POR_RESTAURANTE.get(restaurante_id, {})
+
+
+static func Obtener_Receta(restaurante_id: String, receta_id: String) -> Dictionary:
+	return Obtener_Recetas_Restaurante(restaurante_id).get(receta_id, {})
+
+
+static func Obtener_Perfil_Restaurante(restaurante_id: String) -> Dictionary:
+	return PERFILES_RESTAURANTE.get(restaurante_id, PERFILES_RESTAURANTE[RESTAURANTE_BURGER])
+
+
+## Punto del filete según el progreso (0..1) y el quemado acumulado (0..1).
+## Devuelve crudo / poco_hecho / al_punto / hecho / quemado.
+static func Calcular_Punto_Filete(progreso: float, quemado: float = 0.0) -> String:
+	if quemado >= 0.45:
+		return "quemado"
+	var p: float = clampf(progreso, 0.0, 1.0)
+	if p < PUNTO_FILETE_UMBRALES[0]:
+		return "crudo"
+	if p < PUNTO_FILETE_UMBRALES[1]:
+		return "poco_hecho"
+	if p < PUNTO_FILETE_UMBRALES[2]:
+		return "al_punto"
+	return "hecho"
+
+
+static func Punto_Filete_Legible(punto: String) -> String:
+	match punto:
+		"crudo": return "CRUDO"
+		"poco_hecho": return "POCO HECHO"
+		"al_punto": return "AL PUNTO"
+		"hecho": return "HECHO"
+		"quemado": return "QUEMADO"
+	return ""
+
+
+static func Identificar_Plato_Bistro(proteina: String, punto: String, guarnicion: String,
+		salsa: String) -> String:
+	if proteina != "filete" or punto == "" or punto == "crudo" or punto == "quemado":
+		return ""
+	for rec_id in RECETAS_BISTRO.keys():
+		var rec: Dictionary = RECETAS_BISTRO[rec_id]
+		if str(rec.get("tipo", "")) != "plato":
+			continue
+		if str(rec.get("proteina", "")) == proteina \
+				and str(rec.get("punto", "")) == punto \
+				and str(rec.get("guarnicion", "")) == guarnicion \
+				and str(rec.get("salsa", "")) == salsa:
+			return rec_id
+	return ""
+
+
+## Devuelve el id del guiso cuya lista de ingredientes coincide exactamente.
+static func Resolver_Receta_Olla(ingredientes: Array) -> String:
+	var set_ing: Array = []
+	for raw in ingredientes:
+		var ing: String = str(raw)
+		if ing != "" and not set_ing.has(ing):
+			set_ing.append(ing)
+	if set_ing.is_empty():
+		return ""
+	for rec_id in COMBOS_OLLA.keys():
+		var combo: Array = COMBOS_OLLA[rec_id]
+		if combo.size() != set_ing.size():
+			continue
+		var coincide: bool = true
+		for ing in combo:
+			if not set_ing.has(str(ing)):
+				coincide = false
+				break
+		if coincide:
+			return rec_id
+	return ""
+
+
+## La olla admite un ingrediente si pertenece a algún guiso y no completa
+## una combinación imposible. Evita que el jugador meta ingredientes al azar.
+static func Olla_Acepta_Ingrediente(ingredientes: Array, ing: String) -> bool:
+	if ing == "":
+		return false
+	if ingredientes.has(ing):
+		return false
+	if ingredientes.size() >= 2:
+		return false
+	if ingredientes.is_empty():
+		for combo in COMBOS_OLLA.values():
+			if (combo as Array).has(ing):
+				return true
+		return false
+	# Con un ingrediente ya dentro, el nuevo debe completar el mismo guiso.
+	var primero: String = str(ingredientes[0])
+	for combo in COMBOS_OLLA.values():
+		if (combo as Array).has(primero) and (combo as Array).has(ing):
+			return true
+	return false
+
+
+static func Receta_De_Olla(receta_id: String) -> Dictionary:
+	return RECETAS_MERCADO.get(receta_id, {})
+
+
+static func Identificar_Plato_Mercado(guiso: String, extra: String) -> String:
+	if guiso == "":
+		return ""
+	for rec_id in RECETAS_MERCADO.keys():
+		var rec: Dictionary = RECETAS_MERCADO[rec_id]
+		if str(rec.get("tipo", "")) != "plato":
+			continue
+		if str(rec.get("guiso", "")) == guiso and str(rec.get("extra", "")) == extra:
+			return rec_id
+	return ""
+
+
+static func Identificar_Plato_Alta(proteina: String, salsa: String, guarnicion: String) -> String:
+	if proteina == "" or salsa == "" or guarnicion == "":
+		return ""
+	for rec_id in RECETAS_ALTA.keys():
+		var rec: Dictionary = RECETAS_ALTA[rec_id]
+		if str(rec.get("tipo", "")) != "plato":
+			continue
+		if str(rec.get("proteina", "")) == proteina \
+				and str(rec.get("salsa", "")) == salsa \
+				and str(rec.get("guarnicion", "")) == guarnicion:
+			return rec_id
+	return ""
+
+
+## Ventana del horno de alta cocina: crudo, listo o pasado.
+static func Estado_Proteina_Alta(progreso: float) -> String:
+	var p: float = clampf(progreso, 0.0, 1.2)
+	if p < VENTANA_ALTA_INICIO:
+		return "crudo"
+	if p <= VENTANA_ALTA_FIN:
+		return "listo"
+	return "pasado"
+
+
+static func Es_Receta_Bebida(restaurante_id: String, receta_id: String) -> bool:
+	return str(Obtener_Receta(restaurante_id, receta_id).get("tipo", "")) == "bebida"
+
+
+static func Es_Receta_Postre(restaurante_id: String, receta_id: String) -> bool:
+	return str(Obtener_Receta(restaurante_id, receta_id).get("tipo", "")) == "postre"
 
 
 # ============================================================================
@@ -762,7 +1495,45 @@ func Obtener_Caja_Restaurante() -> int:
 
 
 func Obtener_Rango_Logro() -> int:
-	return clampi(int(Obtener_Estado().get("rango_logro", 0)), 0, 9)
+	return Calcular_Rango_Logro(Contar_Estrellas_Totales())
+
+
+func Obtener_Estrellas_Rango(rango: int) -> int:
+	var r: int = clampi(rango, 0, RANGOS_LOGRO.size() - 1)
+	return int(RANGOS_LOGRO[r].get("estrellas", 0))
+
+
+## Resumen listo para la UI de Maestría: rango actual, estrellas totales,
+## umbrales y progreso dentro del rango, además de la recompensa siguiente.
+func Obtener_Progreso_Maestria() -> Dictionary:
+	var estrellas: int = Contar_Estrellas_Totales()
+	var rango: int = Calcular_Rango_Logro(estrellas)
+	var info: Dictionary = Obtener_Info_Rango(rango)
+	var maximo: bool = rango >= 9
+	var umbral_actual: int = Obtener_Estrellas_Rango(rango)
+	var umbral_siguiente: int = umbral_actual
+	var info_siguiente: Dictionary = info
+	if not maximo:
+		info_siguiente = RANGOS_LOGRO[rango + 1]
+		umbral_siguiente = int(info_siguiente.get("estrellas", ESTRELLAS_TOTALES_MAX))
+	var necesario: int = maxi(1, umbral_siguiente - umbral_actual)
+	var en_rango: int = clampi(estrellas - umbral_actual, 0, necesario)
+	var progreso: float = 1.0 if maximo \
+		else clampf(float(en_rango) / float(necesario), 0.0, 1.0)
+	return {
+		"rango": rango,
+		"estrellas": estrellas,
+		"estrellas_max": ESTRELLAS_TOTALES_MAX,
+		"maximo": maximo,
+		"umbral_actual": umbral_actual,
+		"umbral_siguiente": umbral_siguiente,
+		"en_rango": en_rango,
+		"necesario": necesario,
+		"faltan": maxi(0, umbral_siguiente - estrellas),
+		"progreso": progreso,
+		"info": info,
+		"info_siguiente": info_siguiente
+	}
 
 
 func Obtener_Info_Rango(rango: int = -1) -> Dictionary:
@@ -775,13 +1546,26 @@ func Es_Inmune_Intoxicacion() -> bool:
 
 
 func Esta_Desbloqueado_Minijuego() -> bool:
+	if desbloqueo_total_qa:
+		return true
 	var desbl: Array = Obtener_Estado().get("restaurantes_desbloqueados", [])
 	return not desbl.is_empty()
 
 
 func Esta_Desbloqueado_Restaurante(restaurante_id: String) -> bool:
+	if desbloqueo_total_qa:
+		return true
 	var desbl: Array = Obtener_Estado().get("restaurantes_desbloqueados", [])
-	return desbl.has(restaurante_id)
+	if desbl.has(restaurante_id):
+		return true
+	# Progresión dentro del minijuego: superar un nivel del mundo anterior
+	# abre el siguiente, sin obligar a esperar al turno de trabajo. El puesto
+	# de hostelería sigue siendo una vía alternativa de desbloqueo.
+	var idx: int = ORDEN_RESTAURANTES.find(restaurante_id)
+	if idx > 0:
+		var anterior: String = ORDEN_RESTAURANTES[idx - 1]
+		return Contar_Niveles_Superados(anterior) > 0
+	return false
 
 
 func Obtener_Estrellas_Nivel(restaurante_id: String, nivel: int) -> int:
@@ -791,6 +1575,8 @@ func Obtener_Estrellas_Nivel(restaurante_id: String, nivel: int) -> int:
 
 
 func Esta_Nivel_Desbloqueado(restaurante_id: String, nivel: int) -> bool:
+	if desbloqueo_total_qa:
+		return true
 	if not Esta_Desbloqueado_Restaurante(restaurante_id):
 		return false
 	var r: Dictionary = Obtener_Restaurante(restaurante_id)
@@ -1139,14 +1925,16 @@ func Procesar_Fin_Nivel(restaurante_id: String, nivel: int, recaudacion: int,
 	if dinero_ganado > 0.0:
 		Variables_Dinamicas.Dinero += dinero_ganado
 
-	# Logros progresivos cada 5 niveles superados y ropa equipable
+	# Logros progresivos cada 20 estrellas y ropa equipable
 	var niveles_superados: int = Contar_Niveles_Superados()
+	var estrellas_totales: int = Contar_Estrellas_Totales()
 	if niveles_superados > Variables_Estaticas.Record_Max_Niveles_Cocina:
 		Variables_Estaticas.Record_Max_Niveles_Cocina = niveles_superados
 		Guardar_Variables_Estaticas.save_game()
 
-	var rango_anterior: int = Obtener_Rango_Logro()
-	var rango_nuevo: int = Calcular_Rango_Logro(niveles_superados)
+	var rango_anterior: int = Calcular_Rango_Logro(
+		estrellas_totales - maxi(0, estrellas - estrellas_previas))
+	var rango_nuevo: int = Calcular_Rango_Logro(estrellas_totales)
 	var prendas_desbloqueadas: Array[String] = []
 
 	if rango_nuevo > rango_anterior:
@@ -1157,9 +1945,8 @@ func Procesar_Fin_Nivel(restaurante_id: String, nivel: int, recaudacion: int,
 			if prenda != "":
 				Variables_Dinamicas.Objetos_Poseidos[prenda] = true
 				prendas_desbloqueadas.append(prenda)
-			var msg_desc: String = "Has alcanzado el Rango %d/9 de Maestría Culinaria (%s) tras superar %d niveles.\n\nRecompensa: %s" % [
-				r, str(info_r.get("nombre", "")), niveles_superados, str(info_r.get("beneficio", ""))
-			]
+			var msg_desc: String = "Has alcanzado el Rango %d/9 de Maestría Culinaria (%s) con %d estrellas.\n\nRecompensa: %s" % [
+				r, str(info_r.get("nombre", "")), estrellas_totales, str(info_r.get("beneficio", ""))]
 			if prenda != "":
 				msg_desc += "\n\nPuedes equipar %s en Vestuario (barra superior)." % Obtener_Nombre_Legible_Ropa(prenda)
 			_Agregar_Mensaje_Buzon("Maestría Culinaria: Rango %d/9" % r, msg_desc)
@@ -1194,6 +1981,7 @@ func Procesar_Fin_Nivel(restaurante_id: String, nivel: int, recaudacion: int,
 		"en_turno": en_turno,
 		"plus_nomina_activado": plus_nomina_activado,
 		"niveles_superados": niveles_superados,
+		"estrellas_totales": estrellas_totales,
 		"rango_anterior": rango_anterior,
 		"rango_nuevo": maxi(rango_anterior, rango_nuevo),
 		"subio_rango": rango_nuevo > rango_anterior,

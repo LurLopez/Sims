@@ -14,9 +14,6 @@ extends Objeto
 
 @export var bonus_salario_general: float = 0.0
 @export var bonus_salario_hosteleria: float = 0.0
-@export var bonus_progreso_deporte: float = 0.0
-@export var bonus_progreso_academico: float = 0.0
-@export var bonus_progreso_manualidades: float = 0.0
 @export var reduccion_higiene_trabajo: float = 0.0
 @export var reduccion_higiene_cualquier_trabajo: float = 0.0
 @export var bonus_propinas_minijuego: float = 0.0

@@ -185,6 +185,8 @@ class Base extends Button:
 # ============================================================================
 
 class Fondo_Mapa extends Base:
+	var textura: Texture2D = TEX_FONDO
+
 	func _ready() -> void:
 		mouse_filter = Control.MOUSE_FILTER_IGNORE
 		set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -194,7 +196,7 @@ class Fondo_Mapa extends Base:
 		if size.x <= 1.0 or size.y <= 1.0:
 			return
 		# Foto del restaurante desenfocada y estirada a pantalla completa.
-		draw_texture_rect(TEX_FONDO, Rect2(Vector2.ZERO, size), false,
+		draw_texture_rect(textura, Rect2(Vector2.ZERO, size), false,
 			Color(1.0, 1.0, 1.0, 1.0))
 		# Oscurecido azul con degradado (arriba más profundo, centro respirable).
 		var tinte_arriba := Color(0.03, 0.11, 0.23, 0.66)

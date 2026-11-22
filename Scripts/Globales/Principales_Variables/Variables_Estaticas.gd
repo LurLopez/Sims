@@ -1,5 +1,7 @@
 extends Node
 
+const CATALOGO_TIENDA := preload("res://Scripts/Logica/Escena_Principal/Economia/Catalogo_Tienda.gd")
+
 # Economía
 const ALQUILER_SEMANAL: int = 200
 # Bancarrota: cuando Dinero < 0, las necesidades básicas no pueden superar este valor.
@@ -367,58 +369,77 @@ func _Inicializar_Catalogo():
 	]
 
 func _Inicializar_Catalogo_Objetos():
-	# Camas (afectan a Dormir)
-	var cama_basica = Objeto_Dormir.new()
-	cama_basica.nombre = "Cama_Basica"
-	cama_basica.precio = 0.0
-	cama_basica.multiplicador = 1.0
-	cama_basica.afecta_a = "Dormir"
-	cama_basica.es_basico = true
-	Catalogo_Objetos["Cama_Basica"] = cama_basica
-
-	var cama_premium = Objeto_Dormir.new()
-	cama_premium.nombre = "Cama_Premium"
-	cama_premium.precio = 200.0
-	cama_premium.multiplicador = 1.05
-	cama_premium.afecta_a = "Dormir"
-	cama_premium.es_basico = false
-	Catalogo_Objetos["Cama_Premium"] = cama_premium
-
-	var cama_lujo = Objeto_Dormir.new()
-	cama_lujo.nombre = "Cama_Lujo"
-	cama_lujo.precio = 800.0
-	cama_lujo.multiplicador = 1.10
-	cama_lujo.afecta_a = "Dormir"
-	cama_lujo.es_basico = false
-	Catalogo_Objetos["Cama_Lujo"] = cama_lujo
-
-	# Mesa básica (objeto inicial decorativo: comer ya no depende de mesas)
-	var mesa_basica = Objeto_Comer.new()
-	mesa_basica.nombre = "Mesa_Basica"
-	mesa_basica.precio = 0.0
-	mesa_basica.multiplicador = 1.0
-	mesa_basica.afecta_a = "Comer"
-	mesa_basica.es_basico = true
-	Catalogo_Objetos["Mesa_Basica"] = mesa_basica
-
-	# Duchas (afectan a Duchar)
-	var ducha_basica = Objeto_Duchar.new()
-	ducha_basica.nombre = "Ducha_Basica"
-	ducha_basica.precio = 0.0
-	ducha_basica.multiplicador = 1.0
-	ducha_basica.afecta_a = "Duchar"
-	ducha_basica.es_basico = true
-	Catalogo_Objetos["Ducha_Basica"] = ducha_basica
-
-	var ducha_premium = Objeto_Duchar.new()
-	ducha_premium.nombre = "Ducha_Premium"
-	ducha_premium.precio = 200.0
-	ducha_premium.multiplicador = 1.05
-	ducha_premium.afecta_a = "Duchar"
-	ducha_premium.es_basico = false
-	Catalogo_Objetos["Ducha_Premium"] = ducha_premium
+	# Muebles: datos centralizados en Catalogo_Tienda.gd (categorías, precios,
+	# efecto y bonificaciones). Aquí solo se materializan como Objeto.
+	CATALOGO_TIENDA.Registrar_En(Catalogo_Objetos)
 
 	# Ropa equipable: datos centralizados en Ropa_Catalogo.gd.
 	# Las prendas de inicio son gratis, las de tienda se compran con dinero y
 	# las de rango se desbloquean con Maestría Culinaria.
 	Ropa_Catalogo.Registrar_En(Catalogo_Objetos)
+
+
+## Objeto seleccionado de una categoría (solo muebles, nunca ropa).
+func Obtener_Objeto_Seleccionado(categoria: String) -> Objeto:
+	var clave: String = str(Variables_Dinamicas.Objeto_Seleccionado.get(categoria, ""))
+	if clave == "":
+		return null
+	var objeto = Catalogo_Objetos.get(clave, null)
+	if not (objeto is Objeto):
+		return null
+	if objeto is Objeto_Ropa:
+		return null
+	if objeto.afecta_a != categoria:
+		return null
+	return objeto
+
+
+## Multiplicador del mueble equipado en una categoría (1.0 si no hay ninguno).
+func Obtener_Multiplicador_Objeto(categoria: String) -> float:
+	var objeto := Obtener_Objeto_Seleccionado(categoria)
+	return objeto.multiplicador if objeto != null else 1.0
+
+
+## Bonus de progreso de muebles: 0 = Deporte, 1 = Académico, 2 = Manualidades.
+func Obtener_Bonus_Progreso_Objeto(indice: int) -> float:
+	var total := 0.0
+	for categoria in ["Estudio", "Deporte"]:
+		var objeto := Obtener_Objeto_Seleccionado(categoria)
+		if objeto == null:
+			continue
+		match indice:
+			0:
+				total += maxf(0.0, objeto.bonus_progreso_deporte)
+			1:
+				total += maxf(0.0, objeto.bonus_progreso_academico)
+			2:
+				total += maxf(0.0, objeto.bonus_progreso_manualidades)
+	return total
+
+
+func Obtener_Bonus_Progreso_Cocina_Objeto() -> float:
+	var objeto := Obtener_Objeto_Seleccionado("Cocina")
+	return maxf(0.0, objeto.bonus_progreso_cocina) if objeto != null else 0.0
+
+
+func Obtener_Bonus_Calidad_Tupper_Objeto() -> float:
+	var objeto := Obtener_Objeto_Seleccionado("Cocina")
+	return maxf(0.0, objeto.bonus_calidad_tupper) if objeto != null else 0.0
+
+
+## Asegura que cada categoría tenga su mueble básico poseído y seleccionado.
+## Se usa al crear partida y al cargar saves anteriores al catálogo ampliado.
+func Asegurar_Objetos_Basicos() -> void:
+	for categoria in CATALOGO_TIENDA.CATEGORIAS:
+		var clave_basica: String = str(categoria.get("basico", ""))
+		var id: String = str(categoria.get("id", ""))
+		if clave_basica == "" or not Catalogo_Objetos.has(clave_basica):
+			continue
+		if not bool(Variables_Dinamicas.Objetos_Poseidos.get(clave_basica, false)):
+			Variables_Dinamicas.Objetos_Poseidos[clave_basica] = true
+		var actual: String = str(Variables_Dinamicas.Objeto_Seleccionado.get(id, ""))
+		var valido: bool = actual != "" \
+			and Catalogo_Objetos.has(actual) \
+			and bool(Variables_Dinamicas.Objetos_Poseidos.get(actual, false))
+		if not valido:
+			Variables_Dinamicas.Objeto_Seleccionado[id] = clave_basica

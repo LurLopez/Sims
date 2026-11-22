@@ -30,6 +30,18 @@ func _Preparar_Escena(todo_desbloqueado: bool, genero: String = "hombre") -> voi
 	Variables_Estaticas.Apariencia = Apariencia_Personaje.normalizar(ap)
 	Variables_Estaticas.Modo_Rapido = false
 	Variables_Estaticas.Record_Max_Niveles_Cocina = 45 if todo_desbloqueado else 0
+	Variables_Dinamicas.Cocina_Estado = Variables_Dinamicas.Cocina_Estado_Por_Defecto()
+	Variables_Dinamicas.Cocina_Estado["estrellas_nivel"] = {}
+	var restante_estrellas: int = Sistema_Cocina.ESTRELLAS_TOTALES_MAX if todo_desbloqueado else 34
+	for rest_id in Sistema_Cocina.ORDEN_RESTAURANTES:
+		for n in range(1, 16):
+			if restante_estrellas <= 0:
+				break
+			var valor_estrellas: int = mini(3, restante_estrellas)
+			Variables_Dinamicas.Cocina_Estado["estrellas_nivel"]["%s_%d" % [rest_id, n]] = valor_estrellas
+			restante_estrellas -= valor_estrellas
+		if restante_estrellas <= 0:
+			break
 	Variables_Dinamicas.Dinero = 950.0
 	Variables_Dinamicas.Objetos_Poseidos["Ropa_Calle"] = true
 	if todo_desbloqueado:

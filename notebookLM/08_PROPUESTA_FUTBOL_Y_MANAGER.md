@@ -116,10 +116,12 @@ Puedes copiar cualquiera de estos prompts en tu chat con NotebookLM teniendo car
 
 ---
 
-## 6. Estado de implementación
+## 6. Estado de implementación (actualizado nov 2026)
 
 - **Fase 1 — Modo Jugador: IMPLEMENTADA** en SIMS 0.33.
   - Autoload `Sistema_Futbol`, motor puro `Simulador_Futbol`, calendario `Calendario_Futbol`, `Actividad_Partido` P3, panel `Panel_Futbol.tscn`, 34 tests GUT.
   - Documentación técnica: `Funcionalidades/Actividades/Futbol/Documentacion/CARRERA_FUTBOL.md`.
   - Incluye fichaje, entrenamientos, liga dominical de 4 equipos con playoff, partido decisivo diario en Modo Rápido, primas, salario, lesiones y conflictos con el trabajo.
-- **Fase 2 — Retiro y Modo Mánager (*Top Eleven*): PENDIENTE.** Las preguntas de la sección 4 siguen abiertas para esa fase.
+- **Siguiente paso en el Roadmap v3.0 (Prioridad 2): Minijuego de partido MVP («Partido en 90 segundos»):**
+  - Ver `01_ROADMAP_Y_PROGRESO.md` §3.2. Vertical `720×1280`, 5–6 acciones decisivas (3 ataques, 2 defensas y penalti si hay empate) al comenzar un bloque `Partido_Futbol`, con tarjeta «Hoy hay partido: ¿lo juegas?» y auto-simulación si el jugador no responde o elige simular.
+- **Fase 2 — Retiro y Modo Mánager (*Top Eleven*): POSPUESTA.** No se inicia hasta cerrar los 4 pilares de la Fase 1 (Universidad, Fútbol MVP, Bolsa Trading y balance de Cocina). Las preguntas de la sección 4C–D siguen abiertas para esa etapa.

@@ -13,15 +13,20 @@ func Ejecutar_Actividad_Necesidades_Basicas_Array(efecto_necesidades_basicas, no
 	Ejecutar_Actividad_Necesidades_Basicas(efecto_necesidades_basicas[4],4,20,multiplicador,reduccion_higiene)
 
 
+const _CATEGORIA_POR_ACTIVIDAD := {
+	"Dormir": "Dormir",
+	"Duchar": "Duchar",
+	"Comer_Tupper": "Comer",
+	"Comer_Basura": "Comer",
+	"Ver_La_Television": "Salon",
+}
+
+
 func _Obtener_Multiplicador(nombre_actividad: String) -> float:
-	match nombre_actividad:
-		"Dormir", "Duchar":
-			var objeto_clave = Variables_Dinamicas.Objeto_Seleccionado.get(nombre_actividad, "")
-			if objeto_clave == "" or not Variables_Estaticas.Catalogo_Objetos.has(objeto_clave):
-				return 1.0
-			return Variables_Estaticas.Catalogo_Objetos[objeto_clave].multiplicador
-		_:
-			return 1.0
+	var categoria: String = str(_CATEGORIA_POR_ACTIVIDAD.get(nombre_actividad, ""))
+	if categoria == "":
+		return 1.0
+	return Variables_Estaticas.Obtener_Multiplicador_Objeto(categoria)
 
 
 func Ejecutar_Actividad_Necesidades_Basicas(por_cuanto,indice,frecuencia,multiplicador:float=1.0,reduccion_desgaste:float=0.0):

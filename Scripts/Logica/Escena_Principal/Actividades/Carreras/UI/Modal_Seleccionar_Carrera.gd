@@ -1,4 +1,8 @@
-extends AcceptDialog
+extends "res://Scripts/Logica/Escena_Principal/Actividades/Carreras/UI/Modal_Carrera_Base.gd"
+
+# Selector de titulación. Conserva la señal y la lista de carreras originales,
+# pero presenta cada grado como una tarjeta táctil con su color, duración,
+# coste, dificultad y estado de graduación.
 
 signal carrera_elegida(script_path: String)
 
@@ -9,113 +13,185 @@ const CARRERAS_DISPONIBLES: Array = [
 	"res://Scripts/Logica/Escena_Principal/Actividades/Carreras/Carrera_Bellas_Artes.gd",
 ]
 
-const ICONOS_CARRERA: Dictionary = {
-	"Ingenieria_Informatica": ["zap", Color("#1d7afc")],
-	"Derecho": ["scale", Color("#7c3aed")],
-	"Medicina": ["stethoscope", Color("#d62828")],
-	"Bellas_Artes": ["palette", Color("#ec4899")],
-}
 
-func _ready():
-	title = "Elegir carrera"
-	min_size = Vector2(620, 640)
-	ok_button_text = "Cancelar"
-	_Construir_UI()
-	Estilos_UI.estilizar_dialogo(self)
-	Estilos_UI.aplicar_estilo_boton(get_ok_button(), "secundario")
-	get_ok_button().custom_minimum_size = Vector2(128, 44)
-	# El autowrap de las descripciones infla el alto inicial del diálogo; fijamos
-	# un tamaño tras el popup para que el botón Cancelar quede visible.
-	Estilos_UI.fijar_tamano_dialogo.call_deferred(self, Vector2i(620, 640))
-	confirmed.connect(queue_free)
+func _Al_Listo() -> void:
+	permitir_cerrar_al_fondo = true
+	actualizar_cabecera(
+		"Elige tu carrera",
+		"Solo puedes cursar una titulación a la vez",
+		"VIDA UNIVERSITARIA",
+		"graduation-cap")
+	_Construir_Contenido()
+	_Construir_Pie()
 
 
-func _Construir_UI():
-	var margen := MarginContainer.new()
-	margen.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	margen.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	margen.add_theme_constant_override("margin_left", 8)
-	margen.add_theme_constant_override("margin_right", 8)
-	margen.add_theme_constant_override("margin_top", 8)
-	margen.add_theme_constant_override("margin_bottom", 8)
-	add_child(margen)
+func _Construir_Pie() -> void:
+	if not pie.get_children().is_empty():
+		return
+	var btn := Estilos_UI.boton("Cancelar", "secundario", "x", Estilos_UI.TINTA, 50)
+	btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	btn.pressed.connect(cerrar)
+	pie.add_child(btn)
 
-	var vbox = VBoxContainer.new()
-	vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	vbox.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	vbox.custom_minimum_size = Vector2(500, 400)
-	vbox.add_theme_constant_override("separation", 12)
-	margen.add_child(vbox)
 
-	var instrucciones = Estilos_UI.parrafo(
-		"Elige una titulación universitaria. Solo puedes cursar una a la vez.",
-		14, Estilos_UI.TINTA_SUAVE)
-	vbox.add_child(instrucciones)
+func _Construir_Contenido() -> void:
+	for hijo in contenido.get_children():
+		contenido.remove_child(hijo)
+		hijo.queue_free()
+
+	contenido.add_child(_Crear_Introduccion())
 
 	for script_path in CARRERAS_DISPONIBLES:
-		var carrera = load(script_path).new()
-		var nombre_visible = str(carrera.nombre).replace("_", " ")
-		var ya_completada = _Esta_Completada(carrera.nombre)
-		var ic_info: Array = ICONOS_CARRERA.get(carrera.nombre, ["graduation-cap", Estilos_UI.ROJO_BIT])
-		var ic_nombre: String = ic_info[0]
-		var ic_color: Color = Estilos_UI.EXITO if ya_completada else ic_info[1]
+		var recurso = load(script_path)
+		if recurso == null:
+			continue
+		var carrera = recurso.new()
+		if carrera == null:
+			continue
+		contenido.add_child(_Crear_Tarjeta_Carrera(carrera, script_path))
 
-		var btn = Button.new()
-		btn.custom_minimum_size = Vector2(0, 72)
-		btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		btn.text = ""
-		btn.set_meta("_estilo_propio", true)
-		Estilos_UI.aplicar_estilo_boton(btn, "tarjeta", ic_color)
-
-		var row := HBoxContainer.new()
-		row.set_anchors_preset(Control.PRESET_FULL_RECT)
-		row.offset_left = 14
-		row.offset_right = -14
-		row.add_theme_constant_override("separation", 14)
-		row.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		btn.add_child(row)
-
-		var badge := Estilos_UI.badge_icono(ic_nombre, 42, 20, ic_color, Color.WHITE, 11)
-		row.add_child(badge)
-
-		var txt_col := VBoxContainer.new()
-		txt_col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		txt_col.alignment = BoxContainer.ALIGNMENT_CENTER
-		txt_col.add_theme_constant_override("separation", 2)
-		txt_col.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		row.add_child(txt_col)
-
-		var lbl_n := Estilos_UI.texto(nombre_visible, 16, Estilos_UI.TINTA_FANTASMA if ya_completada else Estilos_UI.TINTA, 700)
-		lbl_n.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		txt_col.add_child(lbl_n)
-
-		var costo_mat := int(Variables_Estaticas.Obtener_Costo_Matricula(carrera))
-		var dif_txt := _Etiqueta_Dificultad(carrera.ajuste_dificultad)
-		var sub_txt := "Ya completada" if ya_completada else "%d años · %d €/año · %s" % [carrera.años_totales, costo_mat, dif_txt]
-		var lbl_s := Estilos_UI.texto(sub_txt, 13, Estilos_UI.EXITO if ya_completada else Estilos_UI.TINTA_SUAVE, 500)
-		lbl_s.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		txt_col.add_child(lbl_s)
-
-		if ya_completada:
-			btn.disabled = true
-			row.add_child(Estilos_UI.pill_estado("Completada", Estilos_UI.EXITO_SUAVE, Estilos_UI.EXITO))
-		else:
-			btn.pressed.connect(_on_carrera_pressed.bind(script_path))
-			var chev := Estilos_UI.icono_rect("chevron-right", 18, Estilos_UI.TINTA_FANTASMA)
-			chev.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-			row.add_child(chev)
-
-		vbox.add_child(btn)
+	var nota := Estilos_UI.texto(
+		"Al graduarte conservarás el título en tu perfil y desbloquearás un empleo cualificado.",
+		11, Estilos_UI.TINTA_FANTASMA, 500)
+	nota.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	nota.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	contenido.add_child(nota)
 
 
-func _Etiqueta_Dificultad(ajuste: float) -> String:
+func _Crear_Introduccion() -> Control:
+	var card := PanelContainer.new()
+	card.add_theme_stylebox_override("panel",
+		Estilos_UI.caja(Color("#f8f5ef"), 16, Color("#e8dfce"), 1, 0))
+	var margen := MarginContainer.new()
+	margen.add_theme_constant_override("margin_left", 15)
+	margen.add_theme_constant_override("margin_right", 15)
+	margen.add_theme_constant_override("margin_top", 13)
+	margen.add_theme_constant_override("margin_bottom", 13)
+	card.add_child(margen)
+
+	var fila := HBoxContainer.new()
+	fila.add_theme_constant_override("separation", 11)
+	margen.add_child(fila)
+	var badge := Estilos_UI.badge_icono("school", 38, 19,
+		Color(Estilos_UI.ROJO_BIT, 0.12), Estilos_UI.PRIMARIO, 11)
+	fila.add_child(badge)
+
+	var textos := VBoxContainer.new()
+	textos.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	textos.add_theme_constant_override("separation", 2)
+	fila.add_child(textos)
+	textos.add_child(Estilos_UI.texto("Una carrera a la vez", 14, Estilos_UI.TINTA, 700))
+	var p := Estilos_UI.parrafo(
+		"Elige la titulación que quieres estudiar. Cada semana de juego equivale a un curso.",
+		12, Estilos_UI.TINTA_SUAVE)
+	textos.add_child(p)
+	return card
+
+
+func _Crear_Tarjeta_Carrera(carrera: Carrera, script_path: String) -> Control:
+	var completada := _Esta_Completada(carrera.nombre)
+	var accent: Color = Estilos_UI.ORO if completada else color_carrera(carrera.nombre)
+	var accent_oscuro: Color = Color("#92400e") if completada else accent.darkened(0.18)
+	var icono: String = "trophy" if completada else icono_carrera(carrera.nombre)
+
+	var btn := Button.new()
+	btn.custom_minimum_size = Vector2(0, 88)
+	btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	btn.text = ""
+	btn.set_meta("_estilo_propio", true)
+	btn.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	_Aplicar_Estilo_Tarjeta(btn, accent, completada)
+
+	var fila := HBoxContainer.new()
+	fila.set_anchors_preset(Control.PRESET_FULL_RECT)
+	fila.offset_left = 14
+	fila.offset_right = -14
+	fila.offset_top = 12
+	fila.offset_bottom = -12
+	fila.add_theme_constant_override("separation", 13)
+	fila.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	btn.add_child(fila)
+
+	var badge := Estilos_UI.badge_icono(icono, 48, 23,
+		Color(accent, 0.14), accent_oscuro, 13)
+	fila.add_child(badge)
+
+	var textos := VBoxContainer.new()
+	textos.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	textos.alignment = BoxContainer.ALIGNMENT_CENTER
+	textos.add_theme_constant_override("separation", 5)
+	textos.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	fila.add_child(textos)
+
+	var nombre_visible := nombre_carrera(carrera.nombre)
+	var nombre := Estilos_UI.texto(nombre_visible, 17,
+		Estilos_UI.TINTA_FANTASMA if completada else Estilos_UI.TINTA, 700)
+	nombre.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	textos.add_child(nombre)
+
+	var meta := HBoxContainer.new()
+	meta.add_theme_constant_override("separation", 6)
+	meta.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	textos.add_child(meta)
+
+	var color_meta := Estilos_UI.TINTA_FANTASMA if completada else Estilos_UI.TINTA_SUAVE
+	meta.add_child(Estilos_UI.icono_rect("clock", 14, color_meta))
+	meta.add_child(Estilos_UI.texto("%d años" % carrera.años_totales, 12, color_meta, 500))
+
+	var punto1 := Estilos_UI.texto("·", 12, Estilos_UI.TINTA_FANTASMA, 700)
+	meta.add_child(punto1)
+
+	var costo_mat := int(Variables_Estaticas.Obtener_Costo_Matricula(carrera))
+	meta.add_child(Estilos_UI.icono_rect("euro", 14, color_meta))
+	meta.add_child(Estilos_UI.texto("%d €/año" % costo_mat, 12, color_meta, 500))
+
+	if not completada:
+		var punto2 := Estilos_UI.texto("·", 12, Estilos_UI.TINTA_FANTASMA, 700)
+		meta.add_child(punto2)
+		var dif := _Datos_Dificultad(carrera.ajuste_dificultad)
+		meta.add_child(Estilos_UI.pill_estado(dif[0], dif[1], dif[2]))
+
+	for hijo in meta.get_children():
+		if hijo is Control:
+			hijo.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	if completada:
+		var pill := Estilos_UI.pill_estado("Graduado", Estilos_UI.ORO_SUAVE, Estilos_UI.ORO)
+		pill.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		fila.add_child(pill)
+		btn.disabled = true
+		btn.modulate.a = 0.82
+	else:
+		var chev := Estilos_UI.icono_rect("chevron-right", 20, Estilos_UI.TINTA_FANTASMA)
+		chev.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		fila.add_child(chev)
+		btn.pressed.connect(_on_carrera_pressed.bind(script_path))
+		Estilos_UI.animar_presion(btn)
+	return btn
+
+
+func _Aplicar_Estilo_Tarjeta(btn: Button, accent: Color, completada: bool) -> void:
+	var normal := Estilos_UI.caja(
+		Color("#fbfaf7") if completada else Estilos_UI.SUPERFICIE,
+		16, Color("#e8dfce") if completada else Estilos_UI.BORDE, 1, 1)
+	var hover := Estilos_UI.caja(Color("#fafbfd"), 16, Color(accent, 0.50), 1, 2)
+	var pressed := Estilos_UI.caja(Color(accent, 0.07), 16, accent, 1, 0)
+	var disabled := normal.duplicate() as StyleBoxFlat
+	btn.add_theme_stylebox_override("normal", normal)
+	btn.add_theme_stylebox_override("hover", hover)
+	btn.add_theme_stylebox_override("pressed", pressed)
+	btn.add_theme_stylebox_override("disabled", disabled)
+	btn.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
+
+
+func _Datos_Dificultad(ajuste: float) -> Array:
 	if ajuste >= 5.0:
-		return "Fácil"
+		return ["Fácil", Estilos_UI.EXITO_SUAVE, Estilos_UI.EXITO_OSCURO]
 	elif ajuste <= -10.0:
-		return "Muy difícil"
+		return ["Muy difícil", Estilos_UI.PELIGRO_SUAVE, Estilos_UI.PELIGRO]
 	elif ajuste < 0.0:
-		return "Difícil"
-	return "Media"
+		return ["Difícil", Estilos_UI.ORO_SUAVE, Estilos_UI.ORO]
+	return ["Media", Estilos_UI.AZUL_SUAVE, Estilos_UI.AZUL]
 
 
 func _Esta_Completada(nombre_carrera: String) -> bool:
@@ -125,6 +201,6 @@ func _Esta_Completada(nombre_carrera: String) -> bool:
 	return false
 
 
-func _on_carrera_pressed(script_path: String):
+func _on_carrera_pressed(script_path: String) -> void:
 	carrera_elegida.emit(script_path)
-	queue_free()
+	cerrar()

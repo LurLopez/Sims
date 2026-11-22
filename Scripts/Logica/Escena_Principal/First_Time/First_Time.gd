@@ -20,6 +20,11 @@ func First_Time_Function():
 		Variables_Dinamicas.Fiesta_Evento_Ocurrido = false
 		Variables_Dinamicas.Rejuvenecimiento_Anios = 0
 		Variables_Dinamicas.Tratamientos_Rejuvenecimiento = 0
+		Variables_Dinamicas.Esta_Invirtiendo = false
+		Variables_Dinamicas.Dinero_Invertido = 0.0
+		Variables_Dinamicas.Valor_Inversion = 0.0
+		Variables_Dinamicas.Salud_Mental_Al_Invertir = 50
+		Sistema_Bolsa.Reiniciar_Estado()
 		Crear_Matriz()
 		if str(Variables_Estaticas.Personalidad) == "":
 			Crear_Personalidad()
@@ -93,6 +98,8 @@ func Crear_Objetos_Iniciales():
 	}
 	# Armario inicial ampliado: todas las prendas gratuitas de inicio.
 	Sistema_Cocina.Asegurar_Prendas_Iniciales()
+	# Muebles básicos de las categorías nuevas (Salón, Estudio y Cocina).
+	Variables_Estaticas.Asegurar_Objetos_Basicos()
 
 func Crear_Progreso():
 	Variables_Dinamicas.Progreso.clear()

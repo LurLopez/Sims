@@ -474,6 +474,8 @@ get_node("/root/Eventos_Aleatorios").Limpiar_Cooldowns_Expirados()
 | Evento "Robo" a las 3:00 AM | `Minute_Minute = 180` | `hora_inicio(1080) > hora_fin(360)` → `180 < 360` → válido |
 | Sin eventos durante 2 días | `minutos_sin_evento = 2880` | `prob_actual = max(60, 2880 - 1440) = 1440` → probabilidad duplicada |
 
+> **Nota (Maestría Culinaria):** alcanzar el Rango ≥ 8 en el Minijuego de Cocina otorga inmunidad al evento general `"Intoxicación alimentaria"`.
+
 ---
 
 ## Notas Técnicas
@@ -896,3 +898,21 @@ Sustituye la antigua actividad gratuita `Comer` por `Cocinar`, `Comer_Tupper` y 
 - **Persistencia:** `Progreso_Cocina`, `Tuppers`, `Tupper_Seleccionado_Idx`; `Minutos_Cocinando_Actuales` volátil. Fallbacks `1`, `[]`, `-1`.
 - **Tests:** `Funcionalidades/Actividades/Actividades_Temporales/Tests/test_cocina_y_alimentacion.gd` (TC-01 a TC-11 + UI).
 - **Ficha completa:** `Funcionalidades/Actividades/Cocina_Y_Alimentacion/Documentacion/COCINA_Y_ALIMENTACION.md`.
+
+---
+
+# Horario Semanal, Carrera de Futbolista y Notificaciones Locales (nov 2026)
+
+## Navegación del Horario Semanal (`Horario_Semanal`)
+- La vista semanal comienza a las 00:00 con filas de 30 minutos, etiquetas de hora a la derecha, leyenda Libre/Ocupado/Pasado y el día actual resaltado en coral.
+- Incluye selector `Anterior / S<N> / Siguiente`, atajo superior `Boton_Ir_Hoy` («Ir a hoy») y el botón inferior `Boton_Semana_Actual_Inferior` («Volver a la semana actual», siempre visible: activo al consultar otra semana y en gris como «Estás en la semana actual» cuando ya estás en la del Sim).
+
+## Carrera de Futbolista — Fase 1 (IMPLEMENTADA)
+- **Archivos:** `Sistema_Futbol.gd` (autoload), `Simulador_Futbol.gd` (motor puro), `Calendario_Futbol.gd`, `Actividad_Partido.gd`, `Panel_Futbol.tscn` + `Panel_Futbol_GUI.gd`, 34 tests en `Funcionalidades/Actividades/Futbol/Tests/test_futbol.gd`.
+- **Actividades:** `Entrenamiento_Futbol` (Prioridad **P2**) y `Partido_Futbol` (Prioridad **P3**). Ambas están fuera del pool aleatorio y se programan en `Matriz_Jugador` al fichar, cambiar de división o cambiar la asistencia (`Tick_Minuto()` se ejecuta O(1) por minuto).
+- **Funcionamiento:** 4 divisiones (3ª Regional → Superliga), entrenamientos martes/jueves (o diarios en Modo Rápido), liga dominical de 4 equipos + playoff (o partido decisivo diario en Modo Rápido), primas por victoria/gol, salario semanal, lesiones (`Lesion_Deportiva` 1440 min) y gestión de conflictos frente a `Trabajo_Actual`.
+- **Pendiente (Roadmap v3.0, Prioridad 2):** minijuego interactivo de partido («Partido en 90 segundos»); ver `08_PROPUESTA_FUTBOL_Y_MANAGER.md` y `01_ROADMAP_Y_PROGRESO.md`.
+
+## Notificaciones Locales (`Sistema_Notificaciones`)
+- **Archivo:** `Scripts/Globales/Sistema_Notificaciones.gd` (autoload).
+- Programa notificaciones locales en Android (detectando `NotificationScheduler` / `LocalNotification` / `GodotLocalNotification` y solicitando `POST_NOTIFICATIONS`) para actividades programadas en el calendario y un recordatorio de inactividad tras `DIAS_RECORDATORIO_INACTIVIDAD = 2` días (`ID_RECORDATORIO_INACTIVIDAD = 90001`).

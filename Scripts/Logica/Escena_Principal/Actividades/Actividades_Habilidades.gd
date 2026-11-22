@@ -46,6 +46,10 @@ func Ejecutar_Actividad_Progreso(sum_habilidades,indice_progreso,por_cuanto_ecua
 		var bonus_ropa: float = Sistema_Cocina.Obtener_Bonus_Progreso(indice_progreso)
 		if bonus_ropa > 0.0:
 			max_ajustado = maxi(1, int(floor(float(max_ajustado) / (1.0 + bonus_ropa))))
+		# Muebles de estudio: escritorio, mesa de dibujo, biblioteca...
+		var bonus_mueble: float = Variables_Estaticas.Obtener_Bonus_Progreso_Objeto(indice_progreso)
+		if bonus_mueble > 0.0:
+			max_ajustado = maxi(1, int(floor(float(max_ajustado) / (1.0 + bonus_mueble))))
 		if(Funciones_Globales.Generar_Numero_Aleatorio_Entero_Es_Cero(max_ajustado)):
 			Cambiar_Progreso(indice_progreso)
 
@@ -83,6 +87,10 @@ func Calcular_Max_Progreso_Cocina() -> int:
 	var suma_habilidad: int = 40 * destreza + 25 * paciencia + 20 * sangre_fria + 15 * memoria
 	var maximo: int = Calcular_Max_Numero_Aleatorio(
 		Variables_Dinamicas.Progreso_Cocina, suma_habilidad, POR_CUANTO_ECUACION_PROGRESO)
+	# Cocinas de la tienda: aceleran el aprendizaje culinario.
+	var bonus_mueble: float = Variables_Estaticas.Obtener_Bonus_Progreso_Cocina_Objeto()
+	if bonus_mueble > 0.0:
+		maximo = maxi(1, int(floor(float(maximo) / (1.0 + bonus_mueble))))
 	# Maestría Culinaria Rango >= 5: +15% de eficiencia en Progreso_Cocina.
 	if Sistema_Cocina.Obtener_Rango_Logro() >= 5:
 		maximo = maxi(1, int(floor(float(maximo) / 1.15)))

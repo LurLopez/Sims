@@ -340,4 +340,108 @@ func test_11_pase_con_cuatro_huecos_y_candados_por_mejora() -> void:
 		"Nivel 3 de Emplatado: cuatro platos jugables")
 	mini._Salir_Al_Sim()
 
+
+# ============================================================================
+# 12. Gesto real de arrastrar carne cocinada desde la plancha hasta el pan
+# ============================================================================
+
+func test_12_gesto_real_arrastrar_carne_lista_de_plancha_al_pan() -> void:
+	var mini = await _Crear_Minijuego()
+	var plato_pos: Vector2 = mini._slots_platos_ui[0]["rect"].get_center()
+	var plancha_pos: Vector2 = mini._slots_plancha_ui[0]["rect"].get_center()
+
+	# Colocar pan en plato 0 y carne en plancha 0
+	assert_true(mini._Depositar_Payload({"tipo": "ingrediente", "id": "pan"}, plato_pos))
+	assert_true(mini._Depositar_Payload({"tipo": "ingrediente", "id": "carne"}, plancha_pos))
+	assert_eq(str(mini._plancha[0]["estado"]), "cocinando")
+
+	# Mientras sigue cruda no debe añadirse al pan
+	mini._arrastre._Iniciar_Pulsacion(plancha_pos)
+	mini._arrastre._Mover(plato_pos)
+	assert_true(mini._arrastre.esta_arrastrando())
+	mini._arrastre._Soltar(plato_pos)
+	assert_eq(int(mini._platos[0]["carnes"]), 0,
+		"La carne sin cocinar no debe colocarse sobre el pan")
+
+	# Avanzar cocción hasta lista y arrastrar con gesto real a la bandeja con pan
+	mini._Tick_Slots_Coccion(mini._plancha, mini._slots_plancha_ui,
+		mini._tiempo_coccion_carne, "Carne", mini._tiempo_coccion_carne + 0.1)
+	assert_eq(str(mini._plancha[0]["estado"]), "listo")
+
+	var info_plancha: Dictionary = mini._Obtener_Payload_Plancha({"indice": 0})
+	assert_eq(str(info_plancha.get("payload", {}).get("tipo", "")), "carne_lista",
+		"La carne cocinada en Burger Street debe generar payload carne_lista")
+
+	mini._arrastre._Iniciar_Pulsacion(plancha_pos)
+	mini._arrastre._Mover(plato_pos)
+	assert_true(mini._arrastre.esta_arrastrando(),
+		"El gesto desde la plancha al plato debe activar el arrastre")
+	assert_true(bool(mini._arrastre.destino_actual.get("aceptado", false)),
+		"El plato con pan debe aceptar la carne cocinada")
+	mini._arrastre._Soltar(plato_pos)
+
+	assert_eq(int(mini._platos[0]["carnes"]), 1,
+		"Al soltar la carne cocinada sobre el pan debe montarse la hamburguesa")
+	assert_eq(str(mini._plancha[0]["estado"]), "vacio",
+		"El fogón debe quedar libre tras mover la carne al pan")
+	assert_eq(mini._Receta_De_Plato(mini._platos[0]), "burger_sola")
+	mini._Salir_Al_Sim()
+
+
+# ============================================================================
+# 13. Un toque/click NO mueve carne cocinada al pan ni entrega al cliente
+# ============================================================================
+
+func test_13_toque_no_mueve_carne_ni_entrega_al_cliente() -> void:
+	var mini = await _Crear_Minijuego()
+	_Cliente_Con_Pedido(mini, 0, ["burger_sola", "refresco", "patatas"])
+
+	var plato_pos: Vector2 = mini._slots_platos_ui[0]["rect"].get_center()
+	var plancha_pos: Vector2 = mini._slots_plancha_ui[0]["rect"].get_center()
+	var freidora_pos: Vector2 = mini._slots_freidora_ui[0]["rect"].get_center()
+	var bebida_pos: Vector2 = mini._slots_bebidas_ui[0]["rect"].get_center()
+	var cliente_pos: Vector2 = Vector2(CENTROS_PRUEBA[0], 300.0)
+
+	# Pan al plato y carne + patatas a cocinar
+	mini._Depositar_Payload({"tipo": "ingrediente", "id": "pan"}, plato_pos)
+	mini._Depositar_Payload({"tipo": "ingrediente", "id": "carne"}, plancha_pos)
+	mini._Depositar_Payload({"tipo": "ingrediente", "id": "patatas"}, freidora_pos)
+	mini._Tick_Slots_Coccion(mini._plancha, mini._slots_plancha_ui,
+		mini._tiempo_coccion_carne, "Carne", mini._tiempo_coccion_carne + 0.1)
+	mini._Tick_Slots_Coccion(mini._freidora, mini._slots_freidora_ui,
+		mini._tiempo_coccion_b, "Patatas", mini._tiempo_coccion_b + 0.1)
+
+	# Hacer click en la carne lista NO debe pasarla al pan
+	mini._arrastre._Iniciar_Pulsacion(plancha_pos)
+	mini._arrastre._Soltar(plancha_pos)
+	assert_eq(int(mini._platos[0]["carnes"]), 0,
+		"Hacer click en la carne hecha no debe pasarla al pan")
+	assert_eq(str(mini._plancha[0]["estado"]), "listo")
+
+	# Arrastrar la carne al pan SÍ monta la hamburguesa
+	mini._arrastre._Iniciar_Pulsacion(plancha_pos)
+	mini._arrastre._Mover(plato_pos)
+	mini._arrastre._Soltar(plato_pos)
+	assert_eq(mini._Receta_De_Plato(mini._platos[0]), "burger_sola")
+
+	# Hacer click en el plato, refresco, patatas o cliente NO entrega nada
+	for pos_click in [plato_pos, bebida_pos, freidora_pos, cliente_pos]:
+		mini._arrastre._Iniciar_Pulsacion(pos_click)
+		mini._arrastre._Soltar(pos_click)
+	assert_false(bool(mini._clientes[0]["entregados"][0]),
+		"Hacer click en el plato o cliente no debe entregar la hamburguesa")
+	assert_false(bool(mini._clientes[0]["entregados"][1]),
+		"Hacer click en el refresco o cliente no debe entregar la bebida")
+	assert_false(bool(mini._clientes[0]["entregados"][2]),
+		"Hacer click en las patatas o cliente no debe entregar las patatas")
+
+	# Arrastrar cada producto al cliente SÍ completa el pedido
+	for pos_origen in [plato_pos, bebida_pos, freidora_pos]:
+		mini._arrastre._Iniciar_Pulsacion(pos_origen)
+		mini._arrastre._Mover(cliente_pos)
+		mini._arrastre._Soltar(cliente_pos)
+	assert_false(bool(mini._clientes[0]["activo"]),
+		"Arrastrar hamburguesa, refresco y patatas al cliente debe completar el pedido")
+	mini._Salir_Al_Sim()
+
 const CENTROS_PRUEBA: Array[float] = [402.0, 636.0, 870.0, 1104.0]

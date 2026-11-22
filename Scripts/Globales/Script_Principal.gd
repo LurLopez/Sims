@@ -75,8 +75,6 @@ var _dialog_ir_a_la_calle: ConfirmationDialog = null
 var _badge_perfil: Label = null
 var _badge_tab_mensajes: Label = null
 var _badge_minijuegos: Label = null
-var _boton_musica_header: Button = null
-var _boton_ajustes_header: Button = null
 var _panel_ajustes: Panel_Ajustes = null
 var _minijuegos_novedad_pendiente: bool = false
 
@@ -194,8 +192,6 @@ func _ready():
 	_Conectar_Recompensas()
 	Estilos_UI.aplicar_tema_global(self)
 	_Aplicar_Rediseno()
-	if not Musica.silencio_cambiado.is_connected(_on_musica_silencio_cambiado):
-		Musica.silencio_cambiado.connect(_on_musica_silencio_cambiado)
 	get_viewport().size_changed.connect(_Ajustar_Disposicion_Vertical)
 	necesidades_basicas_gui.Inicializar(self)
 	Actualizar_Progreso()
@@ -656,11 +652,18 @@ func _Actualizar_Visibilidad_Botones_Navegacion() -> void:
 	var boton_anterior = $Actividades/Horario_Semanal/OPCIONES_CALENDARIO.get_node("ANTERIOR SEMANA")
 	var boton_siguiente = $Actividades/Horario_Semanal/OPCIONES_CALENDARIO.get_node("SIGUIENTE SEMANA")
 
+	var sem_actual: int = int(Variables_Dinamicas.Minute_Day) / 7
 	boton_anterior.visible = mirar_semana > 0
 	boton_siguiente.visible = mirar_semana < 81
 	var btn_hoy := get_node_or_null("Actividades/Horario_Semanal/Boton_Ir_Hoy") as Button
 	if btn_hoy != null:
-		btn_hoy.visible = (mirar_semana != int(Variables_Dinamicas.Minute_Day) / 7)
+		btn_hoy.visible = (mirar_semana != sem_actual)
+	var btn_sem_actual := get_node_or_null("Actividades/Horario_Semanal/Boton_Semana_Actual_Inferior") as Button
+	if btn_sem_actual != null:
+		var en_semana_actual: bool = (int(mirar_semana) == sem_actual)
+		btn_sem_actual.visible = true
+		btn_sem_actual.disabled = en_semana_actual
+		btn_sem_actual.text = "Estás en la semana actual" if en_semana_actual else "Volver a la semana actual"
 
 
 func _input(event: InputEvent) -> void:
@@ -1361,76 +1364,13 @@ func _Confirmar_Ir_A_La_Calle():
 
 # ---------------- Tienda ----------------
 
-const _TIENDA_CARDS = [
-	{"categoria": "Dormir", "clave": "Cama_Basica"},
-	{"categoria": "Dormir", "clave": "Cama_Premium"},
-	{"categoria": "Dormir", "clave": "Cama_Lujo"},
-	{"categoria": "Comer", "clave": "Mesa_Basica"},
-	{"categoria": "Duchar", "clave": "Ducha_Basica"},
-	{"categoria": "Duchar", "clave": "Ducha_Premium"},
-]
-
-var _tienda_estilo_normal: StyleBoxFlat = null
-var _tienda_estilo_owned: StyleBoxFlat = null
-var _tienda_estilo_selected: StyleBoxFlat = null
-
-
-func _Inicializar_Tienda_Estilos():
-	if _tienda_estilo_normal != null:
-		return
-	_tienda_estilo_normal = Estilos_UI.caja(Estilos_UI.SUPERFICIE, 16, Estilos_UI.BORDE, 1, 1)
-	_tienda_estilo_owned = Estilos_UI.caja(Estilos_UI.SUPERFICIE, 16, Estilos_UI.BORDE_FUERTE, 1, 1)
-	_tienda_estilo_selected = Estilos_UI.caja(Estilos_UI.SUPERFICIE, 16, Estilos_UI.EXITO, 2, 2)
-
-
+## La rejilla y las tarjetas viven en `Tienda_Objetos.gd`; aquí solo se
+## orquesta la pantalla y se refresca el dinero tras comprar o vender.
 func _Actualizar_Tienda_UI():
-	_Inicializar_Tienda_Estilos()
-	for entry in _TIENDA_CARDS:
-		_Actualizar_Card_Tienda(entry["categoria"], entry["clave"])
+	var tienda := get_node_or_null("Tienda")
+	if tienda != null and tienda.has_method("Refrescar"):
+		tienda.call("Refrescar")
 	_Actualizar_Nav_Activa()
-
-
-func _Actualizar_Card_Tienda(categoria: String, clave: String):
-	var card = get_node_or_null("Tienda/Objetos_" + categoria + "/" + clave)
-	if card == null:
-		return
-	var poseido: bool = Variables_Dinamicas.Objetos_Poseidos.get(clave, false)
-	var seleccionado: bool = Variables_Dinamicas.Objeto_Seleccionado.get(categoria, "") == clave
-
-	var hay_otro_poseido_en_categoria := false
-	for c in Variables_Dinamicas.Objetos_Poseidos.keys():
-		if c == clave:
-			continue
-		if not Variables_Dinamicas.Objetos_Poseidos[c]:
-			continue
-		var obj = Variables_Estaticas.Catalogo_Objetos.get(c, null)
-		if obj != null and obj.afecta_a == categoria:
-			hay_otro_poseido_en_categoria = true
-			break
-
-	var estilo
-	if seleccionado:
-		estilo = _tienda_estilo_selected
-	elif poseido:
-		estilo = _tienda_estilo_owned
-	else:
-		estilo = _tienda_estilo_normal
-	card.add_theme_stylebox_override("panel", estilo)
-
-	card.get_node("Comprar").visible = not poseido
-	card.get_node("Vender").visible = poseido and not seleccionado and hay_otro_poseido_en_categoria
-	card.get_node("Elegir").visible = poseido and not seleccionado
-	var en_uso := card.get_node_or_null("En_Uso") as Label
-	if en_uso != null:
-		en_uso.visible = seleccionado
-		if seleccionado:
-			en_uso.text = "En uso"
-		elif poseido:
-			en_uso.visible = true
-			en_uso.text = "En propiedad"
-			en_uso.add_theme_color_override("font_color", Estilos_UI.TINTA_SUAVE)
-		if seleccionado:
-			en_uso.add_theme_color_override("font_color", Estilos_UI.EXITO)
 
 
 func _on_perfil_button_pressed():
@@ -1615,6 +1555,26 @@ func _Renderizar_Info():
 	var nombre_atuendo: String = Sistema_Cocina.Obtener_Nombre_Legible_Ropa(Sistema_Cocina.Obtener_Clave_Ropa_Equipada())
 	_Info_Fila(grupo_p, "Atuendo", nombre_atuendo, false)
 
+	_Info_Seccion(vbox, "Muebles equipados")
+	var grupo_m := _Crear_Grupo_Info(vbox)
+	var muebles_info := [
+		["Dormir", "Dormir"],
+		["Comer", "Comer"],
+		["Duchar", "Duchar"],
+		["Salon", "Salón"],
+		["Estudio", "Estudio"],
+		["Cocina", "Cocina"],
+	]
+	for i in range(muebles_info.size()):
+		var cat: String = muebles_info[i][0]
+		var objeto := Variables_Estaticas.Obtener_Objeto_Seleccionado(cat)
+		var valor := "Sin asignar"
+		if objeto != null:
+			valor = objeto.nombre_para_mostrar()
+			if objeto.etiqueta_efecto != "":
+				valor += " · " + objeto.etiqueta_efecto
+		_Info_Fila(grupo_m, muebles_info[i][1], valor, i < muebles_info.size() - 1)
+
 	_Info_Seccion(vbox, "Progreso")
 	var grupo_pr := _Crear_Grupo_Info(vbox)
 	_Info_Fila(grupo_pr, "Deporte", str(Variables_Dinamicas.Progreso[0]) + " / 100")
@@ -1669,10 +1629,14 @@ func _Info_Fila(grupo: VBoxContainer, clave: String, valor: String, con_divisor:
 
 	var lbl_clave := Estilos_UI.texto(clave, 14, Estilos_UI.TINTA_SUAVE, 500)
 	lbl_clave.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	lbl_clave.size_flags_stretch_ratio = 0.44
 	h.add_child(lbl_clave)
 
 	var lbl_valor := Estilos_UI.texto(valor, 14, Estilos_UI.TINTA, 700)
+	lbl_valor.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	lbl_valor.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	lbl_valor.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	lbl_valor.size_flags_stretch_ratio = 0.56
 	h.add_child(lbl_valor)
 
 	if con_divisor:
@@ -2032,38 +1996,40 @@ func _on_tienda_button_pressed():
 	Gestionar_Visibilidad.Visibilizar_Tienda(self)
 	_Ocultar_Home()
 	Estilos_UI.animar_entrada($Tienda)
-	_Marcar_Categoria_Tienda("Tab_Dormir")
+	if $Tienda.has_method("Abrir_Categoria"):
+		$Tienda.call("Abrir_Categoria", "Dormir")
 	_Actualizar_Tienda_UI()
+	_Actualizar_Nav_Activa()
+
+
+## Abre la tienda desde su acceso rápido de la cabecera (junto al dinero).
+## La flecha de vuelta lleva al inicio.
+func _on_tienda_tab_pressed():
+	_tienda_origen = "home"
+	_on_tienda_button_pressed()
 
 
 func _on_tienda_flecha_atras_pressed():
 	var origen := _tienda_origen
-	_tienda_origen = "economia"
+	_tienda_origen = "home"
 	if origen == "necesidades":
 		_on_boton_necesidades_basicas_pressed()
 	else:
-		_on_economia_button_pressed()
+		Quitar_Todo()
 
 
-func _on_tab_dormir_pressed():
-	_Marcar_Categoria_Tienda("Tab_Dormir")
-	Gestionar_Visibilidad.Mostrar_Categoria_Tienda(self, "Dormir")
-
-
-func _on_tab_comer_pressed():
-	_Marcar_Categoria_Tienda("Tab_Comer")
-	Gestionar_Visibilidad.Mostrar_Categoria_Tienda(self, "Comer")
-
-
-func _on_tab_duchar_pressed():
-	_Marcar_Categoria_Tienda("Tab_Duchar")
-	Gestionar_Visibilidad.Mostrar_Categoria_Tienda(self, "Duchar")
-
-
-func _on_tab_ventajas_pressed():
-	_Marcar_Categoria_Tienda("Tab_Ventajas")
-	Gestionar_Visibilidad.Mostrar_Categoria_Tienda(self, "Ventajas")
+func _Ir_A_Categoria_Tienda(categoria: String) -> void:
+	Gestionar_Visibilidad.Mostrar_Categoria_Tienda(self, categoria)
 	_Actualizar_Tienda_UI()
+
+
+func _on_tab_dormir_pressed(): _Ir_A_Categoria_Tienda("Dormir")
+func _on_tab_comer_pressed(): _Ir_A_Categoria_Tienda("Comer")
+func _on_tab_duchar_pressed(): _Ir_A_Categoria_Tienda("Duchar")
+func _on_tab_salon_pressed(): _Ir_A_Categoria_Tienda("Salon")
+func _on_tab_estudio_pressed(): _Ir_A_Categoria_Tienda("Estudio")
+func _on_tab_cocina_pressed(): _Ir_A_Categoria_Tienda("Cocina")
+func _on_tab_ventajas_pressed(): _Ir_A_Categoria_Tienda("Ventajas")
 
 
 func _Tienda_Comprar(clave: String):
@@ -2083,33 +2049,12 @@ func _Tienda_Elegir(categoria: String, clave: String):
 		_Actualizar_Tienda_UI()
 
 
-func _on_comprar_cama_basica_pressed(): _Tienda_Comprar("Cama_Basica")
-func _on_vender_cama_basica_pressed(): _Tienda_Vender("Cama_Basica")
-func _on_elegir_cama_basica_pressed(): _Tienda_Elegir("Dormir", "Cama_Basica")
-func _on_comprar_cama_premium_pressed(): _Tienda_Comprar("Cama_Premium")
-func _on_vender_cama_premium_pressed(): _Tienda_Vender("Cama_Premium")
-func _on_elegir_cama_premium_pressed(): _Tienda_Elegir("Dormir", "Cama_Premium")
-func _on_comprar_cama_lujo_pressed(): _Tienda_Comprar("Cama_Lujo")
-func _on_vender_cama_lujo_pressed(): _Tienda_Vender("Cama_Lujo")
-func _on_elegir_cama_lujo_pressed(): _Tienda_Elegir("Dormir", "Cama_Lujo")
-func _on_comprar_mesa_basica_pressed(): _Tienda_Comprar("Mesa_Basica")
-func _on_vender_mesa_basica_pressed(): _Tienda_Vender("Mesa_Basica")
-func _on_elegir_mesa_basica_pressed(): _Tienda_Elegir("Comer", "Mesa_Basica")
-func _on_comprar_ducha_basica_pressed(): _Tienda_Comprar("Ducha_Basica")
-func _on_vender_ducha_basica_pressed(): _Tienda_Vender("Ducha_Basica")
-func _on_elegir_ducha_basica_pressed(): _Tienda_Elegir("Duchar", "Ducha_Basica")
-func _on_comprar_ducha_premium_pressed(): _Tienda_Comprar("Ducha_Premium")
-func _on_vender_ducha_premium_pressed(): _Tienda_Vender("Ducha_Premium")
-func _on_elegir_ducha_premium_pressed(): _Tienda_Elegir("Duchar", "Ducha_Premium")
-
-
 # ---------------- Sistema de Carreras Universitarias ----------------
-
-var _dialog_resultado_examen: AcceptDialog = null
 
 const _MODAL_EXAMEN_SCRIPT = preload("res://Scripts/Logica/Escena_Principal/Actividades/Carreras/UI/Modal_Examen.gd")
 const _MODAL_SELECCIONAR_EXAMEN_SCRIPT = preload("res://Scripts/Logica/Escena_Principal/Actividades/Carreras/UI/Modal_Seleccionar_Examen.gd")
 const _MODAL_SELECCIONAR_CARRERA_SCRIPT = preload("res://Scripts/Logica/Escena_Principal/Actividades/Carreras/UI/Modal_Seleccionar_Carrera.gd")
+const _MODAL_RESULTADO_EXAMEN_SCRIPT = preload("res://Scripts/Logica/Escena_Principal/Actividades/Carreras/UI/Modal_Resultado_Examen.gd")
 const _MODAL_CARRERA_DEPORTIVA_SCRIPT = preload("res://Scripts/Logica/Escena_Principal/Actividades/UI/Modal_Carrera_Deportiva.gd")
 const _LECTOR_LIBROS_SCRIPT = preload("res://Scripts/Logica/Escena_Principal/Actividades/Carreras/UI/Lector_Libros.gd")
 
@@ -2183,6 +2128,7 @@ func _on_carrera_elegida(script_path: String):
 func _Abrir_Modal_Horario(carrera: Carrera, es_matricula_directa: bool):
 	var modal = _MODAL_SELECCIONAR_EXAMEN_SCRIPT.new()
 	add_child(modal)
+	modal.Configurar(carrera, es_matricula_directa)
 	modal.examen_programado.connect(_on_horario_elegido.bind(carrera, es_matricula_directa))
 	modal.popup_centered()
 
@@ -2224,33 +2170,11 @@ func _on_examen_enviado(_nota_real: int):
 	_Actualizar_Pantalla_Carrera()
 
 func _Mostrar_Resultado_Examen(carrera: Carrera):
-	if _dialog_resultado_examen == null:
-		_dialog_resultado_examen = AcceptDialog.new()
-		_dialog_resultado_examen.ok_button_text = "Entendido"
-		_dialog_resultado_examen.confirmed.connect(_on_resultado_confirmado)
-		add_child(_dialog_resultado_examen)
-
-	var aprobado = carrera.ultimo_resultado_aprobado
-	var nota = carrera.ultima_nota_final
-	var estado = "APROBADO" if aprobado else "SUSPENDIDO"
-	if carrera.completada:
-		_dialog_resultado_examen.title = "Carrera Completada"
-		_dialog_resultado_examen.dialog_text = (
-			"Nota final: %.1f/100\n\n%s\n\n🎓 Has completado la carrera.\nBonus: +%.0f€" % [
-				nota, estado, Variables_Estaticas.Obtener_Bonus_Carrera(Sistema_Examenes.BONUS_DINERO_CARRERA_COMPLETADA)
-			]
-		)
-	elif aprobado:
-		_dialog_resultado_examen.title = "Resultado del Examen"
-		_dialog_resultado_examen.dialog_text = (
-			"Nota final: %.1f/100\n\n%s\nAvanças al Año %d." % [nota, estado, carrera.año_actual]
-		)
-	else:
-		_dialog_resultado_examen.title = "Resultado del Examen"
-		_dialog_resultado_examen.dialog_text = (
-			"Nota final: %.1f/100\n\n%s\nPuedes volver a intentarlo (500€)." % [nota, estado]
-		)
-	_dialog_resultado_examen.popup_centered(Vector2i(500, 280))
+	var modal = _MODAL_RESULTADO_EXAMEN_SCRIPT.new()
+	add_child(modal)
+	modal.Configurar(carrera)
+	modal.cerrado.connect(_on_resultado_confirmado)
+	modal.popup_centered()
 
 func _on_resultado_confirmado():
 	var carrera = Variables_Dinamicas.Carrera_Actual
@@ -2280,146 +2204,69 @@ func _on_libros_button_pressed():
 
 # ---------------- Sistema de Inversiones en Bolsa ----------------
 
-var _ventana_invertir: Window = null
-var _label_invertir: Label = null
-var _input_cantidad_invertir: LineEdit = null
-var _dialog_retirar: ConfirmationDialog = null
+var _pantalla_bolsa: Panel_Bolsa = null
 
 func _on_economia_bolsa_pressed():
-	if Variables_Dinamicas.Esta_Invirtiendo:
-		_Mostrar_Confirmacion_Retirar()
-	else:
-		_Mostrar_Ventana_Invertir()
+	_Abrir_Pantalla_Bolsa()
 
-func _Mostrar_Ventana_Invertir():
-	if _ventana_invertir == null:
-		_Crear_Ventana_Invertir()
-	_label_invertir.text = "Tienes %d€. ¿Cuánto quieres invertir en bolsa?\n(Nota: la salud mental actual quedará registrada)" % int(Variables_Dinamicas.Dinero)
-	_input_cantidad_invertir.text = ""
-	Estilos_UI.estilizar_ventana(_ventana_invertir)
-	_ventana_invertir.popup_centered()
-
-func _Crear_Ventana_Invertir():
-	_ventana_invertir = Window.new()
-	_ventana_invertir.title = "Invertir en Bolsa"
-	_ventana_invertir.exclusive = true
-	_ventana_invertir.size = Vector2i(520, 260)
-	_ventana_invertir.close_requested.connect(func(): _ventana_invertir.visible = false)
-
-	var panel = Panel.new()
-	panel.set_anchors_preset(Control.PRESET_FULL_RECT)
-	panel.add_theme_stylebox_override("panel",
-		Estilos_UI.caja(Estilos_UI.SUPERFICIE, 8, Estilos_UI.BORDE, 1, 2))
-
-	var vbox = VBoxContainer.new()
-	vbox.set_anchors_preset(Control.PRESET_FULL_RECT)
-	vbox.add_theme_constant_override("separation", 12)
-	vbox.offset_left = 15
-	vbox.offset_right = -15
-	vbox.offset_top = 15
-	vbox.offset_bottom = -15
-
-	_label_invertir = Label.new()
-	_label_invertir.add_theme_font_override("font", Estilos_UI.fuente_ui(600))
-	_label_invertir.add_theme_font_size_override("font_size", 16)
-	_label_invertir.add_theme_color_override("font_color", Estilos_UI.TINTA)
-	_label_invertir.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	vbox.add_child(_label_invertir)
-
-	_input_cantidad_invertir = LineEdit.new()
-	_input_cantidad_invertir.custom_minimum_size = Vector2(0, 55)
-	_input_cantidad_invertir.placeholder_text = "Cantidad en €"
-	_input_cantidad_invertir.add_theme_font_override("font", Estilos_UI.fuente_ui(700))
-	_input_cantidad_invertir.add_theme_font_size_override("font_size", 18)
-	_input_cantidad_invertir.add_theme_color_override("font_color", Estilos_UI.TINTA)
-	_input_cantidad_invertir.add_theme_stylebox_override("normal",
-		Estilos_UI.caja(Estilos_UI.SUPERFICIE_2, 6, Estilos_UI.TINTA, 1, 0))
-	vbox.add_child(_input_cantidad_invertir)
-
-	var hbox = HBoxContainer.new()
-	hbox.add_theme_constant_override("separation", 15)
-
-	var btn_ok = Button.new()
-	btn_ok.text = "Invertir"
-	btn_ok.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	btn_ok.custom_minimum_size = Vector2(0, 55)
-	btn_ok.add_theme_font_size_override("font_size", 15)
-	Estilos_UI.aplicar_estilo_boton(btn_ok, "primario")
-	btn_ok.pressed.connect(_Confirmar_Invertir)
-
-	var btn_cancel = Button.new()
-	btn_cancel.text = "Cancelar"
-	btn_cancel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	btn_cancel.custom_minimum_size = Vector2(0, 55)
-	btn_cancel.add_theme_font_size_override("font_size", 15)
-	Estilos_UI.aplicar_estilo_boton(btn_cancel, "secundario")
-	btn_cancel.pressed.connect(func(): _ventana_invertir.visible = false)
-
-	hbox.add_child(btn_ok)
-	hbox.add_child(btn_cancel)
-	vbox.add_child(hbox)
-
-	panel.add_child(vbox)
-	_ventana_invertir.add_child(panel)
-	add_child(_ventana_invertir)
-	Estilos_UI.estilizar_ventana(_ventana_invertir)
-
-func _Confirmar_Invertir():
-	var texto = _input_cantidad_invertir.text.strip_edges()
-	if not texto.is_valid_float() and not texto.is_valid_int():
+func _Crear_Pantalla_Bolsa():
+	if _pantalla_bolsa != null and is_instance_valid(_pantalla_bolsa):
 		return
-	var cantidad = float(texto)
-	if cantidad <= 0 or cantidad > Variables_Dinamicas.Dinero:
-		return
-	Variables_Dinamicas.Dinero -= cantidad
-	Variables_Dinamicas.Dinero_Invertido = cantidad
-	Variables_Dinamicas.Valor_Inversion = cantidad
-	Variables_Dinamicas.Esta_Invirtiendo = true
-	Variables_Dinamicas.Salud_Mental_Al_Invertir = int(Variables_Dinamicas.Necesidades_Basicas[1])
-	_ventana_invertir.visible = false
-	Guardar_Variables_Dinamicas.save_game()
-	_Actualizar_Pantalla_Economia_Si_Visible()
-	Actualizar_Dinero()
+	_pantalla_bolsa = Panel_Bolsa.new()
+	_pantalla_bolsa.name = "Pantalla_Bolsa"
+	_pantalla_bolsa.visible = false
+	_pantalla_bolsa.z_index = 6
+	_pantalla_bolsa.cerrado.connect(_on_pantalla_bolsa_cerrada)
+	_pantalla_bolsa.dinero_cambiado.connect(_on_bolsa_dinero_cambiado)
+	add_child(_pantalla_bolsa)
 
-func _Mostrar_Confirmacion_Retirar():
-	if _dialog_retirar == null:
-		_dialog_retirar = ConfirmationDialog.new()
-		_dialog_retirar.title = "Retirar inversión"
-		_dialog_retirar.ok_button_text = "Retirar"
-		_dialog_retirar.get_cancel_button().text = "Mantener"
-		_dialog_retirar.confirmed.connect(_Confirmar_Retirar)
-		add_child(_dialog_retirar)
-	var valor = Variables_Dinamicas.Valor_Inversion
-	var invertido = Variables_Dinamicas.Dinero_Invertido
-	var pct = (valor - invertido) / invertido * 100.0 if invertido > 0 else 0.0
-	var signo = "+" if pct >= 0 else ""
-	_dialog_retirar.dialog_text = (
-		"Inversión actual: %.0f€ (%s%.1f%% respecto a lo invertido).\n¿Quieres retirar el dinero?" % [valor, signo, pct]
-	)
-	_dialog_retirar.popup_centered(Vector2i(520, 220))
-
-func _Confirmar_Retirar():
-	Variables_Dinamicas.Dinero += Variables_Dinamicas.Valor_Inversion
-	Variables_Dinamicas.Esta_Invirtiendo = false
-	Variables_Dinamicas.Valor_Inversion = 0.0
-	Variables_Dinamicas.Dinero_Invertido = 0.0
-	Guardar_Variables_Dinamicas.save_game()
-	_Actualizar_Pantalla_Economia_Si_Visible()
+func _Abrir_Pantalla_Bolsa():
+	Gestionar_Visibilidad.Quitar_Todo(self)
+	_Ocultar_Home()
+	# Se reconstruye al abrir: Quitar_Todo oculta recursivamente todos los
+	# controles de la pantalla anterior, incluidos los hijos de la bolsa.
+	if _pantalla_bolsa != null and is_instance_valid(_pantalla_bolsa):
+		remove_child(_pantalla_bolsa)
+		_pantalla_bolsa.queue_free()
+		_pantalla_bolsa = null
+	_Crear_Pantalla_Bolsa()
+	_pantalla_bolsa.Abrir()
 	Actualizar_Dinero()
+	Estilos_UI.animar_entrada(_pantalla_bolsa)
+	_Actualizar_Nav_Activa()
+
+func _on_pantalla_bolsa_cerrada():
+	_on_economia_button_pressed()
+
+func _on_bolsa_dinero_cambiado():
+	Actualizar_Dinero()
+	_Actualizar_Pantalla_Economia()
 
 # ================================================================
 # Pantalla Carrera (tab)
 # ================================================================
 
 var _pantalla_carrera: Control = null
+const _UI_CARRERAS = preload("res://Scripts/Logica/Escena_Principal/Actividades/Carreras/UI/Modal_Carrera_Base.gd")
+
+var _carrera_eyebrow: Label = null
 var _carrera_nombre_label: Label = null
+var _carrera_icono_badge: PanelContainer = null
+var _carrera_icono_tex: TextureRect = null
 var _carrera_badge: PanelContainer = null
 var _carrera_status_label: Label = null
+var _carrera_progreso_header: HBoxContainer = null
+var _carrera_progreso_titulo: Label = null
 var _carrera_progreso_bar: ProgressBar = null
 var _carrera_progreso_pct: Label = null
 var _carrera_progreso_row: HBoxContainer = null
+var _carrera_timeline: HBoxContainer = null
 var _carrera_action_btn: Button = null
 var _carrera_libros_btn: Button = null
+var _carrera_apuntes_titulo: Label = null
+var _carrera_apuntes_sub: Label = null
+var _carrera_guia_card: PanelContainer = null
+var _carrera_consejo_card: PanelContainer = null
 var _carrera_completadas_box: VBoxContainer = null
 var _carrera_completadas_card: PanelContainer = null
 
@@ -2439,15 +2286,32 @@ func _Crear_Pantalla_Carrera():
 	Estilos_UI.Crear_Label_Titulo_Panel("Carrera universitaria", _pantalla_carrera, Estilos_UI.TINTA)
 	Estilos_UI.Crear_Boton_Volver_Panel(_pantalla_carrera, Callable(self, "Quitar_Todo"))
 
-	var vbox = VBoxContainer.new()
-	vbox.position = Vector2(20, 190)
-	vbox.size = Vector2(680, _Alto_Pantalla() - 320.0)
-	vbox.add_theme_constant_override("separation", 14)
-	_pantalla_carrera.add_child(vbox)
+	var scroll := ScrollContainer.new()
+	scroll.position = Vector2(20, 190)
+	scroll.size = Vector2(680, _Alto_Pantalla() - 310.0)
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	scroll.add_theme_stylebox_override("panel", StyleBoxEmpty.new())
+	_pantalla_carrera.add_child(scroll)
+	var vbar := scroll.get_v_scroll_bar()
+	vbar.custom_minimum_size = Vector2(6, 0)
+	vbar.add_theme_stylebox_override("scroll", Estilos_UI.caja(Color(0, 0, 0, 0), 999, Color(0, 0, 0, 0), 0, 0))
+	vbar.add_theme_stylebox_override("grabber", Estilos_UI.caja(Color("#c4cdd9"), 999, Color(0, 0, 0, 0), 0, 0))
+	vbar.add_theme_stylebox_override("grabber_highlight", Estilos_UI.caja(Color("#9ba8b9"), 999, Color(0, 0, 0, 0), 0, 0))
+	vbar.add_theme_stylebox_override("grabber_pressed", Estilos_UI.caja(Color("#9ba8b9"), 999, Color(0, 0, 0, 0), 0, 0))
 
-	# Tarjeta de estado de carrera
+	var margen := MarginContainer.new()
+	margen.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	margen.add_theme_constant_override("margin_right", 8)
+	scroll.add_child(margen)
+
+	var vbox := VBoxContainer.new()
+	vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	vbox.add_theme_constant_override("separation", 14)
+	margen.add_child(vbox)
+
+	# --- Tarjeta principal de la carrera ---
 	var card := PanelContainer.new()
-	card.add_theme_stylebox_override("panel", Estilos_UI.caja_tarjeta(16, 3))
+	card.add_theme_stylebox_override("panel", Estilos_UI.caja_tarjeta(20, 3))
 	vbox.add_child(card)
 
 	var cm := MarginContainer.new()
@@ -2458,67 +2322,302 @@ func _Crear_Pantalla_Carrera():
 	card.add_child(cm)
 
 	var cv := VBoxContainer.new()
-	cv.add_theme_constant_override("separation", 12)
+	cv.add_theme_constant_override("separation", 13)
 	cm.add_child(cv)
 
 	var cab := HBoxContainer.new()
-	cab.add_theme_constant_override("separation", 12)
+	cab.add_theme_constant_override("separation", 14)
 	cv.add_child(cab)
 
-	cab.add_child(Estilos_UI.badge_icono("graduation-cap", 40, 20, Estilos_UI.AZUL, Color.WHITE, 11))
+	_carrera_icono_badge = PanelContainer.new()
+	_carrera_icono_badge.custom_minimum_size = Vector2(60, 60)
+	_carrera_icono_badge.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	_carrera_icono_badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_carrera_icono_badge.add_theme_stylebox_override("panel",
+		Estilos_UI.caja(Color(Estilos_UI.ROJO_BIT, 0.14), 18,
+			Color(Estilos_UI.ROJO_BIT, 0.20), 1, 0))
+	_carrera_icono_tex = Estilos_UI.icono_rect("graduation-cap", 30, Estilos_UI.PRIMARIO)
+	cab.add_child(_carrera_icono_badge)
+	_carrera_icono_badge.add_child(_carrera_icono_tex)
 
-	_carrera_nombre_label = Estilos_UI.titulo("Sin carrera activa", 19, Estilos_UI.TINTA)
+	var textos := VBoxContainer.new()
+	textos.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	textos.alignment = BoxContainer.ALIGNMENT_CENTER
+	textos.add_theme_constant_override("separation", 2)
+	cab.add_child(textos)
+
+	_carrera_eyebrow = Estilos_UI.texto("VIDA UNIVERSITARIA", 10, Estilos_UI.TINTA_FANTASMA, 700)
+	textos.add_child(_carrera_eyebrow)
+
+	_carrera_nombre_label = Estilos_UI.titulo("Da el salto a la universidad", 22, Estilos_UI.TINTA)
+	_carrera_nombre_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_carrera_nombre_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	cab.add_child(_carrera_nombre_label)
+	textos.add_child(_carrera_nombre_label)
 
 	_carrera_badge = Estilos_UI.pill_estado("Disponible", Estilos_UI.AZUL_SUAVE, Estilos_UI.AZUL)
+	_carrera_badge.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	cab.add_child(_carrera_badge)
 
 	_carrera_status_label = Estilos_UI.parrafo("", 14, Estilos_UI.TINTA_SUAVE)
 	cv.add_child(_carrera_status_label)
+
+	_carrera_progreso_header = HBoxContainer.new()
+	_carrera_progreso_header.add_theme_constant_override("separation", 7)
+	cv.add_child(_carrera_progreso_header)
+	_carrera_progreso_header.add_child(Estilos_UI.icono_rect("trending-up", 15, Estilos_UI.TINTA_FANTASMA))
+	_carrera_progreso_titulo = Estilos_UI.texto("Progreso del curso", 12, Estilos_UI.TINTA_SUAVE, 600)
+	_carrera_progreso_titulo.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_carrera_progreso_header.add_child(_carrera_progreso_titulo)
 
 	_carrera_progreso_row = HBoxContainer.new()
 	_carrera_progreso_row.add_theme_constant_override("separation", 10)
 	cv.add_child(_carrera_progreso_row)
 
 	_carrera_progreso_bar = ProgressBar.new()
-	_carrera_progreso_bar.custom_minimum_size = Vector2(0, 16)
+	_carrera_progreso_bar.custom_minimum_size = Vector2(0, 14)
 	_carrera_progreso_bar.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_carrera_progreso_bar.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	_carrera_progreso_bar.show_percentage = false
 	_carrera_progreso_bar.add_theme_stylebox_override("background", Estilos_UI.barra_fondo())
-	_carrera_progreso_bar.add_theme_stylebox_override("fill", Estilos_UI.barra_relleno(Estilos_UI.AZUL))
+	_carrera_progreso_bar.add_theme_stylebox_override("fill", Estilos_UI.barra_relleno(Estilos_UI.PRIMARIO))
 	_carrera_progreso_row.add_child(_carrera_progreso_bar)
 
-	_carrera_progreso_pct = Estilos_UI.texto("0%", 13, Estilos_UI.AZUL, 700)
+	_carrera_progreso_pct = Estilos_UI.texto("0%", 13, Estilos_UI.PRIMARIO, 700)
+	_carrera_progreso_pct.custom_minimum_size = Vector2(42, 0)
+	_carrera_progreso_pct.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	_carrera_progreso_row.add_child(_carrera_progreso_pct)
 
-	_carrera_action_btn = Estilos_UI.boton("Matricularse", "exito", "graduation-cap", Estilos_UI.EXITO, 52)
+	_carrera_timeline = HBoxContainer.new()
+	_carrera_timeline.add_theme_constant_override("separation", 6)
+	cv.add_child(_carrera_timeline)
+
+	_carrera_action_btn = Estilos_UI.boton("Elegir mi carrera", "exito", "graduation-cap",
+		Estilos_UI.EXITO, 54)
 	_carrera_action_btn.pressed.connect(_on_carrera_accion_pressed)
 	cv.add_child(_carrera_action_btn)
 
-	_carrera_libros_btn = Estilos_UI.boton("Leer apuntes del curso", "secundario", "book-open", Estilos_UI.AZUL, 52)
+	# --- Acceso a apuntes ---
+	_carrera_libros_btn = Button.new()
+	_carrera_libros_btn.custom_minimum_size = Vector2(0, 74)
+	_carrera_libros_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_carrera_libros_btn.text = ""
+	_carrera_libros_btn.set_meta("_estilo_propio", true)
+	Estilos_UI.aplicar_estilo_boton(_carrera_libros_btn, "tarjeta", Estilos_UI.AZUL)
 	_carrera_libros_btn.pressed.connect(_on_libros_button_pressed)
+	_carrera_libros_btn.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	vbox.add_child(_carrera_libros_btn)
 
-	# Tarjeta de títulos completados
+	var fila_libros := HBoxContainer.new()
+	fila_libros.set_anchors_preset(Control.PRESET_FULL_RECT)
+	fila_libros.offset_left = 14
+	fila_libros.offset_right = -14
+	fila_libros.offset_top = 10
+	fila_libros.offset_bottom = -10
+	fila_libros.add_theme_constant_override("separation", 12)
+	fila_libros.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_carrera_libros_btn.add_child(fila_libros)
+	fila_libros.add_child(Estilos_UI.badge_icono("library", 40, 20, Estilos_UI.AZUL_SUAVE, Estilos_UI.AZUL, 11))
+	var textos_libros := VBoxContainer.new()
+	textos_libros.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	textos_libros.alignment = BoxContainer.ALIGNMENT_CENTER
+	textos_libros.add_theme_constant_override("separation", 2)
+	textos_libros.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	fila_libros.add_child(textos_libros)
+	var lbl_libros := Estilos_UI.texto("Apuntes del curso", 15, Estilos_UI.TINTA, 700)
+	lbl_libros.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	textos_libros.add_child(lbl_libros)
+	_carrera_apuntes_titulo = lbl_libros
+	_carrera_apuntes_sub = Estilos_UI.texto("Consulta el temario desbloqueado", 12,
+		Estilos_UI.TINTA_SUAVE, 500)
+	_carrera_apuntes_sub.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	textos_libros.add_child(_carrera_apuntes_sub)
+	var chev_libros := Estilos_UI.icono_rect("chevron-right", 19, Estilos_UI.TINTA_FANTASMA)
+	chev_libros.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	fila_libros.add_child(chev_libros)
+
+	# --- Cómo funciona (sin carrera) ---
+	_carrera_guia_card = PanelContainer.new()
+	_carrera_guia_card.add_theme_stylebox_override("panel",
+		Estilos_UI.caja(Estilos_UI.SUPERFICIE, 18, Estilos_UI.BORDE, 1, 1))
+	vbox.add_child(_carrera_guia_card)
+	var gm := MarginContainer.new()
+	gm.add_theme_constant_override("margin_left", 18)
+	gm.add_theme_constant_override("margin_right", 18)
+	gm.add_theme_constant_override("margin_top", 16)
+	gm.add_theme_constant_override("margin_bottom", 16)
+	_carrera_guia_card.add_child(gm)
+	var gv := VBoxContainer.new()
+	gv.add_theme_constant_override("separation", 12)
+	gm.add_child(gv)
+	var gh := HBoxContainer.new()
+	gh.add_theme_constant_override("separation", 8)
+	gv.add_child(gh)
+	gh.add_child(Estilos_UI.icono_rect("sparkles", 16, Estilos_UI.PRIMARIO))
+	gh.add_child(Estilos_UI.texto("Cómo funciona", 15, Estilos_UI.TINTA, 700))
+	gv.add_child(_Crear_Paso_Guia("graduation-cap", "Elige tu titulación",
+		"Solo puedes cursar una carrera a la vez.", Estilos_UI.ROJO_BIT))
+	gv.add_child(_Crear_Paso_Guia("book-open", "Estudia y prepárate",
+		"La actividad Estudiar sube el progreso del curso.", Estilos_UI.AZUL))
+	gv.add_child(_Crear_Paso_Guia("briefcase-business", "Aprueba y desbloquea empleos",
+		"Cada título abre un trabajo cualificado.", Estilos_UI.EXITO))
+
+	# --- Consejo de estudio (con carrera) ---
+	_carrera_consejo_card = PanelContainer.new()
+	_carrera_consejo_card.add_theme_stylebox_override("panel",
+		Estilos_UI.caja(Color("#fbf7ee"), 16, Color("#eadfcb"), 1, 0))
+	vbox.add_child(_carrera_consejo_card)
+	var com := MarginContainer.new()
+	com.add_theme_constant_override("margin_left", 15)
+	com.add_theme_constant_override("margin_right", 15)
+	com.add_theme_constant_override("margin_top", 13)
+	com.add_theme_constant_override("margin_bottom", 13)
+	_carrera_consejo_card.add_child(com)
+	var coh := HBoxContainer.new()
+	coh.add_theme_constant_override("separation", 11)
+	com.add_child(coh)
+	var consejo_badge := Estilos_UI.badge_icono("brain", 38, 19,
+		Estilos_UI.AZUL_SUAVE, Estilos_UI.AZUL, 11)
+	coh.add_child(consejo_badge)
+	var consejo_txt := VBoxContainer.new()
+	consejo_txt.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	consejo_txt.add_theme_constant_override("separation", 2)
+	coh.add_child(consejo_txt)
+	consejo_txt.add_child(Estilos_UI.texto("Consejo de estudio", 13, Estilos_UI.TINTA, 700))
+	consejo_txt.add_child(Estilos_UI.parrafo(
+		"Estudiar sube el progreso. Dormir bien y cuidar tu salud mental mejora la nota del examen.",
+		12, Estilos_UI.TINTA_SUAVE))
+
+	# --- Títulos completados ---
 	_carrera_completadas_card = PanelContainer.new()
 	_carrera_completadas_card.add_theme_stylebox_override("panel",
-		Estilos_UI.caja(Estilos_UI.SUPERFICIE, 16, Estilos_UI.BORDE, 1, 1))
+		Estilos_UI.caja(Estilos_UI.SUPERFICIE, 18, Estilos_UI.BORDE, 1, 1))
 	vbox.add_child(_carrera_completadas_card)
 
 	var ccm := MarginContainer.new()
-	ccm.add_theme_constant_override("margin_left", 20)
-	ccm.add_theme_constant_override("margin_right", 20)
+	ccm.add_theme_constant_override("margin_left", 18)
+	ccm.add_theme_constant_override("margin_right", 18)
 	ccm.add_theme_constant_override("margin_top", 16)
 	ccm.add_theme_constant_override("margin_bottom", 16)
 	_carrera_completadas_card.add_child(ccm)
 
 	_carrera_completadas_box = VBoxContainer.new()
-	_carrera_completadas_box.add_theme_constant_override("separation", 8)
+	_carrera_completadas_box.add_theme_constant_override("separation", 10)
 	ccm.add_child(_carrera_completadas_box)
 
+	vbox.add_child(Estilos_UI.separador(24))
 	add_child(_pantalla_carrera)
+
+
+func _Crear_Paso_Guia(icono: String, titulo: String, descripcion: String, color: Color) -> Control:
+	var fila := HBoxContainer.new()
+	fila.add_theme_constant_override("separation", 11)
+	var badge := Estilos_UI.badge_icono(icono, 36, 18,
+		Color(color, 0.12), color.darkened(0.15), 10)
+	fila.add_child(badge)
+	var textos := VBoxContainer.new()
+	textos.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	textos.add_theme_constant_override("separation", 1)
+	fila.add_child(textos)
+	textos.add_child(Estilos_UI.texto(titulo, 13, Estilos_UI.TINTA, 700))
+	var p := Estilos_UI.parrafo(descripcion, 11, Estilos_UI.TINTA_SUAVE)
+	textos.add_child(p)
+	return fila
+
+
+func _Actualizar_Icono_Carrera(icono: String, accent: Color) -> void:
+	if _carrera_icono_badge == null or _carrera_icono_tex == null:
+		return
+	_carrera_icono_tex.texture = Estilos_UI.icono(icono)
+	_carrera_icono_tex.self_modulate = accent.darkened(0.16)
+	_carrera_icono_badge.add_theme_stylebox_override("panel",
+		Estilos_UI.caja(Color(accent, 0.14), 18, Color(accent, 0.20), 1, 0))
+
+
+func _Actualizar_Timeline_Carrera(carrera: Carrera, accent: Color) -> void:
+	if _carrera_timeline == null:
+		return
+	for hijo in _carrera_timeline.get_children():
+		_carrera_timeline.remove_child(hijo)
+		hijo.queue_free()
+	if carrera == null:
+		_carrera_timeline.visible = false
+		return
+	_carrera_timeline.visible = true
+	for año in range(1, carrera.años_totales + 1):
+		var columna := VBoxContainer.new()
+		columna.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		columna.add_theme_constant_override("separation", 4)
+		_carrera_timeline.add_child(columna)
+		var hecho: bool = carrera.completada or año < carrera.año_actual
+		var actual: bool = año == carrera.año_actual and not carrera.completada
+		var color_barra := accent if hecho else Color(accent, 0.32) if actual else Color("#e1e6ee")
+		var barra := PanelContainer.new()
+		barra.custom_minimum_size = Vector2(0, 8)
+		barra.add_theme_stylebox_override("panel",
+			Estilos_UI.caja(color_barra, 999, Color(0, 0, 0, 0), 0, 0))
+		columna.add_child(barra)
+		var lbl := Estilos_UI.texto(str(año), 10,
+			accent.darkened(0.12) if actual else Estilos_UI.TINTA_FANTASMA,
+			700 if actual else 500)
+		lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		columna.add_child(lbl)
+
+
+func _Actualizar_Tarjetas_Completadas() -> void:
+	if _carrera_completadas_card == null or _carrera_completadas_box == null:
+		return
+	for hijo in _carrera_completadas_box.get_children():
+		_carrera_completadas_box.remove_child(hijo)
+		hijo.queue_free()
+	if Variables_Dinamicas.Carreras_Completadas.is_empty():
+		_carrera_completadas_card.visible = false
+		return
+	_carrera_completadas_card.visible = true
+
+	var cabecera := HBoxContainer.new()
+	cabecera.add_theme_constant_override("separation", 8)
+	_carrera_completadas_box.add_child(cabecera)
+	cabecera.add_child(Estilos_UI.icono_rect("trophy", 18, Estilos_UI.ORO))
+	var titulo := Estilos_UI.texto("Títulos obtenidos", 15, Estilos_UI.TINTA, 700)
+	titulo.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	cabecera.add_child(titulo)
+	cabecera.add_child(Estilos_UI.pill_estado(str(Variables_Dinamicas.Carreras_Completadas.size()),
+		Estilos_UI.ORO_SUAVE, Estilos_UI.ORO))
+
+	for c in Variables_Dinamicas.Carreras_Completadas:
+		var accent := _UI_CARRERAS.color_carrera(c.nombre)
+		var fila_panel := PanelContainer.new()
+		fila_panel.add_theme_stylebox_override("panel",
+			Estilos_UI.caja(Estilos_UI.SUPERFICIE_2, 12, Estilos_UI.BORDE, 1, 0))
+		_carrera_completadas_box.add_child(fila_panel)
+		var fm := MarginContainer.new()
+		fm.add_theme_constant_override("margin_left", 10)
+		fm.add_theme_constant_override("margin_right", 10)
+		fm.add_theme_constant_override("margin_top", 8)
+		fm.add_theme_constant_override("margin_bottom", 8)
+		fila_panel.add_child(fm)
+		var fila := HBoxContainer.new()
+		fila.add_theme_constant_override("separation", 10)
+		fm.add_child(fila)
+		fila.add_child(Estilos_UI.badge_icono(_UI_CARRERAS.icono_carrera(c.nombre), 34, 17,
+			Color(accent, 0.13), accent.darkened(0.16), 10))
+		var textos := VBoxContainer.new()
+		textos.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		textos.add_theme_constant_override("separation", 1)
+		fila.add_child(textos)
+		textos.add_child(Estilos_UI.texto(_UI_CARRERAS.nombre_carrera(c.nombre), 13,
+			Estilos_UI.TINTA, 600))
+		var suma := 0.0
+		var cuenta := 0
+		for entrada in c.historial_notas:
+			if entrada.get("aprobado", false):
+				suma += float(entrada.get("nota_final", 0.0))
+				cuenta += 1
+		var sub := "Nota media %.1f · %d cursos" % [
+			suma / cuenta if cuenta > 0 else 0.0, c.años_totales]
+		textos.add_child(Estilos_UI.texto(sub, 10, Estilos_UI.TINTA_FANTASMA, 500))
+		fila.add_child(Estilos_UI.pill_estado("Graduado", Estilos_UI.EXITO_SUAVE, Estilos_UI.EXITO))
+
 
 
 func _on_carrera_tab_pressed():
@@ -2552,64 +2651,75 @@ func _Actualizar_Pantalla_Carrera():
 	if _carrera_action_btn == null:
 		return
 	var carrera = Variables_Dinamicas.Carrera_Actual
-
-	# Actualizar lista de títulos completados
-	if _carrera_completadas_card != null and _carrera_completadas_box != null:
-		for hijo in _carrera_completadas_box.get_children():
-			hijo.queue_free()
-		if Variables_Dinamicas.Carreras_Completadas.is_empty():
-			_carrera_completadas_card.visible = false
-		else:
-			_carrera_completadas_card.visible = true
-			_carrera_completadas_box.add_child(Estilos_UI.texto("Títulos obtenidos", 15, Estilos_UI.TINTA, 700))
-			for c in Variables_Dinamicas.Carreras_Completadas:
-				var fila := HBoxContainer.new()
-				fila.add_theme_constant_override("separation", 10)
-				fila.add_child(Estilos_UI.icono_rect("trophy", 18, Estilos_UI.EXITO))
-				var ln := Estilos_UI.texto(str(c.nombre).replace("_", " "), 14, Estilos_UI.TINTA, 600)
-				ln.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-				fila.add_child(ln)
-				fila.add_child(Estilos_UI.pill_estado("Graduado", Estilos_UI.EXITO_SUAVE, Estilos_UI.EXITO))
-				_carrera_completadas_box.add_child(fila)
+	_Actualizar_Tarjetas_Completadas()
 
 	if carrera == null:
-		_carrera_nombre_label.text = "Sin carrera activa"
+		var accent_vacio := Estilos_UI.ROJO_BIT
+		_carrera_eyebrow.text = "VIDA UNIVERSITARIA"
+		_carrera_eyebrow.add_theme_color_override("font_color", Estilos_UI.TINTA_FANTASMA)
+		_carrera_nombre_label.text = "Da el salto a la universidad"
+		_Actualizar_Icono_Carrera("graduation-cap", accent_vacio)
 		_Actualizar_Badge_Pill(_carrera_badge, "Disponible", Estilos_UI.AZUL_SUAVE, Estilos_UI.AZUL)
-		_carrera_status_label.text = "Elige una titulación para empezar a estudiar y desbloquear empleos cualificados."
+		_carrera_status_label.text = "Elige una titulación, estudia cada semana y aprueba los exámenes para desbloquear empleos cualificados."
+		_carrera_progreso_header.visible = false
 		_carrera_progreso_row.visible = false
-		_carrera_action_btn.text = "Elegir carrera"
+		_carrera_timeline.visible = false
+		_carrera_action_btn.text = "Elegir mi carrera"
 		_carrera_action_btn.disabled = false
 		Estilos_UI.aplicar_estilo_boton(_carrera_action_btn, "exito", Estilos_UI.EXITO, "graduation-cap")
-		_carrera_libros_btn.visible = Variables_Dinamicas.Carreras_Completadas.size() > 0
+		_carrera_libros_btn.visible = not Variables_Dinamicas.Carreras_Completadas.is_empty()
+		_carrera_apuntes_titulo.text = "Apuntes de tus carreras"
+		_carrera_apuntes_sub.text = "Consulta el temario de tus titulaciones"
+		_carrera_guia_card.visible = true
+		_carrera_consejo_card.visible = false
 		return
 
-	_carrera_nombre_label.text = str(carrera.nombre).replace("_", " ")
+	var accent := _UI_CARRERAS.color_carrera(carrera.nombre)
+	var accent_oscuro := accent.darkened(0.18)
+	_Actualizar_Icono_Carrera(_UI_CARRERAS.icono_carrera(carrera.nombre), accent)
+	_carrera_eyebrow.text = "CARRERA UNIVERSITARIA"
+	_carrera_eyebrow.add_theme_color_override("font_color", accent_oscuro)
+	_carrera_nombre_label.text = _UI_CARRERAS.nombre_carrera(carrera.nombre)
+	_carrera_guia_card.visible = false
+	_carrera_consejo_card.visible = true
+	_carrera_progreso_header.visible = true
+	_carrera_progreso_row.visible = true
+	_carrera_timeline.visible = true
+	_carrera_progreso_titulo.text = "Progreso de Año %d" % min(carrera.año_actual, carrera.años_totales)
+	_carrera_progreso_bar.add_theme_stylebox_override("fill", Estilos_UI.barra_relleno(accent))
+	Estilos_UI.animar_barra(_carrera_progreso_bar, carrera.progreso_actual, accent)
+	_carrera_progreso_pct.text = "%d%%" % int(carrera.progreso_actual)
+	_carrera_progreso_pct.add_theme_color_override("font_color", accent_oscuro)
+	_Actualizar_Timeline_Carrera(carrera, accent)
+
+	var anios_temario: int = carrera.libros_desbloqueados.size()
+	_carrera_apuntes_titulo.text = "Apuntes del curso"
+	_carrera_apuntes_sub.text = "%d años desbloqueados · repasa antes del examen" % anios_temario if anios_temario > 0 else "Aún no hay apuntes desbloqueados"
 	_carrera_libros_btn.visible = (
-		carrera.libros_desbloqueados.size() > 0 or
+		anios_temario > 0 or
 		Variables_Dinamicas.Carreras_Completadas.size() > 0
 	)
 
 	if carrera.completada and not carrera.fin_de_semana_procesado:
 		_Actualizar_Badge_Pill(_carrera_badge, "Completada", Estilos_UI.EXITO_SUAVE, Estilos_UI.EXITO)
-		_carrera_status_label.text = "Has superado todos los cursos de esta titulación."
+		_carrera_status_label.text = "Has superado todos los cursos de esta titulación. ¡Enhorabuena!"
+		_carrera_progreso_header.visible = false
 		_carrera_progreso_row.visible = false
 		_carrera_action_btn.text = "Carrera completada"
 		_carrera_action_btn.disabled = true
+		Estilos_UI.aplicar_estilo_boton(_carrera_action_btn, "exito", Estilos_UI.EXITO, "graduation-cap")
 		return
 
 	if carrera.fin_de_semana_procesado:
 		var estado = "Aprobado" if carrera.ultimo_resultado_aprobado else "Suspendido"
 		_Actualizar_Badge_Pill(_carrera_badge, "Resultado listo", Estilos_UI.ORO_SUAVE, Estilos_UI.ORO)
-		_carrera_status_label.text = "Ya está publicada la nota de tu último examen."
+		_carrera_status_label.text = "Ya está publicada la nota de tu último examen. Revísala para continuar."
+		_carrera_progreso_header.visible = false
 		_carrera_progreso_row.visible = false
 		_carrera_action_btn.text = "Ver resultado: %s (%.0f/100)" % [estado, carrera.ultima_nota_final]
 		_carrera_action_btn.disabled = false
 		Estilos_UI.aplicar_estilo_boton(_carrera_action_btn, "primario", Estilos_UI.PRIMARIO, "badge-check")
 		return
-
-	_carrera_progreso_row.visible = true
-	_carrera_progreso_bar.value = carrera.progreso_actual
-	_carrera_progreso_pct.text = "%d%%" % int(carrera.progreso_actual)
 
 	if carrera.matriculado and _En_Ventana_Examen(carrera):
 		if carrera.examen_realizado_esta_semana:
@@ -2617,9 +2727,10 @@ func _Actualizar_Pantalla_Carrera():
 			_carrera_status_label.text = "Examen enviado. El resultado llegará al terminar la hora."
 			_carrera_action_btn.text = "Examen entregado"
 			_carrera_action_btn.disabled = true
+			Estilos_UI.aplicar_estilo_boton(_carrera_action_btn, "secundario", Estilos_UI.TINTA, "check")
 		else:
 			_Actualizar_Badge_Pill(_carrera_badge, "Examen abierto", Estilos_UI.EXITO_SUAVE, Estilos_UI.EXITO)
-			_carrera_status_label.text = "Estás dentro de la hora de examen. Puedes realizarlo ahora."
+			_carrera_status_label.text = "Estás dentro de la hora de examen. Haz el test para sumar hasta 10 puntos a tu nota."
 			_carrera_action_btn.text = "Hacer examen ahora"
 			_carrera_action_btn.disabled = false
 			Estilos_UI.aplicar_estilo_boton(_carrera_action_btn, "exito", Estilos_UI.EXITO, "notebook-pen")
@@ -2640,12 +2751,14 @@ func _Actualizar_Pantalla_Carrera():
 
 	if carrera.matriculado:
 		var hora = carrera.hora_examen_inicio / 60
-		_Actualizar_Badge_Pill(_carrera_badge, "Año %d/%d" % [carrera.año_actual, carrera.años_totales], Estilos_UI.AZUL_SUAVE, Estilos_UI.AZUL)
-		_carrera_status_label.text = "Examen programado (%s a las %02d:00). Usa la actividad Estudiar para subir tu progreso." % [
+		_Actualizar_Badge_Pill(_carrera_badge, "Año %d/%d" % [carrera.año_actual, carrera.años_totales],
+			Color(accent, 0.13), accent_oscuro)
+		_carrera_status_label.text = "Examen programado: %s a las %02d:00. Usa la actividad Estudiar para subir tu progreso." % [
 			nombre_dia_ex, hora
 		]
 		_carrera_action_btn.text = "Esperando al examen (%s %02d:00)" % [nombre_dia_ex, hora]
 		_carrera_action_btn.disabled = true
+		Estilos_UI.aplicar_estilo_boton(_carrera_action_btn, "secundario", Estilos_UI.TINTA, "calendar-days")
 		return
 
 	if carrera.prematriculado:
@@ -2657,13 +2770,13 @@ func _Actualizar_Pantalla_Carrera():
 		]
 		_carrera_action_btn.text = "Cambiar horario de examen"
 		_carrera_action_btn.disabled = false
-		Estilos_UI.aplicar_estilo_boton(_carrera_action_btn, "primario", Estilos_UI.ROJO_BIT, "calendar-days")
+		Estilos_UI.aplicar_estilo_boton(_carrera_action_btn, "primario", accent, "calendar-days")
 		return
 
-	_carrera_progreso_row.visible = false
 	if Variables_Estaticas.Modo_Rapido:
 		_Actualizar_Badge_Pill(_carrera_badge, "Matrícula abierta", Estilos_UI.EXITO_SUAVE, Estilos_UI.EXITO)
-		_carrera_status_label.text = "Año %d de %d · Programa tu examen para hoy o mañana (%d €)." % [carrera.año_actual, carrera.años_totales, costo_mat]
+		_carrera_status_label.text = "Año %d de %d · Programa tu examen para hoy o mañana (%d €)." % [
+			carrera.año_actual, carrera.años_totales, costo_mat]
 		_carrera_action_btn.text = "Matricularse (%d €)" % costo_mat
 		_carrera_action_btn.disabled = Variables_Dinamicas.Dinero < costo_mat
 		Estilos_UI.aplicar_estilo_boton(_carrera_action_btn, "exito", Estilos_UI.EXITO, "graduation-cap")
@@ -2672,13 +2785,15 @@ func _Actualizar_Pantalla_Carrera():
 	var dia_semana = Variables_Dinamicas.Minute_Day % 7
 	if dia_semana <= 1:
 		_Actualizar_Badge_Pill(_carrera_badge, "Matrícula abierta", Estilos_UI.EXITO_SUAVE, Estilos_UI.EXITO)
-		_carrera_status_label.text = "Año %d de %d · Matrícula directa disponible lunes y martes (%d €)." % [carrera.año_actual, carrera.años_totales, costo_mat]
+		_carrera_status_label.text = "Año %d de %d · Matrícula directa disponible lunes y martes (%d €)." % [
+			carrera.año_actual, carrera.años_totales, costo_mat]
 		_carrera_action_btn.text = "Matricularse (%d €)" % costo_mat
 		_carrera_action_btn.disabled = Variables_Dinamicas.Dinero < costo_mat
 		Estilos_UI.aplicar_estilo_boton(_carrera_action_btn, "exito", Estilos_UI.EXITO, "graduation-cap")
 	else:
-		_Actualizar_Badge_Pill(_carrera_badge, "Prematrícula", Estilos_UI.AZUL_SUAVE, Estilos_UI.AZUL)
-		_carrera_status_label.text = "Año %d de %d · Puedes reservar horario gratis; la matrícula se cobra el lunes (%d €)." % [carrera.año_actual, carrera.años_totales, costo_mat]
+		_Actualizar_Badge_Pill(_carrera_badge, "Prematrícula", Color(accent, 0.13), accent_oscuro)
+		_carrera_status_label.text = "Año %d de %d · Puedes reservar horario gratis; la matrícula se cobra el lunes (%d €)." % [
+			carrera.año_actual, carrera.años_totales, costo_mat]
 		_carrera_action_btn.text = "Prematricularse gratis"
 		_carrera_action_btn.disabled = false
 		Estilos_UI.aplicar_estilo_boton(_carrera_action_btn, "exito", Estilos_UI.EXITO, "calendar-days")
@@ -2701,7 +2816,6 @@ var _economia_bolsa_titulo: Label = null
 var _economia_bolsa_desc: Label = null
 var _economia_bolsa_pill: PanelContainer = null
 var _economia_bolsa_btn: Button = null
-var _economia_tienda_desc: Label = null
 var _economia_resumen_efectivo: Label = null
 var _economia_resumen_bolsa: Label = null
 var _economia_resumen_alquiler: Label = null
@@ -2724,11 +2838,18 @@ func _Crear_Pantalla_Economia():
 	Estilos_UI.Crear_Label_Titulo_Panel("Economía", _pantalla_economia, Estilos_UI.TINTA)
 	Estilos_UI.Crear_Boton_Volver_Panel(_pantalla_economia, Callable(self, "Quitar_Todo"))
 
+	var scroll := ScrollContainer.new()
+	scroll.name = "Scroll_Economia"
+	scroll.position = Vector2(20, 186)
+	scroll.size = Vector2(680, _Alto_Pantalla() - 304.0)
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	_pantalla_economia.add_child(scroll)
+
 	var vbox = VBoxContainer.new()
-	vbox.position = Vector2(20, 186)
-	vbox.size = Vector2(680, _Alto_Pantalla() - 304.0)
+	vbox.name = "VBox_Economia"
+	vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	vbox.add_theme_constant_override("separation", 12)
-	_pantalla_economia.add_child(vbox)
+	scroll.add_child(vbox)
 
 	# Banda resumen financiero estilo BitLife (Efectivo · En bolsa · Alquiler)
 	var resumen_row := HBoxContainer.new()
@@ -2784,15 +2905,6 @@ func _Crear_Pantalla_Economia():
 	_economia_bolsa_btn = card_bolsa["btn"]
 	_economia_bolsa_btn.pressed.connect(_on_economia_bolsa_pressed)
 
-	# Tarjeta Tienda
-	var card_tienda := _Crear_Card_Economia(vbox, "store", "Tienda de objetos", Estilos_UI.ORO)
-	_economia_tienda_desc = card_tienda["desc"]
-	_Actualizar_Badge_Pill(card_tienda["pill"], "Hogar", Estilos_UI.ORO_SUAVE, Estilos_UI.ORO)
-	var btn_t: Button = card_tienda["btn"]
-	btn_t.text = "Abrir tienda"
-	Estilos_UI.aplicar_estilo_boton(btn_t, "secundario", Estilos_UI.PRIMARIO, "store")
-	btn_t.pressed.connect(_on_tienda_button_pressed)
-
 	add_child(_pantalla_economia)
 	_Actualizar_Pantalla_Economia()
 
@@ -2838,7 +2950,6 @@ func _Crear_Card_Economia(parent: VBoxContainer, icono_n: String, titulo_t: Stri
 func _on_economia_button_pressed():
 	if _pantalla_economia == null or not is_instance_valid(_pantalla_economia):
 		_Crear_Pantalla_Economia()
-	_tienda_origen = "economia"
 	Gestionar_Visibilidad.Quitar_Todo(self)
 	_Ocultar_Home()
 	Gestionar_Visibilidad.Recursivo_Visibilizar(_pantalla_economia)
@@ -2962,21 +3073,16 @@ func _Actualizar_Pantalla_Economia():
 		_Actualizar_Badge_Pill(_economia_bolsa_pill, "%s%.1f%%" % [signo, pct],
 			Estilos_UI.EXITO_SUAVE if positivo else Estilos_UI.PELIGRO_SUAVE,
 			Estilos_UI.EXITO if positivo else Estilos_UI.PELIGRO)
-		_economia_bolsa_desc.text = "Valor actual: %.0f € (invertido: %.0f €) · Nivel inversor: %d/100" % [
-			valor, invertido, Variables_Dinamicas.Progreso_Inversion]
-		_economia_bolsa_btn.text = "Retirar inversión (%.0f €)" % valor
-		Estilos_UI.aplicar_estilo_boton(_economia_bolsa_btn, "primario" if positivo else "suave",
-			Estilos_UI.EXITO if positivo else Estilos_UI.PELIGRO, "hand-coins")
+		_economia_bolsa_desc.text = "Cartera: %.0f € (invertido: %.0f €) · Beneficio total: %s%.0f € · Nivel %d/100" % [
+			valor, invertido, "+" if Sistema_Bolsa.Beneficio_Acumulado() >= 0 else "-",
+			absf(Sistema_Bolsa.Beneficio_Acumulado()), Variables_Dinamicas.Progreso_Inversion]
+		_economia_bolsa_btn.text = "Gestionar inversión (%.0f €)" % valor
+		Estilos_UI.aplicar_estilo_boton(_economia_bolsa_btn, "primario", Estilos_UI.AZUL, "chart-line")
 	else:
 		_Actualizar_Badge_Pill(_economia_bolsa_pill, "Sin inversión", Estilos_UI.SUPERFICIE_2, Estilos_UI.TINTA_SUAVE)
-		_economia_bolsa_desc.text = "Invierte parte de tu capital y retíralo cuando suba. Nivel inversor: %d/100." % Variables_Dinamicas.Progreso_Inversion
-		_economia_bolsa_btn.text = "Invertir en bolsa"
-		Estilos_UI.aplicar_estilo_boton(_economia_bolsa_btn, "primario", Estilos_UI.PRIMARIO, "trending-up")
-
-	if _economia_tienda_desc != null:
-		var cama := str(Variables_Dinamicas.Objeto_Seleccionado.get("Dormir", "Cama_Basica")).replace("_", " ")
-		var ducha := str(Variables_Dinamicas.Objeto_Seleccionado.get("Duchar", "Ducha_Basica")).replace("_", " ")
-		_economia_tienda_desc.text = "Equipado: %s · %s" % [cama, ducha]
+		_economia_bolsa_desc.text = "Abre la bolsa para invertir, seguir la evolución de tu beneficio y consultar tus estadísticas. Nivel inversor: %d/100." % Variables_Dinamicas.Progreso_Inversion
+		_economia_bolsa_btn.text = "Abrir bolsa"
+		Estilos_UI.aplicar_estilo_boton(_economia_bolsa_btn, "primario", Estilos_UI.AZUL, "chart-line")
 
 func _Actualizar_Pantalla_Economia_Si_Visible():
 	if _pantalla_economia != null and _pantalla_economia.is_visible_in_tree():
@@ -3105,7 +3211,7 @@ func _Actualizar_Pantalla_Minijuegos() -> void:
 	var en_turno: bool = Sistema_Cocina.Esta_En_Turno_Activo("")
 	var rango: int = Sistema_Cocina.Obtener_Rango_Logro()
 	var info_rango: Dictionary = Sistema_Cocina.Obtener_Info_Rango(rango)
-	var niveles_sup: int = Sistema_Cocina.Contar_Niveles_Superados()
+	var estrellas_total: int = Sistema_Cocina.Contar_Estrellas_Totales()
 	var fondos: int = Sistema_Cocina.Obtener_Caja_Restaurante()
 
 	var card := PanelContainer.new()
@@ -3201,7 +3307,7 @@ func _Actualizar_Pantalla_Minijuegos() -> void:
 		var chips := HBoxContainer.new()
 		chips.add_theme_constant_override("separation", 8)
 		chips.add_child(Estilos_UI.pill_estado("Maestría: Rango %d/9" % rango, Estilos_UI.ORO_SUAVE, Estilos_UI.ORO))
-		chips.add_child(Estilos_UI.pill_estado("%d / 45 niveles" % niveles_sup, Estilos_UI.AZUL_SUAVE, Estilos_UI.AZUL))
+		chips.add_child(Estilos_UI.pill_estado("%d / %d ★" % [estrellas_total, Sistema_Cocina.ESTRELLAS_TOTALES_MAX], Estilos_UI.AZUL_SUAVE, Estilos_UI.AZUL))
 		chips.add_child(Estilos_UI.pill_estado("Caja %d €" % fondos, Estilos_UI.SUPERFICIE_2, Estilos_UI.TINTA))
 		v.add_child(chips)
 
@@ -3482,12 +3588,17 @@ var _home_barras: Array = []
 var _home_pcts: Array = []
 var _home_mensajes: VBoxContainer = null
 var _home_resumen_necesidades: Label = null
+# Carrusel horizontal de Acciones rápidas del Home.
+var _home_acciones_scroll: ScrollContainer = null
+var _home_accion_izq: Button = null
+var _home_accion_der: Button = null
+var _home_acciones_tween: Tween = null
 var _necesidades_vivienda_pill: PanelContainer = null
 var _necesidades_equipo_lbl: Label = null
 var _progreso_inversion_bar: ProgressBar = null
 var _progreso_inversion_pct: Label = null
 var _progreso_metas_box: VBoxContainer = null
-var _tienda_origen: String = "economia"
+var _tienda_origen: String = "home"
 
 
 # Alto visible del área de juego en coordenadas de diseño (720 x H).
@@ -3537,17 +3648,11 @@ func _Aplicar_Rediseno() -> void:
 		"Actividades/Elegir_Actividad", "Actividades/Horario_Semanal",
 		"Actividades/Seleccionar_Horario", "Pantalla_Mensajes",
 		"Pantalla_Mensajes/Fondo_Mensajes", "Pantalla_Mensajes/Contenido_Mensaje", "Tienda",
-		"Tienda/Categorias", "Tienda/Objetos_Dormir", "Tienda/Objetos_Comer", "Tienda/Objetos_Duchar",
 		"Tienda/Objetos_Ventajas",
 	]:
 		var n := get_node_or_null(ruta) as Control
 		if n != null:
 			n.mouse_filter = Control.MOUSE_FILTER_IGNORE
-
-
-func _on_boton_musica_pressed() -> void:
-	Musica.Alternar_Silencio()
-	_Actualizar_Boton_Musica()
 
 
 func _on_boton_ajustes_pressed() -> void:
@@ -3556,18 +3661,6 @@ func _on_boton_ajustes_pressed() -> void:
 	_panel_ajustes = Panel_Ajustes.new()
 	_panel_ajustes.cerrado.connect(func(): _panel_ajustes = null)
 	add_child(_panel_ajustes)
-
-
-func _on_musica_silencio_cambiado(_silenciado: bool) -> void:
-	_Actualizar_Boton_Musica()
-
-
-func _Actualizar_Boton_Musica() -> void:
-	if _boton_musica_header == null or not is_instance_valid(_boton_musica_header):
-		return
-	var silenciado := Musica.Esta_Silenciado()
-	_boton_musica_header.icon = Estilos_UI.icono("x" if silenciado else "volume-2")
-	_boton_musica_header.tooltip_text = "Activar la música" if silenciado else "Silenciar la música"
 
 
 func _Redisenar_Superior() -> void:
@@ -3655,29 +3748,32 @@ func _Redisenar_Superior() -> void:
 	_reloj_header.add_theme_font_size_override("font_size", 12)
 	_reloj_header.add_theme_color_override("font_color", Color("#fee2e2"))
 
-	var btn_musica := get_node_or_null("Boton_Musica_Header") as Button
-	if btn_musica == null:
-		btn_musica = Estilos_UI.boton_icono("volume-2", Estilos_UI.ROJO_BIT, 38)
-		btn_musica.name = "Boton_Musica_Header"
-		btn_musica.pressed.connect(_on_boton_musica_pressed)
-		add_child(btn_musica)
-	_boton_musica_header = btn_musica
-	btn_musica.position = Vector2(460, 15)
-	btn_musica.size = Vector2(38, 38)
-	btn_musica.z_index = 30
-	_Actualizar_Boton_Musica()
-
+	# Un único acceso de ajustes en la cabecera: desde su panel se gestionan
+	# la música y los efectos de sonido.
 	var btn_ajustes := get_node_or_null("Boton_Ajustes_Header") as Button
 	if btn_ajustes == null:
-		btn_ajustes = Estilos_UI.boton_icono("settings-2", Estilos_UI.ROJO_BIT, 38)
+		btn_ajustes = Estilos_UI.boton_icono("settings", Estilos_UI.ROJO_BIT, 38)
 		btn_ajustes.name = "Boton_Ajustes_Header"
-		btn_ajustes.tooltip_text = "Ajustes"
+		btn_ajustes.tooltip_text = "Ajustes de sonido"
 		btn_ajustes.pressed.connect(_on_boton_ajustes_pressed)
 		add_child(btn_ajustes)
-	_boton_ajustes_header = btn_ajustes
+	btn_ajustes.icon = Estilos_UI.icono("settings")
 	btn_ajustes.position = Vector2(414, 15)
 	btn_ajustes.size = Vector2(38, 38)
 	btn_ajustes.z_index = 30
+	btn_ajustes.visible = true
+
+	# Acceso rápido a la Tienda junto al dinero.
+	var btn_tienda := get_node_or_null("Boton_Tienda_Header") as Button
+	if btn_tienda == null:
+		btn_tienda = Estilos_UI.boton_icono("store", Estilos_UI.ROJO_BIT, 38)
+		btn_tienda.name = "Boton_Tienda_Header"
+		btn_tienda.tooltip_text = "Tienda"
+		btn_tienda.pressed.connect(_on_tienda_tab_pressed)
+		add_child(btn_tienda)
+	btn_tienda.position = Vector2(460, 15)
+	btn_tienda.size = Vector2(38, 38)
+	btn_tienda.z_index = 30
 
 	var nav := get_node_or_null("Nav_Superior") as Panel
 	if nav == null:
@@ -3709,10 +3805,8 @@ func _Redisenar_Superior() -> void:
 		var b := get_node_or_null(datos[0]) as Button
 		if b == null:
 			continue
-		b.position = Vector2(x_inicial + float(i) * (ancho_tab + hueco_tab), 73)
-		b.size = Vector2(ancho_tab, 38)
-		b.custom_minimum_size = Vector2(ancho_tab, 38)
 		b.z_index = 30
+		b.visible = true
 		b.text = datos[1]
 		b.icon = Estilos_UI.icono(datos[2])
 		b.expand_icon = false
@@ -3720,6 +3814,16 @@ func _Redisenar_Superior() -> void:
 		b.add_theme_font_size_override("font_size", 12)
 		b.add_theme_constant_override("icon_max_width", 15)
 		b.add_theme_constant_override("h_separation", 4)
+		# Posición y tamaño al final: al cambiar texto e icono Godot recalcula
+		# el tamaño mínimo y la pestaña crecería dejando de estar alineada.
+		b.position = Vector2(x_inicial + float(i) * (ancho_tab + hueco_tab), 73)
+		b.custom_minimum_size = Vector2(ancho_tab, 38)
+		b.size = Vector2(ancho_tab, 38)
+
+	# La Tienda ya no ocupa pestaña: se entra por su icono junto al dinero.
+	var btn_tienda_tab := get_node_or_null("Tienda_Button") as Button
+	if btn_tienda_tab != null:
+		btn_tienda_tab.visible = false
 
 	var chip := get_node_or_null("Moneda_Fondo") as Panel
 	if chip == null:
@@ -3769,7 +3873,9 @@ func _Actualizar_Nav_Activa() -> void:
 
 	if has_node("Pantalla_Mensajes") and $Pantalla_Mensajes.visible:
 		top_activo = "Boton_Perfil"
-	elif (_pantalla_economia != null and is_instance_valid(_pantalla_economia) and _pantalla_economia.visible) or (has_node("Tienda") and $Tienda.visible):
+	elif _pantalla_bolsa != null and is_instance_valid(_pantalla_bolsa) and _pantalla_bolsa.visible:
+		top_activo = "Economia_Button"
+	elif _pantalla_economia != null and is_instance_valid(_pantalla_economia) and _pantalla_economia.visible:
 		top_activo = "Economia_Button"
 	elif _pantalla_carrera != null and is_instance_valid(_pantalla_carrera) and _pantalla_carrera.visible:
 		top_activo = "Carrera_Button"
@@ -3920,16 +4026,9 @@ func _Ajustar_Disposicion_Vertical() -> void:
 	if desc_mensaje != null:
 		desc_mensaje.size.y = alto_contenido - 202.0
 
-	for ruta in ["Tienda/Objetos_Dormir", "Tienda/Objetos_Comer", "Tienda/Objetos_Duchar"]:
-		var contenedor := get_node_or_null(ruta) as Control
-		if contenedor != null:
-			contenedor.size.y = alto
-
-	# La pestaña de ventajas es un scroll: su alto termina justo encima del dock.
-	var ventajas := get_node_or_null("Tienda/Objetos_Ventajas") as Control
-	if ventajas != null:
-		ventajas.position = Vector2(0, 248)
-		ventajas.size = Vector2(720, alto - 248 - 92)
+	var tienda_objetos := get_node_or_null("Tienda") as Control
+	if tienda_objetos != null and tienda_objetos.has_method("Ajustar_Disposicion"):
+		tienda_objetos.call("Ajustar_Disposicion", alto)
 
 	var vbox_carrera := get_node_or_null("Pantalla_Carrera/VBoxContainer") as Control
 	if vbox_carrera == null:
@@ -4343,11 +4442,18 @@ func _Actualizar_Necesidades_Extra() -> void:
 
 	if _necesidades_equipo_lbl != null:
 		var partes: Array = []
-		for cat in ["Dormir", "Duchar"]:
-			var clave: String = Variables_Dinamicas.Objeto_Seleccionado.get(cat, "")
-			var obj = Variables_Estaticas.Catalogo_Objetos.get(clave, null)
-			if obj != null:
-				partes.append("%s (×%.2f)" % [clave.replace("_", " "), obj.multiplicador])
+		for cat in ["Dormir", "Comer", "Duchar", "Salon", "Estudio", "Cocina"]:
+			var objeto := Variables_Estaticas.Obtener_Objeto_Seleccionado(cat)
+			if objeto == null:
+				continue
+			var tiene_mejora: bool = objeto.multiplicador != 1.0 \
+				or objeto.bonus_progreso_deporte > 0.0 \
+				or objeto.bonus_progreso_academico > 0.0 \
+				or objeto.bonus_progreso_manualidades > 0.0 \
+				or objeto.bonus_progreso_cocina > 0.0 \
+				or objeto.bonus_calidad_tupper > 0.0
+			if tiene_mejora:
+				partes.append("%s · %s" % [objeto.nombre_para_mostrar(), objeto.etiqueta_efecto])
 		_necesidades_equipo_lbl.text = "Equipamiento: " + (" · ".join(partes) if not partes.is_empty() else "Básico")
 
 	if necesidades_basicas_gui != null:
@@ -4549,6 +4655,9 @@ func _Redisenar_Actividades() -> void:
 
 	var atras := activ.get_node_or_null("Elegir_Actividad/Flecha_Atras") as Button
 	if atras != null:
+		# La escena antigua definía el botón a 100×100: hay que soltar ese mínimo
+		# para que quepa en la cabecera y no invada el subtítulo.
+		atras.custom_minimum_size = Vector2(42, 42)
 		atras.position = Vector2(20, 128)
 		atras.size = Vector2(42, 42)
 		atras.rotation = 0.0
@@ -4999,6 +5108,23 @@ func _Redisenar_Horario() -> void:
 			sig.text = "Siguiente"
 			sig.icon = Estilos_UI.icono("chevron-right")
 			sig.add_theme_constant_override("icon_max_width", 18)
+
+	# Atajo inferior para regresar a la semana en la que vive el Sim.
+	var btn_sem_actual := horario.get_node_or_null("Boton_Semana_Actual_Inferior") as Button
+	if btn_sem_actual == null:
+		btn_sem_actual = Estilos_UI.boton("Volver a la semana actual", "suave", "calendar-check-2", Estilos_UI.AZUL, 38)
+		btn_sem_actual.name = "Boton_Semana_Actual_Inferior"
+		btn_sem_actual.set_meta("_estilo_propio", true)
+		btn_sem_actual.add_theme_font_size_override("font_size", 13)
+		btn_sem_actual.tooltip_text = "Vuelve a la semana en la que está viviendo tu Sim"
+		btn_sem_actual.add_theme_stylebox_override("disabled",
+			Estilos_UI.caja(Estilos_UI.SUPERFICIE_2, Estilos_UI.RADIO_BOTON, Estilos_UI.BORDE, 1, 0))
+		btn_sem_actual.add_theme_color_override("font_disabled_color", Estilos_UI.TINTA_FANTASMA)
+		btn_sem_actual.add_theme_color_override("icon_disabled_color", Estilos_UI.TINTA_FANTASMA)
+		btn_sem_actual.pressed.connect(_Ir_A_Semana_Actual)
+		horario.add_child(btn_sem_actual)
+	btn_sem_actual.position = Vector2(16, 1138)
+	btn_sem_actual.size = Vector2(688, 38)
 
 	_Limpiar_Seleccion_Calendario_UI()
 	_Actualizar_Cabecera_Dias_Horario()
@@ -5501,29 +5627,22 @@ func _Conectar_Tienda() -> void:
 	var flecha := tienda.get_node_or_null("Flecha_Atras")
 	if flecha != null and not flecha.pressed.is_connected(_on_tienda_flecha_atras_pressed):
 		flecha.pressed.connect(_on_tienda_flecha_atras_pressed)
-	var tabs := {"Tab_Dormir": _on_tab_dormir_pressed, "Tab_Comer": _on_tab_comer_pressed, "Tab_Duchar": _on_tab_duchar_pressed, "Tab_Ventajas": _on_tab_ventajas_pressed}
-	for n in tabs:
-		var b := tienda.get_node_or_null("Categorias/" + n)
-		if b != null and not b.pressed.is_connected(tabs[n]):
-			b.pressed.connect(tabs[n])
-	var acciones := {
-		"Cama_Basica": [_on_comprar_cama_basica_pressed, _on_vender_cama_basica_pressed, _on_elegir_cama_basica_pressed],
-		"Cama_Premium": [_on_comprar_cama_premium_pressed, _on_vender_cama_premium_pressed, _on_elegir_cama_premium_pressed],
-		"Cama_Lujo": [_on_comprar_cama_lujo_pressed, _on_vender_cama_lujo_pressed, _on_elegir_cama_lujo_pressed],
-		"Mesa_Basica": [_on_comprar_mesa_basica_pressed, _on_vender_mesa_basica_pressed, _on_elegir_mesa_basica_pressed],
-		"Ducha_Basica": [_on_comprar_ducha_basica_pressed, _on_vender_ducha_basica_pressed, _on_elegir_ducha_basica_pressed],
-		"Ducha_Premium": [_on_comprar_ducha_premium_pressed, _on_vender_ducha_premium_pressed, _on_elegir_ducha_premium_pressed],
-	}
-	for categoria in ["Dormir", "Comer", "Duchar"]:
-		for clave in acciones:
-			var card := tienda.get_node_or_null("Objetos_" + categoria + "/" + clave)
-			if card == null:
-				continue
-			var pares := [["Comprar", acciones[clave][0]], ["Vender", acciones[clave][1]], ["Elegir", acciones[clave][2]]]
-			for par in pares:
-				var b := card.get_node_or_null(par[0])
-				if b != null and not b.pressed.is_connected(par[1]):
-					b.pressed.connect(par[1])
+	if tienda.has_signal("dinero_cambiado") \
+			and not tienda.is_connected("dinero_cambiado", _On_Tienda_Dinero_Cambiado):
+		tienda.connect("dinero_cambiado", _On_Tienda_Dinero_Cambiado)
+	if tienda.has_signal("objetos_cambiados") \
+			and not tienda.is_connected("objetos_cambiados", _On_Tienda_Objetos_Cambiados):
+		tienda.connect("objetos_cambiados", _On_Tienda_Objetos_Cambiados)
+
+
+func _On_Tienda_Dinero_Cambiado() -> void:
+	Actualizar_Dinero()
+
+
+func _On_Tienda_Objetos_Cambiados() -> void:
+	_Actualizar_Necesidades_Extra()
+	_Actualizar_Home()
+	_Actualizar_Nav_Activa()
 
 
 func _Redisenar_Tienda() -> void:
@@ -5563,205 +5682,33 @@ func _Redisenar_Tienda() -> void:
 		flecha.text = ""
 		flecha.icon = Estilos_UI.icono("arrow-left")
 
-	var cat_bg := tienda.get_node_or_null("Categorias_Track") as Panel
-	if cat_bg == null:
-		cat_bg = Panel.new()
-		cat_bg.name = "Categorias_Track"
-		cat_bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		tienda.add_child(cat_bg)
-		tienda.move_child(cat_bg, 1)
-	cat_bg.position = Vector2(20, 184)
-	cat_bg.size = Vector2(680, 46)
-	cat_bg.add_theme_stylebox_override("panel",
-		Estilos_UI.caja(Color("#e5e7eb"), 12, Color(0, 0, 0, 0), 0, 0))
-
-	var categorias := tienda.get_node_or_null("Categorias") as Control
-	if categorias != null:
-		categorias.position = Vector2(24, 188)
-		categorias.size = Vector2(672, 38)
-	var tab_data := [["Tab_Dormir", 0, "Dormir", "bed-double"], ["Tab_Comer", 169, "Comer", "utensils"], ["Tab_Duchar", 338, "Duchar", "shower-head"], ["Tab_Ventajas", 507, "Bienestar", "sparkles"]]
-	for datos in tab_data:
-		var b := categorias.get_node_or_null(datos[0]) as Button
-		if b != null:
-			b.position = Vector2(datos[1], 0)
-			b.size = Vector2(164, 38)
-			b.text = datos[2]
-			b.icon = Estilos_UI.icono(datos[3])
-			b.expand_icon = false
-			b.add_theme_font_override("font", Estilos_UI.fuente_ui(600))
-			b.add_theme_font_size_override("font_size", 14)
-			b.add_theme_constant_override("icon_max_width", 16)
-			b.add_theme_constant_override("h_separation", 6)
-
-	# Contenido de la pestaña Bienestar (anuncios y clínica).
 	var ventajas := tienda.get_node_or_null("Objetos_Ventajas") as Control
 	if ventajas != null:
 		ventajas.position = Vector2(0, 248)
 		ventajas.size = Vector2(720, alto - 248 - 92)
-		ventajas.visible = false
 		ventajas.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
-	# Ilustración propia de cada mueble + fondo de la vitrina (el tercer valor
-	# solo se usa como respaldo con el icono Lucide si falta el PNG).
-	var iconos := {
-		"Cama_Basica": ["bed-double", Color("#eef5fc"), Estilos_UI.AZUL],
-		"Cama_Premium": ["bed-double", Color("#e8f1fe"), Estilos_UI.AZUL],
-		"Cama_Lujo": ["sparkles", Color("#f2edff"), Estilos_UI.MORADO],
-		"Mesa_Basica": ["utensils", Color("#fdf7e8"), Estilos_UI.ORO],
-		"Ducha_Basica": ["shower-head", Color("#eaf8f2"), Estilos_UI.EXITO],
-		"Ducha_Premium": ["bath", Color("#e1f4ec"), Estilos_UI.EXITO],
-	}
-	for categoria in ["Dormir", "Comer", "Duchar"]:
-		var contenedor := tienda.get_node_or_null("Objetos_" + categoria) as Control
-		if contenedor != null:
-			contenedor.position = Vector2.ZERO
-			contenedor.size = Vector2(720, alto)
-		var claves: Array = []
-		for clave in iconos.keys():
-			if (categoria == "Dormir" and str(clave).begins_with("Cama")) or \
-					(categoria == "Comer" and str(clave).begins_with("Mesa")) or \
-					(categoria == "Duchar" and str(clave).begins_with("Ducha")):
-				claves.append(clave)
-		for idx in claves.size():
-			var clave: String = claves[idx]
-			var card := tienda.get_node_or_null("Objetos_" + categoria + "/" + clave) as Panel
-			if card == null:
-				continue
-			var col := idx % 2
-			var row := idx / 2
-			var x := 20 if col == 0 else 368
-			# Con una sola tarjeta, o con la tercera de Dormir, se centra la rejilla.
-			if claves.size() == 1 or (claves.size() == 3 and idx == 2):
-				x = 194
-			card.position = Vector2(x, 248 + row * 462)
-			card.size = Vector2(332, 442)
-			card.add_theme_stylebox_override("panel", Estilos_UI.caja_tarjeta(16, 3))
-
-			var img := card.get_node_or_null("Imagen_Placeholder") as Panel
-			if img != null:
-				img.position = Vector2(14, 14)
-				img.size = Vector2(304, 200)
-				img.mouse_filter = Control.MOUSE_FILTER_IGNORE
-				var fondo_img: Color = iconos[clave][1]
-				var st_img := Estilos_UI.caja(fondo_img, 12, Color(0, 0, 0, 0), 0, 0)
-				st_img.border_width_bottom = 2
-				st_img.border_color = fondo_img.darkened(0.14)
-				img.add_theme_stylebox_override("panel", st_img)
-				var emoji := img.get_node_or_null("Imagen_Emoji")
-				if emoji != null:
-					emoji.queue_free()
-				var tier_old := img.get_node_or_null("Tier_Pill")
-				if tier_old != null:
-					tier_old.queue_free()
-				var es_lujo := str(clave).contains("Lujo")
-				var es_prem := str(clave).contains("Premium")
-				var tier_txt := "LUJO" if es_lujo else ("PREMIUM" if es_prem else "BÁSICO")
-				var tier_bg := Color(1, 1, 1, 0.94) if (es_lujo or es_prem) else Color(1, 1, 1, 0.80)
-				var tier_fg := Estilos_UI.MORADO if es_lujo else (Estilos_UI.ORO if es_prem else Estilos_UI.TINTA_SUAVE)
-				var tier_pill := Estilos_UI.pill_estado(tier_txt, tier_bg, tier_fg)
-				tier_pill.name = "Tier_Pill"
-				tier_pill.position = Vector2(10, 10)
-				tier_pill.z_index = 2
-				img.add_child(tier_pill)
-				var icono_item := img.get_node_or_null("Icono_Item") as TextureRect
-				if icono_item == null:
-					icono_item = TextureRect.new()
-					icono_item.name = "Icono_Item"
-					img.add_child(icono_item)
-				icono_item.mouse_filter = Control.MOUSE_FILTER_IGNORE
-				icono_item.position = Vector2.ZERO
-				icono_item.size = Vector2(304, 200)
-				icono_item.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-				icono_item.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-				var ilustracion := Estilos_UI.icono_tienda(clave)
-				if ilustracion != null:
-					icono_item.texture = ilustracion
-					icono_item.self_modulate = Color.WHITE
-				else:
-					# Respaldo si el PNG procesado no está disponible.
-					icono_item.texture = Estilos_UI.icono(iconos[clave][0])
-					icono_item.self_modulate = iconos[clave][2]
-					icono_item.position = Vector2(128, 76)
-					icono_item.size = Vector2(48, 48)
-
-			var nombre := card.get_node_or_null("Nombre") as Label
-			if nombre != null:
-				nombre.position = Vector2(16, 224)
-				nombre.size = Vector2(300, 28)
-				nombre.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-				nombre.add_theme_font_override("font", Estilos_UI.fuente_ui(700))
-				nombre.add_theme_font_size_override("font_size", 17)
-				nombre.add_theme_color_override("font_color", Estilos_UI.TINTA)
-
-			var precio := card.get_node_or_null("Precio") as Label
-			if precio != null:
-				precio.position = Vector2(16, 254)
-				precio.size = Vector2(300, 24)
-				precio.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-				var obj_catalogo = Variables_Estaticas.Catalogo_Objetos.get(clave, null)
-				if obj_catalogo != null:
-					var p_val := int(Variables_Estaticas.Obtener_Precio_Objeto(obj_catalogo))
-					precio.text = "Gratis" if p_val <= 0 else "%d€" % p_val
-				elif precio.text == "0€":
-					precio.text = "Gratis"
-				precio.add_theme_font_override("font", Estilos_UI.fuente_ui(700))
-				precio.add_theme_font_size_override("font_size", 15)
-				precio.add_theme_color_override("font_color", Estilos_UI.PRIMARIO)
-
-			var mult := card.get_node_or_null("Multiplicador") as Label
-			if mult != null:
-				mult.position = Vector2(16, 280)
-				mult.size = Vector2(300, 22)
-				mult.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-				mult.add_theme_font_override("font", Estilos_UI.fuente_ui(500))
-				mult.add_theme_font_size_override("font_size", 13)
-				mult.add_theme_color_override("font_color", Estilos_UI.TINTA_SUAVE)
-
-			var uso := card.get_node_or_null("En_Uso") as Label
-			if uso != null:
-				uso.position = Vector2(16, 306)
-				uso.size = Vector2(300, 22)
-				uso.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-				uso.add_theme_font_override("font", Estilos_UI.fuente_ui(700))
-				uso.add_theme_font_size_override("font_size", 13)
-				uso.add_theme_color_override("font_color", Estilos_UI.EXITO)
-
-			var ys := {"Comprar": 384, "Elegir": 336, "Vender": 384}
-			for bn in ys:
-				var b := card.get_node_or_null(bn) as Button
-				if b != null:
-					b.position = Vector2(16, ys[bn])
-					b.size = Vector2(300, 42)
-					b.add_theme_font_size_override("font_size", 14)
-			idx += 1
-
-	var tip_old := tienda.get_node_or_null("Tip_Tienda")
-	if tip_old != null:
-		tip_old.queue_free()
-
-	_Marcar_Categoria_Tienda("Tab_Dormir")
+	if tienda.has_method("Ajustar_Disposicion"):
+		tienda.call("Ajustar_Disposicion", alto)
+	if tienda.has_method("Abrir_Categoria"):
+		tienda.call("Abrir_Categoria", "Dormir")
+	_Conectar_Tienda()
 
 
 func _Marcar_Categoria_Tienda(activa: String) -> void:
-	var tabs := get_node_or_null("Tienda/Categorias")
-	if tabs == null:
+	var tienda := get_node_or_null("Tienda")
+	if tienda == null or not tienda.has_method("Abrir_Categoria"):
 		return
-	for n in ["Tab_Dormir", "Tab_Comer", "Tab_Duchar", "Tab_Ventajas"]:
-		var b := tabs.get_node_or_null(n) as Button
-		if b == null:
-			continue
-		var on: bool = n == activa
-		var fondo: Color = Estilos_UI.SUPERFICIE if on else Color(0, 0, 0, 0)
-		var st := Estilos_UI.caja(fondo, 9, Estilos_UI.ROJO_BIT if on else Color(0, 0, 0, 0), 0, 1 if on else 0)
-		if on:
-			st.border_width_bottom = 2
-		b.add_theme_stylebox_override("normal", st)
-		b.add_theme_stylebox_override("hover", st)
-		b.add_theme_stylebox_override("pressed", st)
-		b.add_theme_font_override("font", Estilos_UI.fuente_ui(700 if on else 500))
-		var col: Color = Estilos_UI.ROJO_BIT if on else Estilos_UI.TINTA_SUAVE
-		for k in ["font_color", "font_hover_color", "font_pressed_color", "icon_normal_color", "icon_hover_color", "icon_pressed_color"]:
-			b.add_theme_color_override(k, col)
+	var id: String = {
+		"Tab_Dormir": "Dormir",
+		"Tab_Comer": "Comer",
+		"Tab_Duchar": "Duchar",
+		"Tab_Salon": "Salon",
+		"Tab_Estudio": "Estudio",
+		"Tab_Cocina": "Cocina",
+		"Tab_Ventajas": "Ventajas",
+	}.get(activa, activa)
+	tienda.call("Abrir_Categoria", id)
 
 
 func _Estilizar_Badges() -> void:
@@ -6054,21 +6001,50 @@ func _Crear_Home() -> void:
 	v3.add_child(enc_acc)
 	enc_acc.get_node("Accion").pressed.connect(_Abrir_Horario_Desde_Home)
 
+	# Flechas para mover el carrusel (además del swipe táctil y la rueda del ratón).
+	_home_accion_izq = _Crear_Boton_Scroll_Acciones("chevron-left", -1)
+	_home_accion_der = _Crear_Boton_Scroll_Acciones("chevron-right", 1)
+	enc_acc.add_child(_home_accion_izq)
+	enc_acc.add_child(_home_accion_der)
+	enc_acc.move_child(_home_accion_izq, 1)
+	enc_acc.move_child(_home_accion_der, 2)
+
+	_home_acciones_scroll = ScrollContainer.new()
+	_home_acciones_scroll.name = "Acciones_Scroll"
+	_home_acciones_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_SHOW_NEVER
+	_home_acciones_scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	# La rueda mueve el carrusel en horizontal y el arrastre táctil queda suave.
+	_home_acciones_scroll.scroll_horizontal_by_default = true
+	_home_acciones_scroll.scroll_deadzone = 10
+	_home_acciones_scroll.scroll_horizontal_custom_step = 116.0
+	_home_acciones_scroll.custom_minimum_size = Vector2(0, 106)
+	_home_acciones_scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	v3.add_child(_home_acciones_scroll)
+	var hbar := _home_acciones_scroll.get_h_scroll_bar()
+	hbar.value_changed.connect(func(_valor: float) -> void: _Actualizar_Flechas_Acciones_Home())
+	hbar.changed.connect(_Actualizar_Flechas_Acciones_Home)
+
 	var acciones := HBoxContainer.new()
+	acciones.name = "Acciones"
 	acciones.add_theme_constant_override("separation", 10)
-	v3.add_child(acciones)
+	acciones.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_home_acciones_scroll.add_child(acciones)
 
 	var lista_acciones := [
 		["Dormir", "Dormir", "moon", Estilos_UI.INDIGO, Estilos_UI.INDIGO_SUAVE, "+Descanso"],
 		["Comer", "Comer", "utensils", Estilos_UI.AVISO, Estilos_UI.AVISO_SUAVE, "+Hambre"],
 		["Duchar", "Duchar", "droplet", Estilos_UI.EXITO, Estilos_UI.EXITO_SUAVE, "+Higiene"],
 		["Estudiar", "Estudiar", "book-open", Estilos_UI.AZUL, Estilos_UI.AZUL_SUAVE, "+Acad."],
+		["Cocinar", "Cocinar", "flame", Color("#ea580c"), Color("#ffedd5"), "+Cocina"],
+		["Ver_La_Television", "Ver tele", "tv", Estilos_UI.MORADO, Estilos_UI.MORADO_SUAVE, "+Mental"],
+		["Salir_A_Correr", "Correr", "footprints", Estilos_UI.EXITO, Estilos_UI.EXITO_SUAVE, "+Deporte"],
+		["Practicar_Manualidades", "Manualidades", "palette", Estilos_UI.CORAL, Estilos_UI.CORAL_SUAVE, "+Manual."],
 	]
 	for accion in lista_acciones:
 		var col_ac: Color = accion[3]
 		var col_bg: Color = accion[4]
 		var b := Button.new()
-		b.custom_minimum_size = Vector2(0, 106)
+		b.custom_minimum_size = Vector2(112, 106)
 		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		b.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 		var st_n := Estilos_UI.caja(col_bg, 14, Color(col_ac, 0.24), 1, 0)
@@ -6109,6 +6085,8 @@ func _Crear_Home() -> void:
 
 		b.add_child(vv2)
 		acciones.add_child(b)
+
+	_Actualizar_Flechas_Acciones_Home.call_deferred()
 
 	# --- Diario de vida / Mensajes ---
 	var card_mensajes := PanelContainer.new()
@@ -6320,6 +6298,54 @@ func _Actualizar_Home() -> void:
 
 				_home_mensajes.add_child(fila_btn)
 
+	_Actualizar_Flechas_Acciones_Home()
+
+
+func _Crear_Boton_Scroll_Acciones(icono: String, direccion: int) -> Button:
+	var b := Button.new()
+	b.name = "Accion_Scroll_Izq" if direccion < 0 else "Accion_Scroll_Der"
+	b.custom_minimum_size = Vector2(28, 28)
+	b.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	b.icon = Estilos_UI.icono(icono)
+	b.focus_mode = Control.FOCUS_NONE
+	b.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	b.add_theme_constant_override("icon_max_width", 16)
+	b.add_theme_stylebox_override("normal", Estilos_UI.caja(Estilos_UI.SUPERFICIE_2, 8, Estilos_UI.BORDE, 1, 0))
+	b.add_theme_stylebox_override("hover", Estilos_UI.caja(Estilos_UI.FONDO_2, 8, Estilos_UI.BORDE_FUERTE, 1, 0))
+	b.add_theme_stylebox_override("pressed", Estilos_UI.caja(Estilos_UI.FONDO_2, 8, Estilos_UI.BORDE_FUERTE, 1, 0))
+	b.add_theme_stylebox_override("disabled", Estilos_UI.caja(Estilos_UI.SUPERFICIE_2, 8, Estilos_UI.BORDE, 1, 0))
+	b.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
+	b.add_theme_color_override("icon_normal_color", Estilos_UI.TINTA_SUAVE)
+	b.add_theme_color_override("icon_hover_color", Estilos_UI.TINTA)
+	b.add_theme_color_override("icon_pressed_color", Estilos_UI.TINTA)
+	b.add_theme_color_override("icon_disabled_color", Color(Estilos_UI.TINTA_FANTASMA, 0.35))
+	b.pressed.connect(_Desplazar_Acciones_Home.bind(direccion))
+	return b
+
+
+func _Desplazar_Acciones_Home(direccion: int) -> void:
+	if _home_acciones_scroll == null or not is_instance_valid(_home_acciones_scroll):
+		return
+	var bar := _home_acciones_scroll.get_h_scroll_bar()
+	var tope := maxf(0.0, bar.max_value - bar.page)
+	var destino := clampf(bar.value + float(direccion) * 3.0 * 122.0, 0.0, tope)
+	if _home_acciones_tween != null and _home_acciones_tween.is_valid():
+		_home_acciones_tween.kill()
+	_home_acciones_tween = create_tween()
+	_home_acciones_tween.tween_property(bar, "value", destino, 0.2) \
+		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+
+
+func _Actualizar_Flechas_Acciones_Home() -> void:
+	if _home_acciones_scroll == null or not is_instance_valid(_home_acciones_scroll):
+		return
+	var bar := _home_acciones_scroll.get_h_scroll_bar()
+	var tope := maxf(0.0, bar.max_value - bar.page)
+	if _home_accion_izq != null and is_instance_valid(_home_accion_izq):
+		_home_accion_izq.disabled = bar.value <= 1.0
+	if _home_accion_der != null and is_instance_valid(_home_accion_der):
+		_home_accion_der.disabled = bar.value >= tope - 1.0
+
 
 func _Abrir_Trabajos_Desde_Home() -> void:
 	_on_boton_actividades_pressed()
@@ -6345,14 +6371,26 @@ func _Titulo_Acceso_Rapido(clave: String) -> String:
 			return "Comida casera"
 		"Comer_Basura":
 			return "Comida rápida"
+		"Ver_La_Television":
+			return "Ver la televisión"
+		"Salir_A_Correr":
+			return "Salir a correr"
+		"Practicar_Manualidades":
+			return "Manualidades"
 		_:
-			return clave.replace("_", " ")
+			return str(NOMBRES_VISIBLES_ACTIVIDADES.get(clave, clave.replace("_", " ")))
 
 
 func _Abrir_Desde_Acceso_Rapido(clave: String) -> void:
 	# La antigua acción "Comer" gratuita ahora elige tupper o comida rápida.
 	if clave == "Comer":
 		clave = "Comer_Tupper" if Alimentacion.Tiene_Tupper_Vigente() else "Comer_Basura"
+	if clave == "Cocinar":
+		var validacion_cocina: Dictionary = Alimentacion.Validar_Cocinar(
+			Variables_Estaticas.MINUTOS_POR_TUPPER, Variables_Dinamicas.En_La_Calle)
+		if not bool(validacion_cocina.get("valido", false)):
+			_Mostrar_Error_Alimentacion(str(validacion_cocina.get("motivo", "")))
+			return
 	_acceso_rapido_clave = clave
 	if _dialog_acceso_rapido == null:
 		_dialog_acceso_rapido = AcceptDialog.new()
@@ -6386,13 +6424,17 @@ func _Abrir_Desde_Acceso_Rapido(clave: String) -> void:
 		box.add_child(btn_horario)
 
 	_dialog_acceso_rapido.title = _Titulo_Acceso_Rapido(clave)
-	_acceso_rapido_desc.text = "Programa %s empezando ahora:" % clave.replace("_", " ").to_lower()
+	_acceso_rapido_desc.text = "Programa %s empezando ahora:" % _Titulo_Acceso_Rapido(clave).to_lower()
 	_dialog_acceso_rapido.get_ok_button().text = "Cancelar"
 
 	for hijo in _acceso_rapido_opciones.get_children():
 		hijo.queue_free()
 
-	var duraciones := [60, 120, 360, 480] if clave == "Dormir" else [30, 60, 120, 240]
+	var duraciones_por_actividad := {
+		"Dormir": [60, 120, 360, 480],
+		"Cocinar": [15, 30, 60, 120],
+	}
+	var duraciones: Array = duraciones_por_actividad.get(clave, [30, 60, 120, 240])
 	for min_dur in duraciones:
 		var etiqueta := "%d min" % min_dur if min_dur < 60 else "%d h" % int(float(min_dur) / 60.0)
 		var b := Estilos_UI.boton(etiqueta, "exito", "", Estilos_UI.EXITO, 44)
@@ -6410,6 +6452,12 @@ func _Abrir_Desde_Acceso_Rapido(clave: String) -> void:
 func _Programar_Acceso_Rapido_Duracion(clave: String, duracion_min: int) -> void:
 	if _dialog_acceso_rapido != null:
 		_dialog_acceso_rapido.hide()
+	if clave == "Cocinar":
+		var validacion_cocina: Dictionary = Alimentacion.Validar_Cocinar(
+			duracion_min, Variables_Dinamicas.En_La_Calle)
+		if not bool(validacion_cocina.get("valido", false)):
+			_Mostrar_Error_Alimentacion(str(validacion_cocina.get("motivo", "")))
+			return
 	var total_inicio: int = Variables_Dinamicas.Minute_Day * 1440 + Variables_Dinamicas.Minute_Minute
 	var total_fin: int = total_inicio + duracion_min
 	var col_ultimo: int = int((total_fin - 1) / 1440)

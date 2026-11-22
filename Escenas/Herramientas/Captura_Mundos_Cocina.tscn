@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://cmundoscocinaqa01"]
+
+[ext_resource type="Script" path="res://Scripts/Otro/Herramientas/Captura_Mundos_Cocina.gd" id="1_mundos"]
+
+[node name="Captura_Mundos_Cocina" type="Node"]
+script = ExtResource("1_mundos")

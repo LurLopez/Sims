@@ -242,8 +242,10 @@ func test_rejuvenecimiento_no_baja_de_los_18_anios() -> void:
 # ----------------------------------------------------------------------------
 
 func test_persistencia_guarda_cooldowns_e_historial() -> void:
+	# Aísla el test de cualquier espera residual de otro test del mismo proceso.
+	Recompensas.Reiniciar_Esperas()
 	var solicitud: Dictionary = Recompensas.Solicitar_Anuncio("anuncio_dinero")
-	assert_true(solicitud.get("ok", false))
+	assert_true(solicitud.get("ok", false), "El anuncio debe poder solicitarse sin esperas")
 	await Recompensas.Completar_Anuncio(int(solicitud.get("token", 0)))
 	Recompensas._Cargar()
 	assert_false(Recompensas.Obtener_Estado_Anuncio("anuncio_dinero").get("disponible", true))

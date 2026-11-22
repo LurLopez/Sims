@@ -808,12 +808,12 @@ flat = true
 expand_icon = true
 
 [node name="Flecha_Atras" type="Button" parent="Actividades/Elegir_Actividad"]
-custom_minimum_size = Vector2(100, 100)
+custom_minimum_size = Vector2(42, 42)
 layout_mode = 0
-offset_left = 220.0
-offset_top = 300.0
-offset_right = 320.0
-offset_bottom = 400.0
+offset_left = 20.0
+offset_top = 128.0
+offset_right = 62.0
+offset_bottom = 170.0
 rotation = 3.14159
 icon = ExtResource("10_gm38p")
 flat = true
@@ -1695,7 +1695,7 @@ text = "Perfil"
 icon = ExtResource("12_pmini")
 
 [node name="Tienda_Button" type="Button" parent="."]
-visible = false
+visible = true
 z_index = 10
 offset_left = 115.0
 offset_top = 10.0
@@ -1819,7 +1819,7 @@ z_index = 5
 [connection signal="pressed" from="Actividades/Seleccionar_Horario/Cancelar" to="." method="_on_cancelar_pressed"]
 [connection signal="pressed" from="Actividades/Seleccionar_Horario/Crear_Actividad" to="." method="_on_crear_actividad_pressed"]
 [connection signal="pressed" from="Boton_Perfil" to="." method="_on_perfil_button_pressed"]
-[connection signal="pressed" from="Tienda_Button" to="." method="_on_tienda_button_pressed"]
+[connection signal="pressed" from="Tienda_Button" to="." method="_on_tienda_tab_pressed"]
 [connection signal="pressed" from="Economia_Button" to="." method="_on_economia_button_pressed"]
 [connection signal="pressed" from="Calendario_Button" to="." method="_on_calendario_boton_pressed"]
 [connection signal="pressed" from="Carrera_Button" to="." method="_on_carrera_tab_pressed"]

@@ -136,13 +136,25 @@ static var _cache_iconos_tienda: Dictionary = {}
 
 
 static func icono_tienda(clave: String) -> Texture2D:
+	# La caché es débil: la textura vive solo mientras una tarjeta visible la
+	# referencia. Así abrir la tienda no carga las 36 ilustraciones de golpe.
 	if _cache_iconos_tienda.has(clave):
-		return _cache_iconos_tienda[clave]
-	var ruta := str(RUTAS_ICONOS_TIENDA.get(clave, ""))
+		var cacheado = _cache_iconos_tienda[clave]
+		if cacheado is WeakRef:
+			var textura_cacheada = cacheado.get_ref()
+			if textura_cacheada is Texture2D:
+				return textura_cacheada
+			_cache_iconos_tienda.erase(clave)
+	# Cada mueble del catálogo usa un PNG con el mismo nombre que su clave.
+	var ruta := str(RUTAS_ICONOS_TIENDA.get(
+		clave, "res://Imagenes/Tienda/Iconos/%s.png" % clave))
 	var textura: Texture2D = null
 	if ruta != "" and ResourceLoader.exists(ruta):
-		textura = load(ruta) as Texture2D
-	_cache_iconos_tienda[clave] = textura
+		# CACHE_MODE_IGNORE evita que el ResourceCache global retenga las 36
+		# texturas para siempre; al ocultar la categoría se liberan.
+		textura = ResourceLoader.load(ruta, "", ResourceLoader.CACHE_MODE_IGNORE) as Texture2D
+	if textura != null:
+		_cache_iconos_tienda[clave] = weakref(textura)
 	return textura
 
 

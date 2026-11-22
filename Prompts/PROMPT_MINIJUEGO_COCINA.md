@@ -12,7 +12,7 @@ Actúa como **Game Designer Senior y Arquitecto de Godot 4.4 (GDScript 2.0)** en
 1. El **Apartado de Minijuegos** (`Minijuegos_Button` en la barra superior junto a Perfil/Economía/Horario/Carrera + panel `Pantalla_Minijuegos` preparado para albergar varios minijuegos).
 2. El **Minijuego de Cocina de gestión de pedidos** (`Minijuego_Cocina.tscn`) con rotación obligatoria a **horizontal (`1280×720`)** y retorno automático a **vertical (`720×1280`)**, manteniendo el reloj del Sim corriendo con normalidad en segundo plano.
 3. El **desbloqueo al primer minuto trabajado** en hostelería (nunca al programar el bloque) con **notificación visual en pantalla + mensaje en el buzón**.
-4. La integración con `Progreso_Cocina`, habilidades innatas, necesidades básicas, `Alimentacion.gd` (`Comer_Tupper` / `Comer_Basura`), `Eventos_Aleatorios.gd`, logros progresivos cada 5 niveles y **ropa equipable** en Perfil.
+4. La integración con `Progreso_Cocina`, habilidades innatas, necesidades básicas, `Alimentacion.gd` (`Comer_Tupper` / `Comer_Basura`), `Eventos_Aleatorios.gd`, logros progresivos cada 20 estrellas y **ropa equipable** en Perfil.
 
 No pidas confirmación interactiva: lee los archivos reales antes de editar, implementa todo, ejecuta los tests GUT y entrega un informe técnico detallado.
 
@@ -80,7 +80,7 @@ No pidas confirmación interactiva: lee los archivos reales antes de editar, imp
              "bistro_tradicional": {"plancha": 1, "emplatado": 1, "termostato": 1, "ingredientes": 1, "ambiente": 1},
              "alta_cocina": {"plancha": 1, "emplatado": 1, "termostato": 1, "ingredientes": 1, "ambiente": 1}
          },
-         "rango_logro": 0, # 0..9 (sube cada 5 niveles superados con >= 1 estrella)
+         "rango_logro": 0, # 0..9 (sube cada 20 ★ acumuladas)
          "servicios_remunerados_hoy": 0,
          "ultimo_dia_remunerado": -1,
          "plus_nomina_turno_hoy": false
@@ -99,7 +99,7 @@ No pidas confirmación interactiva: lee los archivos reales antes de editar, imp
      * `"Delantal_Aprendiz"` (5 niveles): `reduccion_higiene_trabajo = 0.05`.
      * `"Chaqueta_Chef"` (15 niveles): `bonus_salario_hosteleria = 0.10`, `reduccion_higiene_trabajo = 0.05`.
      * `"Atuendo_Chef_Gala"` (30 niveles): `bonus_salario_hosteleria = 0.20`, `reduccion_higiene_trabajo = 0.05`.
-     * `"Traje_Estrella_Michelin"` (45 niveles): `bonus_salario_hosteleria = 0.30`, `reduccion_higiene_trabajo = 0.05`, `bonus_propinas_minijuego = 0.25`.
+     * `"Traje_Estrella_Michelin"` (180 ★): `bonus_salario_hosteleria = 0.30`, `reduccion_higiene_trabajo = 0.05`, `bonus_propinas_minijuego = 0.25`.
 4. **Persistencia (`Guardar_Variables_Dinamicas.gd`, `Guardar_Variables_Estaticas.gd`, `Menu.gd`):**
    * Guardar/cargar `Cocina_Estado` (merge recursivo de claves faltantes), `"Ropa_Calle": true` y `Objeto_Seleccionado["Ropa"]` con fallback `"Ropa_Calle"`.
    * Guardar/cargar `Record_Max_Niveles_Cocina` (fallback `0`) en `Guardar_Variables_Estaticas.gd`.
@@ -119,7 +119,7 @@ Crear `Scripts/Logica/Escena_Principal/Minijuego_Cocina/Sistema_Cocina.gd` y reg
      * Si el restaurante asociado no está en `restaurantes_desbloqueados`, lo añade, guarda partida (`Guardar_Variables_Dinamicas.save_game()`), añade un `Mensaje.new()` al buzón (`Variables_Dinamicas.Mensajes`) avisando del desbloqueo en el apartado **Minijuegos**, y emite `restaurante_desbloqueado` para que la UI muestre la notificación en pantalla.
 3. **4 Mundos de Cocina (data-driven):**
    * `burger_street`: `implementado = true`, **15 niveles** completos (60–90 s, objetivos `1★ / 2★ / 3★`, pedidos de 1–3 ítems: *Hamburguesa sola, con queso, completa [lechuga+tomate+queso], doble, patatas fritas, refresco*).
-   * `bistro_tradicional`, `cocina_mercado` y `alta_cocina`: `implementado = false`; se muestran siempre como **botones bloqueados** con candado y píldora **Fase 2** (sin niveles ni partida).
+   * `bistro_tradicional`, `cocina_mercado` y `alta_cocina`: `implementado = true`; 15 niveles cada uno y mecánicas propias (punto del filete, guisos por lotes y precisión + salsa + maridaje). Se desbloquean al trabajar 1 minuto en su puesto o al superar 1 nivel del mundo anterior.
 4. **5 Mejoras por Restaurante (Nv. 1 → Nv. 3 en la Caja del restaurante, €):**
    * `plancha`: Nv.1 (`2` huecos, `×1.00`) → Nv.2 (`120`, `3` huecos, `×0.80`) → Nv.3 (`320`, `4` huecos, `×0.65`).
    * `emplatado`: Nv.1 (`2` platos, `1` bebida `4.0 s`) → Nv.2 (`100`, `3` platos, `2` bebidas `2.5 s`) → Nv.3 (`280`, `4` platos, `3` bebidas `1.0 s`).
@@ -134,7 +134,7 @@ Crear `Scripts/Logica/Escena_Principal/Minijuego_Cocina/Sistema_Cocina.gd` y reg
    * Bloqueos de entrada: `restaurantes_desbloqueados` vacío, `Necesidades_Basicas[3] <= 5`, o examen universitario (P3) activo o en ≤5 min.
 6. **Micro-recompensas por cliente y fin de nivel:**
    * Por cliente: `15%` base de `+1` `Progreso_Cocina` (`×2.0` en turno, **`×7.0` en `Modo_Rapido`**), `5%` base de `+1` `Progreso[2]` Manualidades (`×7.0` en `Modo_Rapido`), `12%` de `+1` Salud Mental o Hambre (respetando caps de calle/bancarrota/resacón), `10%` de micro-propina (`1–3 € * Multiplicador_Precios()`, tope `6 € * Multiplicador_Precios()` por partida, `×0.25` en práctica).
-   * Fin de nivel (`Procesar_Fin_Nivel`): calcula `0..3★` sobre el ticket (ventas + propinas); la Caja ingresa `ventas − 30% ingredientes − (6 € + 2 € × nivel) − 30% merma`; el Sim cobra propinas (`50%` del bote, `×1.5` en turno, `×0.25` en práctica), `5%` del beneficio neto (`×0.25` en práctica) y prima por nuevas estrellas (`10%` del umbral de cada estrella). Fuera de turno, los 2 primeros servicios/día con ≥1★ pagan paga completa; después, modo práctica. En turno: paga ilimitada + marca `plus_nomina_turno_hoy = true` (+10% nómina), `+25%` de propinas si `"Traje_Estrella_Michelin"`. Actualiza `rango_logro` (cada 5 niveles superados), desbloquea prendas en `Objetos_Poseidos` y envía `Mensaje.new()` al buzón.
+   * Fin de nivel (`Procesar_Fin_Nivel`): calcula `0..3★` sobre el ticket (ventas + propinas); la Caja ingresa `ventas − 30% ingredientes − (6 € + 2 € × nivel) − 30% merma`; el Sim cobra propinas (`50%` del bote, `×1.5` en turno, `×0.25` en práctica), `5%` del beneficio neto (`×0.25` en práctica) y prima por nuevas estrellas (`10%` del umbral de cada estrella). Fuera de turno, los 2 primeros servicios/día con ≥1★ pagan paga completa; después, modo práctica. En turno: paga ilimitada + marca `plus_nomina_turno_hoy = true` (+10% nómina), `+25%` de propinas si `"Traje_Estrella_Michelin"`. Actualiza `rango_logro` (cada 20 ★ acumuladas), desbloquea prendas en `Objetos_Poseidos` y envía `Mensaje.new()` al buzón.
 
 ##### 3.3. Integración con `Actividades.gd`, `Alimentacion.gd` y `Eventos_Aleatorios.gd`
 1. **En `Actividades.gd`:**
@@ -147,7 +147,7 @@ Crear `Scripts/Logica/Escena_Principal/Minijuego_Cocina/Sistema_Cocina.gd` y reg
    * **Rango ≥ 5:** `+15%` de eficiencia en `Progreso[2]` (Manualidades) y `Progreso_Cocina`.
    * **Rango ≥ 7:** `Comer_Tupper` / `Comer_Basura` recuperan `Hambre` un `+15%` más rápido y añaden `+1` en `Salud_Fisica`.
 3. **En `Eventos_Aleatorios.gd`:**
-   * Si `Sistema_Cocina.Obtener_Rango_Logro() >= 8` (40 niveles), excluir `"Intoxicación alimentaria"` del pool de eventos elegibles.
+   * Si `Sistema_Cocina.Obtener_Rango_Logro() >= 8` (160 ★), excluir `"Intoxicación alimentaria"` del pool de eventos elegibles.
 
 ##### 3.4. Apartado de Minijuegos (`Minijuegos_Button` + `Pantalla_Minijuegos`) y Notificación en Pantalla
 1. **Barra superior (`Escena principal.tscn`, `Script_Principal.gd`, `Gestionar_Visibilidad.gd`):**
@@ -164,8 +164,8 @@ Crear `Scripts/Logica/Escena_Principal/Minijuego_Cocina/Sistema_Cocina.gd` y reg
    * En la sección **Vestuario** (barra superior; también desde Inicio y Perfil → Info): tarjetas de todos los atuendos (los no desbloqueados con candado y rango), vista previa animada con la prenda seleccionada y botón `Equipar atuendo` / `Atuendo equipado`.
 
 ##### 3.5. Escena del Minijuego (`Escenas/Minijuego_Cocina/Minijuego_Cocina.tscn` + `Minijuego_Cocina.gd`)
-Escena de **doble orientación**: mapa vertical `720×1280` y cocina horizontal `1280×720`, con estilo cartoon celeste/dorado en el mapa (`Selector_Niveles_Arte.gd`) y HUD azul en la partida:
-1. **Subvista 1 — Mapa de Niveles y Mejoras:** barra superior (`Caja` en €, rango, badge `En Turno`, `Mejoras`, `← Volver al Sim`), selector de **4 mundos** (3 bloqueados con etiqueta `Fase 2`), mapa de 15 niveles con estrellas `0–3★`, modal de inicio de nivel y **pantalla de Mejoras** a tamaño completo (`Mejoras_Cocina.gd`): lista de 5 mejoras con estrellas, escaparate de la siguiente versión, pestañas Nv.1–3 con coste, comparativa de rendimiento y compra pagada con la Caja del local.
+Escena **horizontal** `1280×720` para selector, mapa, Mejoras y partida (restaura la vertical al salir al Sim), con estilo cartoon celeste/dorado en el mapa (`Selector_Niveles_Arte.gd`) y HUD azul en la partida:
+1. **Subvista 1 — Mapa de Niveles y Mejoras:** barra superior (`Caja` en €, rango, badge `En Turno`, `Mejoras`, `← Volver al Sim`), selector de **4 mundos** (los bloqueados con miniatura desaturada y píldora `BLOQUEADO`), mapa de 15 niveles con estrellas `0–3★`, modal de inicio de nivel con la explicación de la mecánica y **pantalla de Mejoras** a tamaño completo (`Mejoras_Cocina.gd`): lista de 5 mejoras con estrellas, escaparate de la siguiente versión, pestañas Nv.1–3 con coste, comparativa de rendimiento y compra pagada con la Caja del local.
 2. **Subvista 2 — Cocina Jugable (`1280×720`, *tap-to-move* a dos pulgares):**
    * HUD superior (reloj del servicio, barra de recaudación con marcas `1★/2★/3★`, combo `x2..x5`, badge `En Turno`).
    * Mostrador con **4 clientes simultáneos** (pedido 1–3 ítems, paciencia verde→amarillo→rojo, monedas+propina al entregar, combo `<2.5 s`, feedback flotante de micro-recompensas).
@@ -182,7 +182,7 @@ Escena de **doble orientación**: mapa vertical `720×1280` y cocina horizontal 
 4. Bonus `Esta_En_Turno_Activo` (propinas `×1.5`, paga completa ilimitada, `×2.0` progreso, `+10%` nómina).
 5. `Modo_Rapido`: drops de `Progreso_Cocina` y `Manualidades` multiplicados por `×7.0`.
 6. Fórmulas de `Destreza`, `Paciencia`, `Sangre_Fria`, `Descanso < 25`, `Salud_Mental < 25`, `Resacon`, bloqueo `Descanso <= 5`.
-7. Logros cada 5 niveles (Rangos 1–9), desbloqueo y equipamiento de prendas, efectos en salario/higiene/`Alimentacion.gd` e inmunidad a intoxicación en Rango ≥ 8.
+7. Logros cada 20 estrellas (Rangos 1–9), desbloqueo y equipamiento de prendas, efectos en salario/higiene/`Alimentacion.gd` e inmunidad a intoxicación en Rango ≥ 8.
 8. No regresión de la suite GUT existente.
 
 ---

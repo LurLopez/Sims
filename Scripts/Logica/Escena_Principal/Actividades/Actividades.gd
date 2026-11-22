@@ -940,54 +940,13 @@ func _Es_Unico_De_Categoria(categoria: String, clave: String) -> bool:
 
 
 # ---------------- Sistema de Inversiones ----------------
-# Evento de mercado: ocurre con probabilidad 1/480 por minuto (~1 vez cada 8 horas).
-# Dirección determinada por Progreso_Inversion y Salud_Mental_Al_Invertir (snapshot).
-# Auto-venta si Sangre_Fría < 30 y pérdida > 15%.
+# La lógica completa (aportes, retiradas, eventos, historial y estadísticas)
+# vive en el autoload `Sistema_Bolsa`. Aquí solo se mantienen los puntos de
+# entrada que ya usaba el bucle de actividades y los tests existentes.
 
 func _Tick_Inversion():
-	if randi() % 480 != 0:
-		return
-	var progreso = Variables_Dinamicas.Progreso_Inversion
-	var mental = Variables_Dinamicas.Salud_Mental_Al_Invertir
-	# prob_subida: 0.15 en progreso=1, 0.50 en progreso=50, 0.85 en progreso=100.
-	# La salud mental ajusta hasta ±10 puntos porcentuales.
-	var tendencia = (progreso - 1.0) / 99.0
-	var factor_mental = (mental - 50.0) / 300.0
-	var prob_subida = clamp(0.15 + tendencia * 0.70 + factor_mental, 0.05, 0.95)
-	var cambio_pct = (randi() % 26 + 5) / 1000.0  # 0.5% a 3.0%
-	if randf() < prob_subida:
-		Variables_Dinamicas.Valor_Inversion += Variables_Dinamicas.Valor_Inversion * cambio_pct
-	else:
-		Variables_Dinamicas.Valor_Inversion -= Variables_Dinamicas.Valor_Inversion * cambio_pct
-		Variables_Dinamicas.Valor_Inversion = max(0.0, Variables_Dinamicas.Valor_Inversion)
-
-	# Auto-venta por pánico: Sangre_Fría muy baja + pérdida > 15%.
-	var sangre_fria = Variables_Estaticas.Habilidades[6]
-	if sangre_fria < 30 and Variables_Dinamicas.Dinero_Invertido > 0:
-		var pct_cambio = (Variables_Dinamicas.Valor_Inversion - Variables_Dinamicas.Dinero_Invertido) / Variables_Dinamicas.Dinero_Invertido
-		if pct_cambio < -0.15:
-			_Auto_Vender_Inversion()
-			return
-
-	# Mejora de progreso de inversión: 1/20 de probabilidad por evento de mercado.
-	if Variables_Dinamicas.Progreso_Inversion < 100:
-		if randi() % 20 == 0:
-			Variables_Dinamicas.Progreso_Inversion += 1
+	Sistema_Bolsa.Procesar_Minuto()
 
 
 func _Auto_Vender_Inversion():
-	var invertido = Variables_Dinamicas.Dinero_Invertido
-	var valor_actual = Variables_Dinamicas.Valor_Inversion
-	var pct_perdida = 0.0
-	if invertido > 0:
-		pct_perdida = (invertido - valor_actual) / invertido * 100.0
-	Variables_Dinamicas.Dinero += valor_actual
-	Variables_Dinamicas.Esta_Invirtiendo = false
-	Variables_Dinamicas.Valor_Inversion = 0.0
-	Variables_Dinamicas.Dinero_Invertido = 0.0
-	var msg = Mensaje.new()
-	msg.titulo = "Inversión retirada automáticamente"
-	msg.descripcion = "Tu sangre fría es baja. Al alcanzar un %.0f%% de pérdidas has entrado en pánico y has retirado la inversión (%.0f€ recuperados)." % [pct_perdida, valor_actual]
-	msg.leido = false
-	msg.minuto = Variables_Dinamicas.Minute_Day * 1440 + Variables_Dinamicas.Minute_Minute
-	Variables_Dinamicas.Mensajes.append(msg)
+	Sistema_Bolsa.Auto_Vender_Por_Panico()

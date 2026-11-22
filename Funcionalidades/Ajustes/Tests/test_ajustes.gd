@@ -112,3 +112,56 @@ func test_panel_ajustes_se_construye_y_cambia_el_volumen() -> void:
 	panel._barra_sfx.Establecer_Valor(0.6, true)
 	assert_almost_eq(Ajustes.Obtener_Volumen_SFX(), 0.6, 0.001)
 	assert_eq(panel._lbl_sfx.text, "60%")
+
+
+func test_panel_ajustes_no_se_oculta_al_cambiar_de_pantalla() -> void:
+	var raiz := Control.new()
+	add_child_autofree(raiz)
+	var panel := Panel_Ajustes.new()
+	raiz.add_child(panel)
+	await wait_process_frames(2)
+
+	assert_true(panel.is_in_group(Gestionar_Visibilidad.GRUPO_OVERLAY_MODAL),
+		"El panel debe registrarse como overlay modal persistente")
+
+	Gestionar_Visibilidad.Recursivo_Desvisibilizar(raiz)
+
+	assert_true(panel.get_node("Velo").visible,
+		"El modal de ajustes no debe desaparecer al cambiar de pestaña")
+
+
+func test_botones_de_cabecera_siguen_visibles_al_volver_al_inicio() -> void:
+	var raiz := Control.new()
+	add_child_autofree(raiz)
+	for nombre in [
+		"Barra_Abajo", "Fondo", "Moneda", "Dinero_Label", "Boton_Perfil",
+		"Economia_Button", "Calendario_Button", "Carrera_Button",
+		"Boton_Ajustes_Header",
+	]:
+		var nodo := Control.new()
+		nodo.name = nombre
+		raiz.add_child(nodo)
+
+	var boton_ajustes: Control = raiz.get_node("Boton_Ajustes_Header")
+	boton_ajustes.visible = false
+
+	Gestionar_Visibilidad.Visibilizar_Lo_Basico(raiz)
+
+	assert_true(boton_ajustes.visible,
+		"El engranaje de ajustes debe seguir visible al cambiar de pestaña")
+
+
+func test_cabecera_principal_agrupa_la_musica_y_los_efectos_en_ajustes() -> void:
+	var raiz = load("res://Escenas/Escena_Principal/Escena principal.tscn").instantiate()
+	raiz._Redisenar_Superior()
+
+	assert_null(raiz.get_node_or_null("Boton_Musica_Header"),
+		"El altavoz de la cabecera ya no debe existir por separado")
+	var boton_ajustes := raiz.get_node_or_null("Boton_Ajustes_Header") as Button
+	assert_not_null(boton_ajustes, "La cabecera debe tener un único engranaje de ajustes")
+	assert_eq(boton_ajustes.icon, Estilos_UI.icono("settings"),
+		"El acceso debe usar el icono de engranaje")
+	assert_true(boton_ajustes.pressed.is_connected(Callable(raiz, "_on_boton_ajustes_pressed")),
+		"El engranaje debe abrir el panel con música y efectos")
+	raiz.free()
+

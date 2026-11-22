@@ -24,14 +24,46 @@ ORIGEN = ROOT / "Arte_Fuente" / "Tienda" / "Fuente"
 RESPALDO = ROOT / "Imagenes" / "Tienda"
 DESTINO = ROOT / "Imagenes" / "Tienda" / "Iconos"
 
-# Original -> clave del catálogo (Catalogo_Objetos en Variables_Estaticas.gd).
+# Original -> clave del catálogo (Catalogo_Tienda.gd).
+# Los JPG llegan con fondo magenta; los PNG de las láminas ya vienen
+# recortados con alfa. El script acepta ambos.
 NOMBRES = {
     "Cama_Basica": "Cama_Basica",
     "Cama_Premium": "Cama_Premium",
     "Cama_Lujo": "Cama_Lujo",
+    "Litera_Compacta": "Litera_Compacta",
+    "Cama_Nube": "Cama_Nube",
+    "Cama_Imperial": "Cama_Imperial",
     "Mesa_Basica": "Mesa_Basica",
+    "Mesa_Familiar": "Mesa_Familiar",
+    "Mesa_Roble": "Mesa_Roble",
+    "Mesa_Cristal": "Mesa_Cristal",
+    "Isla_Desayuno": "Isla_Desayuno",
+    "Mesa_Chef": "Mesa_Chef",
     "Ducha_Basica": "Ducha_Basica",
     "Ducha_Premium": "Ducha_Premium",
+    "Banera_Clasica": "Banera_Clasica",
+    "Ducha_Lluvia": "Ducha_Lluvia",
+    "Banera_Jacuzzi": "Banera_Jacuzzi",
+    "Cabina_Spa": "Cabina_Spa",
+    "Sofa_Basico": "Sofa_Basico",
+    "Sofa_Esquinero": "Sofa_Esquinero",
+    "Sofa_Chester": "Sofa_Chester",
+    "Sofa_Relax": "Sofa_Relax",
+    "Sofa_Modular": "Sofa_Modular",
+    "Sofa_Imperial": "Sofa_Imperial",
+    "Escritorio_Basico": "Escritorio_Basico",
+    "Escritorio_Moderno": "Escritorio_Moderno",
+    "Escritorio_Ejecutivo": "Escritorio_Ejecutivo",
+    "Mesa_Dibujo": "Mesa_Dibujo",
+    "Escritorio_Gaming": "Escritorio_Gaming",
+    "Biblioteca_Roble": "Biblioteca_Roble",
+    "Cocina_Basica": "Cocina_Basica",
+    "Cocina_Modular": "Cocina_Modular",
+    "Cocina_Isla": "Cocina_Isla",
+    "Cocina_Chef": "Cocina_Chef",
+    "Cocina_Pro": "Cocina_Pro",
+    "Cocina_Industrial": "Cocina_Industrial",
 }
 
 # El fondo de las imágenes no es #FF00FF puro (varía entre lotes): se mide la
@@ -118,6 +150,14 @@ def crear_preview(iconos: list, ruta: Path, tamano: int) -> None:
     prev.save(ruta)
 
 
+def tiene_alfa_util(imagen: Image.Image) -> bool:
+    """Las láminas ya recortadas traen alfa real; no hay que buscar magenta."""
+    if imagen.mode not in ("RGBA", "LA"):
+        return False
+    alfa = np.asarray(imagen.convert("RGBA"))[..., 3]
+    return float((alfa < 16).mean()) > 0.02
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--size", type=int, default=512, help="lado del lienzo final en píxeles")
@@ -140,7 +180,12 @@ def main() -> None:
         if ruta is None:
             print(f"aviso: falta {nombre_fuente} en {ORIGEN} ni en {RESPALDO}")
             continue
-        icono = centrar_cuadrado(limpiar_polvo(recortar_magenta(Image.open(ruta))), args.size, args.margin)
+        original = Image.open(ruta)
+        if tiene_alfa_util(original):
+            recortado = limpiar_polvo(original.convert("RGBA"))
+        else:
+            recortado = limpiar_polvo(recortar_magenta(original))
+        icono = centrar_cuadrado(recortado, args.size, args.margin)
         salida = DESTINO / (clave + ".png")
         icono.save(salida, optimize=True)
         procesados.append((clave, icono))

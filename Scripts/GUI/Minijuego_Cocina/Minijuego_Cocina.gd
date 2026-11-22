@@ -2,10 +2,11 @@ extends Control
 
 # ============================================================================
 # Minijuego de Cocina de gestión de pedidos.
-# Mapa de Niveles + Mejoras en vertical (720x1280) y cocina jugable en
-# horizontal (1280x720) con pantalla de carga, ARRASTRAR Y SOLTAR sobre los
-# sprites PNG del pack (Imagenes/Minijuego_Cocina) y Modal de Resultados.
-# Mantiene el reloj del Sim corriendo en segundo plano.
+# Selector de mundos/niveles, Mejoras y cocina jugable en horizontal
+# (1280x720) con pantalla de carga, ARRASTRAR Y SOLTAR sobre los sprites PNG
+# del pack (Imagenes/Minijuego_Cocina) y Modal de Resultados.
+# Mantiene el reloj del Sim corriendo en segundo plano y restaura la vertical
+# al salir al Sim.
 # ============================================================================
 
 signal cerrado()
@@ -15,15 +16,18 @@ const ArrastreCocina := preload("res://Scripts/GUI/Minijuego_Cocina/Arrastre_Coc
 const SonidosCocina := preload("res://Scripts/GUI/Minijuego_Cocina/Sonidos_Cocina.gd")
 const MejorasCocina := preload("res://Scripts/GUI/Minijuego_Cocina/Mejoras_Cocina.gd")
 const SelectorArte := preload("res://Scripts/GUI/Minijuego_Cocina/Selector_Niveles_Arte.gd")
+const ArteModal := preload("res://Scripts/GUI/Minijuego_Cocina/Arte_Modal_Cocina.gd")
 
 const TAMANO_HORIZONTAL := Vector2i(1280, 720)
 const TAMANO_VERTICAL := Vector2i(720, 1280)
-const ALTO_TOP_MAPA: float = 104.0
-const MARGEN_MAPA: float = 16.0
-const MARGEN_PANEL_MAPA: float = 22.0
-const ALTO_FILA_MUNDO: float = 124.0
+const ALTO_TOP_MAPA: float = 96.0
+const MARGEN_MAPA: float = 18.0
+const MARGEN_PANEL_MAPA: float = 18.0
+const ANCHO_MAX_PANEL_MAPA: float = 1240.0
+const ALTO_FILA_MUNDO: float = 178.0
 const SEPARACION_MUNDOS: int = 16
-const ALTO_TABLERO_NIVELES: float = 900.0
+const ALTO_TABLERO_NIVELES: float = 396.0
+const COLUMNAS_NIVELES: int = 5
 const DURACION_CARGA_NIVEL: float = 1.9
 const RETARDO_CARGA_NIVEL: float = 0.35
 const VENTANA_COMBO_SEG: float = 2.5
@@ -76,12 +80,18 @@ var _modal_salida: Control
 var _modal_pausa: Control
 var _lbl_salida_resumen: Label
 var _lbl_pausa_resumen: Label
+var _lbl_pausa_clientes: Label
+var _card_inicio: Control
+var _card_pausa: Control
+var _card_salida: Control
 var _pausado_por_confirmacion: bool = false
 var _quit_on_go_back_previo: bool = true
 var _capa_feedback: Control
 
 # Referencias UI — Pantalla de carga (horizontal)
 var _barra_carga: ProgressBar
+var _fondo_carga: TextureRect
+var _chef_carga: TextureRect
 var _lbl_carga_pct: Label
 var _lbl_carga_paso: Label
 var _lbl_carga_titulo: Label
@@ -90,19 +100,19 @@ var _tween_carga: Tween
 var _carga_activa: bool = false
 var _nivel_en_carga: int = -1
 
-# Referencias UI — Cabecera y selector de restaurantes del mapa (vertical)
+# Referencias UI — Cabecera y selector de restaurantes del mapa (horizontal)
 var _top_mapa: Panel
 var _htop_mapa: HBoxContainer
 var _htop_mapa2: HBoxContainer
 
 # Referencias UI — Mapa
 var _lbl_mapa_titulo: Label
-var _lbl_mapa_rango: Label
+var _btn_mapa_rango: Button
 var _pill_mapa_turno: PanelContainer
 var _lbl_mapa_fondos: Label
 var _lbl_mapa_dinero: Label
 var _btn_mapa_mejoras: Button
-var _lista_restaurantes: VBoxContainer
+var _lista_restaurantes: GridContainer
 var _contenedor_niveles: Control
 var _fondo_mapa: Control
 var _marco_mapa: Control
@@ -114,6 +124,18 @@ var _grid_niveles: GridContainer
 var _centro_niveles: CenterContainer
 var _barra_scroll_niveles: Control
 var _decor_mundos_chef: TextureRect
+var _panel_maestria: PanelContainer
+var _lbl_maestria_cabecera: Label
+var _lbl_maestria_rango: Label
+var _lbl_maestria_nombre: Label
+var _lbl_maestria_estrellas: Label
+var _bar_maestria: ProgressBar
+var _lbl_maestria_faltan: Label
+var _lbl_maestria_recompensa_tit: Label
+var _lbl_maestria_recompensa: Label
+var _modal_maestria: Control
+var _card_maestria: Control
+var _vbox_modal_maestria: VBoxContainer
 var _vbox_modal_inicio: VBoxContainer
 var _vbox_modal_resultados: VBoxContainer
 var _card_resultados: PanelContainer
@@ -130,7 +152,6 @@ var _lbl_cocina_combo: Label
 var _bar_cocina_combo: ProgressBar
 var _pill_cocina_turno: PanelContainer
 var _lbl_cocina_reloj_sim: Label
-var _lbl_cocina_propinas: Label
 var _hud_moneda_icon: TextureRect
 var _hud_icono_reloj: TextureRect
 
@@ -188,6 +209,29 @@ var _nivel_actual: int = 1
 var _en_turno_partida: bool = false
 var _modo_practica_partida: bool = false
 var _cfg_nivel_actual: Dictionary = {}
+var _perfil_actual: Dictionary = {}
+var _fondo_cocina: TextureRect
+var _puestos_nodos: Array[Control] = []
+var _despensa_restaurante: String = ""
+var _fondo_despensa: ArteCocina.Fondo_Despensa
+var _despensa_pila: TextureRect
+var _despensa_bandejas: TextureRect
+var _est_plancha_tex: TextureRect
+var _est_freidora_tex: TextureRect
+var _est_bebidas_tex: TextureRect
+var _horno_ctrl: ArteCocina.Estacion_Horno
+var _olla_ctrl: ArteCocina.Estacion_Olla
+var _sarten_ctrl: ArteCocina.Sarten_Salsa
+var _botellas_ctrl: ArteCocina.Estacion_Botellas
+# Estado de la olla de mercado y de la salsa de alta cocina.
+var _olla: Dictionary = {
+	"ingredientes": [], "estado": "vacio", "progreso": 0.0,
+	"raciones": 0, "receta": ""
+}
+var _sarten: Dictionary = {
+	"estado": "lista", "quemado": 0.0, "removido": 0.0
+}
+
 var _tiempo_servicio: float = 0.0
 var _clientes_totales: int = 0
 var _clientes_pendientes: int = 0
@@ -208,6 +252,8 @@ var _plato_seleccionado: int = -1
 # Parámetros calculados al inicio del nivel
 var _tiempo_coccion_carne: float = 4.0
 var _tiempo_coccion_patatas: float = 3.6
+var _tiempo_coccion_b: float = 3.6
+var _tiempo_olla: float = 6.2
 var _tiempo_quemado: float = 6.0
 var _aviso_temprano: bool = false
 var _velocidad_paciencia: float = 1.0
@@ -219,6 +265,7 @@ var _bonus_ropa_propinas: float = 0.0
 # Datos vivos de cocina
 var _clientes: Array[Dictionary] = []
 var _bebidas: Array[Dictionary] = []
+var _bebida_items_actuales: Array[String] = []
 var _platos: Array[Dictionary] = []
 var _plancha: Array[Dictionary] = []
 var _freidora: Array[Dictionary] = []
@@ -226,7 +273,7 @@ var _freidora: Array[Dictionary] = []
 
 func _ready() -> void:
 	set_anchors_preset(Control.PRESET_FULL_RECT)
-	_Aplicar_Orientacion_Vertical()
+	_Aplicar_Orientacion_Horizontal()
 	# En Android, el botón atrás lo gestiona el minijuego (confirmación de
 	# salida, cierre de modales, etc.) en vez de cerrar la app de golpe.
 	if get_tree() != null:
@@ -249,10 +296,12 @@ func _Centrar_Contenido() -> void:
 		return
 	var tam: Vector2 = vp.get_visible_rect().size
 
-	# El mapa de niveles vive en vertical (720x1280) y ocupa todo el viewport.
+	# El mapa vive en horizontal (1280x720) y ocupa todo el viewport; el marco
+	# del selector se centra con un ancho máximo para no deformarse en pantallas
+	# muy alargadas.
 	if _vista_mapa != null and is_instance_valid(_vista_mapa):
 		_vista_mapa.position = Vector2.ZERO
-		_vista_mapa.size = Vector2(maxf(float(TAMANO_VERTICAL.x), tam.x), maxf(float(TAMANO_VERTICAL.y), tam.y))
+		_vista_mapa.size = Vector2(maxf(float(TAMANO_HORIZONTAL.x), tam.x), maxf(float(TAMANO_HORIZONTAL.y), tam.y))
 		_Ajustar_Disposicion_Mapa()
 
 	# La cocina y la pantalla de carga viven en horizontal (1280x720) y se centran.
@@ -270,22 +319,24 @@ func _Ajustar_Disposicion_Mapa() -> void:
 		return
 	if _top_mapa == null or not is_instance_valid(_top_mapa):
 		return
-	var ancho: float = maxf(float(TAMANO_VERTICAL.x), _vista_mapa.size.x)
-	var alto: float = maxf(float(TAMANO_VERTICAL.y), _vista_mapa.size.y)
+	var ancho: float = maxf(float(TAMANO_HORIZONTAL.x), _vista_mapa.size.x)
+	var alto: float = maxf(float(TAMANO_HORIZONTAL.y), _vista_mapa.size.y)
 	var ancho_util: float = ancho - MARGEN_MAPA * 2.0
 
+	# Cabecera compacta de dos filas: mundo/rango y economía/mejoras.
+	_top_mapa.position = Vector2.ZERO
 	_top_mapa.size = Vector2(ancho, ALTO_TOP_MAPA)
-	_htop_mapa.position = Vector2(MARGEN_MAPA, 8)
+	_htop_mapa.position = Vector2(MARGEN_MAPA, 6)
 	_htop_mapa.size = Vector2(ancho_util, 40)
-	_htop_mapa2.position = Vector2(MARGEN_MAPA, 54)
-	_htop_mapa2.size = Vector2(ancho_util, 44)
+	_htop_mapa2.position = Vector2(MARGEN_MAPA, 50)
+	_htop_mapa2.size = Vector2(ancho_util, 40)
 
-	# Panel único celeste que contiene tanto el selector de mundos como el
-	# tablero de niveles; ambos comparten marco, título y botonera inferior.
+	# Panel único celeste centrado. Al ser horizontal tiene un ancho máximo
+	# para que en pantallas muy alargadas no se estiren las tarjetas.
+	var panel_w: float = minf(ANCHO_MAX_PANEL_MAPA, ancho - MARGEN_PANEL_MAPA * 2.0)
 	var panel_y: float = ALTO_TOP_MAPA + 10.0
-	var panel_w: float = ancho - MARGEN_PANEL_MAPA * 2.0
-	var panel_h: float = maxf(620.0, alto - panel_y - MARGEN_PANEL_MAPA)
-	_marco_mapa.position = Vector2(MARGEN_PANEL_MAPA, panel_y)
+	var panel_h: float = maxf(520.0, alto - panel_y - MARGEN_PANEL_MAPA)
+	_marco_mapa.position = Vector2((ancho - panel_w) * 0.5, panel_y)
 	_marco_mapa.size = Vector2(panel_w, panel_h)
 
 	_lbl_titulo_panel.position = Vector2(22.0, 2.0)
@@ -316,24 +367,28 @@ func _Ajustar_Disposicion_Mapa() -> void:
 	_contenedor_niveles.visible = expandido
 	_btn_mapa_siguiente.visible = expandido
 
-	var alto_lista: float = ALTO_FILA_MUNDO * float(Sistema_Cocina.ORDEN_RESTAURANTES.size()) \
-		+ float(SEPARACION_MUNDOS) * float(maxi(0, Sistema_Cocina.ORDEN_RESTAURANTES.size() - 1))
-	var mostrar_chef: bool = not expandido and tab.size.y >= 760.0
-	if mostrar_chef:
-		var alto_chef: float = 300.0
-		var total: float = alto_lista + 24.0 + alto_chef
-		var y0: float = tab.position.y + maxf(24.0, (tab.size.y - total) * 0.5)
+	if not expandido:
+		# Cuatro mundos en una cuadrícula 2x2 a la izquierda y, a la derecha,
+		# el chef como reclamo visual sobre la tarjeta de progreso de Maestría.
+		var chef_w: float = 270.0
+		var lista_w: float = maxf(360.0, tab.size.x - 56.0 - chef_w - 24.0)
+		var alto_lista: float = minf(
+			ALTO_FILA_MUNDO * 2.0 + float(SEPARACION_MUNDOS),
+			tab.size.y - 24.0)
+		var y0: float = tab.position.y + maxf(12.0, (tab.size.y - alto_lista) * 0.5)
 		_lista_restaurantes.position = Vector2(tab.position.x + 28.0, y0)
-		_lista_restaurantes.size = Vector2(tab.size.x - 56.0, alto_lista)
-		_decor_mundos_chef.position = Vector2(
-			tab.position.x + (tab.size.x - 300.0) * 0.5,
-			y0 + alto_lista + 24.0)
-		_decor_mundos_chef.size = Vector2(300.0, alto_chef)
+		_lista_restaurantes.size = Vector2(lista_w, alto_lista)
+		var col_x: float = tab.position.x + 28.0 + lista_w + 24.0
+		_decor_mundos_chef.visible = true
+		_decor_mundos_chef.position = Vector2(col_x, tab.position.y + 6.0)
+		_decor_mundos_chef.size = Vector2(chef_w, 92.0)
+		_panel_maestria.visible = true
+		_panel_maestria.position = Vector2(col_x, tab.position.y + 106.0)
+		_panel_maestria.size = Vector2(
+			chef_w, maxf(240.0, tab.size.y - 114.0))
 	else:
-		_lista_restaurantes.position = Vector2(tab.position.x + 28.0,
-			tab.position.y + maxf(24.0, (tab.size.y - alto_lista) * 0.5))
-		_lista_restaurantes.size = Vector2(tab.size.x - 56.0, alto_lista)
-	_decor_mundos_chef.visible = mostrar_chef
+		_decor_mundos_chef.visible = false
+		_panel_maestria.visible = false
 
 
 func _exit_tree() -> void:
@@ -361,6 +416,9 @@ func _Volver_Atras() -> void:
 	if _modal_pausa != null and _modal_pausa.visible:
 		_Reanudar_Partida()
 		return
+	if _modal_maestria != null and _modal_maestria.visible:
+		_modal_maestria.visible = false
+		return
 	if _modal_salida != null and _modal_salida.visible:
 		_Cancelar_Salida_Partida()
 		return
@@ -373,6 +431,9 @@ func _Volver_Atras() -> void:
 		return
 	if _modal_inicio != null and _modal_inicio.visible:
 		_modal_inicio.visible = false
+		return
+	if _modal_maestria != null and _modal_maestria.visible:
+		_modal_maestria.visible = false
 		return
 	if _modal_mejoras != null and _modal_mejoras.visible:
 		if _modal_mejoras.has_method("cerrar"):
@@ -400,7 +461,7 @@ func _Volver_Mapa() -> void:
 
 func _Aplicar_Orientacion_Horizontal() -> void:
 	_orientacion_aplicada = true
-	if DisplayServer.get_name() in ["android", "ios"]:
+	if DisplayServer.get_name().to_lower() in ["android", "ios"]:
 		DisplayServer.screen_set_orientation(DisplayServer.SCREEN_LANDSCAPE)
 	var win: Window = get_window()
 	if win != null:
@@ -415,7 +476,7 @@ func _Aplicar_Orientacion_Horizontal() -> void:
 
 func _Aplicar_Orientacion_Vertical() -> void:
 	_orientacion_aplicada = false
-	if DisplayServer.get_name() in ["android", "ios"]:
+	if DisplayServer.get_name().to_lower() in ["android", "ios"]:
 		DisplayServer.screen_set_orientation(DisplayServer.SCREEN_PORTRAIT)
 	var win: Window = get_window()
 	if win != null:
@@ -431,6 +492,14 @@ func _Aplicar_Orientacion_Vertical() -> void:
 func _Salir_Al_Sim() -> void:
 	_jugando = false
 	_Cancelar_Carga()
+	# Ocultamos la vista horizontal antes de girar: mientras Android aplica la
+	# vertical solo se ve el fondo oscuro del minijuego, no el mapa estirado.
+	if _vista_mapa != null and is_instance_valid(_vista_mapa):
+		_vista_mapa.visible = false
+	if _vista_cocina != null and is_instance_valid(_vista_cocina):
+		_vista_cocina.visible = false
+	if _vista_carga != null and is_instance_valid(_vista_carga):
+		_vista_carga.visible = false
 	_Aplicar_Orientacion_Vertical()
 	cerrado.emit()
 
@@ -461,6 +530,7 @@ func _Construir_Raiz() -> void:
 	_Construir_Vista_Mapa()
 	_Construir_Vista_Cocina()
 	_Construir_Modal_Inicio()
+	_Construir_Modal_Maestria()
 	_Construir_Modal_Mejoras()
 	_Construir_Modal_Resultados()
 	_Construir_Modal_Confirmar_Salida()
@@ -482,7 +552,7 @@ func _Construir_Raiz() -> void:
 func _Construir_Vista_Mapa() -> void:
 	_vista_mapa = Control.new()
 	_vista_mapa.name = "Vista_Mapa"
-	_vista_mapa.size = Vector2(TAMANO_VERTICAL)
+	_vista_mapa.size = Vector2(TAMANO_HORIZONTAL)
 	add_child(_vista_mapa)
 
 	_fondo_mapa = SelectorArte.Fondo_Mapa.new()
@@ -499,7 +569,7 @@ func _Construir_Barra_Mapa() -> void:
 	_top_mapa = Panel.new()
 	_top_mapa.name = "Mapa_Top_Bar"
 	_top_mapa.position = Vector2.ZERO
-	_top_mapa.size = Vector2(TAMANO_VERTICAL.x, ALTO_TOP_MAPA)
+	_top_mapa.size = Vector2(TAMANO_HORIZONTAL.x, ALTO_TOP_MAPA)
 	var st_top := StyleBoxFlat.new()
 	st_top.bg_color = Color(0.035, 0.095, 0.18, 0.94)
 	st_top.corner_radius_bottom_left = 20
@@ -511,8 +581,8 @@ func _Construir_Barra_Mapa() -> void:
 	_vista_mapa.add_child(_top_mapa)
 
 	_htop_mapa = HBoxContainer.new()
-	_htop_mapa.position = Vector2(MARGEN_MAPA, 8)
-	_htop_mapa.size = Vector2(TAMANO_VERTICAL.x - MARGEN_MAPA * 2.0, 40)
+	_htop_mapa.position = Vector2(MARGEN_MAPA, 6)
+	_htop_mapa.size = Vector2(TAMANO_HORIZONTAL.x - MARGEN_MAPA * 2.0, 40)
 	_htop_mapa.add_theme_constant_override("separation", 10)
 	_top_mapa.add_child(_htop_mapa)
 
@@ -528,21 +598,33 @@ func _Construir_Barra_Mapa() -> void:
 	_lbl_mapa_titulo.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_htop_mapa.add_child(_lbl_mapa_titulo)
 
-	var pill_rango := PanelContainer.new()
-	pill_rango.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	pill_rango.add_theme_stylebox_override("panel",
+	_btn_mapa_rango = Button.new()
+	_btn_mapa_rango.name = "Boton_Maestria_Mapa"
+	_btn_mapa_rango.tooltip_text = "Ver progreso y recompensas de Maestría Culinaria"
+	_btn_mapa_rango.icon = SelectorArte.TEX_ESTRELLA
+	_btn_mapa_rango.expand_icon = false
+	_btn_mapa_rango.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	_btn_mapa_rango.add_theme_font_override("font", SelectorArte.FUENTE_CARTOON)
+	_btn_mapa_rango.add_theme_font_size_override("font_size", 12)
+	_btn_mapa_rango.add_theme_color_override("font_color", Color("#ffe98a"))
+	_btn_mapa_rango.add_theme_color_override("font_hover_color", Color("#fff6c7"))
+	_btn_mapa_rango.add_theme_color_override("font_pressed_color", Color("#ffd75e"))
+	_btn_mapa_rango.add_theme_constant_override("icon_max_width", 15)
+	_btn_mapa_rango.add_theme_constant_override("h_separation", 5)
+	_btn_mapa_rango.add_theme_stylebox_override("normal",
 		SelectorArte.estilo_pildora(Color("#0c203b"), Color("#f6b93b"), 999, 2))
-	var h_rango := HBoxContainer.new()
-	h_rango.add_theme_constant_override("separation", 5)
-	h_rango.add_child(_Icono_Mapa(SelectorArte.TEX_ESTRELLA, 15.0))
-	_lbl_mapa_rango = Estilos_UI.texto("Rango 0/9", 12, Color("#ffe98a"), 700)
-	h_rango.add_child(_lbl_mapa_rango)
-	pill_rango.add_child(h_rango)
-	_htop_mapa.add_child(pill_rango)
+	_btn_mapa_rango.add_theme_stylebox_override("hover",
+		SelectorArte.estilo_pildora(Color("#15355a"), Color("#ffd75e"), 999, 2))
+	_btn_mapa_rango.add_theme_stylebox_override("pressed",
+		SelectorArte.estilo_pildora(Color("#081a30"), Color("#e39a05"), 999, 2))
+	_btn_mapa_rango.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
+	_btn_mapa_rango.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	_btn_mapa_rango.pressed.connect(_Abrir_Modal_Maestria)
+	_htop_mapa.add_child(_btn_mapa_rango)
 
 	_htop_mapa2 = HBoxContainer.new()
-	_htop_mapa2.position = Vector2(MARGEN_MAPA, 54)
-	_htop_mapa2.size = Vector2(TAMANO_VERTICAL.x - MARGEN_MAPA * 2.0, 44)
+	_htop_mapa2.position = Vector2(MARGEN_MAPA, 50)
+	_htop_mapa2.size = Vector2(TAMANO_HORIZONTAL.x - MARGEN_MAPA * 2.0, 40)
 	_htop_mapa2.add_theme_constant_override("separation", 8)
 	_top_mapa.add_child(_htop_mapa2)
 
@@ -610,8 +692,8 @@ func _Construir_Panel_Mapa() -> void:
 	_marco_mapa.name = "Marco_Selector_Niveles"
 	_marco_mapa.position = Vector2(MARGEN_PANEL_MAPA, ALTO_TOP_MAPA + 10.0)
 	_marco_mapa.size = Vector2(
-		TAMANO_VERTICAL.x - MARGEN_PANEL_MAPA * 2.0,
-		TAMANO_VERTICAL.y - ALTO_TOP_MAPA - 24.0)
+		minf(ANCHO_MAX_PANEL_MAPA, TAMANO_HORIZONTAL.x - MARGEN_PANEL_MAPA * 2.0),
+		TAMANO_HORIZONTAL.y - ALTO_TOP_MAPA - 28.0)
 	_vista_mapa.add_child(_marco_mapa)
 
 	_lbl_titulo_panel = SelectorArte.Titulo_Dorado.new()
@@ -639,9 +721,11 @@ func _Construir_Panel_Mapa() -> void:
 	_lbl_mapa_pie.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_marco_mapa.add_child(_lbl_mapa_pie)
 
-	_lista_restaurantes = VBoxContainer.new()
+	_lista_restaurantes = GridContainer.new()
 	_lista_restaurantes.name = "Selector_Restaurantes"
-	_lista_restaurantes.add_theme_constant_override("separation", SEPARACION_MUNDOS)
+	_lista_restaurantes.columns = 2
+	_lista_restaurantes.add_theme_constant_override("h_separation", SEPARACION_MUNDOS)
+	_lista_restaurantes.add_theme_constant_override("v_separation", SEPARACION_MUNDOS)
 	_marco_mapa.add_child(_lista_restaurantes)
 
 	_decor_mundos_chef = TextureRect.new()
@@ -652,10 +736,130 @@ func _Construir_Panel_Mapa() -> void:
 	_decor_mundos_chef.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_marco_mapa.add_child(_decor_mundos_chef)
 
+	_Construir_Panel_Maestria()
+
 	_contenedor_niveles = Control.new()
 	_contenedor_niveles.name = "Contenedor_Niveles"
 	_contenedor_niveles.visible = false
 	_marco_mapa.add_child(_contenedor_niveles)
+
+
+func _Construir_Panel_Maestria() -> void:
+	# Tarjeta de progreso visible desde el selector de mundos. Explica de un
+	# vistazo que cada 20 ★ se sube de rango y cuál es la siguiente recompensa.
+	_panel_maestria = PanelContainer.new()
+	_panel_maestria.name = "Panel_Maestria_Mapa"
+	_panel_maestria.visible = false
+	var st := SelectorArte.estilo_pildora(
+		Color(0.035, 0.095, 0.18, 0.94), SelectorArte.ORO, 20, 2)
+	st.content_margin_left = 14
+	st.content_margin_right = 14
+	st.content_margin_top = 10
+	st.content_margin_bottom = 10
+	_panel_maestria.add_theme_stylebox_override("panel", st)
+	# Fijamos un tamaño inicial antes de añadir etiquetas con autowrap: si el
+	# ancho arranca en 0, el cálculo de altura mínima se dispara y la tarjeta
+	# crece fuera del panel del selector.
+	_panel_maestria.size = Vector2(270.0, 316.0)
+	_marco_mapa.add_child(_panel_maestria)
+
+	var v := VBoxContainer.new()
+	v.add_theme_constant_override("separation", 3)
+	_panel_maestria.add_child(v)
+
+	var cab := HBoxContainer.new()
+	cab.alignment = BoxContainer.ALIGNMENT_CENTER
+	cab.add_theme_constant_override("separation", 6)
+	v.add_child(cab)
+	cab.add_child(_Icono_Mapa(SelectorArte.TEX_ESTRELLA, 18.0))
+	_lbl_maestria_cabecera = Estilos_UI.texto(
+		"MAESTRÍA CULINARIA", 14, SelectorArte.ORO_CLARO, 700)
+	_lbl_maestria_cabecera.add_theme_font_override("font", SelectorArte.FUENTE_CARTOON)
+	cab.add_child(_lbl_maestria_cabecera)
+
+	_lbl_maestria_rango = Estilos_UI.texto("RANGO 0 / 9", 25, Color.WHITE, 700)
+	_lbl_maestria_rango.add_theme_font_override("font", SelectorArte.FUENTE_CARTOON)
+	_lbl_maestria_rango.add_theme_color_override(
+		"font_outline_color", SelectorArte.NAVY_OSCURO)
+	_lbl_maestria_rango.add_theme_constant_override("outline_size", 4)
+	_lbl_maestria_rango.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	v.add_child(_lbl_maestria_rango)
+
+	_lbl_maestria_nombre = Estilos_UI.texto(
+		"Aprendiz", 13, SelectorArte.CREMA, 700)
+	_lbl_maestria_nombre.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	v.add_child(_lbl_maestria_nombre)
+
+	_lbl_maestria_estrellas = Estilos_UI.texto(
+		"0 / 20 ★", 14, SelectorArte.ORO_CLARO, 700)
+	_lbl_maestria_estrellas.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	v.add_child(_lbl_maestria_estrellas)
+
+	_bar_maestria = _Crear_Barra_Maestria(14.0)
+	v.add_child(_bar_maestria)
+
+	_lbl_maestria_faltan = Estilos_UI.texto(
+		"Faltan 20 ★ para el Rango 1", 10, Color("#9fe9ff"), 600)
+	_lbl_maestria_faltan.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	v.add_child(_lbl_maestria_faltan)
+
+	var lbl_regla := Estilos_UI.texto(
+		"Cada 20 ★ subes de rango", 9, Color(0.78, 0.92, 1.0, 0.80), 600)
+	lbl_regla.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	v.add_child(lbl_regla)
+
+	var esp := Control.new()
+	esp.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	esp.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	v.add_child(esp)
+
+	var caja := PanelContainer.new()
+	caja.add_theme_stylebox_override("panel", ArteModal.caja_placa(10, 0.28))
+	v.add_child(caja)
+	var rv := VBoxContainer.new()
+	rv.add_theme_constant_override("separation", 0)
+	caja.add_child(rv)
+	_lbl_maestria_recompensa_tit = Estilos_UI.texto(
+		"SIGUIENTE RECOMPENSA", 9, Color("#9fe9ff"), 700)
+	rv.add_child(_lbl_maestria_recompensa_tit)
+	_lbl_maestria_recompensa = Estilos_UI.texto(
+		"Rango 1 · Pinche de Cocina\nDelantal de Aprendiz", 11, SelectorArte.CREMA, 600)
+	rv.add_child(_lbl_maestria_recompensa)
+
+	var btn := Button.new()
+	btn.name = "Boton_Ver_Rangos_Maestria"
+	btn.text = "VER RANGOS"
+	btn.icon = SelectorArte.TEX_ESTRELLA
+	btn.expand_icon = false
+	btn.custom_minimum_size = Vector2(0.0, 34.0)
+	SelectorArte.aplicar_estilos_boton(btn, SelectorArte.estilo_boton_oro(12))
+	btn.add_theme_font_size_override("font_size", 12)
+	btn.add_theme_constant_override("icon_max_width", 15)
+	btn.pressed.connect(_Abrir_Modal_Maestria)
+	v.add_child(btn)
+
+
+func _Crear_Barra_Maestria(alto: float) -> ProgressBar:
+	var barra := ProgressBar.new()
+	barra.show_percentage = false
+	barra.custom_minimum_size = Vector2(0.0, alto)
+	barra.max_value = 100.0
+	barra.value = 0.0
+	var bg := StyleBoxFlat.new()
+	bg.bg_color = Color(0.01, 0.06, 0.12, 0.70)
+	bg.set_corner_radius_all(999)
+	bg.border_color = Color(0.55, 0.89, 1.0, 0.30)
+	bg.set_border_width_all(1)
+	bg.anti_aliasing = true
+	var relleno := StyleBoxFlat.new()
+	relleno.bg_color = SelectorArte.ORO
+	relleno.set_corner_radius_all(999)
+	relleno.border_color = SelectorArte.ORO_BORDE
+	relleno.set_border_width_all(1)
+	relleno.anti_aliasing = true
+	barra.add_theme_stylebox_override("background", bg)
+	barra.add_theme_stylebox_override("fill", relleno)
+	return barra
 
 
 func _Abrir_Siguiente_Nivel() -> void:
@@ -685,7 +889,7 @@ func _Mostrar_Mapa() -> void:
 	_jugando = false
 	_pausado_por_confirmacion = false
 	_Cancelar_Carga()
-	_Aplicar_Orientacion_Vertical()
+	_Aplicar_Orientacion_Horizontal()
 	if _arrastre != null:
 		_arrastre.cancelar()
 		_arrastre.habilitado = false
@@ -695,12 +899,15 @@ func _Mostrar_Mapa() -> void:
 	_vista_mapa.visible = true
 	_vista_cocina.visible = false
 	_modal_inicio.visible = false
+	_modal_maestria.visible = false
 	_modal_mejoras.visible = false
 	_modal_resultados.visible = false
 	if _modal_salida != null:
 		_modal_salida.visible = false
 	if _modal_pausa != null:
 		_modal_pausa.visible = false
+	if _modal_maestria != null:
+		_modal_maestria.visible = false
 	_Centrar_Contenido()
 	_Refrescar_Mapa()
 
@@ -708,10 +915,10 @@ func _Mostrar_Mapa() -> void:
 func _Refrescar_Mapa() -> void:
 	var rango: int = Sistema_Cocina.Obtener_Rango_Logro()
 	var info_rango: Dictionary = Sistema_Cocina.Obtener_Info_Rango(rango)
-	_lbl_mapa_rango.text = "Rango %d/9" % rango
 	_lbl_mapa_fondos.text = "Caja %d €" % Sistema_Cocina.Obtener_Caja_Restaurante()
 	_lbl_mapa_dinero.text = "%d €" % int(Variables_Dinamicas.Dinero)
 	_pill_mapa_turno.visible = Sistema_Cocina.Esta_En_Turno_Activo(_restaurante_actual)
+	_Refrescar_Maestria()
 
 	var rest_cfg: Dictionary = {}
 	var rest_jugable: bool = false
@@ -727,17 +934,63 @@ func _Refrescar_Mapa() -> void:
 		"SELECCIONA UN NIVEL" if expandido else "SELECCIONA UN MUNDO", 38)
 	_btn_mapa_mejoras.disabled = not rest_jugable
 	_Ajustar_Disposicion_Mapa()
+	if _fondo_mapa != null and _fondo_mapa is SelectorArte.Fondo_Mapa:
+		var rest_fondo: String = _restaurante_expandido if _restaurante_expandido != "" \
+			else Sistema_Cocina.RESTAURANTE_BURGER
+		var textura_fondo: Texture2D = ArteCocina.fondo_selector_restaurante(rest_fondo)
+		(_fondo_mapa as SelectorArte.Fondo_Mapa).textura = textura_fondo
+		_fondo_mapa.queue_redraw()
 
 	if expandido:
 		_lbl_mapa_pie.text = "%d / 45 ★   ·   %d / 15 niveles" % [
 			Sistema_Cocina.Contar_Estrellas_Totales(_restaurante_expandido),
 			Sistema_Cocina.Contar_Niveles_Superados(_restaurante_expandido)]
 	else:
-		_lbl_mapa_pie.text = "Rango %d / 9 · %s" % [
-			rango, str(info_rango.get("nombre", ""))]
+		_lbl_mapa_pie.text = "Rango %d / 9 · %s · %d / %d ★" % [
+			rango, str(info_rango.get("nombre", "")),
+			Sistema_Cocina.Contar_Estrellas_Totales(),
+			Sistema_Cocina.ESTRELLAS_TOTALES_MAX]
+		if Sistema_Cocina.desbloqueo_total_qa:
+			_lbl_mapa_pie.text += " · MODO PRUEBA: todos los mundos abiertos"
 
 	_Refrescar_Lista_Mundos()
 	_Refrescar_Tablero_Niveles(rest_cfg, rest_jugable)
+
+
+func _Refrescar_Maestria() -> void:
+	var p: Dictionary = Sistema_Cocina.Obtener_Progreso_Maestria()
+	var rango: int = int(p.get("rango", 0))
+	var estrellas: int = int(p.get("estrellas", 0))
+	var maximo: bool = bool(p.get("maximo", false))
+	var umbral_siguiente: int = int(p.get("umbral_siguiente", estrellas))
+	var info: Dictionary = p.get("info", {})
+	var info_sig: Dictionary = p.get("info_siguiente", info)
+	var nombre: String = str(info.get("nombre", "Aprendiz"))
+
+	if _btn_mapa_rango != null and is_instance_valid(_btn_mapa_rango):
+		_btn_mapa_rango.text = "RANGO %d/9 · %d ★" % [rango, estrellas]
+		_btn_mapa_rango.tooltip_text = "Maestría Culinaria: Rango %d/9 (%s) · %d ★. Cada 20 ★ subes de rango." % [
+			rango, nombre, estrellas]
+
+	if _panel_maestria == null or not is_instance_valid(_panel_maestria):
+		return
+	_lbl_maestria_rango.text = "RANGO %d / 9" % rango
+	_lbl_maestria_nombre.text = nombre
+	_bar_maestria.value = clampf(float(p.get("progreso", 0.0)) * 100.0, 0.0, 100.0)
+	if maximo:
+		_lbl_maestria_estrellas.text = "%d / %d ★" % [
+			estrellas, Sistema_Cocina.ESTRELLAS_TOTALES_MAX]
+		_lbl_maestria_faltan.text = "Rango máximo alcanzado"
+		_lbl_maestria_recompensa_tit.text = "RECOMPENSA DEL RANGO 9"
+		_lbl_maestria_recompensa.text = "%s\n%s" % [
+			str(info.get("nombre", "")), str(info.get("corta", ""))]
+	else:
+		_lbl_maestria_estrellas.text = "%d / %d ★" % [estrellas, umbral_siguiente]
+		_lbl_maestria_faltan.text = "Faltan %d ★ para el Rango %d" % [
+			int(p.get("faltan", 0)), rango + 1]
+		_lbl_maestria_recompensa_tit.text = "SIGUIENTE RECOMPENSA · RANGO %d" % (rango + 1)
+		_lbl_maestria_recompensa.text = "%s\n%s" % [
+			str(info_sig.get("nombre", "")), str(info_sig.get("corta", ""))]
 
 
 func _Refrescar_Lista_Mundos() -> void:
@@ -756,6 +1009,7 @@ func _Refrescar_Lista_Mundos() -> void:
 		btn.name = "Mundo_%s" % rest_id
 		btn.text = ""
 		btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		btn.size_flags_vertical = Control.SIZE_EXPAND_FILL
 		btn.custom_minimum_size = Vector2(0.0, ALTO_FILA_MUNDO)
 		btn.disabled = bloqueado
 		btn.mouse_default_cursor_shape = Control.CURSOR_ARROW if bloqueado \
@@ -801,9 +1055,28 @@ func _Refrescar_Lista_Mundos() -> void:
 		row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		m.add_child(row)
 
-		var ic_nom: String = "lock" if bloqueado else "utensils"
-		var ic_col: Color = Color("#8fa6b8") if bloqueado else Color("#f97316")
-		row.add_child(Estilos_UI.badge_icono(ic_nom, 64, 30, ic_col, Color.WHITE, 999))
+		# Miniatura del local: cada mundo se reconoce por su fondo antes de
+		# entrar. Los bloqueados se muestran desaturados.
+		var marco_thumb := PanelContainer.new()
+		marco_thumb.custom_minimum_size = Vector2(132.0, 78.0)
+		marco_thumb.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		marco_thumb.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		var st_thumb := SelectorArte.estilo_pildora(Color("#0b1220"), Color("#f5c451"), 12, 2)
+		st_thumb.content_margin_left = 0
+		st_thumb.content_margin_right = 0
+		st_thumb.content_margin_top = 0
+		st_thumb.content_margin_bottom = 0
+		marco_thumb.add_theme_stylebox_override("panel", st_thumb)
+		var thumb := TextureRect.new()
+		thumb.texture = ArteCocina.fondo_restaurante(rest_id)
+		thumb.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		thumb.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+		thumb.custom_minimum_size = Vector2(128.0, 74.0)
+		thumb.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		if bloqueado:
+			thumb.modulate = Color(0.52, 0.58, 0.64, 0.82)
+		marco_thumb.add_child(thumb)
+		row.add_child(marco_thumb)
 
 		var col := VBoxContainer.new()
 		col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -812,9 +1085,11 @@ func _Refrescar_Lista_Mundos() -> void:
 		col.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		row.add_child(col)
 
-		var lbl_n := Estilos_UI.titulo(str(r.get("nombre", rest_id)), 21,
+		var lbl_n := Estilos_UI.titulo(str(r.get("nombre", rest_id)), 20,
 			Color("#173b63") if not bloqueado else Color("#6f8799"))
 		lbl_n.add_theme_font_override("font", SelectorArte.FUENTE_CARTOON)
+		lbl_n.clip_text = true
+		lbl_n.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 		lbl_n.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		col.add_child(lbl_n)
 
@@ -828,18 +1103,30 @@ func _Refrescar_Lista_Mundos() -> void:
 				Sistema_Cocina.Contar_Estrellas_Totales(rest_id),
 				Sistema_Cocina.Contar_Niveles_Superados(rest_id)]
 		else:
-			sub_txt = "Requiere: %s" % trabajo
+			var idx_mundo: int = Sistema_Cocina.ORDEN_RESTAURANTES.find(rest_id)
+			if idx_mundo > 0:
+				sub_txt = "Requiere: %s o 1★ en el mundo anterior" % trabajo
+			else:
+				sub_txt = "Requiere: %s" % trabajo
 		var lbl_s := Estilos_UI.texto(sub_txt, 12,
 			Color("#7a6234") if not bloqueado else Color("#7890a2"), 600)
 		lbl_s.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		col.add_child(lbl_s)
 
+		# Estado del mundo en una fila bajo el subtítulo: así el título dispone
+		# de todo el ancho de la tarjeta (2×2) junto a la miniatura del local.
+		var fila_estado := HBoxContainer.new()
+		fila_estado.add_theme_constant_override("separation", 6)
+		fila_estado.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		col.add_child(fila_estado)
+
 		if bloqueado:
-			row.add_child(Estilos_UI.pill_estado("Fase 2",
-				Color("#e4f1fa"), Color("#2b7aa6")))
+			if impl:
+				fila_estado.add_child(Estilos_UI.pill_estado("BLOQUEADO",
+					Color("#e4f1fa"), Color("#2b7aa6")))
 		else:
 			if Sistema_Cocina.Esta_En_Turno_Activo(rest_id):
-				row.add_child(Estilos_UI.pill_estado("TURNO",
+				fila_estado.add_child(Estilos_UI.pill_estado("TURNO",
 					Color("#fef3c7"), Color("#92400e")))
 			var pill_prog := PanelContainer.new()
 			pill_prog.size_flags_vertical = Control.SIZE_SHRINK_CENTER
@@ -857,8 +1144,7 @@ func _Refrescar_Lista_Mundos() -> void:
 				Sistema_Cocina.Contar_Estrellas_Totales(rest_id),
 				12, Color("#6b3a00"), 700))
 			pill_prog.add_child(h_prog)
-			row.add_child(pill_prog)
-			row.add_child(_Boton_Chevron_Mapa())
+			fila_estado.add_child(pill_prog)
 
 		_lista_restaurantes.add_child(btn)
 
@@ -928,7 +1214,7 @@ func _Refrescar_Tablero_Niveles(rest_cfg: Dictionary, rest_jugable: bool) -> voi
 
 	_grid_niveles = GridContainer.new()
 	_grid_niveles.name = "Grid_Niveles"
-	_grid_niveles.columns = 3
+	_grid_niveles.columns = COLUMNAS_NIVELES
 	_grid_niveles.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_grid_niveles.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_grid_niveles.add_theme_constant_override("h_separation", 12)
@@ -995,7 +1281,7 @@ func _Crear_Tarjeta_Nivel(num: int, _cfg: Dictionary, desbloqueado: bool,
 	btn.desbloqueado = desbloqueado
 	btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	btn.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	btn.custom_minimum_size = Vector2(0.0, 150.0)
+	btn.custom_minimum_size = Vector2(0.0, 130.0)
 	btn.disabled = not desbloqueado
 	if desbloqueado:
 		btn.pressed.connect(func():
@@ -1055,41 +1341,78 @@ func _Construir_Tarjeta_Restaurante_No_Jugable(rest_cfg: Dictionary) -> void:
 
 
 # ----------------------------------------------------------------------------
+# Base común de los modales cartoon (velo, marco azul y contenido)
+# ----------------------------------------------------------------------------
+
+func _Crear_Modal_Base(nombre: String, z: int, ancho: float,
+		margen_h: int, margen_v: int) -> Dictionary:
+	var modal := Control.new()
+	modal.name = nombre
+	modal.set_anchors_preset(Control.PRESET_FULL_RECT)
+	modal.z_index = z
+	modal.visible = false
+	add_child(modal)
+
+	var velo := ColorRect.new()
+	velo.set_anchors_preset(Control.PRESET_FULL_RECT)
+	velo.color = Color(0.02, 0.07, 0.16, 0.78)
+	modal.add_child(velo)
+
+	var centro := CenterContainer.new()
+	centro.set_anchors_preset(Control.PRESET_FULL_RECT)
+	modal.add_child(centro)
+
+	var card := PanelContainer.new()
+	card.custom_minimum_size = Vector2(ancho, 0)
+	card.add_theme_stylebox_override("panel", StyleBoxEmpty.new())
+	centro.add_child(card)
+
+	var marco: Control = ArteModal.Marco_Modal.new()
+	marco.name = "Marco_Modal"
+	marco.set_anchors_preset(Control.PRESET_FULL_RECT)
+	marco.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	card.add_child(marco)
+
+	var margen := MarginContainer.new()
+	margen.add_theme_constant_override("margin_left", margen_h)
+	margen.add_theme_constant_override("margin_right", margen_h)
+	margen.add_theme_constant_override("margin_top", margen_v)
+	margen.add_theme_constant_override("margin_bottom", margen_v)
+	card.add_child(margen)
+
+	var vbox := VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 12)
+	margen.add_child(vbox)
+	return {"modal": modal, "card": card, "vbox": vbox}
+
+
+func _Animar_Entrada_Modal(modal: Control, card: Control) -> void:
+	if modal == null or not is_instance_valid(modal):
+		return
+	modal.modulate.a = 0.0
+	if card == null or not is_instance_valid(card):
+		var tw_solo := create_tween()
+		tw_solo.tween_property(modal, "modulate:a", 1.0, 0.16)
+		return
+	card.pivot_offset = card.size * 0.5
+	card.scale = Vector2(0.93, 0.93)
+	var tw := create_tween()
+	tw.set_parallel(true)
+	tw.tween_property(modal, "modulate:a", 1.0, 0.16)
+	tw.tween_property(card, "scale", Vector2.ONE, 0.30)\
+		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+
+
+# ----------------------------------------------------------------------------
 # Modal de Inicio de Nivel
 # ----------------------------------------------------------------------------
 
 func _Construir_Modal_Inicio() -> void:
-	_modal_inicio = Control.new()
-	_modal_inicio.name = "Modal_Inicio_Nivel"
-	_modal_inicio.set_anchors_preset(Control.PRESET_FULL_RECT)
-	_modal_inicio.z_index = 25
-	_modal_inicio.visible = false
-	add_child(_modal_inicio)
-
-	var velo := ColorRect.new()
-	velo.set_anchors_preset(Control.PRESET_FULL_RECT)
-	velo.color = Color(0.06, 0.09, 0.15, 0.65)
-	_modal_inicio.add_child(velo)
-
-	var centro := CenterContainer.new()
-	centro.set_anchors_preset(Control.PRESET_FULL_RECT)
-	_modal_inicio.add_child(centro)
-
-	var card := PanelContainer.new()
-	card.custom_minimum_size = Vector2(660, 0)
-	card.add_theme_stylebox_override("panel", Estilos_UI.caja_tarjeta(20, 3))
-	centro.add_child(card)
-
-	var m := MarginContainer.new()
-	m.add_theme_constant_override("margin_left", 28)
-	m.add_theme_constant_override("margin_right", 28)
-	m.add_theme_constant_override("margin_top", 24)
-	m.add_theme_constant_override("margin_bottom", 24)
-	card.add_child(m)
-
-	_vbox_modal_inicio = VBoxContainer.new()
-	_vbox_modal_inicio.add_theme_constant_override("separation", 12)
-	m.add_child(_vbox_modal_inicio)
+	var base: Dictionary = _Crear_Modal_Base("Modal_Inicio_Nivel", 46, 900.0, 44, 28)
+	_modal_inicio = base["modal"]
+	_card_inicio = base["card"]
+	_vbox_modal_inicio = base["vbox"]
+	_vbox_modal_inicio.add_theme_constant_override("separation", 10)
 
 
 func _Abrir_Modal_Inicio(nivel: int) -> void:
@@ -1099,78 +1422,109 @@ func _Abrir_Modal_Inicio(nivel: int) -> void:
 		return
 
 	for c in _vbox_modal_inicio.get_children():
+		_vbox_modal_inicio.remove_child(c)
 		c.queue_free()
 
 	var en_turno: bool = Sistema_Cocina.Esta_En_Turno_Activo(_restaurante_actual)
 	var est_prev: int = Sistema_Cocina.Obtener_Estrellas_Nivel(_restaurante_actual, nivel)
 
-	var cab := HBoxContainer.new()
-	cab.add_theme_constant_override("separation", 10)
-	_vbox_modal_inicio.add_child(cab)
-	var tit := Estilos_UI.titulo("Nivel %d · %s" % [nivel, Sistema_Cocina.Obtener_Nombre_Restaurante(_restaurante_actual)], 22, Estilos_UI.TINTA)
+	# Cabecera: título dorado, mundo y píldora de clientes.
+	var tit := ArteModal.crear_titulo("NIVEL %d" % nivel, 42)
 	tit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	cab.add_child(tit)
-	cab.add_child(Estilos_UI.pill_estado("%d clientes" % int(cfg.get("clientes", 10)), Estilos_UI.AZUL_SUAVE, Estilos_UI.AZUL))
+	_vbox_modal_inicio.add_child(tit)
+	var subt := ArteModal.texto_cartoon(
+		Sistema_Cocina.Obtener_Nombre_Restaurante(_restaurante_actual),
+		17, ArteModal.CREMA, ArteModal.NAVY_OSCURO, 4)
+	subt.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	subt.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_vbox_modal_inicio.add_child(subt)
 
-	# Objetivos de estrellas
+	var fila_cli := HBoxContainer.new()
+	fila_cli.alignment = BoxContainer.ALIGNMENT_CENTER
+	_vbox_modal_inicio.add_child(fila_cli)
+	var pill_cli := PanelContainer.new()
+	pill_cli.add_theme_stylebox_override("panel", ArteModal.caja_pildora_oro())
+	fila_cli.add_child(pill_cli)
+	var h_cli := HBoxContainer.new()
+	h_cli.add_theme_constant_override("separation", 6)
+	pill_cli.add_child(h_cli)
+	h_cli.add_child(ArteModal.icono_usuarios(18, ArteModal.NAVY))
+	h_cli.add_child(ArteModal.texto_cartoon(
+		"%d CLIENTES" % int(cfg.get("clientes", 10)), 15, ArteModal.NAVY,
+		Color.TRANSPARENT, 0))
+
+	# Objetivos de estrellas: placas hundidas con estrella dorada y meta.
 	var metas := HBoxContainer.new()
-	metas.add_theme_constant_override("separation", 10)
+	metas.add_theme_constant_override("separation", 12)
 	_vbox_modal_inicio.add_child(metas)
-	for info_m in [
-		["1★", int(cfg.get("meta_1", 50)), est_prev >= 1],
-		["2★", int(cfg.get("meta_2", 80)), est_prev >= 2],
-		["3★", int(cfg.get("meta_3", 110)), est_prev >= 3]
-	]:
+	var objetivos: Array = [
+		[1, int(cfg.get("meta_1", 50)), est_prev >= 1],
+		[2, int(cfg.get("meta_2", 80)), est_prev >= 2],
+		[3, int(cfg.get("meta_3", 110)), est_prev >= 3]
+	]
+	for info_m in objetivos:
 		var p := PanelContainer.new()
 		p.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		var st := Estilos_UI.caja(Color("#fef3c7") if info_m[2] else Estilos_UI.SUPERFICIE_2, 12,
-			Color("#f59e0b") if info_m[2] else Estilos_UI.BORDE, 1, 0)
-		st.content_margin_left = 12
-		st.content_margin_right = 12
-		st.content_margin_top = 8
-		st.content_margin_bottom = 8
-		p.add_theme_stylebox_override("panel", st)
-		var l := Estilos_UI.texto("%s  %d €" % [info_m[0], info_m[1]], 15, Estilos_UI.TINTA, 700)
-		l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		p.add_child(l)
+		p.add_theme_stylebox_override("panel", ArteModal.caja_placa(14, 0.30))
 		metas.add_child(p)
+		var h_meta := HBoxContainer.new()
+		h_meta.alignment = BoxContainer.ALIGNMENT_CENTER
+		h_meta.add_theme_constant_override("separation", 9)
+		p.add_child(h_meta)
+		h_meta.add_child(ArteModal.icono_estrella(30))
+		var v_meta := VBoxContainer.new()
+		v_meta.add_theme_constant_override("separation", -2)
+		h_meta.add_child(v_meta)
+		v_meta.add_child(ArteModal.texto_modal(
+			"META %d" % int(info_m[0]), 11, ArteModal.CREMA, 700))
+		var lbl_meta := ArteModal.texto_cartoon(
+			"%d €" % int(info_m[1]), 17, ArteModal.ORO_CLARO, ArteModal.NAVY_OSCURO, 3)
+		lbl_meta.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+		v_meta.add_child(lbl_meta)
 
-	# Menú del servicio
-	var menu_lbl := Estilos_UI.texto("Platos del servicio:", 13, Estilos_UI.TINTA_SUAVE, 700)
+	# Menú del servicio: píldoras crema con el icono del plato.
+	var menu_lbl := ArteModal.texto_cartoon(
+		"PLATOS DEL SERVICIO", 14, ArteModal.CREMA, ArteModal.NAVY_OSCURO, 3)
 	_vbox_modal_inicio.add_child(menu_lbl)
 	var menu_row := HFlowContainer.new()
 	menu_row.add_theme_constant_override("h_separation", 8)
 	menu_row.add_theme_constant_override("v_separation", 6)
 	_vbox_modal_inicio.add_child(menu_row)
 	for plato_id in cfg.get("menu", []):
-		var rec: Dictionary = Sistema_Cocina.RECETAS_BURGER_STREET.get(str(plato_id), {})
+		var rec: Dictionary = Sistema_Cocina.Obtener_Receta(_restaurante_actual, str(plato_id))
 		var nom: String = str(rec.get("nombre_corto", plato_id))
 		var pill_plato := PanelContainer.new()
-		var st_pl := Estilos_UI.caja(Color("#ffedd5"), 999, Color("#9a3412", 0.25), 1, 0)
+		var st_pl := Estilos_UI.caja(Color("#fff7dd"), 999, ArteModal.ORO_BORDE, 2, 0)
 		st_pl.content_margin_left = 6
-		st_pl.content_margin_right = 10
+		st_pl.content_margin_right = 12
 		st_pl.content_margin_top = 2
-		st_pl.content_margin_bottom = 2
+		st_pl.content_margin_bottom = 3
 		pill_plato.add_theme_stylebox_override("panel", st_pl)
 		var fila_plato := HBoxContainer.new()
 		fila_plato.add_theme_constant_override("separation", 4)
-		var tex_plato: Texture2D = ArteCocina.TEX_HAMBURGUESA
-		if str(plato_id) == "patatas":
-			tex_plato = ArteCocina.TEX_PATATAS
-		elif str(plato_id) == "refresco":
-			tex_plato = ArteCocina.TEX_REFRESCO
-		var ic_plato := TextureRect.new()
-		ic_plato.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-		ic_plato.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		ic_plato.texture = tex_plato
-		ic_plato.custom_minimum_size = Vector2(24.0, 24.0)
-		ic_plato.size = Vector2(24.0, 24.0)
+		var ic_plato := ArteCocina.Icono_Item.new()
+		ic_plato.item_id = str(plato_id)
+		ic_plato.custom_minimum_size = Vector2(26.0, 26.0)
+		ic_plato.size = Vector2(26.0, 26.0)
 		fila_plato.add_child(ic_plato)
 		fila_plato.add_child(Estilos_UI.texto(nom, 12, Color("#9a3412"), 700))
 		pill_plato.add_child(fila_plato)
 		menu_row.add_child(pill_plato)
 
-	_vbox_modal_inicio.add_child(Estilos_UI.divisor_horizontal())
+	# Explicación de la mecánica del mundo (solo si no es el montaje clásico)
+	var perf_modal: Dictionary = Sistema_Cocina.Obtener_Perfil_Restaurante(_restaurante_actual)
+	if str(perf_modal.get("mecanica", "montaje")) != "montaje":
+		var caja_mec := PanelContainer.new()
+		caja_mec.add_theme_stylebox_override("panel", ArteModal.caja_placa(12, 0.28))
+		var lbl_mec := ArteModal.texto_modal(
+			"%s: %s" % [str(perf_modal.get("mecanica_titulo", "Mecánica")),
+				str(perf_modal.get("mecanica_texto", ""))],
+			14, ArteModal.CREMA, 600)
+		lbl_mec.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		caja_mec.add_child(lbl_mec)
+		_vbox_modal_inicio.add_child(caja_mec)
+
+	_vbox_modal_inicio.add_child(ArteModal.divisor())
 
 	# Modificadores del Sim
 	var destreza: float = float(Variables_Estaticas.Habilidades[2]) if Variables_Estaticas.Habilidades.size() > 2 else 50.0
@@ -1197,34 +1551,226 @@ func _Abrir_Modal_Inicio(nivel: int) -> void:
 		mod_lineas.append("• Modo libre: %d/%d servicios con paga completa hoy. Después, modo práctica (25%% para ti; la Caja sigue al 100%%)" % [
 			rest_hoy, Sistema_Cocina.LIMITE_SERVICIOS_COMPLETOS_DIA])
 
-	var lbl_mods := Estilos_UI.parrafo("\n".join(mod_lineas), 13, Estilos_UI.TINTA_SUAVE)
+	var lbl_mods := ArteModal.texto_modal(
+		"\n".join(mod_lineas), 14, ArteModal.CREMA, 500)
+	lbl_mods.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_vbox_modal_inicio.add_child(lbl_mods)
 
 	# Validación de entrada
 	var check: Dictionary = Sistema_Cocina.Puede_Entrar_Minijuego()
 	var permitido: bool = bool(check.get("permitido", false))
 	if not permitido:
-		var err := Estilos_UI.parrafo(str(check.get("mensaje", "")), 14, Estilos_UI.PELIGRO)
+		var err := ArteModal.texto_modal(
+			str(check.get("mensaje", "")), 14, Color("#ffd2c7"), 700)
+		err.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		_vbox_modal_inicio.add_child(err)
 
 	var btns := HBoxContainer.new()
-	btns.add_theme_constant_override("separation", 12)
+	btns.add_theme_constant_override("separation", 14)
 	_vbox_modal_inicio.add_child(btns)
 
-	var btn_cancel := Estilos_UI.boton("Cancelar", "secundario", "", Estilos_UI.TINTA, 48)
+	var btn_cancel := ArteModal.crear_boton(
+		"CANCELAR", ArteModal.TEX_BOTON_AZUL, "arrow-left", 56, 18)
+	btn_cancel.name = "Boton_Cancelar_Inicio"
 	btn_cancel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	btn_cancel.pressed.connect(func(): _modal_inicio.visible = false)
 	btns.add_child(btn_cancel)
 
-	var btn_start := Estilos_UI.boton("¡Empezar Servicio!", "exito", "play", Estilos_UI.EXITO, 48)
+	var btn_start := ArteModal.crear_boton(
+		"¡EMPEZAR SERVICIO!", ArteModal.TEX_BOTON_VERDE, "play", 56, 18)
+	btn_start.name = "Boton_Empezar_Servicio"
 	btn_start.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	btn_start.disabled = not permitido
+	if not permitido:
+		btn_start.modulate = Color(1, 1, 1, 0.62)
 	btn_start.pressed.connect(func():
 		_modal_inicio.visible = false
 		_Comenzar_Carga_Nivel(nivel))
 	btns.add_child(btn_start)
 
+	_modal_inicio.modulate.a = 0.0
 	_modal_inicio.visible = true
+	_Animar_Entrada_Modal.call_deferred(_modal_inicio, _card_inicio)
+
+
+# ----------------------------------------------------------------------------
+# Modal de Maestría Culinaria (progreso por estrellas y recompensas)
+# ----------------------------------------------------------------------------
+
+func _Construir_Modal_Maestria() -> void:
+	var base: Dictionary = _Crear_Modal_Base("Modal_Maestria", 47, 1020.0, 38, 22)
+	_modal_maestria = base["modal"]
+	_card_maestria = base["card"]
+	_vbox_modal_maestria = base["vbox"]
+	_vbox_modal_maestria.add_theme_constant_override("separation", 8)
+
+
+func _Abrir_Modal_Maestria() -> void:
+	if _modal_maestria == null or not is_instance_valid(_modal_maestria):
+		return
+	_Refrescar_Maestria()
+	for c in _vbox_modal_maestria.get_children():
+		_vbox_modal_maestria.remove_child(c)
+		c.queue_free()
+
+	var p: Dictionary = Sistema_Cocina.Obtener_Progreso_Maestria()
+	var rango: int = int(p.get("rango", 0))
+	var estrellas: int = int(p.get("estrellas", 0))
+	var maximo: bool = bool(p.get("maximo", false))
+	var info: Dictionary = p.get("info", {})
+	var nombre: String = str(info.get("nombre", "Aprendiz"))
+
+	var tit := ArteModal.crear_titulo("MAESTRÍA CULINARIA", 38)
+	tit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_vbox_modal_maestria.add_child(tit)
+	var subt := ArteModal.texto_cartoon(
+		"Gana ★ en los niveles: cada 20 ★ subes de rango. Solo cuenta tu mejor marca en cada nivel.",
+		14, ArteModal.CREMA, ArteModal.NAVY_OSCURO, 3)
+	subt.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	subt.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	subt.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_vbox_modal_maestria.add_child(subt)
+
+	# Resumen: rango actual, estrellas acumuladas y barra hasta el siguiente.
+	var resumen := PanelContainer.new()
+	resumen.add_theme_stylebox_override("panel", ArteModal.caja_placa(16, 0.34))
+	_vbox_modal_maestria.add_child(resumen)
+	var h_res := HBoxContainer.new()
+	h_res.add_theme_constant_override("separation", 14)
+	resumen.add_child(h_res)
+	h_res.add_child(ArteModal.icono_estrella(50))
+	var col_res := VBoxContainer.new()
+	col_res.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	col_res.add_theme_constant_override("separation", 2)
+	h_res.add_child(col_res)
+	col_res.add_child(ArteModal.texto_cartoon(
+		"RANGO %d / 9 · %s" % [rango, nombre], 20,
+		ArteModal.ORO_CLARO, ArteModal.NAVY_OSCURO, 4))
+	var detalle: String = "%d ★ de %d" % [estrellas, Sistema_Cocina.ESTRELLAS_TOTALES_MAX]
+	if maximo:
+		detalle += " · Rango máximo alcanzado"
+	else:
+		detalle += " · Faltan %d ★ para el Rango %d" % [
+			int(p.get("faltan", 0)), rango + 1]
+	col_res.add_child(ArteModal.texto_modal(detalle, 13, ArteModal.CREMA, 600))
+	var barra := _Crear_Barra_Maestria(16.0)
+	barra.value = clampf(float(p.get("progreso", 0.0)) * 100.0, 0.0, 100.0)
+	col_res.add_child(barra)
+
+	var cap := ArteModal.texto_cartoon(
+		"RECOMPENSAS POR RANGO", 16, ArteModal.CREMA, ArteModal.NAVY_OSCURO, 3)
+	_vbox_modal_maestria.add_child(cap)
+
+	# Rejilla 2 columnas: las 9 recompensas caben enteras sin scroll.
+	var grid_rangos := GridContainer.new()
+	grid_rangos.name = "Lista_Rangos_Maestria"
+	grid_rangos.columns = 2
+	grid_rangos.add_theme_constant_override("h_separation", 8)
+	grid_rangos.add_theme_constant_override("v_separation", 4)
+	grid_rangos.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_vbox_modal_maestria.add_child(grid_rangos)
+	for i in range(1, Sistema_Cocina.RANGOS_LOGRO.size()):
+		_Agregar_Fila_Rango_Maestria(grid_rangos, i, rango)
+
+	var pie := HBoxContainer.new()
+	pie.add_theme_constant_override("separation", 12)
+	_vbox_modal_maestria.add_child(pie)
+	var hint := ArteModal.texto_modal(
+		"Repite niveles para mejorar tus ★: el progreso y las recompensas se guardan solos.",
+		12, ArteModal.CREMA_SUAVE, 500)
+	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	hint.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	pie.add_child(hint)
+	var btn := ArteModal.crear_boton(
+		"ENTENDIDO", ArteModal.TEX_BOTON_VERDE, "check", 52, 18)
+	btn.custom_minimum_size = Vector2(220.0, 0.0)
+	btn.pressed.connect(func(): _modal_maestria.visible = false)
+	pie.add_child(btn)
+
+	_modal_maestria.modulate.a = 0.0
+	_modal_maestria.visible = true
+	_Animar_Entrada_Modal.call_deferred(_modal_maestria, _card_maestria)
+
+
+func _Agregar_Fila_Rango_Maestria(grid: GridContainer, indice: int,
+		rango_actual: int) -> void:
+	var info: Dictionary = Sistema_Cocina.RANGOS_LOGRO[indice]
+	var umbral: int = int(info.get("estrellas", 0))
+	var es_actual: bool = indice == rango_actual
+	var es_siguiente: bool = indice == rango_actual + 1
+	var completado: bool = indice < rango_actual
+
+	var fila := PanelContainer.new()
+	fila.custom_minimum_size = Vector2(0.0, 42.0)
+	fila.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var st := ArteModal.caja_placa(12, 0.34 if es_actual else 0.22)
+	st.border_color = Color(0.72, 0.95, 1.0, 0.30)
+	st.border_width_bottom = 3
+	if es_actual:
+		st.bg_color = Color(0.24, 0.16, 0.02, 0.62)
+		st.border_color = SelectorArte.ORO
+		st.set_border_width_all(2)
+		st.border_width_bottom = 4
+	elif es_siguiente:
+		st.border_color = Color(0.55, 0.89, 1.0, 0.75)
+		st.set_border_width_all(2)
+		st.border_width_bottom = 3
+	elif completado:
+		st.border_color = Color(0.42, 0.88, 0.55, 0.55)
+	fila.add_theme_stylebox_override("panel", st)
+	if not es_actual and not es_siguiente and not completado:
+		fila.modulate.a = 0.68
+	grid.add_child(fila)
+
+	var h := HBoxContainer.new()
+	h.add_theme_constant_override("separation", 9)
+	fila.add_child(h)
+
+	# Umbral de estrellas.
+	var badge := VBoxContainer.new()
+	badge.custom_minimum_size = Vector2(52.0, 0.0)
+	badge.alignment = BoxContainer.ALIGNMENT_CENTER
+	badge.add_theme_constant_override("separation", -2)
+	h.add_child(badge)
+	var ico := ArteModal.icono_estrella(18, not completado and not es_actual)
+	ico.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	badge.add_child(ico)
+	var lbl_umbral := ArteModal.texto_cartoon(
+		"%d" % umbral, 12, ArteModal.ORO_CLARO, ArteModal.NAVY_OSCURO, 2)
+	lbl_umbral.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lbl_umbral.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	badge.add_child(lbl_umbral)
+
+	var col := VBoxContainer.new()
+	col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	col.add_theme_constant_override("separation", 0)
+	h.add_child(col)
+
+	var fila_nombre := HBoxContainer.new()
+	fila_nombre.add_theme_constant_override("separation", 6)
+	col.add_child(fila_nombre)
+	var color_nombre := ArteModal.ORO_CLARO if (es_actual or es_siguiente) 		else (Color("#c8f7d0") if completado else ArteModal.CREMA)
+	var nom := ArteModal.texto_cartoon(
+		"RANGO %d · %s" % [indice, str(info.get("nombre", ""))],
+		14, color_nombre, ArteModal.NAVY_OSCURO, 3)
+	nom.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	nom.clip_text = true
+	fila_nombre.add_child(nom)
+	var benef := ArteModal.texto_modal(
+		str(info.get("beneficio", "")), 11,
+		Color("#c8f7d0") if completado else ArteModal.CREMA_SUAVE, 500)
+	benef.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	benef.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	col.add_child(benef)
+
+	var estado_txt: String = "ACTUAL" if es_actual else 		("SIGUIENTE" if es_siguiente else ("COMPLETADO" if completado else "BLOQUEADO"))
+	var color_estado := ArteModal.ORO if es_actual else 		(ArteModal.ORO_CLARO if es_siguiente else 		(Color("#b9f6c2") if completado else Color(0.75, 0.88, 1.0, 0.60)))
+	var estado := ArteModal.texto_cartoon(
+		estado_txt, 10, color_estado, ArteModal.NAVY_OSCURO, 2)
+	estado.custom_minimum_size = Vector2(76.0, 0.0)
+	estado.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	estado.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	h.add_child(estado)
 
 
 # ----------------------------------------------------------------------------
@@ -1235,7 +1781,7 @@ func _Construir_Modal_Mejoras() -> void:
 	var modal: Control = MejorasCocina.new()
 	modal.name = "Modal_Mejoras"
 	modal.set_anchors_preset(Control.PRESET_FULL_RECT)
-	modal.z_index = 25
+	modal.z_index = 46
 	modal.visible = false
 	modal.cerrado.connect(_on_modal_mejoras_cerrado)
 	modal.compra_realizada.connect(_on_mejora_comprada)
@@ -1285,6 +1831,7 @@ func _Construir_Vista_Cocina() -> void:
 	fondo.stretch_mode = TextureRect.STRETCH_SCALE
 	fondo.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_vista_cocina.add_child(fondo)
+	_fondo_cocina = fondo
 
 	# Velo superior para dar contraste al HUD
 	var velo := ColorRect.new()
@@ -1317,6 +1864,7 @@ func _Construir_Vista_Cocina() -> void:
 	_arrastre.arrastre_soltado.connect(_on_arrastre_soltado)
 	_arrastre.arrastre_cancelado.connect(_on_arrastre_cancelado)
 	_arrastre.origen_tocado.connect(_on_origen_tocado)
+	_arrastre.zona_tocada.connect(_on_zona_tocada)
 	_vista_cocina.add_child(_arrastre)
 
 	_banner_servicio = Estilos_UI.titulo("", 46, Color("#fef08a"))
@@ -1538,27 +2086,6 @@ func _Construir_HUD_Cocina() -> void:
 	pill_reloj.add_child(hr)
 	fila.add_child(pill_reloj)
 
-	# Propinas de la partida
-	var pill_prop := PanelContainer.new()
-	var st_prop := Estilos_UI.caja(Color("#451a03", 0.85), 10, Color("#fbbf24"), 1, 0)
-	st_prop.content_margin_left = 8
-	st_prop.content_margin_right = 10
-	st_prop.content_margin_top = 3
-	st_prop.content_margin_bottom = 3
-	pill_prop.add_theme_stylebox_override("panel", st_prop)
-	var hp := HBoxContainer.new()
-	hp.add_theme_constant_override("separation", 5)
-	var ic_prop := TextureRect.new()
-	ic_prop.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	ic_prop.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	ic_prop.texture = ArteCocina.TEX_BOTE_PROPINAS
-	ic_prop.custom_minimum_size = Vector2(20, 20)
-	hp.add_child(ic_prop)
-	_lbl_cocina_propinas = Estilos_UI.texto("+0 €", 13, Color("#fde68a"), 700)
-	hp.add_child(_lbl_cocina_propinas)
-	pill_prop.add_child(hp)
-	fila.add_child(pill_prop)
-
 	_pill_cocina_combo = PanelContainer.new()
 	_pill_cocina_combo.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	var st_combo := Estilos_UI.caja(Color("#dc2626"), 999, Color("#fde047"), 1, 0)
@@ -1642,7 +2169,9 @@ func _Rect_Cliente_Destino(indice: int) -> Rect2:
 	if indice < 0 or indice >= CENTROS_CLIENTES.size():
 		return Rect2()
 	var cx: float = CENTROS_CLIENTES[indice]
-	return Rect2(cx - 100.0, 200.0, 200.0, 218.0)
+	# Zona generosa que cubre cuerpo y bocadillo del pedido: en móvil el dedo
+	# no siempre cae sobre el personaje y antes el plato se rechazaba.
+	return Rect2(cx - 108.0, 62.0, 216.0, 384.0)
 
 
 func _Rect_Bocadillo_Cliente_Destino(indice: int) -> Rect2:
@@ -1672,6 +2201,7 @@ func _Cliente_Necesita_Burger() -> bool:
 
 func _Actualizar_Tutorial() -> void:
 	if not _jugando or _nivel_actual != 1 \
+			or _restaurante_actual != Sistema_Cocina.RESTAURANTE_BURGER \
 			or Sistema_Cocina.Contar_Niveles_Superados("burger_street") > 0:
 		_Ocultar_Tutorial()
 		return
@@ -1689,7 +2219,7 @@ func _Actualizar_Tutorial() -> void:
 			var cl: Dictionary = _clientes[ci]
 			if bool(cl["activo"]) and _Cliente_Necesita_Item(cl, rec):
 				focos = [_slots_platos_ui[i]["rect"], _Rect_Cliente_Destino(ci)]
-				texto = "Sirve el plato al cliente"
+				texto = "Arrastra el plato al cliente"
 				break
 		if texto != "":
 			break
@@ -1907,17 +2437,55 @@ func _Construir_Mostrador() -> void:
 	_lbl_estado_platos = _Crear_Etiqueta_Estacion(ZONA_PLATOS.position.x, 599.0,
 		ZONA_PLATOS.size.x, "EMPLATADO")
 	_Crear_Etiqueta_Estacion(ZONA_PAPELERA.position.x, 599.0, ZONA_PAPELERA.size.x, "BASURA")
-	_Crear_Etiqueta_Estacion(ZONA_PROPINAS.position.x, 599.0, ZONA_PROPINAS.size.x, "PROPINAS")
+	_lbl_estado_propinas = _Crear_Etiqueta_Estacion(ZONA_PROPINAS.position.x, 599.0,
+		ZONA_PROPINAS.size.x, "PROPINAS · 0 €")
 
 	# Plancha (4 fogones)
 	var est_plancha := _Anadir_Textura(ArteCocina.TEX_PLANCHA, Rect2(14.0, 424.0, 238.0, 174.0), "Estacion_Plancha")
 	est_plancha.z_index = 3
+	_est_plancha_tex = est_plancha
 	# Freidora (2 cestas)
 	var est_freidora := _Anadir_Textura(ArteCocina.TEX_FREIDORA, Rect2(266.0, 438.0, 150.0, 143.0), "Estacion_Freidora")
 	est_freidora.z_index = 3
+	_est_freidora_tex = est_freidora
 	# Dispensador de refrescos
 	var est_refrescos := _Anadir_Textura(ArteCocina.TEX_REFRESCOS, Rect2(432.0, 418.0, 150.0, 178.0), "Estacion_Refrescos")
 	est_refrescos.z_index = 3
+	_est_bebidas_tex = est_refrescos
+
+	# Estaciones dibujadas para los mundos 2-4. Se muestran u ocultan según
+	# el perfil al iniciar el nivel.
+	_olla_ctrl = ArteCocina.Estacion_Olla.new()
+	_olla_ctrl.name = "Estacion_Olla"
+	_olla_ctrl.position = Vector2(12.0, 414.0)
+	_olla_ctrl.size = Vector2(242.0, 190.0)
+	_olla_ctrl.z_index = 3
+	_olla_ctrl.visible = false
+	_vista_cocina.add_child(_olla_ctrl)
+
+	_horno_ctrl = ArteCocina.Estacion_Horno.new()
+	_horno_ctrl.name = "Estacion_Horno"
+	_horno_ctrl.position = Vector2(18.0, 420.0)
+	_horno_ctrl.size = Vector2(230.0, 180.0)
+	_horno_ctrl.z_index = 3
+	_horno_ctrl.visible = false
+	_vista_cocina.add_child(_horno_ctrl)
+
+	_sarten_ctrl = ArteCocina.Sarten_Salsa.new()
+	_sarten_ctrl.name = "Estacion_Sarten"
+	_sarten_ctrl.position = Vector2(266.0, 432.0)
+	_sarten_ctrl.size = Vector2(152.0, 150.0)
+	_sarten_ctrl.z_index = 3
+	_sarten_ctrl.visible = false
+	_vista_cocina.add_child(_sarten_ctrl)
+
+	_botellas_ctrl = ArteCocina.Estacion_Botellas.new()
+	_botellas_ctrl.name = "Estacion_Botellas"
+	_botellas_ctrl.position = Vector2(436.0, 424.0)
+	_botellas_ctrl.size = Vector2(146.0, 170.0)
+	_botellas_ctrl.z_index = 3
+	_botellas_ctrl.visible = false
+	_vista_cocina.add_child(_botellas_ctrl)
 
 	# Mampara de cristal del pase, detrás de la bandeja metálica.
 	var fondo_pase := ArteCocina.Fondo_Pase.new()
@@ -1954,45 +2522,31 @@ func _Construir_Mostrador() -> void:
 	_vista_cocina.add_child(_papelera_root)
 	_papelera_rect = Rect2(1014.0, 405.0, 108.0, 195.0)
 
-	# Bote de propinas + monedas
+	# Bote de propinas único (centrado sobre la encimera, con sombra suave y
+	# contador integrado en la etiqueta inferior PROPINAS · X €).
 	_propinas_root = Control.new()
 	_propinas_root.name = "Propinas"
-	_propinas_root.position = Vector2(1124.0, 476.0)
-	_propinas_root.size = Vector2(146.0, 118.0)
+	_propinas_root.position = Vector2(1148.0, 480.0)
+	_propinas_root.size = Vector2(98.0, 106.0)
 	_propinas_root.z_index = 3
 	_propinas_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var sombra_bote := TextureRect.new()
+	sombra_bote.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	sombra_bote.stretch_mode = TextureRect.STRETCH_SCALE
+	sombra_bote.texture = ArteCocina.textura_sombra_contacto()
+	sombra_bote.position = Vector2(8.0, 78.0)
+	sombra_bote.size = Vector2(82.0, 24.0)
+	sombra_bote.modulate = Color(0.05, 0.04, 0.03, 0.65)
+	sombra_bote.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_propinas_root.add_child(sombra_bote)
 	var tex_bote := TextureRect.new()
 	tex_bote.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	tex_bote.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	tex_bote.texture = ArteCocina.TEX_BOTE_PROPINAS
-	tex_bote.position = Vector2(2.0, 10.0)
-	tex_bote.size = Vector2(62.0, 62.0)
+	tex_bote.position = Vector2(10.0, 6.0)
+	tex_bote.size = Vector2(78.0, 86.0)
 	tex_bote.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_propinas_root.add_child(tex_bote)
-	var tex_pila := TextureRect.new()
-	tex_pila.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	tex_pila.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	tex_pila.texture = ArteCocina.TEX_PILA_MONEDAS
-	tex_pila.position = Vector2(64.0, 20.0)
-	tex_pila.size = Vector2(80.0, 70.0)
-	tex_pila.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_propinas_root.add_child(tex_pila)
-	var pill_prop_val := PanelContainer.new()
-	pill_prop_val.position = Vector2(40.0, 92.0)
-	pill_prop_val.size = Vector2(72.0, 22.0)
-	pill_prop_val.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var st_pv := Estilos_UI.caja(Color("#0f172a", 0.88), 999, Color("#fbbf24", 0.75), 1, 0)
-	st_pv.content_margin_left = 6
-	st_pv.content_margin_right = 6
-	st_pv.content_margin_top = 1
-	st_pv.content_margin_bottom = 1
-	pill_prop_val.add_theme_stylebox_override("panel", st_pv)
-	_lbl_estado_propinas = Estilos_UI.texto("0 €", 12, Color("#fde68a"), 700)
-	_lbl_estado_propinas.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_lbl_estado_propinas.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_lbl_estado_propinas.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	pill_prop_val.add_child(_lbl_estado_propinas)
-	_propinas_root.add_child(pill_prop_val)
 	_vista_cocina.add_child(_propinas_root)
 
 	# Contenedores dinámicos (se vacían en cada nivel)
@@ -2029,39 +2583,87 @@ func _Anadir_Textura(tex: Texture2D, rect: Rect2, nombre: String) -> TextureRect
 func _Construir_Despensa_Ingredientes() -> void:
 	# Mueble bajo la encimera integrado en la escena, como la despensa de la
 	# cocina de referencia: frente de armario, estante de madera y recipientes
-	# reales (panera con dos huecos, bandeja de carne, tabla de queso, bol de
-	# lechuga, bandeja de tomate y cesta de patatas). No hay tarjetas ni
-	# botonera: la comida se toca o se arrastra directamente del recipiente.
+	# reales. Los puestos concretos se reconstruyen al empezar cada mundo.
 	var fondo := ArteCocina.Fondo_Despensa.new()
 	fondo.name = "Fondo_Despensa"
 	fondo.position = ZONA_DESPENSA.position
 	fondo.size = ZONA_DESPENSA.size
 	fondo.z_index = 2
 	_vista_cocina.add_child(fondo)
+	_fondo_despensa = fondo
 
-	# Utensilios de apoyo en el hueco libre bajo la freidora y los refrescos.
-	var pila := _Anadir_Textura(ArteCocina.TEX_PILA_PLATOS,
-		Rect2(390.0, 646.0, 82.0, 62.0), "Despensa_Pila_Platos")
-	pila.z_index = 3
-	var bandejas := _Anadir_Textura(ArteCocina.TEX_BANDEJAS_APILADAS,
-		Rect2(480.0, 652.0, 92.0, 56.0), "Despensa_Bandejas")
-	bandejas.z_index = 3
+	_Reconstruir_Despensa()
 
+
+func _Reconstruir_Despensa() -> void:
+	for nodo in _puestos_nodos:
+		if is_instance_valid(nodo):
+			nodo.queue_free()
+	_puestos_nodos.clear()
 	_bandeja_items_ui.clear()
-	for ing in ORDEN_PUESTOS_INGREDIENTES:
-		var caja: Rect2 = PUESTOS_INGREDIENTES[ing]
+
+	# Utensilios de apoyo bajo el mostrador. Cambian poco entre mundos, pero
+	# se recolocan para no chocar con la nueva fila de puestos.
+	var perf: Dictionary = _perfil_actual
+	if perf.is_empty():
+		perf = Sistema_Cocina.Obtener_Perfil_Restaurante(_restaurante_actual)
+	var puestos: Array = perf.get("puestos", [])
+	var es_burger: bool = _restaurante_actual == Sistema_Cocina.RESTAURANTE_BURGER
+	if _fondo_despensa != null:
+		var color_frente := Color("#123e40")
+		if _restaurante_actual == Sistema_Cocina.RESTAURANTE_BISTRO:
+			color_frente = Color("#4a1d1d")
+		elif _restaurante_actual == Sistema_Cocina.RESTAURANTE_MERCADO:
+			color_frente = Color("#5b3a1e")
+		elif _restaurante_actual == Sistema_Cocina.RESTAURANTE_ALTA:
+			color_frente = Color("#0f1b2e")
+		_fondo_despensa.configurar(color_frente)
+
+	if es_burger:
+		if _despensa_pila == null:
+			_despensa_pila = _Anadir_Textura(ArteCocina.TEX_PILA_PLATOS,
+				Rect2(390.0, 646.0, 82.0, 62.0), "Despensa_Pila_Platos")
+			_despensa_pila.z_index = 3
+		if _despensa_bandejas == null:
+			_despensa_bandejas = _Anadir_Textura(ArteCocina.TEX_BANDEJAS_APILADAS,
+				Rect2(480.0, 652.0, 92.0, 56.0), "Despensa_Bandejas")
+			_despensa_bandejas.z_index = 3
+	if _despensa_pila != null and is_instance_valid(_despensa_pila):
+		_despensa_pila.visible = es_burger
+	if _despensa_bandejas != null and is_instance_valid(_despensa_bandejas):
+		_despensa_bandejas.visible = es_burger
+
+	var n: int = maxi(1, puestos.size())
+	var margen: float = 18.0
+	var sep: float = 8.0
+	var ancho_total: float = 1280.0 - margen * 2.0
+	var ancho: float = (ancho_total - sep * float(n - 1)) / float(n)
+	for i in range(n):
+		var p: Dictionary = puestos[i]
+		var ing: String = str(p.get("id", ""))
+		var caja: Rect2
+		if es_burger and PUESTOS_INGREDIENTES.has(ing):
+			caja = PUESTOS_INGREDIENTES[ing]
+		else:
+			caja = Rect2(margen + float(i) * (ancho + sep), 620.0, ancho, 98.0)
 		var item := ArteCocina.Puesto_Ingrediente.new()
 		item.name = "Puesto_%s" % ing
 		item.ingrediente = ing
+		item.estilo = str(p.get("estilo", ing))
+		item.nombre_visible = str(p.get("nombre", ing))
 		item.position = caja.position
 		item.size = caja.size
 		item.z_index = 6
 		_vista_cocina.add_child(item)
+		_puestos_nodos.append(item)
 		_bandeja_items_ui.append({
 			"nodo": item,
 			"ingrediente": ing,
+			"estilo": item.estilo,
 			"rect": caja,
 		})
+	_despensa_restaurante = _restaurante_actual
+
 
 
 func _Construir_Tutorial() -> void:
@@ -2140,38 +2742,11 @@ func _Construir_Chef_Cutin() -> void:
 # ----------------------------------------------------------------------------
 
 func _Construir_Modal_Resultados() -> void:
-	_modal_resultados = Control.new()
-	_modal_resultados.name = "Modal_Resultados"
-	_modal_resultados.set_anchors_preset(Control.PRESET_FULL_RECT)
-	_modal_resultados.z_index = 30
-	_modal_resultados.visible = false
-	add_child(_modal_resultados)
-
-	var velo := ColorRect.new()
-	velo.set_anchors_preset(Control.PRESET_FULL_RECT)
-	velo.color = Color(0.06, 0.09, 0.15, 0.72)
-	_modal_resultados.add_child(velo)
-
-	var centro := CenterContainer.new()
-	centro.set_anchors_preset(Control.PRESET_FULL_RECT)
-	_modal_resultados.add_child(centro)
-
-	var card := PanelContainer.new()
-	card.custom_minimum_size = Vector2(720, 0)
-	card.add_theme_stylebox_override("panel", Estilos_UI.caja_tarjeta(20, 3))
-	centro.add_child(card)
-	_card_resultados = card
-
-	var m := MarginContainer.new()
-	m.add_theme_constant_override("margin_left", 28)
-	m.add_theme_constant_override("margin_right", 28)
-	m.add_theme_constant_override("margin_top", 22)
-	m.add_theme_constant_override("margin_bottom", 22)
-	card.add_child(m)
-
-	_vbox_modal_resultados = VBoxContainer.new()
-	_vbox_modal_resultados.add_theme_constant_override("separation", 10)
-	m.add_child(_vbox_modal_resultados)
+	var base: Dictionary = _Crear_Modal_Base("Modal_Resultados", 46, 780.0, 34, 24)
+	_modal_resultados = base["modal"]
+	_card_resultados = base["card"]
+	_vbox_modal_resultados = base["vbox"]
+	_vbox_modal_resultados.add_theme_constant_override("separation", 8)
 
 
 # ----------------------------------------------------------------------------
@@ -2179,70 +2754,46 @@ func _Construir_Modal_Resultados() -> void:
 # ----------------------------------------------------------------------------
 
 func _Construir_Modal_Confirmar_Salida() -> void:
-	_modal_salida = Control.new()
-	_modal_salida.name = "Modal_Confirmar_Salida"
-	_modal_salida.set_anchors_preset(Control.PRESET_FULL_RECT)
-	_modal_salida.z_index = 45
-	_modal_salida.visible = false
-	add_child(_modal_salida)
+	var base: Dictionary = _Crear_Modal_Base("Modal_Confirmar_Salida", 45, 590.0, 42, 30)
+	_modal_salida = base["modal"]
+	_card_salida = base["card"]
+	var v: VBoxContainer = base["vbox"]
+	v.add_theme_constant_override("separation", 13)
 
-	var velo := ColorRect.new()
-	velo.set_anchors_preset(Control.PRESET_FULL_RECT)
-	velo.color = Color(0.06, 0.09, 0.15, 0.72)
-	_modal_salida.add_child(velo)
-
-	var centro := CenterContainer.new()
-	centro.set_anchors_preset(Control.PRESET_FULL_RECT)
-	_modal_salida.add_child(centro)
-
-	var card := PanelContainer.new()
-	card.custom_minimum_size = Vector2(640, 0)
-	card.add_theme_stylebox_override("panel", Estilos_UI.caja_tarjeta(20, 3))
-	centro.add_child(card)
-
-	var m := MarginContainer.new()
-	m.add_theme_constant_override("margin_left", 30)
-	m.add_theme_constant_override("margin_right", 30)
-	m.add_theme_constant_override("margin_top", 24)
-	m.add_theme_constant_override("margin_bottom", 24)
-	card.add_child(m)
-
-	var v := VBoxContainer.new()
-	v.add_theme_constant_override("separation", 12)
-	m.add_child(v)
-
-	var cab := HBoxContainer.new()
-	cab.add_theme_constant_override("separation", 12)
-	v.add_child(cab)
-	cab.add_child(Estilos_UI.badge_icono("triangle-alert", 44, 22, Estilos_UI.AVISO, Color.WHITE, 12))
-	var tit := Estilos_UI.titulo("¿Seguro que quieres salir?", 24, Estilos_UI.TINTA)
+	var tit := ArteModal.crear_titulo("¿SALIR AL MAPA?", 38)
 	tit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	tit.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	cab.add_child(tit)
+	v.add_child(tit)
 
-	var txt := Estilos_UI.parrafo(
-		"Si sales ahora perderás las ventas y todo el progreso de este nivel. " +
-		"No se guardarán las estrellas, las propinas ni la Caja del restaurante.",
-		15, Estilos_UI.TINTA_SUAVE)
+	var txt := ArteModal.texto_modal(
+		"Si sales ahora perderás las ventas, las estrellas y la Caja de este nivel.",
+		14, ArteModal.CREMA, 500)
+	txt.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	txt.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	v.add_child(txt)
 
-	_lbl_salida_resumen = Estilos_UI.texto("", 14, Estilos_UI.TINTA, 700)
+	var placa := PanelContainer.new()
+	placa.add_theme_stylebox_override("panel", ArteModal.caja_placa(14, 0.30))
+	v.add_child(placa)
+	_lbl_salida_resumen = ArteModal.texto_cartoon(
+		"", 15, ArteModal.ORO_CLARO, ArteModal.NAVY_OSCURO, 3)
 	_lbl_salida_resumen.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	v.add_child(_lbl_salida_resumen)
+	placa.add_child(_lbl_salida_resumen)
 
-	v.add_child(Estilos_UI.divisor_horizontal())
+	v.add_child(ArteModal.divisor())
 
-	var btns := HBoxContainer.new()
-	btns.add_theme_constant_override("separation", 12)
+	var btns := VBoxContainer.new()
+	btns.add_theme_constant_override("separation", 10)
 	v.add_child(btns)
 
-	var btn_seguir := Estilos_UI.boton("Seguir cocinando", "exito", "play", Estilos_UI.EXITO, 50)
-	btn_seguir.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var btn_seguir := ArteModal.crear_boton(
+		"SEGUIR COCINANDO", ArteModal.TEX_BOTON_VERDE, "play", 60, 18)
+	btn_seguir.name = "Boton_Seguir_Salida"
 	btn_seguir.pressed.connect(_Cancelar_Salida_Partida)
 	btns.add_child(btn_seguir)
 
-	var btn_salir := Estilos_UI.boton("Salir y perder progreso", "peligro", "x", Estilos_UI.PELIGRO, 50)
-	btn_salir.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var btn_salir := ArteModal.crear_boton(
+		"SALIR Y PERDER PROGRESO", ArteModal.TEX_BOTON_ROJO, "x", 60, 17)
+	btn_salir.name = "Boton_Confirmar_Salida"
 	btn_salir.pressed.connect(_Confirmar_Salida_Partida)
 	btns.add_child(btn_salir)
 
@@ -2259,75 +2810,63 @@ func _Intentar_Volver_Al_Mapa() -> void:
 # ----------------------------------------------------------------------------
 
 func _Construir_Modal_Pausa() -> void:
-	_modal_pausa = Control.new()
-	_modal_pausa.name = "Modal_Pausa"
-	_modal_pausa.set_anchors_preset(Control.PRESET_FULL_RECT)
-	_modal_pausa.z_index = 44
-	_modal_pausa.visible = false
-	add_child(_modal_pausa)
+	var base: Dictionary = _Crear_Modal_Base("Modal_Pausa", 44, 560.0, 42, 30)
+	_modal_pausa = base["modal"]
+	_card_pausa = base["card"]
+	var v: VBoxContainer = base["vbox"]
+	v.add_theme_constant_override("separation", 13)
 
-	var velo := ColorRect.new()
-	velo.set_anchors_preset(Control.PRESET_FULL_RECT)
-	velo.color = Color(0.04, 0.07, 0.12, 0.80)
-	_modal_pausa.add_child(velo)
-
-	var centro := CenterContainer.new()
-	centro.set_anchors_preset(Control.PRESET_FULL_RECT)
-	_modal_pausa.add_child(centro)
-
-	var card := PanelContainer.new()
-	card.custom_minimum_size = Vector2(620, 0)
-	card.add_theme_stylebox_override("panel", Estilos_UI.caja_tarjeta(20, 3))
-	centro.add_child(card)
-
-	var m := MarginContainer.new()
-	m.add_theme_constant_override("margin_left", 30)
-	m.add_theme_constant_override("margin_right", 30)
-	m.add_theme_constant_override("margin_top", 24)
-	m.add_theme_constant_override("margin_bottom", 24)
-	card.add_child(m)
-
-	var v := VBoxContainer.new()
-	v.add_theme_constant_override("separation", 12)
-	m.add_child(v)
-
-	var cab := HBoxContainer.new()
-	cab.add_theme_constant_override("separation", 12)
-	v.add_child(cab)
-	cab.add_child(Estilos_UI.badge_icono("pause", 44, 22, Color("#0ea5e9"), Color.WHITE, 12))
-	var tit := Estilos_UI.titulo("Servicio en pausa", 24, Estilos_UI.TINTA)
+	var tit := ArteModal.crear_titulo("PAUSA", 46)
 	tit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	tit.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	cab.add_child(tit)
+	v.add_child(tit)
 
-	var txt := Estilos_UI.parrafo(
-		"El tiempo y la paciencia de los clientes están detenidos. " +
-		"Puedes seguir cocinando, repetir el nivel desde el principio o volver al mapa.",
-		15, Estilos_UI.TINTA_SUAVE)
+	var txt := ArteModal.texto_modal(
+		"El tiempo y la paciencia de los clientes están detenidos.",
+		14, ArteModal.CREMA, 500)
+	txt.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	txt.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	v.add_child(txt)
 
-	_lbl_pausa_resumen = Estilos_UI.texto("", 14, Estilos_UI.TINTA, 700)
+	# Resumen del servicio en una placa hundida.
+	var placa := PanelContainer.new()
+	placa.add_theme_stylebox_override("panel", ArteModal.caja_placa(14, 0.30))
+	v.add_child(placa)
+	var v_resumen := VBoxContainer.new()
+	v_resumen.add_theme_constant_override("separation", 2)
+	placa.add_child(v_resumen)
+	_lbl_pausa_resumen = ArteModal.texto_cartoon(
+		"", 15, ArteModal.ORO_CLARO, ArteModal.NAVY_OSCURO, 3)
 	_lbl_pausa_resumen.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	v.add_child(_lbl_pausa_resumen)
+	v_resumen.add_child(_lbl_pausa_resumen)
+	var fila_cli := HBoxContainer.new()
+	fila_cli.alignment = BoxContainer.ALIGNMENT_CENTER
+	fila_cli.add_theme_constant_override("separation", 6)
+	v_resumen.add_child(fila_cli)
+	fila_cli.add_child(ArteModal.icono_usuarios(16, ArteModal.CREMA))
+	_lbl_pausa_clientes = ArteModal.texto_modal("", 13, ArteModal.CREMA, 700)
+	fila_cli.add_child(_lbl_pausa_clientes)
 
-	v.add_child(Estilos_UI.divisor_horizontal())
+	v.add_child(ArteModal.divisor())
 
-	var btns := HBoxContainer.new()
+	var btns := VBoxContainer.new()
 	btns.add_theme_constant_override("separation", 10)
 	v.add_child(btns)
 
-	var btn_seguir := Estilos_UI.boton("Seguir cocinando", "exito", "play", Estilos_UI.EXITO, 50)
-	btn_seguir.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var btn_seguir := ArteModal.crear_boton(
+		"SEGUIR COCINANDO", ArteModal.TEX_BOTON_VERDE, "play", 62, 18)
+	btn_seguir.name = "Boton_Seguir"
 	btn_seguir.pressed.connect(_Reanudar_Partida)
 	btns.add_child(btn_seguir)
 
-	var btn_repetir := Estilos_UI.boton("Repetir", "oro", "rotate-ccw", Estilos_UI.ORO, 50)
-	btn_repetir.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var btn_repetir := ArteModal.crear_boton(
+		"REPETIR NIVEL", ArteModal.TEX_BOTON_NARANJA, "rotate-ccw", 62, 18)
+	btn_repetir.name = "Boton_Repetir"
 	btn_repetir.pressed.connect(_Repetir_Desde_Pausa)
 	btns.add_child(btn_repetir)
 
-	var btn_mapa := Estilos_UI.boton("Al mapa", "secundario", "arrow-left", Estilos_UI.TINTA, 50)
-	btn_mapa.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var btn_mapa := ArteModal.crear_boton(
+		"AL MAPA", ArteModal.TEX_BOTON_AZUL, "arrow-left", 62, 18)
+	btn_mapa.name = "Boton_Al_Mapa"
 	btn_mapa.pressed.connect(_Salir_Desde_Pausa)
 	btns.add_child(btn_mapa)
 
@@ -2342,13 +2881,12 @@ func _Abrir_Modal_Pausa() -> void:
 	if _arrastre != null:
 		_arrastre.cancelar()
 		_arrastre.habilitado = false
-	_lbl_pausa_resumen.text = "Nivel %d · Ticket %d € · Meta %d € · Quedan %d clientes" % [
-		_nivel_actual, _recaudacion,
-		int(_cfg_nivel_actual.get("meta_3", 115)), _Clientes_Restantes()]
-	_modal_pausa.visible = true
+	_lbl_pausa_resumen.text = "NIVEL %d  ·  TICKET %d €  ·  META %d €" % [
+		_nivel_actual, _recaudacion, int(_cfg_nivel_actual.get("meta_3", 115))]
+	_lbl_pausa_clientes.text = "QUEDAN %d CLIENTES" % _Clientes_Restantes()
 	_modal_pausa.modulate.a = 0.0
-	var tw := create_tween()
-	tw.tween_property(_modal_pausa, "modulate:a", 1.0, 0.16)
+	_modal_pausa.visible = true
+	_Animar_Entrada_Modal.call_deferred(_modal_pausa, _card_pausa)
 
 
 func _Reanudar_Partida() -> void:
@@ -2387,12 +2925,11 @@ func _Abrir_Modal_Confirmar_Salida() -> void:
 			_arrastre.habilitado = false
 	if _modal_pausa != null:
 		_modal_pausa.visible = false
-	_lbl_salida_resumen.text = "Ticket actual: %d € · %d clientes atendidos" % [
+	_lbl_salida_resumen.text = "TICKET ACTUAL %d €  ·  %d CLIENTES ATENDIDOS" % [
 		_recaudacion, _clientes_atendidos]
-	_modal_salida.visible = true
 	_modal_salida.modulate.a = 0.0
-	var tw := create_tween()
-	tw.tween_property(_modal_salida, "modulate:a", 1.0, 0.16)
+	_modal_salida.visible = true
+	_Animar_Entrada_Modal.call_deferred(_modal_salida, _card_salida)
 
 
 func _Cancelar_Salida_Partida() -> void:
@@ -2425,7 +2962,7 @@ func _Construir_Vista_Carga() -> void:
 	_vista_carga.size = Vector2(TAMANO_HORIZONTAL)
 	_vista_carga.visible = false
 	_vista_carga.mouse_filter = Control.MOUSE_FILTER_STOP
-	_vista_carga.z_index = 35
+	_vista_carga.z_index = 55
 	add_child(_vista_carga)
 
 	var fondo := TextureRect.new()
@@ -2436,6 +2973,7 @@ func _Construir_Vista_Carga() -> void:
 	fondo.stretch_mode = TextureRect.STRETCH_SCALE
 	fondo.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_vista_carga.add_child(fondo)
+	_fondo_carga = fondo
 
 	var velo := ColorRect.new()
 	velo.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -2476,6 +3014,7 @@ func _Construir_Vista_Carga() -> void:
 	chef.custom_minimum_size = Vector2(112.0, 112.0)
 	chef.size = Vector2(112.0, 112.0)
 	cab.add_child(chef)
+	_chef_carga = chef
 
 	var col_txt := VBoxContainer.new()
 	col_txt.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -2543,6 +3082,7 @@ func _Comenzar_Carga_Nivel(nivel: int) -> void:
 	_jugando = false
 	_pausado_por_confirmacion = false
 	_modal_inicio.visible = false
+	_modal_maestria.visible = false
 	_modal_mejoras.visible = false
 	_modal_resultados.visible = false
 	if _modal_pausa != null:
@@ -2556,7 +3096,12 @@ func _Comenzar_Carga_Nivel(nivel: int) -> void:
 
 	_lbl_carga_titulo.text = "Nivel %d · %s" % [nivel, Sistema_Cocina.Obtener_Nombre_Restaurante(_restaurante_actual)]
 	_lbl_carga_sub.text = "Preparando el servicio…"
-	_lbl_carga_paso.text = "Calentando la plancha…"
+	_lbl_carga_paso.text = "Preparando la cocina…"
+	if _fondo_carga != null:
+		_fondo_carga.texture = ArteCocina.fondo_restaurante(_restaurante_actual)
+	if _chef_carga != null:
+		_chef_carga.texture = ArteCocina.textura_chef(
+			"sirviendo" if _restaurante_actual == Sistema_Cocina.RESTAURANTE_BURGER else "pulgar")
 	_lbl_carga_pct.text = "0 %"
 	_barra_carga.value = 0.0
 	_vista_carga.visible = true
@@ -2574,7 +3119,7 @@ func _on_carga_valor_cambiado(valor: float) -> void:
 	if _lbl_carga_pct != null and is_instance_valid(_lbl_carga_pct):
 		_lbl_carga_pct.text = "%d %%" % int(round(valor))
 	if _lbl_carga_paso != null and is_instance_valid(_lbl_carga_paso):
-		var paso: String = "Calentando la plancha…"
+		var paso: String = "Preparando la cocina…"
 		if valor >= 30.0:
 			paso = "Picando los ingredientes…"
 		if valor >= 60.0:
@@ -2617,6 +3162,13 @@ func _Iniciar_Nivel(nivel: int) -> void:
 		_modal_pausa.visible = false
 	_nivel_actual = nivel
 	_cfg_nivel_actual = cfg
+	_perfil_actual = Sistema_Cocina.Obtener_Perfil_Restaurante(_restaurante_actual)
+	if _despensa_restaurante != _restaurante_actual:
+		_Reconstruir_Despensa()
+	_Actualizar_Estaciones_Mundo()
+	_olla = {"ingredientes": [], "estado": "vacio", "progreso": 0.0,
+		"raciones": 0, "receta": ""}
+	_sarten = {"estado": "lista", "quemado": 0.0, "removido": 0.0}
 	# Secuencia determinista por restaurante y nivel (memorizable).
 	var idx_rest: int = maxi(0, Sistema_Cocina.ORDEN_RESTAURANTES.find(_restaurante_actual))
 	_rng.seed = 7919 * nivel + 104729 * (idx_rest + 1) + 15485863
@@ -2671,6 +3223,18 @@ func _Iniciar_Nivel(nivel: int) -> void:
 
 	_tiempo_coccion_carne = Sistema_Cocina.Calcular_Tiempo_Coccion(TIEMPO_BASE_CARNE, nv_plancha, destreza)
 	_tiempo_coccion_patatas = Sistema_Cocina.Calcular_Tiempo_Coccion(TIEMPO_BASE_PATATAS, nv_plancha, destreza)
+	_tiempo_coccion_b = _tiempo_coccion_patatas
+	match str(_perfil_actual.get("estacion_a", {}).get("tipo", "")):
+		"parrilla":
+			_tiempo_coccion_carne = Sistema_Cocina.Calcular_Tiempo_Coccion(5.2, nv_plancha, destreza)
+		"horno":
+			_tiempo_coccion_carne = Sistema_Cocina.Calcular_Tiempo_Coccion(5.6, nv_plancha, destreza)
+	match str(_perfil_actual.get("estacion_b", {}).get("tipo", "")):
+		"plancha":
+			_tiempo_coccion_b = Sistema_Cocina.Calcular_Tiempo_Coccion(2.6, nv_plancha, destreza)
+		"freidora":
+			_tiempo_coccion_b = _tiempo_coccion_patatas
+	_tiempo_olla = Sistema_Cocina.Calcular_Tiempo_Coccion(6.2, nv_plancha, destreza)
 	_tiempo_quemado = Sistema_Cocina.Calcular_Tiempo_Quemado(nv_termostato, paciencia, resacon)
 	_aviso_temprano = Sistema_Cocina.Tiene_Aviso_Temprano_Termostato(nv_termostato)
 	_velocidad_paciencia = Sistema_Cocina.Calcular_Velocidad_Paciencia(_nv_ambiente, paciencia, sangre_fria, descanso, mental)
@@ -2686,9 +3250,15 @@ func _Iniciar_Nivel(nivel: int) -> void:
 			"variante": i % 8
 		})
 
-	# Construir estaciones dinámicas según mejoras
+	# Construir estaciones dinámicas según mejoras. La bodega/barra siempre
+	# tiene al menos un hueco por tipo de bebida del mundo (tinto + blanco en
+	# Alta Cocina, agua + sangría en Mercado) para que el maridaje sea posible
+	# desde el nivel 1 sin depender de la mejora de Emplatado.
+	var beb_items_perfil: Array = _perfil_actual.get("bebida", {}).get("items", ["refresco"])
+	var num_bebidas: int = maxi(Sistema_Cocina.Obtener_Capacidad_Bebidas(nv_emplatado),
+		beb_items_perfil.size())
 	_Reconstruir_Estaciones(
-		Sistema_Cocina.Obtener_Capacidad_Bebidas(nv_emplatado),
+		num_bebidas,
 		Sistema_Cocina.Obtener_Huecos_Platos(nv_emplatado),
 		Sistema_Cocina.Obtener_Huecos_Plancha(nv_plancha),
 		Sistema_Cocina.Obtener_Cestas_Freidora(nv_plancha)
@@ -2698,7 +3268,7 @@ func _Iniciar_Nivel(nivel: int) -> void:
 	_lbl_cocina_nivel.text = "Nivel %d" % nivel
 	_pill_cocina_turno.visible = _en_turno_partida
 	_pill_cocina_combo.visible = false
-	_lbl_cocina_propinas.text = "+0 €"
+	_lbl_estado_propinas.text = "PROPINAS · 0 €"
 	var meta_3: int = maxi(1, int(cfg.get("meta_3", 115)))
 	_bar_cocina_meta.max_value = float(meta_3)
 	_bar_cocina_meta.value = 0.0
@@ -2729,7 +3299,11 @@ func _Iniciar_Nivel(nivel: int) -> void:
 	_Actualizar_Todos_Los_Clientes_UI()
 	_Registrar_Zonas_Arrastre()
 	_Mostrar_Banner("¡A COCINAR!", Color("#fef08a"))
-	_Mostrar_Chef("sirviendo", "¡Hoy tenemos %d clientes!" % _clientes_totales, Color("#9a3412"), 2.4)
+	var texto_chef: String = "¡Hoy tenemos %d clientes!" % _clientes_totales
+	if str(_perfil_actual.get("mecanica", "montaje")) != "montaje":
+		texto_chef = "¡%d clientes! %s" % [_clientes_totales,
+			str(_perfil_actual.get("mecanica_titulo", ""))]
+	_Mostrar_Chef("sirviendo", texto_chef, Color("#9a3412"), 2.8)
 	if _sfx != null:
 		_sfx.reproducir("start", -12.0)
 
@@ -2747,24 +3321,46 @@ func _Disposicion_Bandeja_Platos(num_desbloqueados: int) -> Array[Rect2]:
 	return celdas
 
 
+func _Plato_Vacio() -> Dictionary:
+	return {
+		"pan": false, "carnes": 0, "queso": false, "lechuga": false, "tomate": false,
+		"proteina": "", "punto": "", "guiso": "", "guarnicion": "", "salsa": "",
+		"extra": "", "flor": false
+	}
+
+
 func _Reconstruir_Estaciones(num_bebidas: int, num_platos: int, num_plancha: int, num_freidora: int) -> void:
-	# --- Refrescos (alineados sobre la bandeja de goteo del dispensador) -----
+	var perf: Dictionary = _perfil_actual
+	if perf.is_empty():
+		perf = Sistema_Cocina.Obtener_Perfil_Restaurante(_restaurante_actual)
+	var est_a: Dictionary = perf.get("estacion_a", {})
+	var est_b: Dictionary = perf.get("estacion_b", {})
+	var tipo_a: String = str(est_a.get("tipo", "plancha"))
+	var tipo_b: String = str(est_b.get("tipo", "freidora"))
+	var beb_cfg: Dictionary = perf.get("bebida", {})
+	var beb_items: Array = beb_cfg.get("items", ["refresco"])
+
+	# --- Bebidas --------------------------------------------------------------
 	for c in _contenedor_bebidas.get_children():
 		c.queue_free()
 	_bebidas.clear()
 	_slots_bebidas_ui.clear()
+	_bebida_items_actuales.clear()
 	_fx_bebidas.clear()
-	var sep_beb: float = 31.0 if num_bebidas >= 3 else 38.0
-	var ancho_vaso: float = 38.0
+	var sep_beb: float = 32.0 if num_bebidas == 2 else (31.0 if num_bebidas >= 3 else 0.0)
+	var ancho_vaso: float = 44.0 if num_bebidas <= 2 else 38.0
 	var total_beb: float = ancho_vaso + sep_beb * float(maxi(0, num_bebidas - 1))
 	var x0_beb: float = 526.0 - total_beb * 0.5
 	for i in range(num_bebidas):
-		_bebidas.append({"estado": "listo", "progreso": 1.0})
+		var item_beb: String = str(beb_items[i % maxi(1, beb_items.size())])
+		_bebida_items_actuales.append(item_beb)
+		_bebidas.append({"estado": "listo", "progreso": 1.0, "item": item_beb})
 		_fx_bebidas.append(0.0)
 		var nodo := ArteCocina.Bebida.new()
 		nodo.name = "Bebida_%d" % i
-		nodo.position = Vector2(x0_beb + sep_beb * float(i), 528.0)
-		nodo.size = Vector2(ancho_vaso, 62.0)
+		nodo.tipo = item_beb
+		nodo.position = Vector2(x0_beb + sep_beb * float(i), 514.0)
+		nodo.size = Vector2(ancho_vaso, 76.0)
 		_contenedor_bebidas.add_child(nodo)
 		_slots_bebidas_ui.append({
 			"nodo": nodo,
@@ -2778,9 +3374,10 @@ func _Reconstruir_Estaciones(num_bebidas: int, num_platos: int, num_plancha: int
 	_slots_platos_ui.clear()
 	var celdas_platos: Array[Rect2] = _Disposicion_Bandeja_Platos(num_platos)
 	for i in range(num_platos):
-		_platos.append({"pan": false, "carnes": 0, "queso": false, "lechuga": false, "tomate": false})
+		_platos.append(_Plato_Vacio())
 		var nodo := ArteCocina.Plato.new()
 		nodo.name = "Plato_%d" % i
+		nodo.restaurante = _restaurante_actual
 		var celda: Rect2 = celdas_platos[i]
 		nodo.position = _bandeja_emplatado.position + celda.position
 		nodo.size = celda.size
@@ -2791,7 +3388,7 @@ func _Reconstruir_Estaciones(num_bebidas: int, num_platos: int, num_plancha: int
 			"pop": 0.0,
 		})
 
-	# --- Plancha (centros en perspectiva 3/4 de cada quemador) ---------------
+	# --- Estación A (plancha / parrilla / horno) -----------------------------
 	for c in _contenedor_plancha.get_children():
 		c.queue_free()
 	_plancha.clear()
@@ -2801,13 +3398,24 @@ func _Reconstruir_Estaciones(num_bebidas: int, num_platos: int, num_plancha: int
 		Vector2(103.0, 462.0), Vector2(184.0, 468.0),
 		Vector2(84.0, 496.0), Vector2(169.0, 505.0)
 	]
-	for i in range(num_plancha):
-		_plancha.append({"estado": "vacio", "progreso": 0.0, "quemado": 0.0, "avisado": false})
+	var n_slots_a: int = 0
+	if tipo_a in ["plancha", "parrilla", "horno"]:
+		n_slots_a = num_plancha
+	var tipo_slot_a: String = "carne"
+	if tipo_a == "parrilla":
+		tipo_slot_a = "filete"
+	elif tipo_a == "horno":
+		tipo_slot_a = "generico"
+	for i in range(n_slots_a):
+		_plancha.append({"estado": "vacio", "progreso": 0.0, "quemado": 0.0,
+			"avisado": false, "item": "", "punto": ""})
 		_fx_plancha.append(0.0)
 		var nodo := ArteCocina.Punto_Coccion.new()
-		nodo.name = "Carne_%d" % i
-		nodo.tipo = "carne"
+		nodo.name = "Coccion_A_%d" % i
+		nodo.tipo = tipo_slot_a
 		var centro: Vector2 = centros_fogones[i % centros_fogones.size()]
+		if tipo_a == "horno":
+			centro = Vector2(60.0 + float(i % 2) * 92.0, 486.0 + float(i / 2) * 46.0)
 		nodo.position = centro - Vector2(32.0, 26.0)
 		nodo.size = Vector2(64.0, 52.0)
 		_contenedor_plancha.add_child(nodo)
@@ -2816,20 +3424,30 @@ func _Reconstruir_Estaciones(num_bebidas: int, num_platos: int, num_plancha: int
 			"rect": Rect2(nodo.position, nodo.size),
 		})
 
-	# --- Freidora (centros en perspectiva sobre cada cesta) ------------------
+	# --- Estación B (freidora / plancha de huevos / salsa) -------------------
 	for c in _contenedor_freidora.get_children():
 		c.queue_free()
 	_freidora.clear()
 	_slots_freidora_ui.clear()
 	_fx_freidora.clear()
-	var centros_cestas: Array[Vector2] = [Vector2(316.0, 504.0), Vector2(370.0, 510.0)]
-	for i in range(num_freidora):
-		_freidora.append({"estado": "vacio", "progreso": 0.0, "quemado": 0.0, "avisado": false})
+	var n_slots_b: int = 0
+	var tipo_slot_b: String = "patatas"
+	if tipo_b == "freidora":
+		n_slots_b = num_freidora
+	elif tipo_b == "plancha":
+		n_slots_b = 2
+		tipo_slot_b = "huevo"
+	var centros_b: Array[Vector2] = [Vector2(316.0, 504.0), Vector2(370.0, 510.0)]
+	if tipo_b == "plancha":
+		centros_b = [Vector2(300.0, 482.0), Vector2(362.0, 506.0)]
+	for i in range(n_slots_b):
+		_freidora.append({"estado": "vacio", "progreso": 0.0, "quemado": 0.0,
+			"avisado": false, "item": "", "punto": ""})
 		_fx_freidora.append(0.0)
 		var nodo := ArteCocina.Punto_Coccion.new()
-		nodo.name = "Patatas_%d" % i
-		nodo.tipo = "patatas"
-		var centro: Vector2 = centros_cestas[i % centros_cestas.size()]
+		nodo.name = "Coccion_B_%d" % i
+		nodo.tipo = tipo_slot_b
+		var centro: Vector2 = centros_b[i % centros_b.size()]
 		nodo.position = centro - Vector2(29.0, 24.0)
 		nodo.size = Vector2(58.0, 48.0)
 		_contenedor_freidora.add_child(nodo)
@@ -2838,11 +3456,82 @@ func _Reconstruir_Estaciones(num_bebidas: int, num_platos: int, num_plancha: int
 			"rect": Rect2(nodo.position, nodo.size),
 		})
 
-	# Etiquetas con capacidades
-	_lbl_estado_plancha.text = "PLANCHA · %d fogones" % num_plancha
-	_lbl_estado_freidora.text = "FREIDORA · %d cesta%s" % [num_freidora, "" if num_freidora == 1 else "s"]
-	_lbl_estado_bebidas.text = "REFRESCOS · %d vaso%s" % [num_bebidas, "" if num_bebidas == 1 else "s"]
+	# Etiquetas con capacidades y nombre del mundo
+	var nombre_a: String = str(est_a.get("nombre", "ESTACIÓN"))
+	var nombre_b: String = str(est_b.get("nombre", "ESTACIÓN"))
+	if tipo_a == "olla":
+		_lbl_estado_plancha.text = "OLLA · %d raciones" % 4
+	elif tipo_a == "horno":
+		_lbl_estado_plancha.text = "%s · %d huecos" % [nombre_a, n_slots_a]
+	else:
+		_lbl_estado_plancha.text = "%s · %d hueco%s" % [nombre_a, n_slots_a,
+			"" if n_slots_a == 1 else "s"]
+	if tipo_b == "sarten":
+		_lbl_estado_freidora.text = "SALSAS · remover"
+	elif tipo_b == "plancha":
+		_lbl_estado_freidora.text = "PLANCHA · %d huecos" % n_slots_b
+	else:
+		_lbl_estado_freidora.text = "%s · %d cesta%s" % [nombre_b, n_slots_b,
+			"" if n_slots_b == 1 else "s"]
+	_lbl_estado_bebidas.text = "%s · %d" % [str(beb_cfg.get("nombre", "BEBIDAS")), num_bebidas]
 	_lbl_estado_platos.text = "EMPLATADO · %d/%d platos" % [num_platos, HUECOS_EMPLATADO]
+
+
+## Ajusta fondo, estaciones y tintes al mundo que se va a jugar.
+func _Actualizar_Estaciones_Mundo() -> void:
+	var perf: Dictionary = _perfil_actual
+	if perf.is_empty():
+		return
+	var est_a: Dictionary = perf.get("estacion_a", {})
+	var est_b: Dictionary = perf.get("estacion_b", {})
+	var beb: Dictionary = perf.get("bebida", {})
+	var tipo_a: String = str(est_a.get("tipo", "plancha"))
+	var tipo_b: String = str(est_b.get("tipo", "freidora"))
+	var tipo_beb: String = str(beb.get("tipo", "refresco"))
+	if _fondo_cocina != null:
+		_fondo_cocina.texture = ArteCocina.fondo_restaurante(_restaurante_actual)
+
+	# Estación A
+	if _est_plancha_tex != null:
+		_est_plancha_tex.visible = tipo_a in ["plancha", "parrilla"]
+		_est_plancha_tex.texture = ArteCocina.TEX_PLANCHA
+	if _horno_ctrl != null:
+		_horno_ctrl.visible = tipo_a == "horno"
+	if _olla_ctrl != null:
+		_olla_ctrl.visible = tipo_a == "olla"
+	# Estación B
+	if _est_freidora_tex != null:
+		_est_freidora_tex.visible = tipo_b == "freidora" or tipo_b == "plancha"
+		_est_freidora_tex.texture = ArteCocina.TEX_FREIDORA if tipo_b == "freidora" else ArteCocina.TEX_PLANCHA
+		if tipo_b == "plancha":
+			_est_freidora_tex.position = Vector2(262.0, 430.0)
+			_est_freidora_tex.size = Vector2(156.0, 162.0)
+		else:
+			_est_freidora_tex.position = Vector2(266.0, 438.0)
+			_est_freidora_tex.size = Vector2(150.0, 143.0)
+	if _sarten_ctrl != null:
+		_sarten_ctrl.visible = tipo_b == "sarten"
+	# Bebidas
+	var es_textura: bool = tipo_beb in ["refresco", "cafetera"]
+	if _est_bebidas_tex != null:
+		_est_bebidas_tex.visible = es_textura
+		if tipo_beb == "cafetera":
+			_est_bebidas_tex.texture = ArteCocina.TEX_CAFETERA
+			_est_bebidas_tex.position = Vector2(438.0, 422.0)
+			_est_bebidas_tex.size = Vector2(138.0, 170.0)
+		else:
+			_est_bebidas_tex.texture = ArteCocina.TEX_REFRESCOS
+			_est_bebidas_tex.position = Vector2(432.0, 418.0)
+			_est_bebidas_tex.size = Vector2(150.0, 178.0)
+	if _botellas_ctrl != null:
+		_botellas_ctrl.visible = not es_textura
+		_botellas_ctrl.tipo = "bodega" if tipo_beb == "bodega" else "barra"
+	# Tinte del mostrador para integrarlo con cada local
+	var tinte := Color(str(perf.get("tinte_mostrador", "#ffffff")))
+	for nodo in _vista_cocina.get_children():
+		if nodo.name in ["Encimera_Mostrador", "Frente_Mostrador"] and nodo is CanvasItem:
+			(nodo as CanvasItem).modulate = tinte
+
 
 
 func _Crear_Slot_Coccion_UI(etiqueta: String, _indice: int, _callback: Callable) -> Dictionary:
@@ -2882,8 +3571,17 @@ func _Registrar_Zonas_Arrastre() -> void:
 		_arrastre.registrar_origen(_slots_platos_ui[i]["rect"],
 			{"tipo": "plato", "indice": i}, _Obtener_Payload_Plato)
 
+	# Olla de mercado y sartén de alta cocina: se arrastran sus elaboraciones
+	# al pase, igual que la carne o las patatas del mundo 1.
+	if _olla_ctrl != null and _olla_ctrl.visible:
+		_arrastre.registrar_origen(ZONA_PLANCHA, {"tipo": "olla"}, _Obtener_Payload_Olla)
+	if _sarten_ctrl != null and _sarten_ctrl.visible:
+		_arrastre.registrar_origen(ZONA_FREIDORA, {"tipo": "sarten"}, _Obtener_Payload_Sarten)
+
 	# Destinos
 	_arrastre.registrar_destino(ZONA_PLANCHA, {"tipo": "plancha"}, _Acepta_Plancha)
+	if _olla_ctrl != null and _olla_ctrl.visible:
+		_arrastre.registrar_destino(ZONA_PLANCHA, {"tipo": "olla"}, _Acepta_Olla)
 	_arrastre.registrar_destino(ZONA_FREIDORA, {"tipo": "freidora"}, _Acepta_Freidora)
 	for i in range(_slots_plancha_ui.size()):
 		var idx_fogon: int = i
@@ -2910,7 +3608,28 @@ func _Registrar_Zonas_Arrastre() -> void:
 		# ...o sobre el bocadillo con el pedido que tiene encima.
 		_arrastre.registrar_destino(_Rect_Bocadillo_Cliente_Destino(i),
 			{"tipo": "cliente", "indice": i}, acepta_cliente)
+		# Toque corto sobre el cliente: sirve el plato/bebida que tenga listo
+		# y que ese cliente esté esperando.
+		_arrastre.registrar_toque(_Rect_Cliente_Destino(i),
+			{"tipo": "cliente", "indice": i})
 	_arrastre.registrar_destino(_papelera_rect, {"tipo": "papelera"}, _Acepta_Papelera)
+	_arrastre.registrar_toque(_papelera_rect, {"tipo": "papelera"})
+
+	# Zonas de toque de estaciones y pase. Funcionan como respaldo cuando el
+	# origen no puede arrastrarse (plato vacío, carne aún cruda, bebida
+	# llenándose...), para que el toque siempre dé una respuesta clara.
+	for i in range(_slots_plancha_ui.size()):
+		_arrastre.registrar_toque(_slots_plancha_ui[i]["rect"],
+			{"tipo": "plancha", "indice": i})
+	for i in range(_slots_freidora_ui.size()):
+		_arrastre.registrar_toque(_slots_freidora_ui[i]["rect"],
+			{"tipo": "freidora", "indice": i})
+	for i in range(_slots_bebidas_ui.size()):
+		_arrastre.registrar_toque(_slots_bebidas_ui[i]["rect"],
+			{"tipo": "bebida", "indice": i})
+	for i in range(_slots_platos_ui.size()):
+		_arrastre.registrar_toque(_slots_platos_ui[i]["rect"],
+			{"tipo": "plato", "indice": i})
 
 
 func _Obtener_Payload_Bandeja(datos: Dictionary) -> Dictionary:
@@ -2921,12 +3640,46 @@ func _Obtener_Payload_Bandeja(datos: Dictionary) -> Dictionary:
 		return {}
 	var tex: Texture2D = ArteCocina.textura_item(ing)
 	var dibujante := func(c: CanvasItem, centro: Vector2) -> void:
-		ArteCocina.dibujar_tex(c, tex, Rect2(centro - Vector2(48.0, 48.0), Vector2(96.0, 96.0)))
+		if ing == "pan":
+			ArteCocina.dibujar_pan_cerrado(c, centro + Vector2(0.0, 26.0), 82.0, 1.0)
+		elif not ArteCocina.dibujar_ingrediente_icono(c, ing, centro, 86.0, 1.0):
+			ArteCocina.dibujar_tex(c, tex, Rect2(centro - Vector2(48.0, 48.0), Vector2(96.0, 96.0)))
 	return {
 		"payload": {"tipo": "ingrediente", "id": ing},
 		"textura": tex,
 		"dibujar": dibujante,
 		"tam": Vector2(96.0, 96.0),
+	}
+
+
+func _Obtener_Payload_Olla(_datos: Dictionary) -> Dictionary:
+	if not _jugando or str(_olla.get("estado", "")) != "listo" \
+			or int(_olla.get("raciones", 0)) <= 0:
+		if _jugando and _olla_ctrl != null:
+			_Mostrar_Feedback_En_Control(_olla_ctrl, "La olla no está lista", Estilos_UI.AVISO)
+		return {}
+	var receta: String = str(_olla.get("receta", ""))
+	var dibujante := func(c: CanvasItem, centro: Vector2) -> void:
+		ArteCocina.dibujar_plato_mercado(c, centro, 110.0, receta, "", 1.0)
+	return {
+		"payload": {"tipo": "guiso", "guiso": receta},
+		"textura": ArteCocina.TEX_PLATO_PERSPECTIVA,
+		"dibujar": dibujante,
+		"tam": Vector2(100.0, 100.0),
+	}
+
+
+func _Obtener_Payload_Sarten(_datos: Dictionary) -> Dictionary:
+	if not _jugando or str(_sarten.get("estado", "")) != "lista":
+		return {}
+	var dibujante := func(c: CanvasItem, centro: Vector2) -> void:
+		c.draw_circle(centro, 28.0, Color("#7f1d1d"))
+		c.draw_arc(centro, 30.0, 0.0, TAU, 24, Color("#fbbf24", 0.75), 2.0, true)
+	return {
+		"payload": {"tipo": "salsa"},
+		"textura": ArteCocina.TEX_SALSERA,
+		"dibujar": dibujante,
+		"tam": Vector2(80.0, 80.0),
 	}
 
 
@@ -2937,18 +3690,38 @@ func _Obtener_Payload_Plancha(datos: Dictionary) -> Dictionary:
 	var est: String = str(_plancha[i]["estado"])
 	if est == "vacio":
 		return {}
-	if est == "cocinando":
-		_Mostrar_Feedback_En_Control(_slots_plancha_ui[i]["nodo"], "Todavía se está haciendo", Estilos_UI.AVISO)
-		return {}
-	var tex: Texture2D = ArteCocina.TEX_CARNE_QUEMADA if est == "quemado" else ArteCocina.TEX_CARNE_HECHA
+	var item: String = str(_plancha[i].get("item", "carne"))
+	var punto: String = str(_plancha[i].get("punto", ""))
+	var quemado: bool = est == "quemado" or est == "pasado" or punto == "quemado"
+	var punto_vis: String = punto
+	if quemado:
+		punto_vis = "quemado"
 	var dibujante := func(c: CanvasItem, centro: Vector2) -> void:
-		ArteCocina.dibujar_tex(c, tex, Rect2(centro - Vector2(48.0, 32.0), Vector2(96.0, 64.0)))
+		if _restaurante_actual == Sistema_Cocina.RESTAURANTE_BISTRO:
+			ArteCocina.dibujar_filete(c, centro, 86.0, punto_vis, 1.0)
+		elif not ArteCocina.dibujar_ingrediente_icono(c, item, centro, 82.0, 1.0):
+			var tex_f: Texture2D = ArteCocina.TEX_CARNE_QUEMADA if quemado else (
+				ArteCocina.TEX_CARNE_CRUDA if est == "cocinando" else ArteCocina.TEX_CARNE_HECHA)
+			ArteCocina.dibujar_tex(c, tex_f, Rect2(centro - Vector2(48.0, 32.0), Vector2(96.0, 64.0)))
+	# Todos los estados se pueden arrastrar. La carne quemada o pasada solo
+	# puede ir a la basura; la que aún se está haciendo se puede coger para
+	# recolocarla, pero el pase la rechaza con un aviso claro.
+	var tipo_payload: String = "proteina"
+	if quemado:
+		tipo_payload = "carne_quemada"
+	elif _restaurante_actual != Sistema_Cocina.RESTAURANTE_BISTRO and est != "listo" and est != "alerta":
+		tipo_payload = "carne_cruda"
+	elif _restaurante_actual == Sistema_Cocina.RESTAURANTE_BURGER:
+		tipo_payload = "carne_lista"
 	return {
 		"payload": {
-			"tipo": "carne_quemada" if est == "quemado" else "carne_lista",
+			"tipo": tipo_payload,
+			"proteina": "filete" if _restaurante_actual == Sistema_Cocina.RESTAURANTE_BISTRO else item,
+			"punto": punto_vis,
+			"estado": est,
 			"indice": i,
 		},
-		"textura": tex,
+		"textura": ArteCocina.TEX_CARNE_HECHA,
 		"dibujar": dibujante,
 		"tam": Vector2(96.0, 64.0),
 	}
@@ -2962,14 +3735,20 @@ func _Obtener_Payload_Freidora(datos: Dictionary) -> Dictionary:
 	if est == "vacio":
 		return {}
 	if est == "cocinando":
-		_Mostrar_Feedback_En_Control(_slots_freidora_ui[i]["nodo"], "Todavía se están friendo", Estilos_UI.AVISO)
 		return {}
+	var item: String = str(_freidora[i].get("item", "patatas"))
+	var quemadas: bool = est == "quemado"
 	var dibujante := func(c: CanvasItem, centro: Vector2) -> void:
-		ArteCocina.dibujar_tex(c, ArteCocina.TEX_PATATAS,
-			Rect2(centro - Vector2(40.0, 40.0), Vector2(80.0, 80.0)))
+		if item == "huevo":
+			ArteCocina.dibujar_ingrediente_icono(c, "huevo", centro, 70.0, 1.0)
+		else:
+			var tinte_p: Color = Color(0.32, 0.22, 0.16, 1.0) if quemadas else Color.WHITE
+			ArteCocina.dibujar_tex(c, ArteCocina.TEX_PATATAS,
+				Rect2(centro - Vector2(40.0, 40.0), Vector2(80.0, 80.0)), tinte_p)
 	return {
 		"payload": {
-			"tipo": "patatas_quemadas" if est == "quemado" else "patatas_listas",
+			"tipo": "huevo_listo" if item == "huevo" else (
+				"patatas_quemadas" if est == "quemado" else "patatas_listas"),
 			"indice": i,
 		},
 		"textura": ArteCocina.TEX_PATATAS,
@@ -2983,14 +3762,13 @@ func _Obtener_Payload_Bebida(datos: Dictionary) -> Dictionary:
 	if i < 0 or i >= _bebidas.size():
 		return {}
 	if str(_bebidas[i]["estado"]) != "listo":
-		_Mostrar_Feedback_En_Control(_slots_bebidas_ui[i]["nodo"], "Se está llenando", Estilos_UI.AVISO)
 		return {}
+	var item: String = str(_bebidas[i].get("item", "refresco"))
 	var dibujante := func(c: CanvasItem, centro: Vector2) -> void:
-		ArteCocina.dibujar_tex(c, ArteCocina.TEX_REFRESCO,
-			Rect2(centro - Vector2(34.0, 54.0), Vector2(68.0, 108.0)))
+		ArteCocina.dibujar_item(c, item, centro, 82.0, 1.0)
 	return {
-		"payload": {"tipo": "bebida", "indice": i},
-		"textura": ArteCocina.TEX_REFRESCO,
+		"payload": {"tipo": "bebida", "indice": i, "item": item},
+		"textura": ArteCocina.textura_item(item),
 		"dibujar": dibujante,
 		"tam": Vector2(68.0, 108.0),
 	}
@@ -3001,16 +3779,14 @@ func _Obtener_Payload_Plato(datos: Dictionary) -> Dictionary:
 	if i < 0 or i >= _platos.size():
 		return {}
 	var p: Dictionary = _platos[i]
-	if not bool(p["pan"]):
+	var vacio: bool = _Plato_Esta_Vacio(p)
+	if vacio:
 		_Mostrar_Feedback_En_Control(_slots_platos_ui[i]["nodo"], "Plato vacío", Estilos_UI.TINTA_SUAVE)
 		return {}
 	var estado_plato: Dictionary = p.duplicate()
 	var receta: String = _Receta_De_Plato(p)
 	var dibujante := func(c: CanvasItem, centro: Vector2) -> void:
-		ArteCocina.dibujar_plato_hamburguesa(c, centro, 118.0,
-			bool(estado_plato["pan"]), int(estado_plato["carnes"]),
-			bool(estado_plato["queso"]), bool(estado_plato["lechuga"]),
-			bool(estado_plato["tomate"]))
+		_Dibujar_Plato_Borrador(c, centro, 118.0, estado_plato)
 	return {
 		"payload": {"tipo": "plato", "indice": i, "receta": receta},
 		"textura": ArteCocina.TEX_PLATO_PERSPECTIVA,
@@ -3020,17 +3796,45 @@ func _Obtener_Payload_Plato(datos: Dictionary) -> Dictionary:
 
 
 func _Acepta_Plancha(payload: Dictionary) -> bool:
-	if str(payload.get("tipo", "")) != "ingrediente" or str(payload.get("id", "")) != "carne":
+	if str(payload.get("tipo", "")) != "ingrediente":
 		return false
+	var ing: String = str(payload.get("id", ""))
 	for s in _plancha:
-		if str(s["estado"]) == "vacio":
+		if str(s["estado"]) != "vacio":
+			continue
+		if _Ingrediente_Aceptado_Estacion_A(ing):
 			return true
 	return false
 
 
-func _Acepta_Freidora(payload: Dictionary) -> bool:
-	if str(payload.get("tipo", "")) != "ingrediente" or str(payload.get("id", "")) != "patatas":
+func _Ingrediente_Aceptado_Estacion_A(ing: String) -> bool:
+	if _restaurante_actual == Sistema_Cocina.RESTAURANTE_BURGER \
+			or _restaurante_actual == Sistema_Cocina.RESTAURANTE_BISTRO:
+		return ing == "carne"
+	if _restaurante_actual == Sistema_Cocina.RESTAURANTE_ALTA:
+		return ing in ["solomillo", "lubina", "pato"]
+	return false
+
+
+func _Acepta_Olla(payload: Dictionary) -> bool:
+	if str(payload.get("tipo", "")) != "ingrediente":
 		return false
+	return Sistema_Cocina.Olla_Acepta_Ingrediente(
+		_olla.get("ingredientes", []), str(payload.get("id", "")))
+
+
+func _Acepta_Freidora(payload: Dictionary) -> bool:
+	if str(payload.get("tipo", "")) != "ingrediente":
+		return false
+	var ing: String = str(payload.get("id", ""))
+	if _restaurante_actual == Sistema_Cocina.RESTAURANTE_MERCADO:
+		if ing != "huevo":
+			return false
+	elif _restaurante_actual == Sistema_Cocina.RESTAURANTE_ALTA:
+		return false
+	else:
+		if ing != "patatas":
+			return false
 	for s in _freidora:
 		if str(s["estado"]) == "vacio":
 			return true
@@ -3038,35 +3842,86 @@ func _Acepta_Freidora(payload: Dictionary) -> bool:
 
 
 func _Puede_Cocinar_En_Plancha(payload: Dictionary, indice: int) -> bool:
-	if str(payload.get("tipo", "")) != "ingrediente" or str(payload.get("id", "")) != "carne":
+	if str(payload.get("tipo", "")) != "ingrediente":
 		return false
 	if indice < 0 or indice >= _plancha.size():
 		return false
-	return str(_plancha[indice]["estado"]) == "vacio"
+	if str(_plancha[indice]["estado"]) != "vacio":
+		return false
+	return _Ingrediente_Aceptado_Estacion_A(str(payload.get("id", "")))
 
 
 func _Puede_Freir_En_Cesta(payload: Dictionary, indice: int) -> bool:
-	if str(payload.get("tipo", "")) != "ingrediente" or str(payload.get("id", "")) != "patatas":
+	if str(payload.get("tipo", "")) != "ingrediente":
 		return false
 	if indice < 0 or indice >= _freidora.size():
 		return false
-	return str(_freidora[indice]["estado"]) == "vacio"
+	if str(_freidora[indice]["estado"]) != "vacio":
+		return false
+	var ing: String = str(payload.get("id", ""))
+	if _restaurante_actual == Sistema_Cocina.RESTAURANTE_MERCADO:
+		return ing == "huevo"
+	if _restaurante_actual == Sistema_Cocina.RESTAURANTE_ALTA:
+		return false
+	return ing == "patatas"
 
 
 func _Puede_Anadir_A_Plato(payload: Dictionary, indice: int) -> bool:
 	if indice < 0 or indice >= _platos.size():
 		return false
 	var p: Dictionary = _platos[indice]
-	match str(payload.get("tipo", "")):
-		"ingrediente":
-			var ing: String = str(payload.get("id", ""))
-			if ing == "pan":
-				return not bool(p["pan"])
-			if ing in ["queso", "lechuga", "tomate"]:
-				return bool(p["pan"]) and not bool(p[ing])
-			return false
-		"carne_lista":
-			return bool(p["pan"]) and int(p["carnes"]) < 2
+	var tipo: String = str(payload.get("tipo", ""))
+	if _restaurante_actual == Sistema_Cocina.RESTAURANTE_BURGER:
+		match tipo:
+			"ingrediente":
+				var ing: String = str(payload.get("id", ""))
+				if ing == "pan":
+					return not bool(p["pan"])
+				if ing in ["queso", "lechuga", "tomate"]:
+					return bool(p["pan"]) and not bool(p[ing])
+				return false
+			"carne_lista":
+				return bool(p["pan"]) and int(p["carnes"]) < 2
+			"patatas_listas":
+				return false
+		return false
+
+	if _restaurante_actual == Sistema_Cocina.RESTAURANTE_BISTRO:
+		if tipo == "proteina":
+			var estado_p: String = str(payload.get("estado", "listo"))
+			return str(p.get("proteina", "")) == "" \
+				and str(payload.get("proteina", "")) == "filete" \
+				and str(payload.get("punto", "")) in ["poco_hecho", "al_punto", "hecho"] \
+				and estado_p in ["listo", "cocinando"]
+		if tipo == "patatas_listas":
+			return str(p.get("guarnicion", "")) == ""
+		if tipo == "ingrediente":
+			var ing_b: String = str(payload.get("id", ""))
+			if ing_b == "salsa":
+				return str(p.get("salsa", "")) == ""
+		return false
+
+	if _restaurante_actual == Sistema_Cocina.RESTAURANTE_MERCADO:
+		if tipo == "guiso":
+			return str(p.get("guiso", "")) == ""
+		if tipo == "huevo_listo":
+			return str(p.get("guiso", "")) == "pisto" and str(p.get("extra", "")) == ""
+		return false
+
+	if _restaurante_actual == Sistema_Cocina.RESTAURANTE_ALTA:
+		if tipo == "proteina":
+			return str(p.get("proteina", "")) == "" \
+				and str(payload.get("proteina", "")) in ["solomillo", "lubina", "pato"] \
+				and str(payload.get("estado", "listo")) == "listo"
+		if tipo == "salsa":
+			return str(p.get("salsa", "")) == ""
+		if tipo == "ingrediente":
+			var ing_a: String = str(payload.get("id", ""))
+			if ing_a in ["pure", "esparragos"]:
+				return str(p.get("guarnicion", "")) == ""
+			if ing_a == "flor":
+				return not bool(p.get("flor", false))
+		return false
 	return false
 
 
@@ -3079,14 +3934,20 @@ func _Puede_Servir_A_Cliente(payload: Dictionary, indice: int) -> bool:
 	var fase_cl: String = str(_slots_clientes_ui[indice].get("fase", ""))
 	if fase_cl in ["entrando", "saliendo"]:
 		return false
-	match str(payload.get("tipo", "")):
-		"plato":
-			var rec: String = str(payload.get("receta", ""))
-			return rec != "" and _Cliente_Necesita_Item(cl, rec)
-		"patatas_listas":
-			return _Cliente_Necesita_Item(cl, "patatas")
-		"bebida":
-			return _Cliente_Necesita_Item(cl, "refresco")
+	var tipo: String = str(payload.get("tipo", ""))
+	if tipo == "plato":
+		var rec: String = str(payload.get("receta", ""))
+		return rec != "" and _Cliente_Necesita_Item(cl, rec)
+	if tipo == "bebida":
+		var item: String = str(payload.get("item", "refresco"))
+		return _Cliente_Necesita_Item(cl, item)
+	if tipo == "patatas_listas":
+		return _restaurante_actual == Sistema_Cocina.RESTAURANTE_BURGER \
+			and _Cliente_Necesita_Item(cl, "patatas")
+	if tipo == "ingrediente" and _restaurante_actual == Sistema_Cocina.RESTAURANTE_BISTRO:
+		var ing: String = str(payload.get("id", ""))
+		if ing == "tarta_cereza":
+			return _Cliente_Necesita_Item(cl, "tarta_cereza")
 	return false
 
 
@@ -3118,21 +3979,55 @@ func _on_origen_tocado(payload: Dictionary, origen: Dictionary) -> void:
 		# freidora y el pan al siguiente plato libre.
 		_Accion_Rapida_Ingrediente(str(datos.get("ingrediente", "")))
 		return
+	if tipo == "plancha":
+		_on_plancha_pulsada(int(datos.get("indice", -1)))
+		return
+	if tipo == "freidora":
+		_on_freidora_pulsada(int(datos.get("indice", -1)))
+		return
+	if tipo == "bebida":
+		_on_bebida_pulsada(int(datos.get("indice", -1)))
+		return
+	if tipo == "plato":
+		_on_plato_pulsado(int(datos.get("indice", -1)))
+		return
 	if _sfx != null:
 		_sfx.reproducir("click", -22.0, 1.4)
 	var nodo: Control = null
 	match tipo:
-		"plancha":
-			nodo = _slots_plancha_ui[int(datos.get("indice", 0))]["nodo"]
-		"freidora":
-			nodo = _slots_freidora_ui[int(datos.get("indice", 0))]["nodo"]
-		"bebida":
-			nodo = _slots_bebidas_ui[int(datos.get("indice", 0))]["nodo"]
-		"plato":
-			nodo = _slots_platos_ui[int(datos.get("indice", 0))]["nodo"]
+		"olla":
+			nodo = _olla_ctrl
+		"sarten":
+			nodo = _sarten_ctrl
+	if tipo == "olla":
+		_Servir_Racion_Olla()
+		return
+	if tipo == "sarten":
+		_Remover_Salsa()
+		return
 	if nodo != null:
 		var pista: String = str(payload.get("pista", "Mantén pulsado y arrastra"))
 		_Mostrar_Feedback_En_Control(nodo, pista, Color("#fde68a"), -12.0)
+
+
+## Toques de respaldo en zonas sin payload arrastrable (plato vacío, carne
+## aún cruda, bebida llenándose, cliente o papelera).
+func _on_zona_tocada(datos: Dictionary) -> void:
+	if not _jugando or datos.is_empty():
+		return
+	match str(datos.get("tipo", "")):
+		"cliente":
+			_on_cliente_pulsado(int(datos.get("indice", -1)))
+		"plancha":
+			_on_plancha_pulsada(int(datos.get("indice", -1)))
+		"freidora":
+			_on_freidora_pulsada(int(datos.get("indice", -1)))
+		"bebida":
+			_on_bebida_pulsada(int(datos.get("indice", -1)))
+		"plato":
+			_on_plato_pulsado(int(datos.get("indice", -1)))
+		"papelera":
+			_on_boton_papelera()
 
 
 func _Accion_Rapida_Ingrediente(ing: String) -> void:
@@ -3140,6 +4035,21 @@ func _Accion_Rapida_Ingrediente(ing: String) -> void:
 		return
 	if _sfx != null:
 		_sfx.reproducir("click", -22.0, 1.4)
+	if _restaurante_actual == Sistema_Cocina.RESTAURANTE_BURGER:
+		_Accion_Rapida_Burger(ing)
+		return
+	if _restaurante_actual == Sistema_Cocina.RESTAURANTE_BISTRO:
+		_Accion_Rapida_Bistro(ing)
+		return
+	if _restaurante_actual == Sistema_Cocina.RESTAURANTE_MERCADO:
+		_Accion_Rapida_Mercado(ing)
+		return
+	if _restaurante_actual == Sistema_Cocina.RESTAURANTE_ALTA:
+		_Accion_Rapida_Alta(ing)
+		return
+
+
+func _Accion_Rapida_Burger(ing: String) -> void:
 	match ing:
 		"pan":
 			var idx_plato: int = _Primer_Plato_Sin_Pan()
@@ -3179,6 +4089,200 @@ func _Accion_Rapida_Ingrediente(ing: String) -> void:
 			else:
 				_Mostrar_Feedback_En_Control(_Nodo_Puesto(ing),
 					"Ese plato ya lo tiene", Estilos_UI.TINTA_SUAVE, -8.0)
+
+
+func _Accion_Rapida_Bistro(ing: String) -> void:
+	match ing:
+		"carne":
+			var idx: int = _Primer_Hueco_Plancha()
+			if idx >= 0:
+				if _Soltar_En_Plancha({"tipo": "ingrediente", "id": "carne"}, idx):
+					_Animar_Ingrediente_A_Rect("carne", _Rect_Bandeja("carne"),
+						_slots_plancha_ui[idx]["rect"])
+			else:
+				_Mostrar_Feedback_En_Control(_Nodo_Puesto("carne"),
+					"La parrilla está llena", Estilos_UI.AVISO, -8.0)
+		"patatas":
+			var idx_f: int = _Primer_Hueco_Freidora()
+			if idx_f >= 0:
+				if _Soltar_En_Freidora({"tipo": "ingrediente", "id": "patatas"}, idx_f):
+					_Animar_Ingrediente_A_Rect("patatas", _Rect_Bandeja("patatas"),
+						_slots_freidora_ui[idx_f]["rect"])
+			else:
+				_Soltar_En_Freidora({"tipo": "ingrediente", "id": "patatas"})
+		"salsa":
+			var payload_s := {"tipo": "ingrediente", "id": "salsa"}
+			var idx_s: int = _Primer_Plato_Que_Complete_Pedido(payload_s,
+				{"salsa": "salsa"})
+			if idx_s < 0:
+				for idx_p in _Orden_Busqueda_Platos():
+					if str(_platos[idx_p].get("salsa", "")) == "":
+						idx_s = idx_p
+						break
+			if idx_s >= 0:
+				if _Soltar_En_Plato(payload_s, idx_s):
+					_Animar_Ingrediente_A_Rect("salsa", _Rect_Bandeja("salsa"),
+						_slots_platos_ui[idx_s]["rect"])
+				return
+			_Mostrar_Feedback_En_Control(_Nodo_Puesto("salsa"),
+				"Todos los platos tienen salsa", Estilos_UI.TINTA_SUAVE, -8.0)
+		"tarta_cereza":
+			_Mostrar_Feedback_En_Control(_Nodo_Puesto("tarta_cereza"),
+				"Arrastra la tarta al cliente", Color("#fde68a"), -8.0)
+
+
+func _Accion_Rapida_Mercado(ing: String) -> void:
+	if ing == "huevo":
+		var idx: int = _Primer_Hueco_Freidora()
+		if idx >= 0:
+			if _Soltar_En_Freidora({"tipo": "ingrediente", "id": "huevo"}, idx):
+				_Animar_Ingrediente_A_Rect("huevo", _Rect_Bandeja("huevo"),
+					_slots_freidora_ui[idx]["rect"])
+		else:
+			_Mostrar_Feedback_En_Control(_Nodo_Puesto("huevo"),
+				"La plancha está llena", Estilos_UI.AVISO, -8.0)
+		return
+	_Anadir_Ingrediente_Olla(ing)
+
+
+func _Accion_Rapida_Alta(ing: String) -> void:
+	if ing in ["solomillo", "lubina", "pato"]:
+		var idx: int = _Primer_Hueco_Plancha()
+		if idx >= 0:
+			if _Soltar_En_Plancha({"tipo": "ingrediente", "id": ing}, idx):
+				_Animar_Ingrediente_A_Rect(ing, _Rect_Bandeja(ing),
+					_slots_plancha_ui[idx]["rect"])
+		else:
+			_Mostrar_Feedback_En_Control(_Nodo_Puesto(ing),
+				"El horno está lleno", Estilos_UI.AVISO, -8.0)
+		return
+	if ing in ["pure", "esparragos", "flor"]:
+		for idx_p in _Orden_Busqueda_Platos():
+			var pl: Dictionary = _platos[idx_p]
+			var libre: bool = false
+			if ing == "flor":
+				libre = not bool(pl.get("flor", false))
+			else:
+				libre = str(pl.get("guarnicion", "")) == ""
+			if libre:
+				if _Soltar_En_Plato({"tipo": "ingrediente", "id": ing}, idx_p):
+					_Animar_Ingrediente_A_Rect(ing, _Rect_Bandeja(ing),
+						_slots_platos_ui[idx_p]["rect"])
+				return
+		_Mostrar_Feedback_En_Control(_Nodo_Puesto(ing),
+			"No hay plato libre para eso", Estilos_UI.TINTA_SUAVE, -8.0)
+
+
+func _Anadir_Ingrediente_Olla(ing: String) -> void:
+	if str(_olla.get("estado", "vacio")) == "cocinando":
+		_Mostrar_Feedback_En_Control(_olla_ctrl, "El guiso se está cociendo", Estilos_UI.AVISO)
+		return
+	if str(_olla.get("estado", "vacio")) == "listo":
+		_Mostrar_Feedback_En_Control(_olla_ctrl, "Sirve las raciones antes de empezar otro guiso",
+			Estilos_UI.AVISO)
+		return
+	var ingrs: Array = _olla.get("ingredientes", [])
+	if not Sistema_Cocina.Olla_Acepta_Ingrediente(ingrs, ing):
+		_Mostrar_Feedback_En_Control(_olla_ctrl, "Ese ingrediente no va con el guiso",
+			Estilos_UI.AVISO)
+		return
+	ingrs.append(ing)
+	_olla["ingredientes"] = ingrs
+	if ingrs.size() >= 2:
+		var receta: String = Sistema_Cocina.Resolver_Receta_Olla(ingrs)
+		if receta == "":
+			_Mostrar_Feedback_En_Control(_olla_ctrl, "Esa mezcla no es ningún guiso",
+				Estilos_UI.AVISO)
+			_olla["ingredientes"] = []
+		else:
+			_olla["receta"] = receta
+			_olla["estado"] = "cocinando"
+			_olla["progreso"] = 0.0
+			_olla["raciones"] = 0
+			_Mostrar_Banner("¡%s A LA OLLA!" % str(Sistema_Cocina.Receta_De_Olla(receta).get(
+				"nombre_corto", receta)).to_upper(), Color("#fbbf24"))
+	_Actualizar_Olla_UI()
+
+
+func _Servir_Racion_Olla() -> void:
+	if str(_olla.get("estado", "")) != "listo" or int(_olla.get("raciones", 0)) <= 0:
+		_Mostrar_Feedback_En_Control(_olla_ctrl, "La olla todavía no está lista", Estilos_UI.AVISO)
+		return
+	var idx: int = -1
+	for idx_p in _Orden_Busqueda_Platos():
+		if str(_platos[idx_p].get("guiso", "")) == "":
+			idx = idx_p
+			break
+	if idx < 0:
+		_Mostrar_Feedback_En_Control(_olla_ctrl, "No hay platos libres en el pase", Estilos_UI.AVISO)
+		return
+	var receta: String = str(_olla.get("receta", ""))
+	if not _Soltar_En_Plato({"tipo": "guiso", "guiso": receta}, idx):
+		return
+	_Animar_Ingrediente_A_Rect(receta, ZONA_PLANCHA, _slots_platos_ui[idx]["rect"])
+
+
+func _Limpiar_Slot_Coccion(lista: Array[Dictionary], ui: Array[Dictionary], indice: int,
+		etiqueta: String) -> void:
+	if indice < 0 or indice >= lista.size():
+		return
+	lista[indice]["estado"] = "vacio"
+	lista[indice]["progreso"] = 0.0
+	lista[indice]["quemado"] = 0.0
+	lista[indice]["avisado"] = false
+	lista[indice]["item"] = ""
+	lista[indice]["punto"] = ""
+	_Actualizar_Slot_Coccion_UI(lista[indice], ui[indice], etiqueta)
+
+
+func _Actualizar_Olla_UI() -> void:
+	if _olla_ctrl == null:
+		return
+	_olla_ctrl.ingredientes = (_olla.get("ingredientes", []) as Array).duplicate()
+	_olla_ctrl.estado = str(_olla.get("estado", "vacio"))
+	_olla_ctrl.progreso = float(_olla.get("progreso", 0.0))
+	_olla_ctrl.raciones = int(_olla.get("raciones", 0))
+	_olla_ctrl.receta = str(_olla.get("receta", ""))
+	_olla_ctrl.queue_redraw()
+
+
+func _Remover_Salsa() -> void:
+	if _sarten_ctrl == null:
+		return
+	if str(_sarten.get("estado", "lista")) == "arruinada":
+		_sarten = {"estado": "lista", "quemado": 0.0, "removido": 0.0}
+		_Mostrar_Feedback_En_Control(_sarten_ctrl, "Salsa nueva", Color("#86efac"))
+	else:
+		_sarten["quemado"] = maxf(0.0, float(_sarten.get("quemado", 0.0)) - 0.34)
+		_sarten["removido"] = 1.0
+		_Mostrar_Feedback_En_Control(_sarten_ctrl, "Removido", Color("#fde68a"))
+	_Actualizar_Sarten_UI()
+
+
+func _Actualizar_Sarten_UI() -> void:
+	if _sarten_ctrl == null:
+		return
+	_sarten_ctrl.estado = str(_sarten.get("estado", "lista"))
+	_sarten_ctrl.quemado = float(_sarten.get("quemado", 0.0))
+	_sarten_ctrl.removido = float(_sarten.get("removido", 0.0))
+	_sarten_ctrl.queue_redraw()
+
+
+## Primer plato en el que añadir `mutacion` produce una receta que algún
+## cliente está esperando. Se usa para que los toques rápidos del Bistró no
+## metan la proteína/guarnición/salsa en el plato equivocado.
+func _Primer_Plato_Que_Complete_Pedido(payload: Dictionary,
+		mutacion: Dictionary) -> int:
+	for idx in _Orden_Busqueda_Platos():
+		if not _Puede_Anadir_A_Plato(payload, idx):
+			continue
+		var copia: Dictionary = _platos[idx].duplicate()
+		for clave in mutacion.keys():
+			copia[clave] = mutacion[clave]
+		var rec: String = _Receta_De_Plato(copia)
+		if rec != "" and _Algun_Cliente_Necesita(rec):
+			return idx
+	return -1
 
 
 func _Primer_Plato_Sin_Pan() -> int:
@@ -3279,64 +4383,84 @@ func _Depositar_Payload(payload: Dictionary, pos: Vector2) -> bool:
 
 
 func _Soltar_En_Plancha(payload: Dictionary, indice: int = -1) -> bool:
-	if str(payload.get("tipo", "")) != "ingrediente" or str(payload.get("id", "")) != "carne":
+	if str(payload.get("tipo", "")) != "ingrediente":
+		return false
+	var ing: String = str(payload.get("id", ""))
+	if not _Ingrediente_Aceptado_Estacion_A(ing):
 		return false
 	if indice >= 0 and indice < _plancha.size() and str(_plancha[indice]["estado"]) == "vacio":
-		var i_fijo: int = indice
-		_plancha[i_fijo]["estado"] = "cocinando"
-		_plancha[i_fijo]["progreso"] = 0.0
-		_plancha[i_fijo]["quemado"] = 0.0
-		_plancha[i_fijo]["avisado"] = false
-		_Actualizar_Slot_Coccion_UI(_plancha[i_fijo], _slots_plancha_ui[i_fijo], "Carne")
-		_efectos.vapor(_slots_plancha_ui[i_fijo]["rect"].get_center() + Vector2(0.0, -8.0))
-		_Mostrar_Feedback_En_Control(_slots_plancha_ui[i_fijo]["nodo"], "¡A la plancha!", Color("#fdba74"), -8.0)
-		if _sfx != null:
-			_sfx.reproducir("sizzle", -16.0, randf_range(0.95, 1.06))
-		return true
+		return _Iniciar_Coccion_A(indice, ing)
 	for i in range(_plancha.size()):
 		if str(_plancha[i]["estado"]) == "vacio":
-			_plancha[i]["estado"] = "cocinando"
-			_plancha[i]["progreso"] = 0.0
-			_plancha[i]["quemado"] = 0.0
-			_plancha[i]["avisado"] = false
-			_Actualizar_Slot_Coccion_UI(_plancha[i], _slots_plancha_ui[i], "Carne")
-			_efectos.vapor(Vector2(_slots_plancha_ui[i]["rect"].get_center().x,
-				_slots_plancha_ui[i]["rect"].get_center().y - 10.0))
-			_Mostrar_Feedback_En_Control(_slots_plancha_ui[i]["nodo"], "¡A la plancha!", Color("#fdba74"), -8.0)
-			if _sfx != null:
-				_sfx.reproducir("sizzle", -16.0, randf_range(0.95, 1.06))
-			return true
-	_Mostrar_Feedback_En_Control(_slots_plancha_ui[0]["nodo"], "Plancha llena", Estilos_UI.AVISO)
+			return _Iniciar_Coccion_A(i, ing)
+	if not _slots_plancha_ui.is_empty():
+		_Mostrar_Feedback_En_Control(_slots_plancha_ui[0]["nodo"], "Estación llena", Estilos_UI.AVISO)
 	return false
+
+
+func _Iniciar_Coccion_A(indice: int, ing: String) -> bool:
+	if indice < 0 or indice >= _plancha.size():
+		return false
+	var nodo: ArteCocina.Punto_Coccion = _slots_plancha_ui[indice]["nodo"]
+	_plancha[indice]["estado"] = "cocinando"
+	_plancha[indice]["progreso"] = 0.0
+	_plancha[indice]["quemado"] = 0.0
+	_plancha[indice]["avisado"] = false
+	_plancha[indice]["item"] = ing
+	_plancha[indice]["punto"] = ""
+	if _restaurante_actual == Sistema_Cocina.RESTAURANTE_BURGER:
+		nodo.tipo = "carne"
+	elif _restaurante_actual == Sistema_Cocina.RESTAURANTE_BISTRO:
+		nodo.tipo = "filete"
+	else:
+		nodo.tipo = ing if ing != "generico" else "generico"
+	_Actualizar_Slot_Coccion_UI(_plancha[indice], _slots_plancha_ui[indice], ing.capitalize())
+	_efectos.vapor(_slots_plancha_ui[indice]["rect"].get_center() + Vector2(0.0, -8.0))
+	var texto: String = "¡A la plancha!" if _restaurante_actual == Sistema_Cocina.RESTAURANTE_BURGER \
+		else ("¡A la parrilla!" if _restaurante_actual == Sistema_Cocina.RESTAURANTE_BISTRO else "¡Al horno!")
+	_Mostrar_Feedback_En_Control(_slots_plancha_ui[indice]["nodo"], texto, Color("#fdba74"), -8.0)
+	if _sfx != null:
+		_sfx.reproducir("sizzle", -16.0, randf_range(0.95, 1.06))
+	return true
 
 
 func _Soltar_En_Freidora(payload: Dictionary, indice: int = -1) -> bool:
-	if str(payload.get("tipo", "")) != "ingrediente" or str(payload.get("id", "")) != "patatas":
+	if str(payload.get("tipo", "")) != "ingrediente":
+		return false
+	var ing: String = str(payload.get("id", ""))
+	if _restaurante_actual == Sistema_Cocina.RESTAURANTE_MERCADO:
+		if ing != "huevo":
+			return false
+	elif _restaurante_actual == Sistema_Cocina.RESTAURANTE_ALTA:
+		return false
+	elif ing != "patatas":
 		return false
 	if indice >= 0 and indice < _freidora.size() and str(_freidora[indice]["estado"]) == "vacio":
-		var i_fijo: int = indice
-		_freidora[i_fijo]["estado"] = "cocinando"
-		_freidora[i_fijo]["progreso"] = 0.0
-		_freidora[i_fijo]["quemado"] = 0.0
-		_freidora[i_fijo]["avisado"] = false
-		_Actualizar_Slot_Coccion_UI(_freidora[i_fijo], _slots_freidora_ui[i_fijo], "Patatas")
-		_Mostrar_Feedback_En_Control(_slots_freidora_ui[i_fijo]["nodo"], "¡A freír!", Color("#fdba74"), -8.0)
-		if _sfx != null:
-			_sfx.reproducir("sizzle", -17.0, randf_range(0.95, 1.06))
-		return true
+		return _Iniciar_Coccion_B(indice, ing)
 	for i in range(_freidora.size()):
 		if str(_freidora[i]["estado"]) == "vacio":
-			_freidora[i]["estado"] = "cocinando"
-			_freidora[i]["progreso"] = 0.0
-			_freidora[i]["quemado"] = 0.0
-			_freidora[i]["avisado"] = false
-			_Actualizar_Slot_Coccion_UI(_freidora[i], _slots_freidora_ui[i], "Patatas")
-			_Mostrar_Feedback_En_Control(_slots_freidora_ui[i]["nodo"], "¡A freír!", Color("#fdba74"), -8.0)
-			if _sfx != null:
-				_sfx.reproducir("sizzle", -17.0, randf_range(0.95, 1.06))
-			return true
-	_Mostrar_Feedback_En_Control(_slots_freidora_ui[0]["nodo"], "Freidora llena", Estilos_UI.AVISO)
+			return _Iniciar_Coccion_B(i, ing)
+	if not _slots_freidora_ui.is_empty():
+		_Mostrar_Feedback_En_Control(_slots_freidora_ui[0]["nodo"], "Estación llena", Estilos_UI.AVISO)
 	return false
+
+
+func _Iniciar_Coccion_B(indice: int, ing: String) -> bool:
+	if indice < 0 or indice >= _freidora.size():
+		return false
+	var nodo: ArteCocina.Punto_Coccion = _slots_freidora_ui[indice]["nodo"]
+	_freidora[indice]["estado"] = "cocinando"
+	_freidora[indice]["progreso"] = 0.0
+	_freidora[indice]["quemado"] = 0.0
+	_freidora[indice]["avisado"] = false
+	_freidora[indice]["item"] = ing
+	nodo.tipo = "huevo" if ing == "huevo" else "patatas"
+	_Actualizar_Slot_Coccion_UI(_freidora[indice], _slots_freidora_ui[indice], ing.capitalize())
+	var texto: String = "¡A la plancha!" if ing == "huevo" else "¡A freír!"
+	_Mostrar_Feedback_En_Control(_slots_freidora_ui[indice]["nodo"], texto, Color("#fdba74"), -8.0)
+	if _sfx != null:
+		_sfx.reproducir("sizzle", -17.0, randf_range(0.95, 1.06))
+	return true
 
 
 func _Soltar_En_Plato(payload: Dictionary, indice: int) -> bool:
@@ -3356,6 +4480,15 @@ func _Soltar_En_Plato(payload: Dictionary, indice: int) -> bool:
 		elif ing in ["queso", "lechuga", "tomate"]:
 			p[ing] = true
 			mensaje = "%s añadido" % str(ArteCocina.NOMBRES_INGREDIENTES.get(ing, ing))
+		elif ing == "salsa":
+			p["salsa"] = "salsa"
+			mensaje = "Salsa añadida"
+		elif ing in ["pure", "esparragos"]:
+			p["guarnicion"] = ing
+			mensaje = "%s añadido" % ("Puré" if ing == "pure" else "Espárragos")
+		elif ing == "flor":
+			p["flor"] = true
+			mensaje = "Flor colocada"
 		else:
 			return false
 	elif tipo == "carne_lista":
@@ -3363,11 +4496,38 @@ func _Soltar_En_Plato(payload: Dictionary, indice: int) -> bool:
 		if idx_plancha < 0 or idx_plancha >= _plancha.size():
 			return false
 		p["carnes"] = int(p["carnes"]) + 1
-		_plancha[idx_plancha]["estado"] = "vacio"
-		_plancha[idx_plancha]["progreso"] = 0.0
-		_plancha[idx_plancha]["quemado"] = 0.0
-		_Actualizar_Slot_Coccion_UI(_plancha[idx_plancha], _slots_plancha_ui[idx_plancha], "Carne")
+		_Limpiar_Slot_Coccion(_plancha, _slots_plancha_ui, idx_plancha, "Carne")
 		mensaje = "Carne añadida"
+	elif tipo == "proteina":
+		p["proteina"] = str(payload.get("proteina", ""))
+		p["punto"] = str(payload.get("punto", ""))
+		var idx_a: int = int(payload.get("indice", -1))
+		if idx_a >= 0 and idx_a < _plancha.size():
+			_Limpiar_Slot_Coccion(_plancha, _slots_plancha_ui, idx_a, p["proteina"])
+		mensaje = "%s al plato" % str(p["proteina"]).capitalize()
+	elif tipo == "patatas_listas":
+		p["guarnicion"] = "patatas"
+		var idx_f: int = int(payload.get("indice", -1))
+		if idx_f >= 0 and idx_f < _freidora.size():
+			_Limpiar_Slot_Coccion(_freidora, _slots_freidora_ui, idx_f, "Patatas")
+		mensaje = "Patatas añadidas"
+	elif tipo == "huevo_listo":
+		p["extra"] = "huevo"
+		var idx_h: int = int(payload.get("indice", -1))
+		if idx_h >= 0 and idx_h < _freidora.size():
+			_Limpiar_Slot_Coccion(_freidora, _slots_freidora_ui, idx_h, "Huevo")
+		mensaje = "Huevo añadido"
+	elif tipo == "guiso":
+		p["guiso"] = str(payload.get("guiso", ""))
+		_olla["raciones"] = maxi(0, int(_olla.get("raciones", 0)) - 1)
+		if int(_olla["raciones"]) <= 0:
+			_olla = {"ingredientes": [], "estado": "vacio", "progreso": 0.0,
+				"raciones": 0, "receta": ""}
+		_Actualizar_Olla_UI()
+		mensaje = "Ración servida"
+	elif tipo == "salsa":
+		p["salsa"] = "reduccion"
+		mensaje = "Salsa añadida"
 	else:
 		return false
 
@@ -3376,13 +4536,15 @@ func _Soltar_En_Plato(payload: Dictionary, indice: int) -> bool:
 	if _sfx != null:
 		_sfx.reproducir("pop", -12.0, randf_range(0.94, 1.08))
 	_Actualizar_Plato_UI(indice)
+	_Actualizar_Contadores_Estaciones()
 	var receta: String = _Receta_De_Plato(p)
 	if receta != "":
 		_efectos.estrellas(_slots_platos_ui[indice]["rect"].get_center(), 4)
 		if _sfx != null:
 			_sfx.reproducir("ding", -15.0, 1.07)
 		if _Algun_Cliente_Necesita(receta):
-			mensaje = "%s · ¡llévalo al cliente!" % str(Sistema_Cocina.RECETAS_BURGER_STREET.get(receta, {}).get("nombre_corto", "Listo"))
+			mensaje = "%s · ¡llévalo al cliente!" % str(Sistema_Cocina.Obtener_Receta(
+				_restaurante_actual, receta).get("nombre_corto", "Listo"))
 	if mensaje != "":
 		_Mostrar_Feedback_En_Control(_slots_platos_ui[indice]["nodo"], mensaje, Color("#86efac"), -10.0)
 	return true
@@ -3390,6 +4552,8 @@ func _Soltar_En_Plato(payload: Dictionary, indice: int) -> bool:
 
 func _Soltar_En_Cliente(payload: Dictionary, indice: int) -> bool:
 	if indice < 0 or indice >= _clientes.size():
+		return false
+	if not _Cliente_Puede_Recibir(indice):
 		return false
 	var cl: Dictionary = _clientes[indice]
 	if not bool(cl["activo"]):
@@ -3399,16 +4563,26 @@ func _Soltar_En_Cliente(payload: Dictionary, indice: int) -> bool:
 	var limpiar_plato: bool = false
 	var limpiar_freidora: int = -1
 	var limpiar_bebida: int = -1
+	var flor_extra: bool = false
 	match str(payload.get("tipo", "")):
 		"plato":
 			item_id = str(payload.get("receta", ""))
 			limpiar_plato = true
+			var idx_p: int = int(payload.get("indice", -1))
+			if idx_p >= 0 and idx_p < _platos.size():
+				flor_extra = bool(_platos[idx_p].get("flor", false))
 		"patatas_listas":
 			item_id = "patatas"
 			limpiar_freidora = int(payload.get("indice", -1))
 		"bebida":
-			item_id = "refresco"
+			item_id = str(payload.get("item", "refresco"))
 			limpiar_bebida = int(payload.get("indice", -1))
+		"ingrediente":
+			var ing_postre: String = str(payload.get("id", ""))
+			if Sistema_Cocina.Es_Receta_Postre(_restaurante_actual, ing_postre):
+				item_id = ing_postre
+			else:
+				return false
 		_:
 			return false
 
@@ -3419,6 +4593,8 @@ func _Soltar_En_Cliente(payload: Dictionary, indice: int) -> bool:
 		_Mostrar_Feedback_En_Control(_slots_clientes_ui[indice]["retrato"], "No lo ha pedido", Estilos_UI.AVISO)
 		return false
 
+	if flor_extra:
+		cl["flor"] = true
 	if not _Entregar_Item_A_Cliente(indice, item_id):
 		return false
 	if _sfx != null:
@@ -3433,23 +4609,33 @@ func _Soltar_En_Cliente(payload: Dictionary, indice: int) -> bool:
 		_Animar_Entrega_Desde_Estacion(ArteCocina.TEX_PATATAS,
 			_slots_freidora_ui[limpiar_freidora]["rect"], indice, Vector2(62.0, 62.0))
 	elif limpiar_bebida >= 0 and limpiar_bebida < _slots_bebidas_ui.size():
-		_Animar_Entrega_Desde_Estacion(ArteCocina.TEX_REFRESCO,
-			_slots_bebidas_ui[limpiar_bebida]["rect"], indice, Vector2(38.0, 58.0))
+		_Animar_Entrega_Desde_Bebida(limpiar_bebida, indice, item_id)
 
 	if limpiar_plato:
 		var idx_plato: int = int(payload.get("indice", -1))
 		if idx_plato >= 0 and idx_plato < _platos.size():
 			_Limpiar_Plato(idx_plato)
 	if limpiar_freidora >= 0 and limpiar_freidora < _freidora.size():
-		_freidora[limpiar_freidora]["estado"] = "vacio"
-		_freidora[limpiar_freidora]["progreso"] = 0.0
-		_freidora[limpiar_freidora]["quemado"] = 0.0
-		_Actualizar_Slot_Coccion_UI(_freidora[limpiar_freidora], _slots_freidora_ui[limpiar_freidora], "Patatas")
+		_Limpiar_Slot_Coccion(_freidora, _slots_freidora_ui, limpiar_freidora, "Patatas")
 	if limpiar_bebida >= 0 and limpiar_bebida < _bebidas.size():
 		_bebidas[limpiar_bebida]["estado"] = "llenando"
 		_bebidas[limpiar_bebida]["progreso"] = 0.0
 		_Actualizar_Bebida_UI(limpiar_bebida)
 	return true
+
+
+func _Animar_Entrega_Desde_Bebida(indice_bebida: int, indice_cliente: int, item_id: String) -> void:
+	if _capa_feedback == null or indice_bebida < 0 or indice_bebida >= _slots_bebidas_ui.size():
+		return
+	var rect: Rect2 = _slots_bebidas_ui[indice_bebida]["rect"]
+	var nodo := ArteCocina.Bebida.new()
+	nodo.tipo = item_id
+	nodo.size = Vector2(46.0, 76.0)
+	nodo.position = _vista_cocina.global_position + rect.get_center() - nodo.size * 0.5
+	nodo.pivot_offset = nodo.size * 0.5
+	nodo.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_capa_feedback.add_child(nodo)
+	_Animar_Vuelo_Al_Cliente(nodo, indice_cliente)
 
 
 func _Animar_Entrega_Desde_Plato(indice_plato: int, indice_cliente: int) -> void:
@@ -3459,11 +4645,19 @@ func _Animar_Entrega_Desde_Plato(indice_plato: int, indice_cliente: int) -> void
 	var ui: Dictionary = _slots_platos_ui[indice_plato]
 	var plato := ArteCocina.Plato.new()
 	plato.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	plato.restaurante = _restaurante_actual
 	plato.pan = bool(p["pan"])
 	plato.carnes = int(p["carnes"])
 	plato.queso = bool(p["queso"])
 	plato.lechuga = bool(p["lechuga"])
 	plato.tomate = bool(p["tomate"])
+	plato.proteina = str(p.get("proteina", ""))
+	plato.punto = str(p.get("punto", ""))
+	plato.guiso = str(p.get("guiso", ""))
+	plato.guarnicion = str(p.get("guarnicion", ""))
+	plato.salsa = str(p.get("salsa", ""))
+	plato.extra = str(p.get("extra", ""))
+	plato.flor = bool(p.get("flor", false))
 	plato.size = Vector2(120.0, 132.0)
 	plato.position = _vista_cocina.global_position + (ui["rect"] as Rect2).get_center() - plato.size * 0.5
 	plato.pivot_offset = plato.size * 0.5
@@ -3513,22 +4707,33 @@ func _Soltar_En_Papelera(payload: Dictionary) -> bool:
 			if idx >= 0 and idx < _platos.size():
 				_Registrar_Merma_Plato(idx)
 				_Limpiar_Plato(idx)
-		"carne_lista", "carne_quemada":
+		"carne_lista", "carne_quemada", "carne_cruda":
 			var idx_c: int = int(payload.get("indice", -1))
 			if idx_c >= 0 and idx_c < _plancha.size():
 				_desperdicio_valor += 6
-				_plancha[idx_c]["estado"] = "vacio"
-				_plancha[idx_c]["progreso"] = 0.0
-				_plancha[idx_c]["quemado"] = 0.0
-				_Actualizar_Slot_Coccion_UI(_plancha[idx_c], _slots_plancha_ui[idx_c], "Carne")
+				_Limpiar_Slot_Coccion(_plancha, _slots_plancha_ui, idx_c, "Carne")
+		"proteina":
+			var idx_p: int = int(payload.get("indice", -1))
+			if idx_p >= 0 and idx_p < _plancha.size():
+				_desperdicio_valor += 6
+				_Limpiar_Slot_Coccion(_plancha, _slots_plancha_ui, idx_p, "Proteína")
 		"patatas_listas", "patatas_quemadas":
 			var idx_f: int = int(payload.get("indice", -1))
 			if idx_f >= 0 and idx_f < _freidora.size():
 				_desperdicio_valor += 8
-				_freidora[idx_f]["estado"] = "vacio"
-				_freidora[idx_f]["progreso"] = 0.0
-				_freidora[idx_f]["quemado"] = 0.0
-				_Actualizar_Slot_Coccion_UI(_freidora[idx_f], _slots_freidora_ui[idx_f], "Patatas")
+				_Limpiar_Slot_Coccion(_freidora, _slots_freidora_ui, idx_f, "Patatas")
+		"huevo_listo":
+			var idx_h: int = int(payload.get("indice", -1))
+			if idx_h >= 0 and idx_h < _freidora.size():
+				_desperdicio_valor += 4
+				_Limpiar_Slot_Coccion(_freidora, _slots_freidora_ui, idx_h, "Huevo")
+		"guiso":
+			# Tirar una ración de la olla: se descuenta del lote.
+			_olla["raciones"] = maxi(0, int(_olla.get("raciones", 0)) - 1)
+			if int(_olla["raciones"]) <= 0:
+				_olla = {"ingredientes": [], "estado": "vacio", "progreso": 0.0,
+					"raciones": 0, "receta": ""}
+			_Actualizar_Olla_UI()
 		"bebida":
 			var idx_b: int = int(payload.get("indice", -1))
 			if idx_b >= 0 and idx_b < _bebidas.size():
@@ -3559,7 +4764,7 @@ func _Registrar_Merma_Plato(indice: int) -> void:
 	if receta == "":
 		_desperdicio_valor += 4
 		return
-	var rec: Dictionary = Sistema_Cocina.RECETAS_BURGER_STREET.get(receta, {})
+	var rec: Dictionary = Sistema_Cocina.Obtener_Receta(_restaurante_actual, receta)
 	_desperdicio_valor += Sistema_Cocina.Calcular_Precio_Plato(
 		int(rec.get("precio_base", 4)), _nv_ingredientes)
 
@@ -3570,24 +4775,55 @@ func _Mostrar_Rechazo(payload: Dictionary, destino: Dictionary) -> void:
 	var mensaje: String = "Ahí no va eso"
 	match tipo:
 		"plancha":
-			mensaje = "Solo carne cruda en la plancha"
-			if str(payload.get("tipo", "")) == "ingrediente" and str(payload.get("id", "")) == "carne":
+			mensaje = "Aquí no va eso"
+			if _restaurante_actual == Sistema_Cocina.RESTAURANTE_BISTRO:
+				mensaje = "Solo filetes en la parrilla"
+			elif _restaurante_actual == Sistema_Cocina.RESTAURANTE_ALTA:
+				mensaje = "Solo proteínas en el horno"
+			elif _restaurante_actual == Sistema_Cocina.RESTAURANTE_MERCADO:
+				mensaje = "Añade los ingredientes a la olla"
+			elif str(payload.get("tipo", "")) == "ingrediente" and str(payload.get("id", "")) == "carne":
 				mensaje = "La plancha está llena"
 		"freidora":
-			mensaje = "Solo patatas en la freidora"
-			if str(payload.get("tipo", "")) == "ingrediente" and str(payload.get("id", "")) == "patatas":
+			mensaje = "Aquí no va eso"
+			if _restaurante_actual == Sistema_Cocina.RESTAURANTE_MERCADO:
+				mensaje = "Solo huevos en la plancha"
+			elif _restaurante_actual == Sistema_Cocina.RESTAURANTE_ALTA:
+				mensaje = "La salsa se remueve, no se llena"
+			elif str(payload.get("tipo", "")) == "ingrediente" and str(payload.get("id", "")) == "patatas":
 				mensaje = "La freidora está llena"
 		"plato":
 			var idx: int = int(datos.get("indice", -1))
-			if str(payload.get("tipo", "")) == "ingrediente":
+			var tipo_payload: String = str(payload.get("tipo", ""))
+			if tipo_payload == "ingrediente":
 				var ing: String = str(payload.get("id", ""))
-				if ing != "pan" and idx >= 0 and idx < _platos.size() and not bool(_platos[idx]["pan"]):
-					mensaje = "Pon pan primero"
-				elif ing == "pan":
-					mensaje = "Ese plato ya tiene pan"
+				if _restaurante_actual == Sistema_Cocina.RESTAURANTE_BURGER:
+					if ing != "pan" and idx >= 0 and idx < _platos.size() and not bool(_platos[idx]["pan"]):
+						mensaje = "Pon pan primero"
+					elif ing == "pan":
+						mensaje = "Ese plato ya tiene pan"
+					else:
+						mensaje = "Ese plato ya lo tiene"
 				else:
-					mensaje = "Ese plato ya lo tiene"
-			elif str(payload.get("tipo", "")) == "carne_lista":
+					mensaje = "Ese plato ya tiene ese ingrediente"
+			elif tipo_payload == "proteina":
+				var punt: String = str(payload.get("punto", ""))
+				var est_p: String = str(payload.get("estado", ""))
+				if _restaurante_actual == Sistema_Cocina.RESTAURANTE_BISTRO \
+						and punt in ["", "crudo"]:
+					mensaje = "Aún está crudo · espera a que tome punto"
+				elif _restaurante_actual == Sistema_Cocina.RESTAURANTE_ALTA \
+						and est_p != "listo":
+					mensaje = "Espera la ventana dorada"
+				else:
+					mensaje = "Ese plato ya tiene proteína"
+			elif tipo_payload == "carne_quemada":
+				mensaje = "Está quemada: tírala a la basura"
+			elif tipo_payload == "carne_cruda":
+				mensaje = "Todavía se está haciendo"
+			elif tipo_payload in ["patatas_listas", "huevo_listo", "guiso", "salsa"]:
+				mensaje = "Ese plato ya tiene esa elaboración"
+			elif tipo_payload == "carne_lista":
 				mensaje = "Pon pan o ya tiene 2 carnes"
 			else:
 				mensaje = "Eso no va en el plato"
@@ -3664,9 +4900,36 @@ func _process(delta: float) -> void:
 		elif fase_cl == "entrando" and _anim_tiempo >= float(ui_cl.get("entrada_hasta", 0.0)):
 			ui_cl["fase"] = "esperando"
 
-	# Cocción en plancha y freidora
-	_Tick_Slots_Coccion(_plancha, _slots_plancha_ui, _tiempo_coccion_carne, "Carne", delta)
-	_Tick_Slots_Coccion(_freidora, _slots_freidora_ui, _tiempo_coccion_patatas, "Patatas", delta)
+	# Cocción en la estación A y en la estación B (según el mundo)
+	_Tick_Slots_Coccion(_plancha, _slots_plancha_ui, _tiempo_coccion_carne,
+		"Carne", delta)
+	_Tick_Slots_Coccion(_freidora, _slots_freidora_ui, _tiempo_coccion_b,
+		"Patatas", delta)
+
+	# Olla de guiso por lotes (mercado)
+	if str(_olla.get("estado", "")) == "cocinando":
+		_olla["progreso"] = minf(1.0, float(_olla.get("progreso", 0.0)) + delta / maxf(0.5, _tiempo_olla))
+		if float(_olla["progreso"]) >= 1.0:
+			_olla["estado"] = "listo"
+			_olla["raciones"] = 4
+			_Mostrar_Banner("¡GUISO LISTO! · 4 RACIONES", Color("#fbbf24"))
+			_Mostrar_Chef("pulgar", "¡Olla a punto!", Color("#15803d"), 1.4)
+			if _sfx != null:
+				_sfx.reproducir("star", -12.0)
+		_Actualizar_Olla_UI()
+
+	# Sartén de salsa (alta cocina): se quema si no se remueve
+	if _restaurante_actual == Sistema_Cocina.RESTAURANTE_ALTA:
+		if str(_sarten.get("estado", "lista")) == "lista":
+			_sarten["quemado"] = minf(1.0, float(_sarten.get("quemado", 0.0)) \
+				+ delta * 0.042 * 6.0 / maxf(1.0, _tiempo_quemado))
+			if float(_sarten["quemado"]) >= 1.0:
+				_sarten["estado"] = "arruinada"
+				_Mostrar_Feedback_En_Control(_sarten_ctrl, "¡Salsa quemada!", Estilos_UI.PELIGRO)
+				_Mostrar_Chef("enfadada", "La salsa se ha quemado…", Estilos_UI.PELIGRO, 1.4)
+		if float(_sarten.get("removido", 0.0)) > 0.0:
+			_sarten["removido"] = maxf(0.0, float(_sarten["removido"]) - delta * 1.8)
+		_Actualizar_Sarten_UI()
 
 	# Recarga automática de bebidas
 	for i in range(_bebidas.size()):
@@ -3742,6 +5005,20 @@ func _Animar_Escena(delta: float) -> void:
 		ui_p["pop"] = maxf(0.0, float(ui_p.get("pop", 0.0)) - delta * 3.6)
 		plato.pop = float(ui_p["pop"])
 		plato.queue_redraw()
+
+	# Estaciones temáticas: animación de olla, salsa, horno y bodega
+	if _olla_ctrl != null:
+		_olla_ctrl.tiempo = _anim_tiempo
+		_olla_ctrl.queue_redraw()
+	if _sarten_ctrl != null:
+		_sarten_ctrl.tiempo = _anim_tiempo
+		_sarten_ctrl.queue_redraw()
+	if _horno_ctrl != null:
+		_horno_ctrl.tiempo = _anim_tiempo
+		_horno_ctrl.queue_redraw()
+	if _botellas_ctrl != null:
+		_botellas_ctrl.tiempo = _anim_tiempo
+		_botellas_ctrl.queue_redraw()
 
 	# Pase: los candados de los huecos bloqueados laten suavemente.
 	if _bandeja_emplatado != null:
@@ -3838,18 +5115,76 @@ func _Tick_Slots_Coccion(lista: Array[Dictionary], ui_lista: Array[Dictionary],
 	for i in range(lista.size()):
 		var s: Dictionary = lista[i]
 		var est: String = str(s["estado"])
-		if est == "vacio" or est == "quemado":
+		if est == "vacio" or est == "quemado" or est == "pasado":
 			continue
+		var item: String = str(s.get("item", ""))
+		var es_filete: bool = _restaurante_actual == Sistema_Cocina.RESTAURANTE_BISTRO \
+			and item == "carne"
+		var es_alta: bool = _restaurante_actual == Sistema_Cocina.RESTAURANTE_ALTA \
+			and item in ["solomillo", "lubina", "pato"]
+		var nodo: ArteCocina.Punto_Coccion = ui_lista[i]["nodo"]
+
+		if es_filete:
+			# Bistró: la carne pasa por crudo → poco hecho → al punto → hecho.
+			# Se puede retirar en cualquier punto servible; después empieza a quemarse.
+			s["progreso"] = minf(1.0, float(s["progreso"]) + delta / maxf(0.2, tiempo_coccion))
+			if float(s["progreso"]) >= 1.0:
+				s["quemado"] = minf(1.0, float(s["quemado"]) + delta / maxf(0.5, _tiempo_quemado))
+			var punto_previo: String = str(s.get("punto", ""))
+			var punto_nuevo: String = Sistema_Cocina.Calcular_Punto_Filete(
+				float(s["progreso"]), float(s["quemado"]))
+			s["punto"] = punto_nuevo
+			s["estado"] = "cocinando" if float(s["progreso"]) < 1.0 else "listo"
+			if punto_nuevo == "quemado":
+				s["estado"] = "quemado"
+				if punto_previo != "quemado":
+					_Mostrar_Feedback_En_Control(nodo, "¡QUEMADO!", Estilos_UI.PELIGRO)
+					_efectos.humo(ui_lista[i]["rect"].get_center())
+			elif punto_nuevo != punto_previo and punto_nuevo in ["al_punto", "hecho"]:
+				nodo.flip = 1.0
+				_efectos.estrellas(ui_lista[i]["rect"].get_center() + Vector2(0.0, -6.0), 2)
+				if _sfx != null:
+					_sfx.reproducir("ding", -16.0, 1.06)
+			if s["estado"] == "listo" and est == "cocinando":
+				nodo.flip = 1.0
+			_Actualizar_Slot_Coccion_UI(s, ui_lista[i], etiqueta)
+			continue
+
+		if es_alta:
+			# Alta cocina: ventana dorada estrecha. Antes = crudo; después = pasado.
+			var estado_previo: String = est
+			s["progreso"] = minf(1.15, float(s["progreso"]) + delta / maxf(0.2, tiempo_coccion))
+			var fase: String = Sistema_Cocina.Estado_Proteina_Alta(float(s["progreso"]))
+			if fase == "listo":
+				s["estado"] = "listo"
+				if estado_previo != "listo":
+					nodo.flip = 1.0
+					_efectos.estrellas(ui_lista[i]["rect"].get_center() + Vector2(0.0, -6.0), 3)
+					_Mostrar_Feedback_En_Control(nodo, "¡EN SU PUNTO!", Color("#86efac"), -8.0)
+					if _sfx != null:
+						_sfx.reproducir("ding", -11.0, 1.02)
+			elif fase == "pasado":
+				s["estado"] = "pasado"
+				if estado_previo != "pasado":
+					_Mostrar_Feedback_En_Control(nodo, "¡PASADO!", Estilos_UI.PELIGRO)
+					_efectos.humo(ui_lista[i]["rect"].get_center())
+					if _sfx != null:
+						_sfx.reproducir("burn", -13.0)
+			else:
+				s["estado"] = "cocinando"
+			_Actualizar_Slot_Coccion_UI(s, ui_lista[i], etiqueta)
+			continue
+
+		# Comportamiento clásico (hamburguesa, patatas, huevos)
 		if est == "cocinando":
 			s["progreso"] = minf(1.0, float(s["progreso"]) + delta / maxf(0.2, tiempo_coccion))
 			if float(s["progreso"]) >= 1.0:
 				s["estado"] = "listo"
 				s["quemado"] = 0.0
 				s["avisado"] = false
-				var nodo_listo: ArteCocina.Punto_Coccion = ui_lista[i]["nodo"]
-				nodo_listo.flip = 1.0
+				nodo.flip = 1.0
 				_efectos.estrellas(ui_lista[i]["rect"].get_center() + Vector2(0.0, -6.0), 3)
-				_Mostrar_Feedback_En_Control(nodo_listo, "¡LISTO!", Color("#86efac"), -8.0)
+				_Mostrar_Feedback_En_Control(nodo, "¡LISTO!", Color("#86efac"), -8.0)
 				if _sfx != null:
 					_sfx.reproducir("ding", -11.0, randf_range(0.98, 1.04))
 			_Actualizar_Slot_Coccion_UI(s, ui_lista[i], etiqueta)
@@ -3897,14 +5232,15 @@ func _Intentar_Spawnear_Cliente() -> bool:
 
 	var idx: int = libres[_rng.randi() % libres.size()]
 	var menu: Array = _cfg_nivel_actual.get("menu", ["burger_sola", "refresco"])
-	var max_items: int = clampi(int(_cfg_nivel_actual.get("max_items", 2)), 1, 3)
+	var max_items: int = clampi(int(_cfg_nivel_actual.get("max_items", 2)), 1, 4)
 	var cantidad: int = _rng.randi_range(1, max_items)
+	var recetas_rest: Dictionary = Sistema_Cocina.Obtener_Recetas_Restaurante(_restaurante_actual)
 
 	var platos_menu: Array[String] = []
 	var extras_menu: Array[String] = []
 	for item_raw in menu:
 		var item_id: String = str(item_raw)
-		var rec: Dictionary = Sistema_Cocina.RECETAS_BURGER_STREET.get(item_id, {})
+		var rec: Dictionary = recetas_rest.get(item_id, {})
 		if str(rec.get("tipo", "")) == "plato":
 			platos_menu.append(item_id)
 		else:
@@ -3914,25 +5250,50 @@ func _Intentar_Spawnear_Cliente() -> bool:
 	var entregados: Array[bool] = []
 	var precio_total: int = 0
 
-	for k in range(cantidad):
-		var elegido: String
-		if k == 0 and not platos_menu.is_empty():
-			elegido = platos_menu[_rng.randi() % platos_menu.size()]
-		elif k >= 1 and not extras_menu.is_empty() and _rng.randf() < 0.65:
-			elegido = extras_menu[_rng.randi() % extras_menu.size()]
-		else:
-			elegido = str(menu[_rng.randi() % menu.size()])
-		pedido.append(elegido)
+	if _restaurante_actual == Sistema_Cocina.RESTAURANTE_ALTA and not platos_menu.is_empty():
+		# Alta cocina: el plato llega siempre con su maridaje. El jugador debe
+		# servir la copa correcta (tinto o blanco) además del plato.
+		var plato_alta: String = platos_menu[_rng.randi() % platos_menu.size()]
+		var rec_alta: Dictionary = recetas_rest.get(plato_alta, {})
+		pedido.append(plato_alta)
 		entregados.append(false)
-		var rec_el: Dictionary = Sistema_Cocina.RECETAS_BURGER_STREET.get(elegido, {})
-		precio_total += Sistema_Cocina.Calcular_Precio_Plato(int(rec_el.get("precio_base", 10)), _nv_ingredientes)
+		precio_total += Sistema_Cocina.Calcular_Precio_Plato(
+			int(rec_alta.get("precio_base", 10)), _nv_ingredientes)
+		var maridaje: String = str(rec_alta.get("maridaje", ""))
+		if maridaje != "":
+			pedido.append(maridaje)
+			entregados.append(false)
+			precio_total += Sistema_Cocina.Calcular_Precio_Plato(
+				int(recetas_rest.get(maridaje, {}).get("precio_base", 10)), _nv_ingredientes)
+		if max_items >= 3 and _rng.randf() < 0.30:
+			var otro_plato: String = platos_menu[_rng.randi() % platos_menu.size()]
+			if otro_plato != plato_alta:
+				pedido.append(otro_plato)
+				entregados.append(false)
+				precio_total += Sistema_Cocina.Calcular_Precio_Plato(
+					int(recetas_rest.get(otro_plato, {}).get("precio_base", 10)), _nv_ingredientes)
+	else:
+		for k in range(cantidad):
+			var elegido: String
+			if k == 0 and not platos_menu.is_empty():
+				elegido = platos_menu[_rng.randi() % platos_menu.size()]
+			elif k >= 1 and not extras_menu.is_empty() and _rng.randf() < 0.65:
+				elegido = extras_menu[_rng.randi() % extras_menu.size()]
+			else:
+				elegido = str(menu[_rng.randi() % menu.size()])
+			pedido.append(elegido)
+			entregados.append(false)
+			var rec_el: Dictionary = recetas_rest.get(elegido, {})
+			precio_total += Sistema_Cocina.Calcular_Precio_Plato(
+				int(rec_el.get("precio_base", 10)), _nv_ingredientes)
 
 	var pac_base: float = float(_cfg_nivel_actual.get("paciencia_base", 25.0))
 	var cl: Dictionary = _clientes[idx]
 	cl["activo"] = true
 	cl["items"] = pedido
 	cl["entregados"] = entregados
-	cl["paciencia_max"] = pac_base + float(cantidad - 1) * 4.0
+	cl["flor"] = false
+	cl["paciencia_max"] = pac_base + float(maxi(0, pedido.size() - 1)) * 4.0
 	cl["paciencia"] = float(cl["paciencia_max"])
 	cl["precio_total"] = precio_total
 
@@ -4003,6 +5364,7 @@ func _on_ingrediente_carne() -> void:
 			_plancha[i]["progreso"] = 0.0
 			_plancha[i]["quemado"] = 0.0
 			_plancha[i]["avisado"] = false
+			_plancha[i]["item"] = "carne"
 			_Actualizar_Slot_Coccion_UI(_plancha[i], _slots_plancha_ui[i], "Carne")
 			return
 	_Mostrar_Feedback_En_Control(_slots_plancha_ui[0]["nodo"], "Plancha llena", Estilos_UI.AVISO)
@@ -4017,6 +5379,7 @@ func _on_ingrediente_patatas() -> void:
 			_freidora[i]["progreso"] = 0.0
 			_freidora[i]["quemado"] = 0.0
 			_freidora[i]["avisado"] = false
+			_freidora[i]["item"] = "patatas"
 			_Actualizar_Slot_Coccion_UI(_freidora[i], _slots_freidora_ui[i], "Patatas")
 			return
 	_Mostrar_Feedback_En_Control(_slots_freidora_ui[0]["nodo"], "Freidora llena", Estilos_UI.AVISO)
@@ -4060,44 +5423,77 @@ func _on_plancha_pulsada(indice: int) -> void:
 	var s: Dictionary = _plancha[indice]
 	var est: String = str(s["estado"])
 	if est == "vacio":
-		return
-	if est == "quemado":
-		_desperdicio_valor += 6
-		s["estado"] = "vacio"
-		s["progreso"] = 0.0
-		s["quemado"] = 0.0
-		_Actualizar_Slot_Coccion_UI(s, _slots_plancha_ui[indice], "Carne")
 		_Mostrar_Feedback_En_Control(_slots_plancha_ui[indice]["nodo"],
+			"Toca el filete para ponerlo en la parrilla" if _restaurante_actual == Sistema_Cocina.RESTAURANTE_BISTRO else "Toca la carne para ponerla en la plancha",
+			Estilos_UI.TINTA_SUAVE, -8.0)
+		return
+	var item: String = str(s.get("item", "carne"))
+	if est == "quemado" or est == "pasado":
+		_desperdicio_valor += 6
+		var nodo_q: ArteCocina.Punto_Coccion = _slots_plancha_ui[indice]["nodo"]
+		_Limpiar_Slot_Coccion(_plancha, _slots_plancha_ui, indice, item)
+		_Mostrar_Feedback_En_Control(nodo_q,
 			"Descartado · −%d € ingredientes" % Sistema_Cocina.Calcular_Coste_Merma(6),
 			Estilos_UI.TINTA_SUAVE)
 		return
+
+	if _restaurante_actual == Sistema_Cocina.RESTAURANTE_BISTRO:
+		var punto: String = str(s.get("punto", "crudo"))
+		if punto in ["crudo", ""]:
+			_Mostrar_Feedback_En_Control(_slots_plancha_ui[indice]["nodo"],
+				"Aún está crudo · espera", Estilos_UI.AVISO)
+			return
+		if punto == "quemado":
+			_desperdicio_valor += 6
+			_Limpiar_Slot_Coccion(_plancha, _slots_plancha_ui, indice, "Filete")
+			_Mostrar_Feedback_En_Control(_slots_plancha_ui[indice]["nodo"], "Quemado", Estilos_UI.PELIGRO)
+			return
+		var payload_b := {"tipo": "proteina", "proteina": "filete", "punto": punto, "indice": indice}
+		var elegido_b: int = _Primer_Plato_Que_Complete_Pedido(payload_b,
+			{"proteina": "filete", "punto": punto})
+		if elegido_b < 0:
+			for idx in _Orden_Busqueda_Platos():
+				if str(_platos[idx].get("proteina", "")) == "":
+					elegido_b = idx
+					break
+		if elegido_b < 0:
+			_Mostrar_Feedback_En_Control(_slots_plancha_ui[indice]["nodo"],
+				"No hay plato libre en el pase", Estilos_UI.AVISO)
+			return
+		if _Soltar_En_Plato(payload_b, elegido_b):
+			_Mostrar_Feedback_En_Control(_slots_plancha_ui[indice]["nodo"],
+				"¡%s!" % Sistema_Cocina.Punto_Filete_Legible(punto), Color("#86efac"), -8.0)
+		return
+
+	if _restaurante_actual == Sistema_Cocina.RESTAURANTE_ALTA:
+		if est != "listo":
+			_Mostrar_Feedback_En_Control(_slots_plancha_ui[indice]["nodo"],
+				"Espera la ventana dorada", Estilos_UI.AVISO)
+			return
+		var elegido_a: int = -1
+		for idx in _Orden_Busqueda_Platos():
+			if str(_platos[idx].get("proteina", "")) == "":
+				elegido_a = idx
+				break
+		if elegido_a < 0:
+			_Mostrar_Feedback_En_Control(_slots_plancha_ui[indice]["nodo"],
+				"No hay plato libre en el pase", Estilos_UI.AVISO)
+			return
+		if _Soltar_En_Plato({"tipo": "proteina", "proteina": item, "punto": "", "indice": indice},
+				elegido_a):
+			_Mostrar_Feedback_En_Control(_slots_plancha_ui[indice]["nodo"],
+				"¡Al pase!", Color("#86efac"), -8.0)
+		return
+
+	# Hamburguesa (mundo 1): la carne cocinada debe arrastrarse hasta el pan
+	# para mantener el reto; tocarla solo avisa al jugador.
 	if est == "cocinando":
 		_Mostrar_Feedback_En_Control(_slots_plancha_ui[indice]["nodo"], "Cocinando...", Estilos_UI.AVISO)
 		return
-	# Estado listo o alerta: pasar carne al plato más adecuado
-	var orden: Array[int] = _Orden_Busqueda_Platos()
-	var elegido: int = -1
-	for idx in orden:
-		if bool(_platos[idx]["pan"]) and int(_platos[idx]["carnes"]) == 0:
-			elegido = idx
-			break
-	if elegido == -1:
-		for idx in orden:
-			if bool(_platos[idx]["pan"]) and int(_platos[idx]["carnes"]) == 1:
-				elegido = idx
-				break
-	if elegido == -1:
-		_Mostrar_Feedback_En_Control(_slots_plancha_ui[indice]["nodo"], "Pon un pan en un plato", Estilos_UI.AVISO)
-		return
-
-	_platos[elegido]["carnes"] = int(_platos[elegido]["carnes"]) + 1
-	_plato_seleccionado = elegido
-	_slots_platos_ui[elegido]["pop"] = 1.0
-	s["estado"] = "vacio"
-	s["progreso"] = 0.0
-	s["quemado"] = 0.0
-	_Actualizar_Slot_Coccion_UI(s, _slots_plancha_ui[indice], "Carne")
-	_Actualizar_Plato_UI(elegido)
+	if _sfx != null:
+		_sfx.reproducir("click", -22.0, 1.35)
+	_Mostrar_Feedback_En_Control(_slots_plancha_ui[indice]["nodo"],
+		"Arrastra la carne al pan", Color("#fde68a"), -8.0)
 
 
 func _on_freidora_pulsada(indice: int) -> void:
@@ -4106,27 +5502,59 @@ func _on_freidora_pulsada(indice: int) -> void:
 	var s: Dictionary = _freidora[indice]
 	var est: String = str(s["estado"])
 	if est == "vacio":
+		_Mostrar_Feedback_En_Control(_slots_freidora_ui[indice]["nodo"],
+			"Toca las patatas para freírlas", Estilos_UI.TINTA_SUAVE, -8.0)
 		return
+	var item: String = str(s.get("item", "patatas"))
 	if est == "quemado":
 		_desperdicio_valor += 8
-		s["estado"] = "vacio"
-		s["progreso"] = 0.0
-		s["quemado"] = 0.0
-		_Actualizar_Slot_Coccion_UI(s, _slots_freidora_ui[indice], "Patatas")
-		_Mostrar_Feedback_En_Control(_slots_freidora_ui[indice]["nodo"],
+		var nodo_q: ArteCocina.Punto_Coccion = _slots_freidora_ui[indice]["nodo"]
+		_Limpiar_Slot_Coccion(_freidora, _slots_freidora_ui, indice, item)
+		_Mostrar_Feedback_En_Control(nodo_q,
 			"Descartado · −%d € ingredientes" % Sistema_Cocina.Calcular_Coste_Merma(8),
 			Estilos_UI.TINTA_SUAVE)
 		return
 	if est == "cocinando":
-		_Mostrar_Feedback_En_Control(_slots_freidora_ui[indice]["nodo"], "Friendo...", Estilos_UI.AVISO)
+		_Mostrar_Feedback_En_Control(_slots_freidora_ui[indice]["nodo"],
+			"Friendo..." if item != "huevo" else "Cocinando...", Estilos_UI.AVISO)
 		return
-	if _Entregar_Item_A_Cliente_Urgente("patatas"):
-		s["estado"] = "vacio"
-		s["progreso"] = 0.0
-		s["quemado"] = 0.0
-		_Actualizar_Slot_Coccion_UI(s, _slots_freidora_ui[indice], "Patatas")
-	else:
-		_Mostrar_Feedback_En_Control(_slots_freidora_ui[indice]["nodo"], "Nadie pidió patatas", Estilos_UI.TINTA_SUAVE)
+
+	if _restaurante_actual == Sistema_Cocina.RESTAURANTE_BISTRO:
+		# Las patatas son guarnición del pase, no un plato suelto. Se prioriza
+		# el plato que complete un pedido real antes que el primero libre.
+		var payload_p := {"tipo": "patatas_listas", "indice": indice}
+		var elegido_p: int = _Primer_Plato_Que_Complete_Pedido(payload_p,
+			{"guarnicion": "patatas"})
+		if elegido_p < 0:
+			for idx in _Orden_Busqueda_Platos():
+				if str(_platos[idx].get("guarnicion", "")) == "":
+					elegido_p = idx
+					break
+		if elegido_p >= 0:
+			if _Soltar_En_Plato(payload_p, elegido_p):
+				_Mostrar_Feedback_En_Control(_slots_freidora_ui[indice]["nodo"],
+					"¡Patatas al pase!", Color("#86efac"), -8.0)
+			return
+		_Mostrar_Feedback_En_Control(_slots_freidora_ui[indice]["nodo"],
+			"No hay plato libre", Estilos_UI.AVISO)
+		return
+
+	if _restaurante_actual == Sistema_Cocina.RESTAURANTE_MERCADO:
+		for idx in _Orden_Busqueda_Platos():
+			if str(_platos[idx].get("guiso", "")) == "pisto" \
+					and str(_platos[idx].get("extra", "")) == "":
+				if _Soltar_En_Plato({"tipo": "huevo_listo", "indice": indice}, idx):
+					_Mostrar_Feedback_En_Control(_slots_freidora_ui[indice]["nodo"],
+						"¡Huevo al pisto!", Color("#86efac"), -8.0)
+				return
+		_Mostrar_Feedback_En_Control(_slots_freidora_ui[indice]["nodo"],
+			"Prepara un pisto en el pase", Estilos_UI.AVISO)
+		return
+
+	if _sfx != null:
+		_sfx.reproducir("click", -22.0, 1.35)
+	_Mostrar_Feedback_En_Control(_slots_freidora_ui[indice]["nodo"],
+		"Arrastra las patatas al cliente", Color("#fde68a"), -8.0)
 
 
 func _on_bebida_pulsada(indice: int) -> void:
@@ -4134,13 +5562,17 @@ func _on_bebida_pulsada(indice: int) -> void:
 		return
 	var b: Dictionary = _bebidas[indice]
 	if str(b["estado"]) != "listo":
+		_Mostrar_Feedback_En_Control(_slots_bebidas_ui[indice]["nodo"],
+			"Se está llenando", Estilos_UI.AVISO)
 		return
-	if _Entregar_Item_A_Cliente_Urgente("refresco"):
-		b["estado"] = "llenando"
-		b["progreso"] = 0.0
-		_Actualizar_Bebida_UI(indice)
-	else:
-		_Mostrar_Feedback_En_Control(_slots_bebidas_ui[indice]["nodo"], "Nadie pidió refresco", Estilos_UI.TINTA_SUAVE)
+	var item: String = str(b.get("item", "refresco"))
+	var nombre_beb: String = str(Sistema_Cocina.Obtener_Receta(_restaurante_actual, item).get(
+		"nombre_corto", "bebida")).to_lower()
+	if _sfx != null:
+		_sfx.reproducir("click", -22.0, 1.35)
+	_Mostrar_Feedback_En_Control(_slots_bebidas_ui[indice]["nodo"],
+		"Arrastra %s al cliente" % ("el " + nombre_beb if item == "refresco" or item == "cafe" else "la bebida"),
+		Color("#fde68a"), -8.0)
 
 
 func _on_plato_pulsado(indice: int) -> void:
@@ -4148,43 +5580,42 @@ func _on_plato_pulsado(indice: int) -> void:
 		return
 	var p: Dictionary = _platos[indice]
 	var receta_id: String = _Receta_De_Plato(p)
-	if receta_id != "" and _Entregar_Item_A_Cliente_Urgente(receta_id):
-		_Limpiar_Plato(indice)
-		return
-
+	if receta_id != "":
+		if _Algun_Cliente_Necesita(receta_id):
+			if _sfx != null:
+				_sfx.reproducir("click", -22.0, 1.35)
+			_Mostrar_Feedback_En_Control(_slots_platos_ui[indice]["nodo"],
+				"Arrastra el plato al cliente", Color("#fde68a"), -10.0)
+		else:
+			var nombre: String = str(Sistema_Cocina.Obtener_Receta(
+				_restaurante_actual, receta_id).get("nombre_corto", "Ese plato"))
+			_Mostrar_Feedback_En_Control(_slots_platos_ui[indice]["nodo"],
+				"Nadie ha pedido %s · arrástralo a la basura" % nombre,
+				Estilos_UI.TINTA_SUAVE, -10.0)
+	elif not _Plato_Esta_Vacio(p):
+		_Mostrar_Feedback_En_Control(_slots_platos_ui[indice]["nodo"],
+			"Plato incompleto · añade lo que pida el cliente",
+			Estilos_UI.AVISO, -10.0)
 	_plato_seleccionado = indice
 	_Actualizar_Todos_Los_Platos_UI()
+
+
+func _Cliente_Puede_Recibir(indice: int) -> bool:
+	if indice < 0 or indice >= _clientes.size():
+		return false
+	if not bool(_clientes[indice]["activo"]):
+		return false
+	var fase: String = str(_slots_clientes_ui[indice].get("fase", ""))
+	return fase == "esperando" or fase == ""
 
 
 func _on_cliente_pulsado(indice_cliente: int) -> void:
 	if not _jugando or indice_cliente < 0 or indice_cliente >= _clientes.size():
 		return
-	var cl: Dictionary = _clientes[indice_cliente]
-	if not bool(cl["activo"]):
+	if not _Cliente_Puede_Recibir(indice_cliente):
 		return
-
-	# Servir primero el plato seleccionado, luego cualquier plato, freidora o bebida
-	var orden_platos: Array[int] = _Orden_Busqueda_Platos()
-	for idx_p in orden_platos:
-		var rec: String = _Receta_De_Plato(_platos[idx_p])
-		if rec != "" and _Entregar_Item_A_Cliente(indice_cliente, rec):
-			_Limpiar_Plato(idx_p)
-			return
-
-	for i in range(_freidora.size()):
-		if str(_freidora[i]["estado"]) in ["listo", "alerta"] and _Entregar_Item_A_Cliente(indice_cliente, "patatas"):
-			_freidora[i]["estado"] = "vacio"
-			_freidora[i]["progreso"] = 0.0
-			_freidora[i]["quemado"] = 0.0
-			_Actualizar_Slot_Coccion_UI(_freidora[i], _slots_freidora_ui[i], "Patatas")
-			return
-
-	for i in range(_bebidas.size()):
-		if str(_bebidas[i]["estado"]) == "listo" and _Entregar_Item_A_Cliente(indice_cliente, "refresco"):
-			_bebidas[i]["estado"] = "llenando"
-			_bebidas[i]["progreso"] = 0.0
-			_Actualizar_Bebida_UI(i)
-			return
+	_Mostrar_Feedback_En_Control(_slots_clientes_ui[indice_cliente]["retrato"],
+		"Arrastra el pedido hasta el cliente", Color("#fde68a"), -12.0)
 
 
 func _Orden_Busqueda_Platos() -> Array[int]:
@@ -4197,32 +5628,74 @@ func _Orden_Busqueda_Platos() -> Array[int]:
 	return orden
 
 
+func _Plato_Esta_Vacio(p: Dictionary) -> bool:
+	if _restaurante_actual == Sistema_Cocina.RESTAURANTE_BURGER:
+		return not bool(p.get("pan", false)) and int(p.get("carnes", 0)) <= 0
+	return str(p.get("proteina", "")) == "" and str(p.get("guiso", "")) == "" \
+		and str(p.get("guarnicion", "")) == "" and str(p.get("salsa", "")) == "" \
+		and str(p.get("extra", "")) == "" and not bool(p.get("flor", false))
+
+
+func _Dibujar_Plato_Borrador(c: CanvasItem, centro: Vector2, caja: float, p: Dictionary) -> void:
+	if _restaurante_actual == Sistema_Cocina.RESTAURANTE_BISTRO:
+		ArteCocina.dibujar_plato_bistro(c, centro, caja, str(p.get("proteina", "")),
+			str(p.get("punto", "")), str(p.get("guarnicion", "")), str(p.get("salsa", "")))
+	elif _restaurante_actual == Sistema_Cocina.RESTAURANTE_MERCADO:
+		ArteCocina.dibujar_plato_mercado(c, centro, caja, str(p.get("guiso", "")),
+			str(p.get("extra", "")))
+	elif _restaurante_actual == Sistema_Cocina.RESTAURANTE_ALTA:
+		ArteCocina.dibujar_plato_alta(c, centro, caja, str(p.get("proteina", "")),
+			str(p.get("salsa", "")), str(p.get("guarnicion", "")), bool(p.get("flor", false)))
+	else:
+		ArteCocina.dibujar_plato_hamburguesa(c, centro, caja,
+			bool(p.get("pan", false)), int(p.get("carnes", 0)),
+			bool(p.get("queso", false)), bool(p.get("lechuga", false)),
+			bool(p.get("tomate", false)))
+
+
 func _Receta_De_Plato(p: Dictionary) -> String:
+	if _restaurante_actual == Sistema_Cocina.RESTAURANTE_BISTRO:
+		return Sistema_Cocina.Identificar_Plato_Bistro(
+			str(p.get("proteina", "")), str(p.get("punto", "")),
+			str(p.get("guarnicion", "")), str(p.get("salsa", "")))
+	if _restaurante_actual == Sistema_Cocina.RESTAURANTE_MERCADO:
+		return Sistema_Cocina.Identificar_Plato_Mercado(
+			str(p.get("guiso", "")), str(p.get("extra", "")))
+	if _restaurante_actual == Sistema_Cocina.RESTAURANTE_ALTA:
+		return Sistema_Cocina.Identificar_Plato_Alta(
+			str(p.get("proteina", "")), str(p.get("salsa", "")),
+			str(p.get("guarnicion", "")))
 	return Sistema_Cocina.Identificar_Hamburguesa(
-		bool(p["pan"]), int(p["carnes"]), bool(p["queso"]), bool(p["lechuga"]), bool(p["tomate"])
-	)
+		bool(p.get("pan", false)), int(p.get("carnes", 0)),
+		bool(p.get("queso", false)), bool(p.get("lechuga", false)),
+		bool(p.get("tomate", false)))
 
 
 func _Limpiar_Plato(indice: int) -> void:
-	_platos[indice] = {"pan": false, "carnes": 0, "queso": false, "lechuga": false, "tomate": false}
+	_platos[indice] = _Plato_Vacio()
 	if _plato_seleccionado == indice:
 		_plato_seleccionado = -1
 	_Actualizar_Todos_Los_Platos_UI()
 
 
-func _Entregar_Item_A_Cliente_Urgente(item_id: String) -> bool:
+func _Cliente_Urgente_Para_Item(item_id: String) -> int:
 	var mejor_idx: int = -1
 	var menor_ratio: float = 999.0
 	for i in range(_clientes.size()):
-		var cl: Dictionary = _clientes[i]
-		if not bool(cl["activo"]):
+		if not _Cliente_Puede_Recibir(i):
 			continue
+		var cl: Dictionary = _clientes[i]
 		if not _Cliente_Necesita_Item(cl, item_id):
 			continue
 		var ratio: float = float(cl["paciencia"]) / maxf(1.0, float(cl["paciencia_max"]))
 		if ratio < menor_ratio:
 			menor_ratio = ratio
 			mejor_idx = i
+	return mejor_idx
+
+
+func _Entregar_Item_A_Cliente_Urgente(item_id: String) -> bool:
+	var mejor_idx: int = _Cliente_Urgente_Para_Item(item_id)
 	if mejor_idx == -1:
 		return false
 	return _Entregar_Item_A_Cliente(mejor_idx, item_id)
@@ -4286,6 +5759,10 @@ func _Completar_Pedido_Cliente(indice_cliente: int) -> void:
 	var ratio: float = clampf(float(cl["paciencia"]) / maxf(1.0, float(cl["paciencia_max"])), 0.0, 1.0)
 	var propina: int = Sistema_Cocina.Calcular_Propina_Cliente(
 		precio, ratio, _combo_actual, _nv_ambiente, _bonus_ropa_propinas)
+	var flor_bonus: bool = bool(cl.get("flor", false))
+	if flor_bonus:
+		propina += 3
+		cl["flor"] = false
 
 	_recaudacion += precio + propina
 	_propinas_servicio += propina
@@ -4321,6 +5798,8 @@ func _Completar_Pedido_Cliente(indice_cliente: int) -> void:
 	if p_eur > 0.0:
 		_micro_propinas_sesion += p_eur
 		extras.append("+%.2f €" % p_eur)
+	if flor_bonus:
+		extras.append("+3 € flor")
 
 	if not extras.is_empty():
 		_Mostrar_Feedback_En_Control(ancla, " · ".join(extras), Color("#fde68a"), 12.0)
@@ -4365,8 +5844,7 @@ func _Actualizar_HUD_Cocina() -> void:
 	_bar_cocina_meta.max_value = float(maxi(1, m3))
 	_bar_cocina_meta.value = minf(float(m3), float(_recaudacion))
 	_lbl_cocina_recaudacion.text = "%d €" % _recaudacion
-	_lbl_cocina_propinas.text = "+%d €" % _propinas_servicio
-	_lbl_estado_propinas.text = "%d €" % _propinas_servicio
+	_lbl_estado_propinas.text = "PROPINAS · %d €" % _propinas_servicio
 
 	var est: int = Sistema_Cocina.Calcular_Estrellas(_recaudacion, m1, m2, m3)
 	for s in range(3):
@@ -4809,23 +6287,50 @@ func _Actualizar_Todas_Las_Estaciones_UI() -> void:
 
 
 func _Actualizar_Contadores_Estaciones() -> void:
+	var perf: Dictionary = _perfil_actual
+	if perf.is_empty():
+		perf = Sistema_Cocina.Obtener_Perfil_Restaurante(_restaurante_actual)
+	var est_a: Dictionary = perf.get("estacion_a", {})
+	var est_b: Dictionary = perf.get("estacion_b", {})
+	var beb: Dictionary = perf.get("bebida", {})
+	var tipo_a: String = str(est_a.get("tipo", "plancha"))
+	var tipo_b: String = str(est_b.get("tipo", "freidora"))
+
 	var listas_b: int = 0
 	for b in _bebidas:
 		if str(b["estado"]) == "listo":
 			listas_b += 1
-	_lbl_estado_bebidas.text = "REFRESCOS · %d/%d listos" % [listas_b, _bebidas.size()]
+	_lbl_estado_bebidas.text = "%s · %d/%d listos" % [
+		str(beb.get("nombre", "BEBIDAS")), listas_b, _bebidas.size()]
 
-	var libres_p: int = 0
-	for s in _plancha:
-		if str(s["estado"]) == "vacio":
-			libres_p += 1
-	_lbl_estado_plancha.text = "PLANCHA · %d/%d libres" % [libres_p, _plancha.size()]
+	if tipo_a == "olla":
+		if str(_olla.get("estado", "vacio")) == "listo":
+			_lbl_estado_plancha.text = "OLLA · %d raciones" % int(_olla.get("raciones", 0))
+		elif str(_olla.get("estado", "vacio")) == "cocinando":
+			_lbl_estado_plancha.text = "OLLA · cociendo…"
+		else:
+			_lbl_estado_plancha.text = "OLLA · añade 2 ingredientes"
+	else:
+		var libres_p: int = 0
+		for s in _plancha:
+			if str(s["estado"]) == "vacio":
+				libres_p += 1
+		_lbl_estado_plancha.text = "%s · %d/%d libres" % [
+			str(est_a.get("nombre", "COCCIÓN")), libres_p, _plancha.size()]
 
-	var libres_f: int = 0
-	for s in _freidora:
-		if str(s["estado"]) == "vacio":
-			libres_f += 1
-	_lbl_estado_freidora.text = "FREIDORA · %d/%d libres" % [libres_f, _freidora.size()]
+	if tipo_b == "sarten":
+		if str(_sarten.get("estado", "lista")) == "arruinada":
+			_lbl_estado_freidora.text = "SALSAS · ¡quemada!"
+		else:
+			_lbl_estado_freidora.text = "SALSAS · remueve (%d%%)" % int(
+				float(_sarten.get("quemado", 0.0)) * 100.0)
+	else:
+		var libres_f: int = 0
+		for s in _freidora:
+			if str(s["estado"]) == "vacio":
+				libres_f += 1
+		_lbl_estado_freidora.text = "%s · %d/%d libres" % [
+			str(est_b.get("nombre", "FREIDORA")), libres_f, _freidora.size()]
 
 	var listos_pl: int = 0
 	for i in range(_platos.size()):
@@ -4839,6 +6344,7 @@ func _Actualizar_Bebida_UI(indice: int) -> void:
 		return
 	var b: Dictionary = _bebidas[indice]
 	var nodo: ArteCocina.Bebida = _slots_bebidas_ui[indice]["nodo"]
+	nodo.tipo = str(b.get("item", "refresco"))
 	nodo.estado = str(b["estado"])
 	nodo.progreso = float(b["progreso"])
 	nodo.tiempo = _anim_tiempo
@@ -4849,6 +6355,7 @@ func _Actualizar_Bebida_UI(indice: int) -> void:
 func _Actualizar_Todos_Los_Platos_UI() -> void:
 	for i in range(_platos.size()):
 		_Actualizar_Plato_UI(i)
+	_Actualizar_Contadores_Estaciones()
 
 
 func _Actualizar_Plato_UI(indice: int) -> void:
@@ -4865,6 +6372,14 @@ func _Actualizar_Plato_UI(indice: int) -> void:
 	nodo.queso = bool(p["queso"])
 	nodo.lechuga = bool(p["lechuga"])
 	nodo.tomate = bool(p["tomate"])
+	nodo.restaurante = _restaurante_actual
+	nodo.proteina = str(p.get("proteina", ""))
+	nodo.punto = str(p.get("punto", ""))
+	nodo.guiso = str(p.get("guiso", ""))
+	nodo.guarnicion = str(p.get("guarnicion", ""))
+	nodo.salsa = str(p.get("salsa", ""))
+	nodo.extra = str(p.get("extra", ""))
+	nodo.flor = bool(p.get("flor", false))
 	nodo.pedida = pedida_ahora
 	nodo.seleccionado = sel
 	nodo.tiempo = _anim_tiempo
@@ -4891,6 +6406,9 @@ func _Actualizar_Slot_Coccion_UI(slot: Dictionary, ui: Dictionary, _etiqueta: St
 	nodo.estado = str(slot["estado"])
 	nodo.progreso = float(slot["progreso"])
 	nodo.quemado = float(slot["quemado"])
+	nodo.punto = str(slot.get("punto", ""))
+	nodo.ventana = _restaurante_actual == Sistema_Cocina.RESTAURANTE_ALTA \
+		and str(slot.get("item", "")) in ["solomillo", "lubina", "pato"]
 	nodo.tiempo = _anim_tiempo
 	nodo.queue_redraw()
 	_Actualizar_Contadores_Estaciones()
@@ -4979,7 +6497,12 @@ func _Mostrar_Chef(pose: String, texto: String, color_texto: Color, duracion: fl
 		return
 	if _chef_tween != null and _chef_tween.is_valid():
 		_chef_tween.kill()
-	_chef_textura.texture = ArteCocina.textura_chef(pose)
+	var pose_real: String = pose
+	# La pose «sirviendo» del pack lleva una hamburguesa en la mano: en los
+	# locales de bistró, mercado y alta cocina usamos el pulgar arriba.
+	if pose == "sirviendo" and _restaurante_actual != Sistema_Cocina.RESTAURANTE_BURGER:
+		pose_real = "pulgar"
+	_chef_textura.texture = ArteCocina.textura_chef(pose_real)
 	_chef_label.text = texto
 	_chef_label.add_theme_color_override("font_color", color_texto)
 	_chef_root.visible = true
@@ -5044,19 +6567,22 @@ func _Finalizar_Servicio() -> void:
 
 func _Mostrar_Modal_Resultados(resumen: Dictionary) -> void:
 	for c in _vbox_modal_resultados.get_children():
+		_vbox_modal_resultados.remove_child(c)
 		c.queue_free()
 
 	var estrellas: int = int(resumen.get("estrellas", 0))
 	var superado: bool = bool(resumen.get("superado", false))
 
 	var tit_txt: String = "¡SERVICIO SUPERADO!" if superado else "SERVICIO INCOMPLETO"
-	var tit := Estilos_UI.titulo(tit_txt, 26, Estilos_UI.EXITO_OSCURO if superado else Estilos_UI.PELIGRO)
-	tit.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	var tit := ArteModal.crear_titulo(tit_txt, 34)
+	tit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_vbox_modal_resultados.add_child(tit)
 
-	var sub := Estilos_UI.texto("Nivel %d · %s" % [_nivel_actual, Sistema_Cocina.Obtener_Nombre_Restaurante(_restaurante_actual)],
-		14, Estilos_UI.TINTA_SUAVE, 600)
+	var sub := ArteModal.texto_cartoon(
+		"NIVEL %d · %s" % [_nivel_actual, Sistema_Cocina.Obtener_Nombre_Restaurante(_restaurante_actual)],
+		14, ArteModal.CREMA, ArteModal.NAVY_OSCURO, 4)
 	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	sub.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_vbox_modal_resultados.add_child(sub)
 
 	# 3 estrellas grandes con los sprites del pack y animación de entrada
@@ -5080,7 +6606,7 @@ func _Mostrar_Modal_Resultados(resumen: Dictionary) -> void:
 			tw_est.tween_property(estrella_modal, "scale", Vector2.ONE, 0.34)\
 				.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
-	_vbox_modal_resultados.add_child(Estilos_UI.divisor_horizontal())
+	_vbox_modal_resultados.add_child(ArteModal.divisor())
 
 	# Tabla de resultados: ventas -> costes -> Caja -> dinero personal
 	var ventas: int = int(resumen.get("ventas", _recaudacion))
@@ -5108,7 +6634,8 @@ func _Mostrar_Modal_Resultados(resumen: Dictionary) -> void:
 	var detalle_costes: String = "Ingredientes −%d € · Servicio −%d €" % [coste_ing, coste_serv]
 	if coste_merma > 0:
 		detalle_costes += " · Merma −%d €" % coste_merma
-	_vbox_modal_resultados.add_child(Estilos_UI.parrafo(detalle_costes, 12, Estilos_UI.TINTA_SUAVE))
+	_vbox_modal_resultados.add_child(ArteModal.texto_modal(
+		detalle_costes, 12, ArteModal.CREMA, 500))
 	_Agregar_Fila_Resultado("Beneficio neto", "%d €" % beneficio_neto)
 	_Agregar_Fila_Resultado("Para la Caja del restaurante", "+%d €" % caja_ganada)
 	_Agregar_Fila_Resultado("Tu dinero", "+%.2f €" % dinero_total)
@@ -5119,7 +6646,8 @@ func _Mostrar_Modal_Resultados(resumen: Dictionary) -> void:
 		detalle_personal.append("Prima %.2f €" % bono_est)
 	if _micro_propinas_sesion > 0.0:
 		detalle_personal.append("Micro %.2f €" % _micro_propinas_sesion)
-	_vbox_modal_resultados.add_child(Estilos_UI.parrafo(" · ".join(detalle_personal), 12, Estilos_UI.TINTA_SUAVE))
+	_vbox_modal_resultados.add_child(ArteModal.texto_modal(
+		" · ".join(detalle_personal), 12, ArteModal.CREMA, 500))
 	_Agregar_Fila_Resultado("Progreso Cocina", "+%d (Actual: %d / 100)" % [_cocina_ganada_sesion, Variables_Dinamicas.Progreso_Cocina])
 	if _manualidades_ganadas_sesion > 0:
 		_Agregar_Fila_Resultado("Progreso Manualidades", "+%d (Actual: %d / 100)" % [_manualidades_ganadas_sesion, int(Variables_Dinamicas.Progreso[2])])
@@ -5142,6 +6670,7 @@ func _Mostrar_Modal_Resultados(resumen: Dictionary) -> void:
 		var info_r: Dictionary = Sistema_Cocina.Obtener_Info_Rango(r_nuevo)
 		var prendas: Array = resumen.get("prendas_desbloqueadas", [])
 		var msg_logro: String = "¡Nuevo Rango %d/9: %s! %s" % [r_nuevo, str(info_r.get("nombre", "")), str(info_r.get("beneficio", ""))]
+		msg_logro += "\nMaestría: %d ★ acumuladas." % int(resumen.get("estrellas_totales", 0))
 		if not prendas.is_empty():
 			var nombres_p: Array[String] = []
 			for pk in prendas:
@@ -5164,23 +6693,32 @@ func _Mostrar_Modal_Resultados(resumen: Dictionary) -> void:
 	btns.add_theme_constant_override("separation", 12)
 	_vbox_modal_resultados.add_child(btns)
 
-	var btn_mapa := Estilos_UI.boton("Mapa", "secundario", "arrow-left", Estilos_UI.TINTA, 48)
+	var btn_mapa := ArteModal.crear_boton(
+		"MAPA", ArteModal.TEX_BOTON_AZUL, "arrow-left", 52, 17)
+	btn_mapa.name = "Boton_Mapa_Resultados"
 	btn_mapa.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	btn_mapa.pressed.connect(_Mostrar_Mapa)
 	btns.add_child(btn_mapa)
 
-	var btn_rep := Estilos_UI.boton("Repetir", "oro", "rotate-ccw", Estilos_UI.ORO, 48)
+	var btn_rep := ArteModal.crear_boton(
+		"REPETIR", ArteModal.TEX_BOTON_NARANJA, "rotate-ccw", 52, 17)
+	btn_rep.name = "Boton_Repetir_Resultados"
 	btn_rep.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	btn_rep.pressed.connect(func(): _Comenzar_Carga_Nivel(_nivel_actual))
 	btns.add_child(btn_rep)
 
 	var tiene_sig: bool = superado and _nivel_actual < 15
-	var btn_sig := Estilos_UI.boton("Siguiente Nivel", "exito", "chevron-right", Estilos_UI.EXITO, 48)
+	var btn_sig := ArteModal.crear_boton(
+		"SIGUIENTE NIVEL", ArteModal.TEX_BOTON_VERDE, "chevron-right", 52, 17)
+	btn_sig.name = "Boton_Siguiente_Resultados"
 	btn_sig.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	btn_sig.disabled = not tiene_sig
+	if not tiene_sig:
+		btn_sig.modulate = Color(1, 1, 1, 0.62)
 	btn_sig.pressed.connect(func(): _Comenzar_Carga_Nivel(_nivel_actual + 1))
 	btns.add_child(btn_sig)
 
+	_modal_resultados.modulate.a = 0.0
 	_modal_resultados.visible = true
 	_Animar_Modal_Resultados.call_deferred()
 
@@ -5188,23 +6726,16 @@ func _Mostrar_Modal_Resultados(resumen: Dictionary) -> void:
 func _Animar_Modal_Resultados() -> void:
 	if _modal_resultados == null or _card_resultados == null:
 		return
-	_card_resultados.pivot_offset = _card_resultados.size * 0.5
-	_card_resultados.scale = Vector2(0.92, 0.92)
-	_modal_resultados.modulate.a = 0.0
-	var tw := create_tween()
-	tw.set_parallel(true)
-	tw.tween_property(_modal_resultados, "modulate:a", 1.0, 0.18)
-	tw.tween_property(_card_resultados, "scale", Vector2.ONE, 0.34)\
-		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	_Animar_Entrada_Modal(_modal_resultados, _card_resultados)
 
 
 func _Agregar_Fila_Resultado(clave: String, valor: String) -> void:
 	var h := HBoxContainer.new()
 	h.add_theme_constant_override("separation", 10)
-	var k := Estilos_UI.texto(clave, 14, Estilos_UI.TINTA_SUAVE, 600)
+	var k := ArteModal.texto_modal(clave, 14, ArteModal.CREMA, 600)
 	k.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	h.add_child(k)
-	var v := Estilos_UI.texto(valor, 14, Estilos_UI.TINTA, 700)
+	var v := ArteModal.texto_modal(valor, 14, ArteModal.ORO_CLARO, 700)
 	v.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	h.add_child(v)
 	_vbox_modal_resultados.add_child(h)

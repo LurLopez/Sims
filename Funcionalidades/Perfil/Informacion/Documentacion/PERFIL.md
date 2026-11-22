@@ -1,7 +1,7 @@
 # Perfil
 
 ## Descripción General
-Pantalla de perfil del jugador accesible desde el botón "👤 Perfil" en la barra superior izquierda. Organizada en tres pestañas: **Info** (datos del personaje), **Mensajes** (bandeja de mensajes del juego) e **Inventario/Apuntes** (libros desbloqueados). Se abre siempre en la pestaña Info.
+Pantalla de perfil del jugador accesible desde el botón "Perfil" en la barra superior izquierda. Organizada en cuatro pestañas: **Info** (datos del personaje, edad, etapa de vida, progreso, habilidades innatas y acceso a Vestuario), **Mensajes** (bandeja de mensajes del juego con badge de no leídos), **Apuntes** (libros desbloqueados y diplomas) y **Despensa** (tuppers caseros). Se abre siempre en la pestaña Info.
 
 ---
 
@@ -18,7 +18,8 @@ Pantalla_Mensajes (Control, 720×1280, z_index=5)   ← nombre histórico, es la
 ├── Tab_Bar (HBoxContainer, y:132–205)
 │   ├── Tab_Info (Button, "Info")
 │   ├── Tab_Mensajes (Button, "Mensajes")
-│   └── Tab_Apuntes (Button, "Apuntes")
+│   ├── Tab_Apuntes (Button, "Apuntes")
+│   └── Tab_Despensa (Button, "Despensa")
 ├── Panel_Info (Control, y:210–1280)            ← Tab Info
 │   └── Scroll_Info (ScrollContainer)
 │       └── VBox_Info (VBoxContainer, sep=16)
@@ -30,10 +31,13 @@ Pantalla_Mensajes (Control, 720×1280, z_index=5)   ← nombre histórico, es la
 │   ├── Hora_Mensaje_Label
 │   ├── Titulo_Mensaje_Label
 │   └── Descripcion_Mensaje_Label
-└── Panel_Apuntes (Control, y:210–1280)         ← Tab Apuntes (ver Inventario)
-    ├── Tabs_Libros (HBoxContainer)
-    ├── Texto_Apuntes (TextEdit, editable=false)
-    └── Sin_Apuntes_Label (Label, hidden si hay libros)
+├── Panel_Apuntes (Control, y:210–1280)         ← Tab Apuntes (ver Inventario)
+│   ├── Tabs_Libros (HBoxContainer)
+│   ├── Texto_Apuntes (TextEdit, editable=false)
+│   └── Sin_Apuntes_Label (Label, hidden si hay libros)
+└── Panel_Despensa (Control, y:210–1280)        ← Tab Despensa (tuppers)
+    ├── Sin_Tuppers_Label (Label)
+    └── Scroll_Tuppers/VBox_Tuppers (filas de Tupper_UI.crear_fila)
 ```
 
 ### Gestionar_Visibilidad.gd — `Visibilizar_Perfil`

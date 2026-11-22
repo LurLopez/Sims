@@ -8,7 +8,7 @@
 
 ## 1. Resumen
 
-El juego tiene una **pista general** que suena en el menú, la escena principal y el resto de pantallas, y una **pista específica para el minijuego de cocina de comida rápida**. El cambio entre ambas es un fundido cruzado y la pista general se reanuda donde se quedó al salir del minijuego. El jugador puede silenciar la música desde el menú o la cabecera, y dispone de un panel de **Ajustes** con volumen y silencio independientes para música y efectos de sonido. Las preferencias se conservan entre sesiones.
+El juego tiene una **pista general** que suena en el menú, la escena principal y el resto de pantallas, y una **pista específica para el minijuego de cocina de comida rápida**. El cambio entre ambas es un fundido cruzado y la pista general se reanuda donde se quedó al salir del minijuego. El jugador controla todo el audio desde el panel de **Ajustes**, que se abre con el botón de engranaje del menú o de la cabecera y ofrece volumen y silencio independientes para música y efectos de sonido; ya no hay botones de altavoz sueltos. Las preferencias se conservan entre sesiones.
 
 ---
 
@@ -56,6 +56,7 @@ Los MP3 usan el importador nativo de Godot (`AudioStreamMP3`) y están configura
 - Señal `ajustes_cambiados` para refrescar la UI y señales específicas por valor.
 - `Sonidos_Cocina.gd` reproduce sus 15 SFX en el bus `SFX`, por lo que se puede silenciar la música sin perder los efectos (y viceversa).
 - El panel `Panel_Ajustes` (`CanvasLayer` 120) ofrece dos barras táctiles, porcentajes, botones de silencio, «Probar sonido», «Restablecer» y «Hecho». Se abre con `Boton_Ajustes` (menú) y `Boton_Ajustes_Header` (escena principal).
+- **Persistencia visual entre pantallas:** `Panel_Ajustes` se registra en el grupo `Gestionar_Visibilidad.GRUPO_OVERLAY_MODAL` (`"overlay_modal"`), por lo que `Recursivo_Desvisibilizar()` y `Recursivo_Visibilizar()` ignoran su subárbol al cambiar de pestaña; `Visibilizar_Lo_Basico()` y `_Redisenar_Superior()` mantienen visible `Boton_Ajustes_Header` (con icono `settings`) incluso al volver del minijuego de cocina. Ya no existe el botón de altavoz `Boton_Musica_Header`.
 
 ---
 
@@ -65,8 +66,7 @@ Los MP3 usan el importador nativo de Godot (`AudioStreamMP3`) y están configura
 - `Script_Principal.gd` → `Musica.Reproducir_General()` en `_ready()`.
 - `Minijuego_Cocina.gd` → `Musica.Reproducir_Minijuego()` en `_ready()` y `Musica.Reproducir_General()` en `_exit_tree()`.
 - La pista general **no se detiene** al entrar al minijuego: se pausa conservando la posición y se reanuda al salir.
-- Botones de altavoz: `Boton_Musica` (menú) y `Boton_Musica_Header` (cabecera principal). El icono cambia entre `volume-2` y `x`.
-- Botones de engranaje: `Boton_Ajustes` (menú) y `Boton_Ajustes_Header` (cabecera principal) abren `Panel_Ajustes`.
+- Único botón de audio: el engranaje `Boton_Ajustes` (menú) / `Boton_Ajustes_Header` (cabecera principal, icono `settings`) abre `Panel_Ajustes`, donde se regulan por separado la música y los efectos (SFX). Ya no hay botones de altavoz `Boton_Musica` / `Boton_Musica_Header` ni iconos `volume-2`/`x`.
 
 ---
 
@@ -85,7 +85,7 @@ Los MP3 usan el importador nativo de Godot (`AudioStreamMP3`) y están configura
 - Al abrir el juego suena la pista general, tanto en el menú como en la escena principal.
 - Al abrir el minijuego de cocina se funde a la segunda pista sin cortes ni silencios.
 - Al cerrar el minijuego (botón de volver o salida forzada) vuelve la pista general en el punto donde estaba.
-- El botón de altavoz silencia/restaura el bus de música y recuerda el estado tras reiniciar.
+- Desde el engranaje (`Boton_Ajustes` / `Boton_Ajustes_Header`) se silencia/restaura el bus de música y el estado se recuerda tras reiniciar.
 - El panel de Ajustes permite subir/bajar música y efectos por separado, silenciarlos, probar el efecto y restablecer; los valores se conservan tras reiniciar.
 - Silenciar la música no silencia los efectos del minijuego (bus `SFX` independiente).
 - En Android, al mandar la app a segundo plano la música se pausa y al volver se reanuda.

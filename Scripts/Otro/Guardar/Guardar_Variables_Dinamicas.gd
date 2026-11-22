@@ -1,20 +1,51 @@
 extends Node
 
-var save_path = "user://guardado//variables//Guardar_Variables_Dinamicas.dat"
+const RUTA_GUARDADO_REAL := "user://guardado//variables//Guardar_Variables_Dinamicas.dat"
+
+var save_path = RUTA_GUARDADO_REAL
 var _rle_cache: Dictionary = {}
 
 func save_game():
+	# Red de seguridad: una prueba de GUT no debe sobrescribir la partida real
+	# si algún test llama a un método de producción que guarda por su cuenta.
+	if _Ejecutando_Tests_Gut() and save_path == RUTA_GUARDADO_REAL:
+		push_warning("Guardado real bloqueado durante la ejecución de tests GUT")
+		return
 	Funciones_Globales.Crear_Todas_Las_Carpetas()
 	var game_data : Dictionary = game_data_func()
-	var save_file = FileAccess.open(save_path, FileAccess.WRITE)
+	# Escritura atómica: si el dispositivo se queda sin espacio, la partida
+	# anterior permanece intacta. El archivo anterior se conserva como .bak.
+	var ruta_temporal: String = save_path + ".tmp"
+	var save_file = FileAccess.open(ruta_temporal, FileAccess.WRITE)
+	if save_file == null:
+		push_error("No se pudo abrir el guardado temporal: %s" % ruta_temporal)
+		return
 	save_file.store_var(game_data)
+	var error_escritura: Error = save_file.get_error()
 	save_file = null
+	var abs_temporal: String = ProjectSettings.globalize_path(ruta_temporal)
+	if error_escritura != OK:
+		push_error("Error %d escribiendo el guardado temporal" % error_escritura)
+		DirAccess.remove_absolute(abs_temporal)
+		return
+	var abs_principal: String = ProjectSettings.globalize_path(save_path)
+	var abs_respaldo: String = ProjectSettings.globalize_path(save_path + ".bak")
+	if FileAccess.file_exists(save_path):
+		if FileAccess.file_exists(save_path + ".bak"):
+			DirAccess.remove_absolute(abs_respaldo)
+		DirAccess.copy_absolute(abs_principal, abs_respaldo)
+	var error_renombrado := DirAccess.rename_absolute(abs_temporal, abs_principal)
+	if error_renombrado != OK:
+		push_error("Error %d reemplazando el guardado principal" % error_renombrado)
+		DirAccess.remove_absolute(abs_temporal)
 
 func load_game():
 	var game_data : Dictionary = game_data_func()
-	if FileAccess.file_exists(save_path):
-		var save_file = FileAccess.open(save_path, FileAccess.READ)
-		game_data = save_file.get_var()
+	var datos_cargados := _Leer_Guardado(save_path)
+	if datos_cargados.is_empty() and FileAccess.file_exists(save_path + ".bak"):
+		datos_cargados = _Leer_Guardado(save_path + ".bak")
+	if not datos_cargados.is_empty():
+		game_data = datos_cargados
 		var matriz_guardada = game_data["Matriz_Jugador"]
 		if matriz_guardada is Dictionary and matriz_guardada.get("formato", "") == "rle":
 			Variables_Dinamicas.Matriz_Jugador = _RLE_A_Matriz(matriz_guardada)
@@ -82,6 +113,9 @@ func load_game():
 		Variables_Dinamicas.Objetos_Poseidos.erase("Mesa_Premium")
 		if str(Variables_Dinamicas.Objeto_Seleccionado.get("Comer", "")) == "Mesa_Premium":
 			Variables_Dinamicas.Objeto_Seleccionado["Comer"] = "Mesa_Basica"
+		# Catálogo ampliado: entrega los muebles básicos de Salón/Estudio/Cocina
+		# a partidas creadas antes de existir esas categorías.
+		Variables_Estaticas.Asegurar_Objetos_Basicos()
 		# Ropa equipable — fallback seguro para saves antiguos y entrega de las
 		# prendas gratuitas del armario ampliado.
 		Variables_Dinamicas.Objetos_Poseidos["Ropa_Calle"] = true
@@ -150,6 +184,38 @@ func load_game():
 		Variables_Dinamicas.Dinero_Invertido = game_data.get("Dinero_Invertido", 0.0)
 		Variables_Dinamicas.Valor_Inversion = game_data.get("Valor_Inversion", 0.0)
 		Variables_Dinamicas.Salud_Mental_Al_Invertir = game_data.get("Salud_Mental_Al_Invertir", 50)
+		# El progreso se guardaba desde la primera versión, pero no se cargaba:
+		# sin esta línea la habilidad inversora volvía siempre a 1.
+		Variables_Dinamicas.Progreso_Inversion = clampi(
+			int(game_data.get("Progreso_Inversion", 1)), 1, 100)
+		# Historial y estadísticas de la bolsa (saves nuevos).
+		Variables_Dinamicas.Inversion_Historial = game_data.get("Inversion_Historial", [])
+		Variables_Dinamicas.Inversion_Operaciones = game_data.get("Inversion_Operaciones", [])
+		Variables_Dinamicas.Inversion_Eventos = game_data.get("Inversion_Eventos", [])
+		Variables_Dinamicas.Inversion_Tendencia = game_data.get("Inversion_Tendencia", 0.0)
+		Variables_Dinamicas.Inversion_Ultimo_Evento_Minuto = game_data.get("Inversion_Ultimo_Evento_Minuto", -1)
+		Variables_Dinamicas.Inversion_Minuto_Inicio = game_data.get("Inversion_Minuto_Inicio", -1)
+		Variables_Dinamicas.Inversion_Aportado_Total = game_data.get("Inversion_Aportado_Total", 0.0)
+		Variables_Dinamicas.Inversion_Retirado_Total = game_data.get("Inversion_Retirado_Total", 0.0)
+		Variables_Dinamicas.Inversion_Beneficio_Realizado = game_data.get("Inversion_Beneficio_Realizado", 0.0)
+		Variables_Dinamicas.Inversion_Num_Aportes = game_data.get("Inversion_Num_Aportes", 0)
+		Variables_Dinamicas.Inversion_Num_Retiradas = game_data.get("Inversion_Num_Retiradas", 0)
+		Variables_Dinamicas.Inversion_Cierres_Ganadores = game_data.get("Inversion_Cierres_Ganadores", 0)
+		Variables_Dinamicas.Inversion_Cierres_Perdedores = game_data.get("Inversion_Cierres_Perdedores", 0)
+		Variables_Dinamicas.Inversion_Mejor_Operacion = game_data.get("Inversion_Mejor_Operacion", 0.0)
+		Variables_Dinamicas.Inversion_Peor_Operacion = game_data.get("Inversion_Peor_Operacion", 0.0)
+		Variables_Dinamicas.Inversion_Eventos_Subida = game_data.get("Inversion_Eventos_Subida", 0)
+		Variables_Dinamicas.Inversion_Eventos_Bajada = game_data.get("Inversion_Eventos_Bajada", 0)
+		Variables_Dinamicas.Inversion_Panicos = game_data.get("Inversion_Panicos", 0)
+		Variables_Dinamicas.Inversion_Minutos_Activos = game_data.get("Inversion_Minutos_Activos", 0)
+		Variables_Dinamicas.Inversion_Racha_Actual = game_data.get("Inversion_Racha_Actual", 0)
+		Variables_Dinamicas.Inversion_Mejor_Racha = game_data.get("Inversion_Mejor_Racha", 0)
+		Variables_Dinamicas.Inversion_Peor_Racha = game_data.get("Inversion_Peor_Racha", 0)
+		Variables_Dinamicas.Inversion_Racha_Operaciones = game_data.get("Inversion_Racha_Operaciones", 0)
+		Variables_Dinamicas.Inversion_Mejor_Racha_Operaciones = game_data.get("Inversion_Mejor_Racha_Operaciones", 0)
+		Variables_Dinamicas.Inversion_Pico_Beneficio = game_data.get("Inversion_Pico_Beneficio", 0.0)
+		Variables_Dinamicas.Inversion_Max_Caida = game_data.get("Inversion_Max_Caida", 0.0)
+		Sistema_Bolsa.Asegurar_Estado()
 		# Sistema de Eventos Aleatorios — Cooldown de trabajos
 		if game_data.has("Cooldown_Trabajos"):
 			Variables_Dinamicas.Cooldown_Trabajos = game_data["Cooldown_Trabajos"]
@@ -159,7 +225,18 @@ func load_game():
 		# La matriz cargada no coincide con la caché RLE de la sesión anterior.
 		_rle_cache = {}
 		Variables_Dinamicas.Matriz_Sucia = true
-		save_file = null
+
+func _Leer_Guardado(ruta: String) -> Dictionary:
+	if not FileAccess.file_exists(ruta):
+		return {}
+	var save_file = FileAccess.open(ruta, FileAccess.READ)
+	if save_file == null:
+		return {}
+	var datos = save_file.get_var()
+	save_file = null
+	if datos is Dictionary:
+		return datos
+	return {}
 
 func _Sanear_Matriz_Cargada() -> void:
 	var matriz: Array = Variables_Dinamicas.Matriz_Jugador
@@ -220,6 +297,32 @@ func game_data_func():
 		"Valor_Inversion": Variables_Dinamicas.Valor_Inversion,
 		"Salud_Mental_Al_Invertir": Variables_Dinamicas.Salud_Mental_Al_Invertir,
 		"Progreso_Inversion": Variables_Dinamicas.Progreso_Inversion,
+		"Inversion_Historial": Variables_Dinamicas.Inversion_Historial,
+		"Inversion_Operaciones": Variables_Dinamicas.Inversion_Operaciones,
+		"Inversion_Eventos": Variables_Dinamicas.Inversion_Eventos,
+		"Inversion_Tendencia": Variables_Dinamicas.Inversion_Tendencia,
+		"Inversion_Ultimo_Evento_Minuto": Variables_Dinamicas.Inversion_Ultimo_Evento_Minuto,
+		"Inversion_Minuto_Inicio": Variables_Dinamicas.Inversion_Minuto_Inicio,
+		"Inversion_Aportado_Total": Variables_Dinamicas.Inversion_Aportado_Total,
+		"Inversion_Retirado_Total": Variables_Dinamicas.Inversion_Retirado_Total,
+		"Inversion_Beneficio_Realizado": Variables_Dinamicas.Inversion_Beneficio_Realizado,
+		"Inversion_Num_Aportes": Variables_Dinamicas.Inversion_Num_Aportes,
+		"Inversion_Num_Retiradas": Variables_Dinamicas.Inversion_Num_Retiradas,
+		"Inversion_Cierres_Ganadores": Variables_Dinamicas.Inversion_Cierres_Ganadores,
+		"Inversion_Cierres_Perdedores": Variables_Dinamicas.Inversion_Cierres_Perdedores,
+		"Inversion_Mejor_Operacion": Variables_Dinamicas.Inversion_Mejor_Operacion,
+		"Inversion_Peor_Operacion": Variables_Dinamicas.Inversion_Peor_Operacion,
+		"Inversion_Eventos_Subida": Variables_Dinamicas.Inversion_Eventos_Subida,
+		"Inversion_Eventos_Bajada": Variables_Dinamicas.Inversion_Eventos_Bajada,
+		"Inversion_Panicos": Variables_Dinamicas.Inversion_Panicos,
+		"Inversion_Minutos_Activos": Variables_Dinamicas.Inversion_Minutos_Activos,
+		"Inversion_Racha_Actual": Variables_Dinamicas.Inversion_Racha_Actual,
+		"Inversion_Mejor_Racha": Variables_Dinamicas.Inversion_Mejor_Racha,
+		"Inversion_Peor_Racha": Variables_Dinamicas.Inversion_Peor_Racha,
+		"Inversion_Racha_Operaciones": Variables_Dinamicas.Inversion_Racha_Operaciones,
+		"Inversion_Mejor_Racha_Operaciones": Variables_Dinamicas.Inversion_Mejor_Racha_Operaciones,
+		"Inversion_Pico_Beneficio": Variables_Dinamicas.Inversion_Pico_Beneficio,
+		"Inversion_Max_Caida": Variables_Dinamicas.Inversion_Max_Caida,
 		"Cooldown_Trabajos": Variables_Dinamicas.Cooldown_Trabajos,
 		"Carrera_Futbol": Variables_Dinamicas.Carrera_Futbol.duplicate(true),
 		"Estados_Temporales": _Estados_Temporales_Serializables(),
@@ -407,7 +510,11 @@ func _Normalizar_Cocina_Estado(datos) -> Dictionary:
 				mejoras_base[rest_id] = rest_base
 		resultado["mejoras"] = mejoras_base
 
-	resultado["rango_logro"] = clampi(int(datos.get("rango_logro", 0)), 0, 9)
+	# El rango se deriva de las estrellas: cada 20 ★ asciende un rango.
+	var estrellas_totales: int = 0
+	for valor in estrellas_norm.values():
+		estrellas_totales += int(valor)
+	resultado["rango_logro"] = Sistema_Cocina.Calcular_Rango_Logro(estrellas_totales)
 	resultado["servicios_remunerados_hoy"] = maxi(0, int(datos.get("servicios_remunerados_hoy", 0)))
 	resultado["ultimo_dia_remunerado"] = int(datos.get("ultimo_dia_remunerado", -1))
 	resultado["plus_nomina_turno_hoy"] = bool(datos.get("plus_nomina_turno_hoy", false))
@@ -498,6 +605,7 @@ func _Inicializar_Objetos_Por_Defecto():
 		"Ropa": "Ropa_Calle"
 	}
 	Sistema_Cocina.Asegurar_Prendas_Iniciales()
+	Variables_Estaticas.Asegurar_Objetos_Basicos()
 
 func _Matriz_A_RLE() -> Dictionary:
 	if not Variables_Dinamicas.Matriz_Sucia and not _rle_cache.is_empty():
@@ -645,3 +753,10 @@ func _Strings_A_Matriz(matriz_guardada: Array) -> Array:
 				nueva_fila.append(celda)
 		resultado.append(nueva_fila)
 	return resultado
+
+
+func _Ejecutando_Tests_Gut() -> bool:
+	for arg in OS.get_cmdline_args():
+		if str(arg).contains("gut_cmdln.gd"):
+			return true
+	return false

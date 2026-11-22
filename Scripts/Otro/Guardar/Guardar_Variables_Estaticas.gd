@@ -1,24 +1,61 @@
 extends Node
 
-var save_path = "user://guardado//variables//Guardar_Variables_Estaticas.dat"
+const RUTA_GUARDADO_REAL := "user://guardado//variables//Guardar_Variables_Estaticas.dat"
+
+var save_path = RUTA_GUARDADO_REAL
 
 func save_game():
+	if _Ejecutando_Tests_Gut() and save_path == RUTA_GUARDADO_REAL:
+		push_warning("Guardado estático real bloqueado durante la ejecución de tests GUT")
+		return
 	Funciones_Globales.Crear_Todas_Las_Carpetas()
 	var game_data : Dictionary = game_data_func()
-	
-	var save_file = FileAccess.open(save_path, FileAccess.WRITE)
-	save_file.store_var(game_data)  
+	var ruta_temporal: String = save_path + ".tmp"
+	var save_file = FileAccess.open(ruta_temporal, FileAccess.WRITE)
+	if save_file == null:
+		push_error("No se pudo abrir el guardado estático temporal")
+		return
+	save_file.store_var(game_data)
+	var error_escritura: Error = save_file.get_error()
 	save_file = null
+	var abs_temporal: String = ProjectSettings.globalize_path(ruta_temporal)
+	if error_escritura != OK:
+		push_error("Error %d escribiendo el guardado estático temporal" % error_escritura)
+		DirAccess.remove_absolute(abs_temporal)
+		return
+	var abs_principal: String = ProjectSettings.globalize_path(save_path)
+	var abs_respaldo: String = ProjectSettings.globalize_path(save_path + ".bak")
+	if FileAccess.file_exists(save_path):
+		if FileAccess.file_exists(save_path + ".bak"):
+			DirAccess.remove_absolute(abs_respaldo)
+		DirAccess.copy_absolute(abs_principal, abs_respaldo)
+	var error_renombrado := DirAccess.rename_absolute(abs_temporal, abs_principal)
+	if error_renombrado != OK:
+		push_error("Error %d reemplazando el guardado estático principal" % error_renombrado)
+		DirAccess.remove_absolute(abs_temporal)
+
+
+func _Leer_Guardado(ruta: String) -> Dictionary:
+	if not FileAccess.file_exists(ruta):
+		return {}
+	var save_file = FileAccess.open(ruta, FileAccess.READ)
+	if save_file == null:
+		return {}
+	var datos = save_file.get_var()
+	save_file = null
+	if datos is Dictionary:
+		return datos
+	return {}
 
 
 func load_game():
 	
 	var game_data : Dictionary = game_data_func()
-	
-	
-	if FileAccess.file_exists(save_path):
-		var save_file = FileAccess.open(save_path,FileAccess.READ)
-		game_data=save_file.get_var()
+	var datos_cargados := _Leer_Guardado(save_path)
+	if datos_cargados.is_empty() and FileAccess.file_exists(save_path + ".bak"):
+		datos_cargados = _Leer_Guardado(save_path + ".bak")
+	if not datos_cargados.is_empty():
+		game_data = datos_cargados
 		Variables_Estaticas.First_Time=game_data["First_Time"]
 		Variables_Estaticas.Modo_Rapido = game_data.get("Modo_Rapido", false)
 		Variables_Estaticas.Tutorial_Completado = game_data.get("Tutorial_Completado", true)
@@ -47,7 +84,6 @@ func load_game():
 			Variables_Estaticas.First_Time_Year=fecha_inicio["year"]
 			Variables_Estaticas.First_Time_Month=fecha_inicio["month"]
 			Variables_Estaticas.First_Time_Day_Of_Month=fecha_inicio["day"]
-		save_file=null
 
 func game_data_func():
 	var game_data : Dictionary = {
@@ -66,3 +102,10 @@ func game_data_func():
 	"Record_Max_Niveles_Cocina": Variables_Estaticas.Record_Max_Niveles_Cocina
 	}
 	return game_data
+
+
+func _Ejecutando_Tests_Gut() -> bool:
+	for arg in OS.get_cmdline_args():
+		if str(arg).contains("gut_cmdln.gd"):
+			return true
+	return false

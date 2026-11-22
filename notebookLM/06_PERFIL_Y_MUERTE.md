@@ -1,7 +1,7 @@
 # Perfil
 
 ## Descripción General
-Pantalla de perfil del jugador accesible desde el botón "👤 Perfil" en la barra superior izquierda. Organizada en tres pestañas: **Info** (datos del personaje), **Mensajes** (bandeja de mensajes del juego) e **Inventario/Apuntes** (libros desbloqueados). Se abre siempre en la pestaña Info.
+Pantalla de perfil del jugador accesible desde el botón "Perfil" en la barra superior izquierda. Organizada en cuatro pestañas: **Info** (datos del personaje, etapa de vida, progreso, habilidades innatas y acceso a Vestuario), **Mensajes** (bandeja de mensajes del juego con badge de no leídos), **Apuntes** (libros desbloqueados por carrera y diplomas de graduación) y **Despensa** (tuppers caseros con calidad, caducidad y selección). Se abre siempre en la pestaña Info.
 
 ---
 
@@ -95,39 +95,12 @@ func _on_perfil_tab_apuntes_pressed():
     _Renderizar_Apuntes()
 ```
 
-### Tab Info — renderizado
+### Tab Info — renderizado (resumen)
 
-```gdscript
-func _Renderizar_Info():
-    var vbox = $Pantalla_Mensajes/Panel_Info/Scroll_Info/VBox_Info
-    for child in vbox.get_children():
-        child.queue_free()
-
-    var edad = 18 + (Variables_Dinamicas.Minute_Day - Variables_Estaticas.First_Time_Minute_Day) / 7
-    var personalidad = Variables_Estaticas.Personalidad.replace("_", " ")
-
-    _Info_Seccion(vbox, "PERSONAJE")
-    _Info_Fila(vbox, "Edad", str(edad) + " años")
-    _Info_Fila(vbox, "Personalidad", personalidad)
-    _Info_Fila(vbox, "Dinero", str(int(Variables_Dinamicas.Dinero)) + " €")
-
-    _Info_Seccion(vbox, "PROGRESO")
-    _Info_Fila(vbox, "Deporte", str(Variables_Dinamicas.Progreso[0]) + " / 100")
-    _Info_Fila(vbox, "Académico", str(Variables_Dinamicas.Progreso[1]) + " / 100")
-    _Info_Fila(vbox, "Manualidades", str(Variables_Dinamicas.Progreso[2]) + " / 100")
-
-    _Info_Seccion(vbox, "HABILIDADES INNATAS")
-    var nombres_hab = ["Deporte", "Inteligencia", "Destreza manual", "Memoria", "Liderazgo", "Paciencia", "Sangre fría"]
-    for i in range(min(nombres_hab.size(), Variables_Estaticas.Habilidades.size())):
-        # El límite natural solo se revela cuando Habilidades_Mostradas lo alcanza.
-        var innato = int(Variables_Estaticas.Habilidades[i])
-        var mostrado = int(Variables_Dinamicas.Habilidades_Mostradas[i]) if i < Variables_Dinamicas.Habilidades_Mostradas.size() else 0
-        var valor = str(innato) if mostrado >= innato else "?"
-        _Info_Fila(vbox, nombres_hab[i], valor + " / 100")
-
-# CRÍTICO: la edad se recalcula cada vez que se abre — no se guarda como variable
-# Fórmula: 18 + (Minute_Day - First_Time_Minute_Day) / 7  (división entera)
-```
+`Script_Principal._Renderizar_Info()` muestra:
+- **PERSONAJE:** edad calculada con `Variables_Estaticas.Calcular_Edad()` (que resta `Rejuvenecimiento_Anios` con suelo 18 y soporta `Modo_Rapido`), **Etapa de vida** (`Envejecimiento_Personaje.etapa(edad)`), personalidad, dinero, estado de vivienda y acceso directo «Cambiar de atuendo» (abre `Pantalla_Vestuario`).
+- **PROGRESO:** Deporte, Académico, Manualidades (`Variables_Dinamicas.Progreso`) y Cocina (`Progreso_Cocina`).
+- **HABILIDADES INNATAS:** las 7 habilidades (`Deporte`, `Inteligencia`, `Destreza manual`, `Memoria`, `Liderazgo`, `Paciencia`, `Sangre fría`); cada una muestra `? / 100` hasta que `Habilidades_Mostradas[i]` alcanza el límite innato.
 
 ### Helpers de UI para Info (creación dinámica de nodos)
 
@@ -191,7 +164,7 @@ Esta funcionalidad no persiste estado propio. El panel visible al abrir siempre 
 |---|---|
 | Nombre del nodo raíz | `Pantalla_Mensajes` (nombre histórico, es la pantalla de perfil completa) |
 | Pestaña por defecto | Siempre Info al abrir |
-| Edad calculada | División entera: 18 + (Minute_Day - First_Time_Minute_Day) / 7 |
+| Edad calculada | `Variables_Estaticas.Calcular_Edad()`: `max(18, 18 + int(max(0, Minute_Day - First_Time_Minute_Day) / Dias_Por_Anio()) - Rejuvenecimiento_Anios)` |
 | Habilidades límite | `min(nombres_hab.size(), Habilidades.size())` para evitar out-of-bounds |
 | Contenido_Mensaje | Cubre toda la zona de contenido (y:210) ocultando tabs y lista al leer un mensaje |
 
@@ -308,45 +281,21 @@ func _Renderizar_Apuntes():
     _Mostrar_Apunte(primero.carrera, int(String(primero.libro).replace("Anio_", "")))
 ```
 
-### Mostrar contenido de un libro
+### Mostrar contenido de un libro y diplomas
 
-```gdscript
-func _Mostrar_Apunte(carrera, año: int):
-    var texto = $Pantalla_Mensajes/Panel_Apuntes/Texto_Apuntes
-    var ruta = "res://Scripts/Logica/Escena_Principal/Actividades/Carreras/Contenido/apuntes_ing_informatica_anio%d.txt" % año
-    if FileAccess.file_exists(ruta):
-        texto.text = FileAccess.get_file_as_string(ruta)
-    else:
-        texto.text = "Apuntes no disponibles para Año %d." % año
-```
+`Panel_Apuntes` resuelve la ruta de forma genérica mediante `carrera.slug_contenido` (`ing_informatica`, `derecho`, `medicina`, `bellas_artes`) y abre `Lector_Libro.gd` (que también renderiza la página `"diploma"` para las carreras completadas).
 
 ---
 
 ## Origen de los libros (sistema de Carreras)
 
-Los libros se desbloquean en `Sistema_Examenes.gd` cuando el jugador supera un examen:
-
-```gdscript
-var libro_siguiente = "Anio_%d" % carrera.año_actual
-if not carrera.libros_desbloqueados.has(libro_siguiente):
-    carrera.libros_desbloqueados.append(libro_siguiente)
-```
-
-El formato de cada entrada en `libros_desbloqueados` es el string `"Anio_1"`, `"Anio_2"`, etc. `_Renderizar_Apuntes` extrae el número con `.replace("Anio_", "")`.
+Los libros se desbloquean en `Sistema_Examenes.gd` cuando el jugador supera un examen (`"Anio_1"`, `"Anio_2"`, etc.), y las 4 carreras disponen de sus archivos `apuntes_<slug>_anioN.txt` en `Scripts/Logica/Escena_Principal/Actividades/Carreras/Contenido/`.
 
 ---
 
-## Archivos de contenido
+## Tab Despensa (Tuppers)
 
-Los textos de los libros son archivos `.txt` en:
-
-```
-res://Scripts/Logica/Escena_Principal/Actividades/Carreras/Contenido/
-├── apuntes_ing_informatica_anio1.txt
-├── apuntes_ing_informatica_anio2.txt
-├── apuntes_ing_informatica_anio3.txt
-└── apuntes_ing_informatica_anio4.txt
-```
+`Panel_Despensa/Scroll_Tuppers/VBox_Tuppers` lista todos los tuppers de `Variables_Dinamicas.Tuppers` usando las filas reutilizables de `Scripts/GUI/Escena_Principal/Tuppers/Tupper_UI.gd`, mostrando calidad, porcentaje restante, caducidad (vigente o caducado) y permitiendo elegir manualmente el tupper prioritario (`Tupper_Seleccionado_Idx`).
 
 La ruta está hardcoded en `_Mostrar_Apunte`. Si se añaden más carreras en el futuro, habrá que hacerla dinámica usando `carrera.nombre` para construir el path.
 
@@ -994,3 +943,29 @@ Cada vez que se procesa un batch de minutos, el output de Godot muestra:
 | `Scripts/Globales/Menu.gd` | `_Mostrar_Game_Over()` con estadísticas |
 | `Scripts/Globales/Principales_Variables/Variables_Dinamicas.gd` | `Muerto`, `Edad_Muerte`, `Prob_Supervivencia_Acumulada` |
 | `Scripts/Otro/Guardar/Guardar_Variables_Dinamicas.gd` | Guarda/carga las 3 nuevas variables |
+
+---
+
+# Personaje, Vestuario, Envejecimiento y Escenografía de Inicio (nov 2026)
+
+## 1. Creador y Apariencia (`Apariencia_Personaje.gd` + `Creador_Personaje.gd`)
+- Flujo guiado en **6 pasos** (Identidad, Cuerpo, Cara, Pelo, Ropa, Extras) con barra de progreso, valor actual por sección, botones Atrás/Siguiente, 3 niveles de zoom (`Cara`, `Busto`, `Cuerpo`), barra de poses en vivo y arquetipos rápidos.
+- Configura complexión (`atletica`, `normal`, `robusta`), 12 tonos de piel, rasgos faciales, 16 peinados, 7 estilos de vello facial, ropa por partes con calzado/complementos y personalidad (`Variables_Estaticas.Personalidad`).
+- Se refleja en `Menu.gd`, `Logo_Juego.gd` (medallón dinámico), `Intro_Nueva_Partida.gd`, avatar de cabecera, Perfil → Info y Home (`Escenario_Actividad`).
+
+## 2. Envejecimiento y Rejuvenecimiento (`Envejecimiento_Personaje.gd`)
+- `Envejecimiento_Personaje.gd` aplica canas, arrugas, manchas, piel apagada/flacidez, cejas finas y postura encorvada mediante curvas suaves (`CURVAS`, 0 a los 18 años → 1 a los 100 años).
+- `Personaje_Visual.edad = -1` consulta `Variables_Estaticas.Calcular_Edad()` en cada dibujo, de modo que **Tienda → Bienestar** (`Rejuvenecimiento_Anios`, suelo 18 años) rejuvenece al personaje en todos los retratos, HUD y escenas al instante.
+
+## 3. Vestuario (`Pantalla_Vestuario.gd` + `Ropa_Catalogo.gd`)
+- Sección propia accesible desde `Vestuario_Button` (barra superior), botón «Vestuario» en Inicio y «Cambiar de atuendo» en Perfil → Info.
+- **25 atuendos** (`Objeto_Ropa`, categoría `"Ropa"`): 10 gratis de inicio, 11 comprables en tienda y 4 desbloqueables por **Maestría Culinaria** (Rangos 1, 3, 6 y 9; cada rango = 20 ★ en `Minijuego_Cocina`).
+- Filtros por categoría (`diario`, `deporte`, `elegante`, `trabajo`, `fiesta`, `cocina`), compra integrada, vista previa animada con chips de bonificaciones (progreso, salario hostelería, propinas, reducción de desgaste de higiene) y tarjeta de **Maestría Culinaria** visible únicamente en el filtro `Cocina`.
+- `Personaje_Visual._dibujar_atuendo_encima()` dibuja los 19 estilos visuales en todas las animaciones del Sim.
+
+## 4. Escenografía de Inicio (`Escenario_Actividad.gd` + `Escenografia_Inicio.gd`)
+- `Escenario_Actividad.gd` muestra en tiempo real la actividad actual del Sim (o su tiempo libre `idle`).
+- `Escenografia_Inicio.gd` dibuja las **11 escenografías de actividad** (`correr`, `dormir`, `comer`, `duchar`, `estudiar`, `tv`, `manualidades`, `cocinar`, `fiesta`, `futbol`, `trabajar`) adaptadas a la franja horaria (`_franja_horaria()`: mañana, tarde, atardecer, noche), muebles equipados y variante de calle (`idle`/`comer`).
+- El tiempo libre (`idle`) muestra un salón cálido con ventana al cielo, planta y encimera con el Sim detrás de la barra (sin comida ni platos).
+- Cada pose tiene 3–6 micro-acciones en `VARIACIONES` con mezcla de rig del 14 % al inicio y al final (`obtener_rig_pose()`) y fundido de escena de `0,28 s` al cambiar de actividad.
+- QA reproducible con `Debug_Pose_Inicio.gd` y escenas `Captura_{Tiempo_Libre,Poses_Inicio,Animaciones_Inicio,Home_Poses,Variantes_Inicio}.tscn`. Doc: `Funcionalidades/Personaje/Documentacion/ESCENARIO_INICIO.md` y `Funcionalidades/Vestuario/Documentacion/VESTUARIO.md`.

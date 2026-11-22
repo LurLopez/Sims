@@ -163,6 +163,11 @@
 </head>
 <body>
     <div class="container">
+        <div style="background:#fef3c7;border:1px solid #d97706;border-radius:8px;padding:14px 18px;margin-bottom:24px;">
+            <strong>Documento histórico.</strong> Esta especificación corresponde a la primera versión
+            (6 muebles y 3 categorías). La tienda actual tiene <strong>36 muebles en 6 categorías</strong>;
+            consulta <code>SISTEMA_OBJETOS.md</code> para la especificación vigente.
+        </div>
         <h1>🎮 Sistema de Objetos/Muebles — Especificación de Diseño</h1>
         
         <h2>1. Descripción General</h2>
@@ -536,7 +541,7 @@ func Mostrar_Categoria_Tienda(raiz, categoria):
     raiz.get_node("Tienda/Objetos_Duchar").visible = false
     raiz.get_node("Tienda/Objetos_" + categoria).visible = true</code></pre>
 
-        <p>Al entrar en la tienda solo permanecen visibles <code>Fondo</code>, <code>Moneda</code>, <code>Dinero_Label</code> y <code>Alquiler_Button</code>. El resto de la UI (Barra_Abajo, Tienda_Button, etc.) se oculta. La flecha de volver ocupa la misma posición que <code>Tienda_Button</code>.</p>
+        <p>Al entrar en la tienda solo permanecen visibles <code>Fondo</code>, <code>Moneda</code>, <code>Dinero_Label</code> y <code>Alquiler_Button</code>. El resto de la UI (Barra_Abajo, etc.) se oculta. <code>Tienda_Button</code> permanece siempre oculto (solo existe por compatibilidad): la tienda se abre con el icono <code>Boton_Tienda_Header</code> de la cabecera, junto al dinero. La flecha de volver va dentro de la propia pantalla.</p>
 
         <h3>Handlers en <code>Script_Principal.gd</code></h3>
         <ul>

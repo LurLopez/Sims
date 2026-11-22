@@ -1,6 +1,11 @@
 extends Node
 var raiz_path
 
+# Overlays modales (ajustes, etc.) que no deben verse afectados por los
+# barridos de visibilidad de las pantallas. Se añaden a este grupo ellos
+# mismos en su _ready.
+const GRUPO_OVERLAY_MODAL := "overlay_modal"
+
 
 func Quitar_Todo(raiz):
 	Recursivo_Desvisibilizar(raiz)
@@ -10,6 +15,8 @@ func Quitar_Todo(raiz):
 
 
 func Recursivo_Desvisibilizar(raiz):
+	if raiz.is_in_group(GRUPO_OVERLAY_MODAL):
+		return
 	if raiz is CanvasItem:
 		raiz.visible = false
 	for control in raiz.get_children():
@@ -18,6 +25,8 @@ func Recursivo_Desvisibilizar(raiz):
 
 
 func Recursivo_Visibilizar(raiz):
+	if raiz.is_in_group(GRUPO_OVERLAY_MODAL):
+		return
 	if raiz is CanvasItem:
 		raiz.visible = true
 	for control in raiz.get_children():
@@ -55,15 +64,21 @@ func Visibilizar_Lo_Basico(raiz):
 	raiz.get_node("Fondo").visible = true
 	raiz.get_node("Moneda").visible = true
 	raiz.get_node("Dinero_Label").visible = true
+	if raiz.has_node("Boton_Tienda_Header"):
+		raiz.get_node("Boton_Tienda_Header").visible = true
 	raiz.get_node("Boton_Perfil").visible = true
 	raiz.get_node("Economia_Button").visible = true
 	raiz.get_node("Calendario_Button").visible = true
 	raiz.get_node("Carrera_Button").visible = true
+	# La Tienda ya no es una pestaña: solo se abre desde su icono de cabecera.
+	if raiz.has_node("Tienda_Button"):
+		raiz.get_node("Tienda_Button").visible = false
 	if raiz.has_node("Minijuegos_Button"):
 		raiz.get_node("Minijuegos_Button").visible = true
 	if raiz.has_node("Vestuario_Button"):
 		raiz.get_node("Vestuario_Button").visible = true
-	for n in ["Header_BitLife", "Logo_Marca", "Logo_Titulo", "Logo_BitLife", "Reloj_Header", "Nav_Superior", "Dock_Fondo", "Moneda_Fondo"]:
+	for n in ["Header_BitLife", "Logo_Marca", "Logo_Titulo", "Logo_BitLife", "Reloj_Header", "Nav_Superior", "Dock_Fondo", "Moneda_Fondo",
+			"Boton_Ajustes_Header"]:
 		if raiz.has_node(n):
 			raiz.get_node(n).visible = true
 	for n_rec in ["Header_Superior", "Avatar_Header_Btn"]:
@@ -185,6 +200,12 @@ func Visibilizar_Tienda(raiz):
 
 
 func Mostrar_Categoria_Tienda(raiz, categoria):
+	var tienda = raiz.get_node_or_null("Tienda")
+	if tienda != null and tienda.has_method("Abrir_Categoria"):
+		tienda.call("Abrir_Categoria", categoria)
+		return
+	# Compatibilidad con escenas antiguas que aún tuvieran los contenedores
+	# Objetos_Dormir/Comer/Duchar en el árbol.
 	for nombre in ["Dormir", "Comer", "Duchar", "Ventajas"]:
 		var contenedor = raiz.get_node_or_null("Tienda/Objetos_" + nombre)
 		if contenedor != null:

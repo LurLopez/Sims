@@ -154,6 +154,38 @@ var Valor_Inversion: float = 0.0
 var Salud_Mental_Al_Invertir: int = 50
 var Progreso_Inversion: int = 1
 
+# Historial y estadísticas de la bolsa (persistentes).
+# Inversion_Historial: [{minuto, beneficio, valor, invertido}]
+#   beneficio = ganancias realizadas + variación no realizada de la posición.
+var Inversion_Historial: Array = []
+# Inversion_Operaciones: [{minuto, tipo, cantidad, beneficio, cerrado, acumulado}]
+var Inversion_Operaciones: Array = []
+# Inversion_Eventos: [{minuto, titulo, delta_pct, importe, tipo}]
+var Inversion_Eventos: Array = []
+var Inversion_Tendencia: float = 0.0          # Régimen de mercado [-1, 1]
+var Inversion_Ultimo_Evento_Minuto: int = -1
+var Inversion_Minuto_Inicio: int = -1
+var Inversion_Aportado_Total: float = 0.0
+var Inversion_Retirado_Total: float = 0.0
+var Inversion_Beneficio_Realizado: float = 0.0
+var Inversion_Num_Aportes: int = 0
+var Inversion_Num_Retiradas: int = 0
+var Inversion_Cierres_Ganadores: int = 0
+var Inversion_Cierres_Perdedores: int = 0
+var Inversion_Mejor_Operacion: float = 0.0
+var Inversion_Peor_Operacion: float = 0.0
+var Inversion_Eventos_Subida: int = 0
+var Inversion_Eventos_Bajada: int = 0
+var Inversion_Panicos: int = 0
+var Inversion_Minutos_Activos: int = 0
+var Inversion_Racha_Actual: int = 0
+var Inversion_Mejor_Racha: int = 0
+var Inversion_Peor_Racha: int = 0
+var Inversion_Racha_Operaciones: int = 0
+var Inversion_Mejor_Racha_Operaciones: int = 0
+var Inversion_Pico_Beneficio: float = 0.0
+var Inversion_Max_Caida: float = 0.0
+
 # Sistema de Eventos Aleatorios
 # Cooldown_Trabajos: Dictionary {nombre_trabajo: minuto_fin_cooldown}
 # Cuando te echan de un trabajo, no puedes volver a ese mismo durante 5 días.

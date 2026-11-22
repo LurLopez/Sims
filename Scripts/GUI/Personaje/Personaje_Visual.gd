@@ -302,8 +302,13 @@ func _metricas_cuerpo(es_mujer: bool, ap: Dictionary) -> Dictionary:
 
 # ---------------------------------------------------------------- rig articulado
 
-func obtener_rig_pose(nombre_pose: String, t: float, es_mujer: bool, ap_datos: Dictionary = {}) -> Dictionary:
+func obtener_rig_pose(nombre_pose: String, t: float, es_mujer: bool, ap_datos: Dictionary = {},
+		ignorar_variacion: bool = false) -> Dictionary:
 	var ap_uso := apariencia if ap_datos.is_empty() else ap_datos
+	# La versión "base" del rig se usa para fundir las micro-acciones con la pose
+	# de reposo y evitar saltos bruscos de brazos y cabeza.
+	var variacion: String = "" if ignorar_variacion else self.variacion
+	var fase_variacion: float = 0.0 if ignorar_variacion else self.fase_variacion
 	var met := _metricas_cuerpo(es_mujer, ap_uso)
 	var sh_x: float = met["sh_x"]
 	var hip_x: float = met["hip_leg_x"]
@@ -358,20 +363,27 @@ func obtener_rig_pose(nombre_pose: String, t: float, es_mujer: bool, ap_datos: D
 			rig["leg_r"] = [Vector2(hip_x, 122.0), Vector2(4.0, 162.0), Vector2(-24.0, 182.0)]
 			rig["mirada"] = Vector2(-1.8, 1.0)
 		"correr":
-			var vel: float = 14.0 if variacion == "sprint" else (6.5 if variacion in ["beber_agua", "secar_sudor"] else 9.0)
-			var cyc: float = sin(t * vel)
+			var vel: float = 13.5 if variacion == "sprint" else (6.8 if variacion in ["beber_agua", "secar_sudor"] else 9.0)
+			var fase_carrera: float = t * vel
+			var cyc: float = sin(fase_carrera)
+			var cyc2: float = cos(fase_carrera)
 			var salto_y: float = 0.0
 			if variacion == "salto":
-				salto_y = -sin(clampf(fase_variacion, 0.0, 1.0) * PI) * 26.0
-			rig["offset"] = Vector2(0.0, -absf(cyc) * 6.0 + salto_y)
-			rig["root_rot"] = deg_to_rad(13.0 if variacion == "sprint" else 8.0)
-			rig["head_rot"] = deg_to_rad(-4.0)
-			rig["arm_l"] = [Vector2(-sh_x, 57.0), Vector2(-sh_x - 9.0 + cyc * 15.0, 83.0), Vector2(-sh_x + cyc * 24.0, 67.0)]
-			rig["arm_r"] = [Vector2(sh_x, 57.0), Vector2(sh_x + 9.0 - cyc * 15.0, 83.0), Vector2(sh_x - cyc * 24.0, 67.0)]
-			rig["leg_l"] = [Vector2(-hip_x, 124.0), Vector2(-hip_x + cyc * 21.0, 162.0), Vector2(-hip_x + cyc * 32.0, 200.0 - maxf(0.0, cyc) * 16.0)]
-			rig["leg_r"] = [Vector2(hip_x, 124.0), Vector2(hip_x - cyc * 21.0, 162.0), Vector2(hip_x - cyc * 32.0, 200.0 - maxf(0.0, -cyc) * 16.0)]
+				salto_y = -sin(clampf(fase_variacion, 0.0, 1.0) * PI) * 30.0
+			rig["offset"] = Vector2(cyc2 * 1.2, -absf(cyc) * (7.0 if variacion == "sprint" else 5.0) + salto_y)
+			rig["root_rot"] = deg_to_rad((16.0 if variacion == "sprint" else 9.0) + absf(cyc) * 1.5)
+			rig["head_rot"] = deg_to_rad(-5.0 - absf(cyc) * 2.0)
+			rig["head_offset"] = Vector2(-cyc2 * 0.8, sin(fase_carrera * 2.0) * 1.2)
+			rig["arm_l"] = [Vector2(-sh_x, 57.0), Vector2(-sh_x - 9.0 + cyc * 15.0, 82.0 - absf(cyc) * 4.0), Vector2(-sh_x + cyc * 27.0, 63.0 + maxf(0.0, cyc) * 9.0)]
+			rig["arm_r"] = [Vector2(sh_x, 57.0), Vector2(sh_x + 9.0 - cyc * 15.0, 82.0 - absf(cyc) * 4.0), Vector2(sh_x - cyc * 27.0, 63.0 + maxf(0.0, -cyc) * 9.0)]
+			rig["leg_l"] = [Vector2(-hip_x, 124.0), Vector2(-hip_x + cyc * 22.0, 162.0 - maxf(0.0, cyc) * 7.0), Vector2(-hip_x + cyc * 34.0, 200.0 - maxf(0.0, cyc) * 20.0)]
+			rig["leg_r"] = [Vector2(hip_x, 124.0), Vector2(hip_x - cyc * 22.0, 162.0 - maxf(0.0, -cyc) * 7.0), Vector2(hip_x - cyc * 34.0, 200.0 - maxf(0.0, -cyc) * 20.0)]
 			rig["mirada"] = Vector2(1.4, -0.3)
-			if variacion == "secar_sudor":
+			if variacion == "salto":
+				var medio := sin(clampf(fase_variacion, 0.0, 1.0) * PI)
+				rig["leg_l"][1] = Vector2(-hip_x + 12.0 * medio, 156.0 - medio * 12.0)
+				rig["leg_r"][1] = Vector2(hip_x + 8.0 * medio, 158.0 - medio * 10.0)
+			elif variacion == "secar_sudor":
 				var sw := sin(t * 7.5) * 9.0
 				rig["arm_r"] = [Vector2(sh_x, 57.0), Vector2(sh_x + 19.0, 44.0), Vector2(6.0 + sw, -20.0)]
 				rig["brazos_delante"] = true
@@ -379,46 +391,78 @@ func obtener_rig_pose(nombre_pose: String, t: float, es_mujer: bool, ap_datos: D
 				rig["head_rot"] = deg_to_rad(-11.0)
 				rig["arm_r"] = [Vector2(sh_x, 57.0), Vector2(sh_x + 17.0, 65.0), Vector2(16.0, 22.0)]
 				rig["brazos_delante"] = true
+			elif variacion == "senalar":
+				var se := sin(clampf(fase_variacion, 0.0, 1.0) * PI)
+				rig["head_rot"] = deg_to_rad(-8.0)
+				rig["mirada"] = Vector2(2.0, -0.6)
+				rig["arm_r"] = [Vector2(sh_x, 57.0), Vector2(sh_x + 24.0, 52.0), Vector2(sh_x + 48.0 + se * 14.0, 35.0)]
+				rig["brazos_delante"] = true
 		"dormir":
-			var resp := sin(t * 1.9) * 2.0
-			var rot_cabeza := deg_to_rad(-9.0) + sin(t * 1.3) * 0.04
+			var resp := sin(t * 1.9) * 2.2
+			var cabeceo := sin(t * 1.3) * 1.3
+			var rot_cabeza := deg_to_rad(-9.0 + cabeceo)
+			var off_x := sin(t * 0.33) * 0.9
 			if variacion == "darse_vuelta":
-				rot_cabeza = deg_to_rad(16.0 * sin(clampf(fase_variacion, 0.0, 1.0) * PI))
+				var k := sin(clampf(fase_variacion, 0.0, 1.0) * PI)
+				rot_cabeza = deg_to_rad(16.0 * k)
+				off_x = k * 4.0
 			elif variacion == "roncar":
-				resp = sin(t * 3.8) * 3.2
-			rig["offset"] = Vector2(0.0, resp)
+				resp = sin(t * 3.8) * 3.4
+				rot_cabeza = deg_to_rad(-3.0 + sin(t * 3.8) * 4.0)
+			elif variacion == "sonar":
+				rot_cabeza = deg_to_rad(-6.0 + sin(t * 0.9) * 3.0)
+			rig["offset"] = Vector2(off_x, resp)
+			rig["head_offset"] = Vector2(0.0, cabeceo * 0.5 + resp * 0.15)
 			rig["head_rot"] = rot_cabeza
 			rig["arm_l"] = [Vector2(-sh_x, 59.0), Vector2(-sh_x - 13.0, 81.0), Vector2(-21.0, 56.0)]
 			rig["arm_r"] = [Vector2(sh_x, 59.0), Vector2(sh_x + 13.0, 81.0), Vector2(21.0, 56.0)]
 			if variacion == "estirar_brazo":
 				var est := sin(clampf(fase_variacion, 0.0, 1.0) * PI)
 				rig["arm_l"] = [Vector2(-sh_x, 57.0), Vector2(-sh_x - 22.0, 26.0 - est * 18.0), Vector2(-sh_x - 13.0, -14.0 - est * 24.0)]
+			elif variacion == "abrazar_almohada":
+				rig["arm_l"] = [Vector2(-sh_x, 59.0), Vector2(-sh_x - 20.0, 76.0), Vector2(-12.0, 64.0)]
+				rig["arm_r"] = [Vector2(sh_x, 59.0), Vector2(sh_x + 20.0, 76.0), Vector2(12.0, 64.0)]
+				rig["brazos_delante"] = true
+				rig["head_rot"] = deg_to_rad(-12.0 + sin(t * 1.2) * 2.0)
 		"comer":
-			_aplicar_rig_comer(rig, sh_x, t)
+			_aplicar_rig_comer(rig, sh_x, t, variacion, fase_variacion)
 		"duchar":
-			var frote := sin(t * 7.0)
-			rig["offset"] = Vector2(0.0, sin(t * 3.5) * 1.6)
-			rig["head_rot"] = deg_to_rad(frote * 4.5)
-			rig["arm_l"] = [Vector2(-sh_x, 57.0), Vector2(-sh_x - 15.0, 77.0), Vector2(-18.0 + frote * 6.0, 62.0)]
+			var frote := sin(t * 6.0)
+			var frote2 := sin(t * 6.0 + 1.2)
+			rig["offset"] = Vector2(sin(t * 4.0) * 1.2, sin(t * 3.5) * 1.8)
+			rig["head_offset"] = Vector2(0.0, sin(t * 2.2) * 0.8)
+			rig["head_rot"] = deg_to_rad(frote * 4.0)
+			rig["arm_l"] = [Vector2(-sh_x, 57.0), Vector2(-sh_x - 15.0, 74.0), Vector2(-22.0 + frote * 5.0, 56.0)]
 			rig["arm_r"] = [Vector2(sh_x, 57.0), Vector2(sh_x + 17.0, 48.0), Vector2(14.0 - frote * 9.0, -28.0)]
 			rig["brazos_delante"] = true
+			rig["mirada"] = Vector2(frote2 * 0.4, 0.3)
 			if variacion == "cantar":
-				rig["head_rot"] = deg_to_rad(sin(t * 5.0) * 9.0)
+				rig["offset"] = Vector2(sin(t * 4.0) * 2.0, -absf(sin(t * 5.0)) * 3.0 + sin(t * 2.5) * 1.0)
+				rig["head_rot"] = deg_to_rad(sin(t * 5.0) * 10.0)
 				rig["arm_r"] = [Vector2(sh_x, 57.0), Vector2(sh_x + 17.0, 67.0), Vector2(16.0, 26.0)]
 				rig["arm_l"] = [Vector2(-sh_x, 57.0), Vector2(-sh_x - 22.0, 56.0), Vector2(-sh_x - 30.0, 26.0)]
 			elif variacion == "espuma_pelo":
 				var sf := sin(t * 11.0) * 8.0
+				rig["head_rot"] = deg_to_rad(sin(t * 11.0) * 5.0)
 				rig["arm_l"] = [Vector2(-sh_x, 57.0), Vector2(-sh_x - 17.0, 34.0), Vector2(-15.0 + sf, -34.0)]
 				rig["arm_r"] = [Vector2(sh_x, 57.0), Vector2(sh_x + 17.0, 34.0), Vector2(15.0 - sf, -34.0)]
 			elif variacion == "agua_fria":
-				rig["offset"] = Vector2(sin(t * 34.0) * 3.0, -3.0)
+				rig["offset"] = Vector2(sin(t * 34.0) * 3.2, -3.0)
+				rig["head_rot"] = deg_to_rad(sin(t * 30.0) * 2.0)
 				rig["arm_l"] = [Vector2(-sh_x, 57.0), Vector2(-sh_x - 8.0, 77.0), Vector2(10.0, 70.0)]
 				rig["arm_r"] = [Vector2(sh_x, 57.0), Vector2(sh_x + 8.0, 77.0), Vector2(-10.0, 70.0)]
+			elif variacion == "burbuja_gigante":
+				var bu := sin(t * 2.0) * 2.0
+				rig["head_rot"] = deg_to_rad(-3.0)
+				rig["arm_l"] = [Vector2(-sh_x, 57.0), Vector2(-sh_x - 20.0, 62.0), Vector2(-18.0, 34.0 + bu)]
+				rig["arm_r"] = [Vector2(sh_x, 57.0), Vector2(sh_x + 20.0, 62.0), Vector2(18.0, 34.0 + bu)]
 		"estudiar":
 			var scribble := sin(t * 10.0) * 5.0
-			rig["offset"] = Vector2(0.0, 2.0 + sin(t * 2.0) * 0.9)
-			rig["head_rot"] = deg_to_rad(5.0)
-			rig["mirada"] = Vector2(0.0, 1.8)
+			var resp := sin(t * 2.0) * 0.9
+			rig["offset"] = Vector2(sin(t * 0.46) * 0.8, 2.0 + resp)
+			rig["head_rot"] = deg_to_rad(5.0 + sin(t * 0.8) * 1.6)
+			rig["head_offset"] = Vector2(0.0, sin(t * 1.1) * 0.5)
+			rig["mirada"] = Vector2(sin(t * 0.35) * 0.5, 1.8)
 			rig["arm_l"] = [Vector2(-sh_x, 59.0), Vector2(-sh_x - 9.0, 87.0), Vector2(-16.0, 96.0)]
 			rig["arm_r"] = [Vector2(sh_x, 59.0), Vector2(sh_x + 11.0, 87.0), Vector2(14.0 + scribble, 94.0)]
 			rig["brazos_delante"] = true
@@ -437,91 +481,193 @@ func obtener_rig_pose(nombre_pose: String, t: float, es_mujer: bool, ap_datos: D
 				rig["head_rot"] = deg_to_rad(-7.0)
 				rig["arm_l"] = [Vector2(-sh_x, 57.0), Vector2(-sh_x - 22.0, 38.0), Vector2(-sh_x - 16.0, 4.0)]
 				rig["arm_r"] = [Vector2(sh_x, 57.0), Vector2(sh_x + 22.0, 38.0), Vector2(sh_x + 16.0, 4.0)]
+			elif variacion == "subrayar":
+				var sub := (sin(t * 3.0) + 1.0) * 0.5
+				rig["head_rot"] = deg_to_rad(7.0)
+				rig["mirada"] = Vector2(0.0, 1.9)
+				rig["arm_r"] = [Vector2(sh_x, 59.0), Vector2(sh_x + 9.0, 84.0), Vector2(-2.0 + sub * 34.0, 92.0)]
 		"tv":
-			rig["offset"] = Vector2(0.0, sin(t * 2.0) * 1.2)
-			rig["head_rot"] = deg_to_rad(-2.0)
+			var resp := sin(t * 2.0) * 1.2
+			rig["offset"] = Vector2(sin(t * 0.7) * 0.8, resp)
+			rig["head_rot"] = deg_to_rad(-2.0 + sin(t * 0.5) * 1.5)
+			rig["head_offset"] = Vector2(0.0, sin(t * 1.3) * 0.5)
+			rig["mirada"] = Vector2(1.0, 0.4)
 			rig["arm_l"] = [Vector2(-sh_x, 59.0), Vector2(-sh_x - 13.0, 85.0), Vector2(-23.0, 96.0)]
 			rig["arm_r"] = [Vector2(sh_x, 59.0), Vector2(sh_x + 13.0, 85.0), Vector2(23.0, 96.0)]
 			rig["brazos_delante"] = true
 			if variacion == "reir":
-				rig["offset"] = Vector2(0.0, sin(t * 16.0) * 3.0)
-				rig["head_rot"] = deg_to_rad(-7.0 + sin(t * 12.0) * 4.0)
+				rig["offset"] = Vector2(sin(t * 16.0) * 1.4, sin(t * 16.0) * 3.2)
+				rig["head_rot"] = deg_to_rad(-7.0 + sin(t * 12.0) * 5.0)
 			elif variacion == "palomitas":
-				var pc := (sin(t * 5.0) + 1.0) * 0.5
-				rig["arm_r"] = [Vector2(sh_x, 59.0), Vector2(sh_x + 17.0, 74.0), Vector2(14.0 + (1.0 - pc) * 18.0, 26.0 + (1.0 - pc) * 54.0)]
+				var pc := (sin(t * 4.2) + 1.0) * 0.5
+				rig["head_rot"] = deg_to_rad(-3.0 - pc * 4.0)
+				rig["mirada"] = Vector2(0.0, -0.6)
+				rig["arm_r"] = [Vector2(sh_x, 59.0), Vector2(sh_x + 17.0, 74.0), Vector2(15.0 + (1.0 - pc) * 10.0, 78.0 - pc * 44.0)]
 			elif variacion == "cambiar_canal":
-				rig["arm_r"] = [Vector2(sh_x, 59.0), Vector2(sh_x + 22.0, 76.0), Vector2(sh_x + 40.0, 66.0)]
+				var apunta := 0.5 + sin(t * 2.0) * 0.5
+				rig["head_rot"] = deg_to_rad(-2.0)
+				rig["mirada"] = Vector2(1.7, 0.2)
+				rig["arm_r"] = [Vector2(sh_x, 59.0), Vector2(sh_x + 22.0, 76.0), Vector2(sh_x + 40.0 + apunta * 4.0, 64.0)]
 			elif variacion == "sorpresa_tv":
-				rig["offset"] = Vector2(0.0, -4.0)
+				var so := sin(clampf(fase_variacion, 0.0, 1.0) * PI)
+				rig["offset"] = Vector2(0.0, -4.0 - so * 5.0)
+				rig["head_rot"] = deg_to_rad(-8.0)
+				rig["arm_l"] = [Vector2(-sh_x, 57.0), Vector2(-sh_x - 20.0, 44.0), Vector2(-sh_x - 14.0, 8.0)]
+				rig["arm_r"] = [Vector2(sh_x, 57.0), Vector2(sh_x + 20.0, 44.0), Vector2(sh_x + 14.0, 8.0)]
+			elif variacion == "bostezo_tv":
+				var bt := sin(clampf(fase_variacion, 0.0, 1.0) * PI)
+				rig["offset"] = Vector2(0.0, -bt * 3.0)
+				rig["head_rot"] = deg_to_rad(-6.0)
+				rig["arm_l"] = [Vector2(-sh_x, 57.0), Vector2(-sh_x - 24.0, 38.0), Vector2(-sh_x - 18.0, 2.0 + bt * 4.0)]
+				rig["arm_r"] = [Vector2(sh_x, 57.0), Vector2(sh_x + 24.0, 38.0), Vector2(sh_x + 18.0, 2.0 + bt * 4.0)]
 		"manualidades":
 			var trazo := sin(t * 6.5) * 10.0
-			rig["offset"] = Vector2(0.0, sin(t * 2.5) * 1.3)
+			rig["offset"] = Vector2(sin(t * 0.8) * 0.8, sin(t * 2.5) * 1.3)
+			rig["head_rot"] = deg_to_rad(3.0 + trazo * 0.22)
+			rig["head_offset"] = Vector2(0.0, cos(t * 6.5) * 0.5)
+			rig["mirada"] = Vector2(0.9, 1.3)
 			rig["arm_l"] = [Vector2(-sh_x, 59.0), Vector2(-sh_x - 13.0, 84.0), Vector2(-20.0, 92.0)]
 			rig["arm_r"] = [Vector2(sh_x, 57.0), Vector2(sh_x + 20.0, 68.0), Vector2(25.0 + trazo, 52.0 + cos(t * 6.5) * 7.0)]
 			rig["brazos_delante"] = true
 			if variacion == "pincelada_rapida":
 				var tr2 := sin(t * 15.0) * 14.0
+				rig["offset"] = Vector2(sin(t * 1.2) * 1.4, sin(t * 7.5) * 1.8)
+				rig["head_rot"] = deg_to_rad(tr2 * 0.18)
 				rig["arm_r"] = [Vector2(sh_x, 57.0), Vector2(sh_x + 22.0, 62.0), Vector2(23.0 + tr2, 46.0 + cos(t * 15.0) * 10.0)]
 			elif variacion == "admirar":
+				var ad := sin(clampf(fase_variacion, 0.0, 1.0) * PI)
 				rig["head_rot"] = deg_to_rad(-9.0)
+				rig["mirada"] = Vector2(-0.5, 0.8)
 				rig["arm_r"] = [Vector2(sh_x, 59.0), Vector2(sh_x + 13.0, 74.0), Vector2(12.0, 34.0)]
+				rig["arm_l"] = [Vector2(-sh_x, 59.0), Vector2(-sh_x - 14.0, 72.0), Vector2(-10.0, 40.0 - ad * 4.0)]
+				rig["hand_l_tipo"] = "mejilla_l"
+				rig["hand_r_tipo"] = "mejilla_r"
+			elif variacion == "soplar_pintura":
+				var so := sin(clampf(fase_variacion, 0.0, 1.0) * PI)
+				rig["offset"] = Vector2(so * 3.0, so * 1.0)
+				rig["head_rot"] = deg_to_rad(6.0)
+				rig["mirada"] = Vector2(1.4, 1.0)
+				rig["arm_r"] = [Vector2(sh_x, 57.0), Vector2(sh_x + 18.0, 65.0), Vector2(25.0, 52.0)]
+				rig["brazos_delante"] = true
 		"cocinar":
 			var rem := sin(t * 7.5) * 10.0
 			var sal := cos(t * 7.5) * 4.0
-			rig["offset"] = Vector2(0.0, sin(t * 3.0) * 1.3)
-			rig["head_rot"] = deg_to_rad(3.0)
+			rig["offset"] = Vector2(sin(t * 0.7) * 0.7, sin(t * 3.0) * 1.3)
+			rig["head_rot"] = deg_to_rad(3.0 + sin(t * 1.2) * 1.2)
+			rig["head_offset"] = Vector2(0.0, sin(t * 1.6) * 0.4)
 			rig["mirada"] = Vector2(0.5, 1.5)
 			rig["arm_l"] = [Vector2(-sh_x, 58.0), Vector2(-sh_x - 14.0, 82.0), Vector2(-20.0, 92.0)]
 			rig["arm_r"] = [Vector2(sh_x, 58.0), Vector2(sh_x + 18.0, 76.0), Vector2(12.0 + rem, 82.0 + sal)]
 			rig["brazos_delante"] = true
 			if variacion == "probar":
 				rig["head_rot"] = deg_to_rad(-7.0)
+				rig["mirada"] = Vector2(0.0, 1.2)
 				rig["arm_r"] = [Vector2(sh_x, 58.0), Vector2(sh_x + 16.0, 68.0), Vector2(14.0, 30.0)]
 			elif variacion == "saltear":
 				var salt := sin(t * 13.0) * 11.0
+				rig["offset"] = Vector2(0.0, sin(t * 6.5) * 1.4)
+				rig["head_rot"] = deg_to_rad(4.0)
 				rig["arm_r"] = [Vector2(sh_x, 58.0), Vector2(sh_x + 16.0, 78.0), Vector2(18.0, 76.0 - absf(salt))]
+				rig["arm_l"] = [Vector2(-sh_x, 58.0), Vector2(-sh_x - 14.0, 82.0), Vector2(-24.0, 88.0)]
+			elif variacion == "oler_guiso":
+				var ol := sin(clampf(fase_variacion, 0.0, 1.0) * PI)
+				rig["offset"] = Vector2(0.0, ol * 2.4)
+				rig["head_rot"] = deg_to_rad(8.0 + ol * 3.0)
+				rig["head_offset"] = Vector2(0.0, ol * 1.4)
+				rig["mirada"] = Vector2(0.0, 1.8)
+				rig["arm_l"] = [Vector2(-sh_x, 58.0), Vector2(-sh_x - 12.0, 80.0), Vector2(-24.0, 86.0)]
+				rig["arm_r"] = [Vector2(sh_x, 58.0), Vector2(sh_x + 12.0, 80.0), Vector2(24.0, 86.0)]
 		"fiesta":
 			var groove := sin(t * 7.5)
+			var groove2 := sin(t * 7.5 + 1.6)
 			var bounce := absf(sin(t * 7.5)) * 5.0
-			rig["offset"] = Vector2(groove * 4.0, -bounce)
-			rig["root_rot"] = deg_to_rad(groove * 4.5)
+			rig["offset"] = Vector2(groove * 4.5, -bounce)
+			rig["root_rot"] = deg_to_rad(groove * 5.0)
 			rig["head_rot"] = deg_to_rad(-groove * 7.0)
+			rig["head_offset"] = Vector2(groove2 * 1.2, 0.0)
 			rig["arm_l"] = [Vector2(-sh_x, 57.0), Vector2(-sh_x - 20.0, 48.0 + groove * 12.0), Vector2(-sh_x - 16.0, 14.0 - groove * 14.0)]
 			rig["arm_r"] = [Vector2(sh_x, 57.0), Vector2(sh_x + 20.0, 48.0 - groove * 12.0), Vector2(sh_x + 16.0, 14.0 + groove * 14.0)]
 			rig["leg_l"] = [Vector2(-hip_x, 124.0), Vector2(-hip_x - 4.0 + groove * 6.0, 164.0), Vector2(-hip_x - 6.0 + groove * 8.0, 202.0)]
 			rig["leg_r"] = [Vector2(hip_x, 124.0), Vector2(hip_x + 4.0 + groove * 6.0, 164.0), Vector2(hip_x + 6.0 + groove * 8.0, 202.0)]
 			rig["hand_l_tipo"] = "puno"
 			rig["hand_r_tipo"] = "puno"
+			if variacion == "brindar":
+				var br := sin(clampf(fase_variacion, 0.0, 1.0) * PI)
+				rig["offset"] = Vector2(0.0, -br * 2.0)
+				rig["head_rot"] = deg_to_rad(-8.0)
+				rig["arm_r"] = [Vector2(sh_x, 57.0), Vector2(sh_x + 20.0, 40.0), Vector2(sh_x + 14.0, -2.0)]
+				rig["arm_l"] = [Vector2(-sh_x, 57.0), Vector2(-sh_x - 22.0, 58.0), Vector2(-sh_x - 30.0, 34.0)]
+			elif variacion == "saltar":
+				var sj := absf(sin(clampf(fase_variacion, 0.0, 1.0) * PI * 2.0))
+				rig["offset"] = Vector2(0.0, -sj * 14.0)
+				rig["head_rot"] = deg_to_rad(-6.0)
+				rig["arm_l"] = [Vector2(-sh_x, 57.0), Vector2(-sh_x - 22.0, 34.0), Vector2(-sh_x - 18.0, -12.0)]
+				rig["arm_r"] = [Vector2(sh_x, 57.0), Vector2(sh_x + 22.0, 34.0), Vector2(sh_x + 18.0, -12.0)]
+				rig["leg_l"] = [Vector2(-hip_x, 124.0), Vector2(-hip_x - 10.0, 152.0), Vector2(-hip_x - 12.0, 188.0)]
+				rig["leg_r"] = [Vector2(hip_x, 124.0), Vector2(hip_x + 10.0, 152.0), Vector2(hip_x + 12.0, 188.0)]
 		"futbol":
 			var cyc_f := sin(t * 6.5)
-			rig["offset"] = Vector2(0.0, -absf(cyc_f) * 4.5)
-			rig["root_rot"] = deg_to_rad(cyc_f * 4.0)
-			rig["head_rot"] = deg_to_rad(-cyc_f * 3.0)
-			rig["arm_l"] = [Vector2(-sh_x, 57.0), Vector2(-sh_x - 16.0, 76.0 - cyc_f * 8.0), Vector2(-sh_x - 22.0, 62.0 - cyc_f * 10.0)]
-			rig["arm_r"] = [Vector2(sh_x, 57.0), Vector2(sh_x + 16.0, 76.0 + cyc_f * 8.0), Vector2(sh_x + 22.0, 62.0 + cyc_f * 10.0)]
-			var patada := maxf(0.0, cyc_f) * 26.0
-			rig["leg_l"] = [Vector2(-hip_x, 124.0), Vector2(-hip_x - 2.0, 165.0), Vector2(-hip_x - 4.0, 203.0)]
-			rig["leg_r"] = [Vector2(hip_x, 124.0), Vector2(hip_x + 10.0 + patada * 0.4, 158.0 - patada * 0.35), Vector2(hip_x + 18.0 + patada * 0.6, 198.0 - patada)]
+			var resp_f := sin(t * 2.0) * 1.2
+			rig["offset"] = Vector2(0.0, -absf(cyc_f) * 4.5 + resp_f * 0.3)
+			rig["root_rot"] = deg_to_rad(3.0 + cyc_f * 4.0)
+			rig["head_rot"] = deg_to_rad(-cyc_f * 3.0 + sin(t * 1.4) * 1.4)
+			rig["head_offset"] = Vector2(0.0, sin(t * 3.0) * 0.5)
+			rig["arm_l"] = [Vector2(-sh_x, 57.0), Vector2(-sh_x - 18.0, 76.0 - cyc_f * 8.0), Vector2(-sh_x - 26.0, 64.0 - cyc_f * 10.0)]
+			rig["arm_r"] = [Vector2(sh_x, 57.0), Vector2(sh_x + 18.0, 76.0 + cyc_f * 8.0), Vector2(sh_x + 26.0, 64.0 + cyc_f * 10.0)]
+			var empuje_r := maxf(0.0, cyc_f) * 24.0
+			var empuje_l := maxf(0.0, -cyc_f) * 20.0
+			rig["leg_l"] = [Vector2(-hip_x, 124.0), Vector2(-hip_x - 7.0 - empuje_l * 0.35, 164.0 - empuje_l * 0.25), Vector2(-hip_x - 11.0 - empuje_l * 0.55, 203.0 - empuje_l)]
+			rig["leg_r"] = [Vector2(hip_x, 124.0), Vector2(hip_x + 13.0 + empuje_r * 0.40, 158.0 - empuje_r * 0.35), Vector2(hip_x + 22.0 + empuje_r * 0.60, 198.0 - empuje_r)]
 			rig["mirada"] = Vector2(0.6, 1.5)
+			if variacion == "celebrar_gol":
+				var cg := sin(clampf(fase_variacion, 0.0, 1.0) * PI)
+				rig["offset"] = Vector2(0.0, -cg * 10.0)
+				rig["head_rot"] = deg_to_rad(-10.0)
+				rig["arm_l"] = [Vector2(-sh_x, 57.0), Vector2(-sh_x - 24.0, 34.0), Vector2(-sh_x - 18.0, -14.0)]
+				rig["arm_r"] = [Vector2(sh_x, 57.0), Vector2(sh_x + 24.0, 34.0), Vector2(sh_x + 18.0, -14.0)]
+				rig["hand_l_tipo"] = "puno"
+				rig["hand_r_tipo"] = "puno"
+			elif variacion == "regate":
+				var rg := sin(t * 8.0)
+				rig["offset"] = Vector2(rg * 4.0, -absf(rg) * 2.0)
+				rig["root_rot"] = deg_to_rad(rg * 7.0)
+				rig["head_rot"] = deg_to_rad(-rg * 4.0)
+				rig["leg_l"] = [Vector2(-hip_x, 124.0), Vector2(-hip_x + rg * 14.0, 160.0), Vector2(-hip_x + rg * 22.0, 200.0)]
+				rig["leg_r"] = [Vector2(hip_x, 124.0), Vector2(hip_x - rg * 14.0, 160.0), Vector2(hip_x - rg * 22.0, 200.0)]
+			elif variacion == "toques":
+				rig["head_rot"] = deg_to_rad(-4.0)
+				rig["mirada"] = Vector2(0.0, 1.9)
 		"trabajar":
 			var tec_l := sin(t * 12.0) * 4.0
 			var tec_r := cos(t * 12.0) * 4.0
-			rig["offset"] = Vector2(0.0, sin(t * 2.2) * 1.0)
-			rig["mirada"] = Vector2(0.0, 1.4)
+			var resp_t := sin(t * 2.2) * 0.9
+			rig["offset"] = Vector2(sin(t * 0.5) * 0.6, resp_t)
+			rig["head_rot"] = deg_to_rad(-1.0 + sin(t * 0.7) * 1.5)
+			rig["head_offset"] = Vector2(0.0, sin(t * 1.4) * 0.4)
+			rig["mirada"] = Vector2(sin(t * 0.3) * 0.6, 1.4)
 			rig["arm_l"] = [Vector2(-sh_x, 59.0), Vector2(-sh_x - 9.0, 87.0), Vector2(-14.0, 96.0 + tec_l)]
 			rig["arm_r"] = [Vector2(sh_x, 59.0), Vector2(sh_x + 9.0, 87.0), Vector2(14.0, 96.0 + tec_r)]
 			rig["brazos_delante"] = true
 			if variacion == "cafe":
-				rig["head_rot"] = deg_to_rad(-6.0)
+				var ca := sin(clampf(fase_variacion, 0.0, 1.0) * PI)
+				rig["head_rot"] = deg_to_rad(-6.0 - ca * 2.0)
 				rig["arm_r"] = [Vector2(sh_x, 57.0), Vector2(sh_x + 17.0, 68.0), Vector2(14.0, 26.0)]
 			elif variacion == "mirar_reloj":
 				rig["head_rot"] = deg_to_rad(8.0)
 				rig["mirada"] = Vector2(-1.6, 1.6)
 				rig["arm_l"] = [Vector2(-sh_x, 59.0), Vector2(-sh_x - 11.0, 76.0), Vector2(-14.0, 56.0)]
 			elif variacion == "ganar_dinero":
+				var gd := sin(clampf(fase_variacion, 0.0, 1.0) * PI)
+				rig["offset"] = Vector2(0.0, -gd * 3.0)
 				rig["head_rot"] = deg_to_rad(-4.0)
 				rig["arm_r"] = [Vector2(sh_x, 57.0), Vector2(sh_x + 20.0, 56.0), Vector2(sh_x + 18.0, 22.0)]
 				rig["hand_r_tipo"] = "puno"
+			elif variacion == "estirar_cuello":
+				var ec := sin(clampf(fase_variacion, 0.0, 1.0) * PI)
+				rig["head_rot"] = deg_to_rad(-ec * 10.0)
+				rig["head_offset"] = Vector2(ec * 2.0, -ec * 1.0)
+				rig["arm_l"] = [Vector2(-sh_x, 59.0), Vector2(-sh_x - 12.0, 78.0), Vector2(-8.0, 84.0)]
+				rig["arm_r"] = [Vector2(sh_x, 59.0), Vector2(sh_x + 12.0, 78.0), Vector2(8.0, 84.0)]
 		_:
 			# "idle" con variaciones y respiración natural
 			if variacion == "saludar":
@@ -565,7 +711,53 @@ func obtener_rig_pose(nombre_pose: String, t: float, es_mujer: bool, ap_datos: D
 		if nombre_pose == "idle" and animar_idle:
 			rig["root_rot"] = float(rig["root_rot"]) + deg_to_rad(0.9 * postura)
 
+	if not ignorar_variacion and variacion != "":
+		var rig_base := obtener_rig_pose(nombre_pose, t, es_mujer, ap_datos, true)
+		var peso := minf(
+			clampf(fase_variacion / 0.14, 0.0, 1.0),
+			clampf((1.0 - fase_variacion) / 0.14, 0.0, 1.0)
+		)
+		peso = peso * peso * (3.0 - 2.0 * peso)
+		rig = _mezclar_rig(rig_base, rig, peso)
+
 	return rig
+
+
+func _mezclar_rig(base: Dictionary, var_: Dictionary, peso: float) -> Dictionary:
+	var out := base.duplicate(true)
+	for clave in ["offset", "head_offset"]:
+		if base.has(clave) and var_.has(clave):
+			out[clave] = (base[clave] as Vector2).lerp(var_[clave] as Vector2, peso)
+	for clave in ["root_rot", "head_rot"]:
+		if base.has(clave) and var_.has(clave):
+			out[clave] = lerpf(float(base[clave]), float(var_[clave]), peso)
+	for clave in ["arm_l", "arm_r", "leg_l", "leg_r"]:
+		if base.has(clave) and var_.has(clave):
+			var brazo: Array = []
+			var b: Array = base[clave]
+			var v: Array = var_[clave]
+			for i in range(mini(b.size(), v.size())):
+				brazo.append((b[i] as Vector2).lerp(v[i] as Vector2, peso))
+			out[clave] = brazo
+	for clave in ["mirada", "prop_r_rot", "prop_l_rot", "nivel_bebida",
+			"comer_boca_apertura", "comer_masticacion", "comer_mejillas", "comer_rubor_extra"]:
+		if base.has(clave) and var_.has(clave):
+			if base[clave] is Vector2 and var_[clave] is Vector2:
+				out[clave] = (base[clave] as Vector2).lerp(var_[clave] as Vector2, peso)
+			else:
+				out[clave] = lerpf(float(base[clave]), float(var_[clave]), peso)
+	# Los estados discretos (manos, props, expresiones) cambian a mitad del fundido.
+	# Los brazos pasan delante del torso en cuanto empieza la acción para evitar
+	# un salto visible de orden de dibujo a mitad de la transición.
+	var usar_var := peso >= 0.5
+	for clave in ["hand_l_tipo", "hand_r_tipo", "brazos_delante", "prop_r_override",
+			"prop_l_override", "bocado_en_tenedor", "comer_ojos_felices", "comer_expresion_override"]:
+		if var_.has(clave):
+			if clave == "brazos_delante":
+				out[clave] = bool(var_[clave]) if (peso > 0.10 or not base.has(clave)) else bool(base[clave])
+			else:
+				out[clave] = var_[clave] if usar_var or not base.has(clave) else base[clave]
+	return out
 
 
 func _suave(x: float) -> float:
@@ -584,7 +776,8 @@ func _tramo(valor: float, inicio: float, fin: float) -> float:
 	return _suave((valor - inicio) / (fin - inicio))
 
 
-func _aplicar_rig_comer(rig: Dictionary, sh_x: float, t: float) -> void:
+func _aplicar_rig_comer(rig: Dictionary, sh_x: float, t: float,
+		var_uso: String = "", fase_uso: float = -1.0) -> void:
 	rig["brazos_delante"] = true
 
 	var sh_l := Vector2(-sh_x, 57.0)
@@ -619,9 +812,9 @@ func _aplicar_rig_comer(rig: Dictionary, sh_x: float, t: float) -> void:
 	rig["comer_ojos_felices"] = false
 	rig["comer_expresion_override"] = ""
 
-	var fase := clampf(fase_variacion, 0.0, 1.0)
+	var fase := clampf(fase_uso if fase_uso >= 0.0 else fase_variacion, 0.0, 1.0)
 
-	match variacion:
+	match var_uso:
 		"beber":
 			var vaso_mesa := Vector2(63.0, 71.0)
 			var el_vaso_mesa := Vector2(sh_x + 20.0, 72.0)

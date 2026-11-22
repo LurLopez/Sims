@@ -1,122 +1,296 @@
 # Roadmap — SIMS 0.33
 
-## Estado actual del juego
-
-El bucle de juego ya funciona end-to-end. La GUI tiene cuatro pantallas accesibles desde la `Barra_Abajo`:
-
-| Botón | Estado | Notas |
-|---|---|---|
-| **Necesidades Básicas** | ✅ Hecho | 5 barras (Salud Física, Salud Mental, Hambre, Descanso, Higiene) que cambian con el tiempo y la actividad. |
-| **Progreso** | ✅ Hecho | 3 barras (Deporte, Académico, Manualidades) que aumentan al hacer actividades relacionadas. |
-| **Actividades** | ✅ Hecho | Calendario semanal, selección de bloques, mini calendario con preview blink, cancelar/crear actividad. |
-| **Habilidades / Talentos** | ✅ Hecho | 6 barras de habilidades innatas visibles. Descubrimiento progresivo pendiente. |
-
-### Funcionalidades adicionales implementadas
-
-| Funcionalidad | Estado | Notas |
-|---|---|---|
-| **Economía / Alquiler** | ✅ Hecho | 200€/semana; sin dinero → calle; necesidades capeadas a 20 en calle. |
-| **Trabajos** | ✅ Hecho | Comida rápida, carpintero, científico. Salario al final del turno. Jerarquía P1/P2/P3. |
-| **Invertir en bolsa** | ✅ Hecho | Inversión pasiva; ~3 eventos/día; auto-venta si pánico (Sangre_Fría < 30). |
-| **Sistema de objetos / Tienda** | ✅ Hecho | Compra/venta de camas, mesas, duchas con multiplicadores de efectos. |
-| **Carreras universitarias** | ✅ Hecho | Sistema de carreras; libros desbloqueados por carrera visibles en Apuntes. |
-| **Muerte** | ✅ Hecho | Condiciones de muerte del personaje implementadas. |
-| **Eventos aleatorios** | ✅ Hecho | Despido por higiene (cooldown 5 días) + 20 eventos generales con franja horaria. |
-| **Perfil** | ✅ Hecho | 3 pestañas: Info (datos en tiempo real), Mensajes, Apuntes. |
-| **Calendario solo lectura** | ✅ Hecho | Botón horario abre el calendario en modo consulta (`calendario_solo_lectura`). |
-| **Jerarquía de actividades** | ✅ Hecho | Prioridades P1 (Normal) / P2 (Trabajo) / P3 (Examen). |
-| **Refactorización de escenas** | ✅ Hecho | Escenas reorganizadas; mejoras de UI e iconos. |
+> **Versión 3.0 · 21 de noviembre de 2026**
+> Sustituye al roadmap de junio. Es el documento canónico de prioridades.
+> Copia para NotebookLM: [`notebookLM/01_ROADMAP_Y_PROGRESO.md`](notebookLM/01_ROADMAP_Y_PROGRESO.md)
 
 ---
 
-## Mecánica nueva: Progreso volátil + Habilidad como descubrimiento
+## 0. Norte del proyecto
 
-> Diseño completo: ver [Progreso.md](Progreso.md).
+SIMS 0.33 es un simulador de vida móvil (Android, vertical 720×1280) donde **el jugador decide y juega**, no solo espera a que pasen las barras. La escala es **1 semana real = 1 año de juego**; una partida completa dura ~60 semanas reales.
 
-### El modelo en una frase
+La diferencia frente a un BitLife clónico no es tener más barras: es que **las áreas importantes de la vida tienen un bucle activo propio**.
 
-- **Progreso** = nivel actual, volátil (sube con práctica, baja con desuso).
-- **Habilidad mostrada** = contador de actividades hechas que se detiene al alcanzar tu valor innato secreto. Solo sube, nunca baja.
+| Pilar | Bucle activo |
+|---|---|
+| **Cocina** | Minijuego de gestión de pedidos con economía de restaurante. |
+| **Universidad** | Exámenes que se juegan y deciden la nota y el futuro laboral. |
+| **Fútbol** | Partidos que se juegan y deciden la carrera deportiva. |
+| **Bolsa** | Sesiones de trading con decisiones, riesgo y progresión. |
 
-### Cómo funciona
+El objetivo de este roadmap **no es añadir más sistemas**, sino cerrar bien esos cuatro pilares, equilibrarlos entre sí y dejar el resto para después.
 
-Cada habilidad innata es un valor 0–100 generado al crear el personaje. El jugador no lo ve. Se mantiene un contador auxiliar `Conocimiento[i]` que sube en 1 por cada actividad relacionada. La Habilidad mostrada en pantalla es:
+---
+
+## 1. Estado actual (21/11/2026)
+
+| Sistema | Estado | Lo que ya hay | Lo que falta |
+|---|---|---|---|
+| **Cocina** | 🟢 Prácticamente funcional | 4 mundos × 15 niveles, 5 mejoras, economía Caja + propinas, rangos 0–9, SFX, arte propio, tests. | Balance de dificultad y recompensas, claridad, pulido y QA en dispositivo. |
+| **Fútbol** | 🟡 Simulación completa | Fichaje, entrenamientos, liga dominical de 4 equipos, playoff, Modo Rápido, salarios, primas, lesiones y conflictos con el trabajo. | Minijuego de partido. |
+| **Universidad** | 🟡 Funcional, diseño débil | 4 carreras (4–5 años), matrícula, examen automático + test de 10 preguntas, apuntes, diplomas y desbloqueo de trabajos. | Rediseño del ciclo, del examen y de las recompensas. |
+| **Bolsa** | 🟡 Funcional, sin juego | Inversión pasiva por ticks, aportes y retiradas parciales, eventos de mercado con titulares, gráfico de beneficio y estadísticas, auto-venta por pánico y persistencia. | Minijuego activo de trading. |
+| **Base del simulador** | 🟢 Completa | Necesidades, progreso volátil, habilidades, calendario, trabajos, alquiler/calle, tienda, bienestar, vestuario, eventos, muerte, perfil, guardado, música y ajustes. | Pulir, conectar y equilibrar. |
+
+> La suite GUT y las capturas de QA se mantienen en verde. Cualquier cambio de este roadmap debe actualizar sus tests y su documentación de funcionalidad.
+
+---
+
+## 2. Diagnóstico y decisiones
+
+| Pilar | Lo que funciona | Lo que no funciona | Decisión |
+|---|---|---|---|
+| **Cocina** | Arte, loop, progresión, economía interna y cantidad de contenido. | Dificultad irregular, recompensas difíciles de leer, economía no comparable con los trabajos y los 4 mundos comparten la misma curva. | **Congelar contenido.** Solo balance, claridad, pulido y QA. |
+| **Universidad** | Contenido de las carreras, apuntes, diploma y desbloqueo de empleos. | Burocracia de prematrícula, examen automático con test al 10 %, ventana de 1 hora, estudio genérico, 10 preguntas por año y nota opaca. | **Rediseñar ciclo y examen.** El test del jugador pasa a ser el centro. |
+| **Fútbol** | Simulación coherente, liga, salarios, conflictos y persistencia. | Los partidos se resuelven sin jugar; el momento más importante es un mensaje de texto. | **Minijuego de partido MVP.** Modo mánager, después. |
+| **Bolsa** | Cartera clara, eventos, historial, gráfico y estadísticas; auto-venta por pánico. | No hay ninguna decisión activa de trading: sigue siendo meter dinero y esperar. | **Sala de trading activa.** La inversión pasiva se mantiene como modo cómodo y ya se puede entender y gestionar. |
+
+---
+
+## 3. Fase 1 — Cerrar los cuatro pilares
+
+Orden recomendado: **universidad → fútbol → bolsa → cocina**. La cocina se puede balancear en paralelo porque no bloquea a nadie.
+
+El antiguo punto «minijuego genérico aplicado a actividades» queda **cancelado**: cada pilar tiene su propio minijuego con consecuencias reales en la economía y la progresión.
+
+### 3.1 Universidad y exámenes (prioridad 1)
+
+**Objetivo:** que estudiar una carrera sea una decisión semanal con tensión real y que el examen sea el momento más memorable del juego.
+
+#### Problemas concretos del sistema actual
+
+- Dos pasos de matrícula (prematrícula → matrícula) con reglas ocultas y cutoff del lunes.
+- El examen se resuelve solo; el test del jugador solo suma hasta +10 puntos. La estrategia óptima es **ignorarlo**.
+- Ventana de 1 hora: si no coincides, pierdes el test. Castiga al jugador móvil.
+- Solo el "Estudiar" genérico alimenta la carrera; no hay clases, asistencia ni actividades propias.
+- Banco de **10 preguntas por año**: el examen es siempre el mismo banco completo y se memoriza.
+- Nota opaca (progreso 60 % + habilidades 20 % + necesidades 20 %) y recompensa plana de 2.000 €.
+
+#### Diseño propuesto (MVP)
+
+1. **Un solo estado de matrícula.** Al empezar el curso, el panel muestra «Matricularse en Año N» con su coste. Se paga una vez y se elige la fecha del examen (por defecto, viernes). Sin prematrícula ni conversión automática del lunes.
+2. **Clases + estudio.** Añadir «Asistir a clase» como actividad de carrera (2 bloques/semana, 90 min) que sube progreso y desbloquea pistas de apuntes. «Estudiar» sigue existiendo como refuerzo. Faltar a clase no bloquea, pero baja progreso y nota.
+3. **Examen del día completo.** El examen aparece como pendiente desde las 00:00 del día elegido. El jugador puede hacerlo **a cualquier hora de ese día**. A las 23:59, si no lo hizo, el personaje lo resuelve solo con penalización. Se elimina la ventana de 1 hora.
+4. **Dos partes en el examen:**
+   - **Test (60 %):** 10 preguntas, 25 s por pregunta, sin volver atrás. Salen de los apuntes del año y de años anteriores.
+   - **Caso práctico (40 %):** una pregunta específica de la carrera, con contexto y 4 opciones:
+     - **Ingeniería:** encontrar el bug u ordenar el algoritmo.
+     - **Derecho:** elegir el argumento o la prueba correcta.
+     - **Medicina:** diagnóstico a partir de síntomas.
+     - **Bellas Artes:** elegir composición, paleta o técnica.
+   - El caso práctico es el «killer feature»: el examen se siente como la carrera, no como un test genérico.
+5. **Nota final:** 40 % progreso + 50 % examen + 10 % estado (descanso, salud mental y habilidades). Aprobado ≥ 50; notable ≥ 70; matrícula de honor ≥ 85.
+6. **Consecuencias:** la nota desbloquea el trabajo de la carrera (ya existe) y añade bonus económico por tramo, descuento de matrícula al año siguiente con honor y un mensaje de «qué mejorar» tras suspender. Reintento con coste, sin bloqueo duro.
+7. **Contenido:** ampliar el banco a **30–40 preguntas por año y carrera**, etiquetadas por dificultad. El examen final mezcla años anteriores. Los apuntes desbloquean pistas, no la respuesta literal.
+
+#### Flujo anual (una semana real = un curso)
 
 ```
-Habilidad_mostrada[i] = min(Conocimiento[i], Innata[i])
+Lunes: panel «Matricularse Año N» → pagas y eliges día de examen (por defecto viernes)
+Durante la semana: clases / estudiar / trabajar / entrenar
+Día del examen: tarjeta «Examen pendiente» → puedes jugarlo a cualquier hora
+  → Test + caso práctico → nota y consecuencia
+Si no lo juegas: a las 23:59 se resuelve automáticamente con penalización
+Resultado: apruebas y pasas de curso, o suspendes y repites (con coste)
 ```
 
-Cuando se detiene → mensaje: *"Has descubierto tu límite natural en Deporte: 27"*. El cap no bloquea técnicamente el Progreso (solo lo hace mucho más costoso), así que el jugador puede seguir esforzándose o pivotar.
+#### Hitos
 
-### Asimetría narrativa
+- **H1:** máquina de estados simplificada + matrícula única + examen pendiente todo el día.
+- **H2:** nuevo modal de examen (test con temporizador + caso práctico) + resultado con desglose.
+- **H3:** clases/asistencia + apuntes conectados a preguntas + expansión del banco.
+- **H4:** balance de notas, costes y recompensas + migración de saves + tests.
 
-| Talento innato | Descubrimiento explícito | Descubrimiento implícito |
-|---|---|---|
-| Bajo (cap 0–30) | Rápido: Habilidad llega al tope en semanas | Progreso apenas sube |
-| Medio (cap 30–70) | Moderado | Progreso sube con esfuerzo |
-| Alto (cap 70–100) | Lento: necesita mucha práctica | Progreso sube rápido — lo intuyes desde el día 1 |
+#### Criterios de aceptación
 
-**Los malos se enteran por el número. Los buenos se enteran por los resultados.**
+- Un jugador nuevo entiende el ciclo sin guía y no puede perder el examen por no estar conectado a una hora exacta.
+- Jugar el examen cambia la nota al menos ±20 puntos respecto a no jugarlo.
+- Cada carrera tiene al menos un tipo de pregunta propio.
+- 4 años (5 en Medicina) siguen durando 4–5 semanas reales.
+- Los saves antiguos con prematrícula/matriculado siguen cargando.
+- Tests GUT de estados, fórmula, migración y flujo UI.
 
-### Pistas contextuales tras cada actividad
-
-Para que el jugador no esté completamente a ciegas al principio, después de cada actividad se muestra un mensaje breve según el roll de Progreso: *"Te ha costado bastante"* (cap probablemente bajo), *"Bien"*, *"Lo has bordado"* (cap probablemente alto). Esto da feedback temprano sin romper el descubrimiento explícito.
-
----
-
-## Roadmap priorizado (mayor → menor importancia)
-
-### ~~1. Economía real (dinero, alquiler, comida)~~ ✅ HECHO
-- Alquiler 200€/semana, modo calle, trabajos con salario, inversión en bolsa, tienda de objetos.
-
-### ~~2. Pantalla de Habilidades + descubrimiento progresivo~~ ✅ HECHO
-- `Habilidades_Mostradas[]` (6 ints) creado, persistido e incrementado por actividad.
-- Capeado en el valor innato (`Variables_Estaticas.Habilidades[i]`), con revelación al alcanzarlo.
-
-### ~~3. Sistema universitario + examen del jugador~~ ✅ HECHO
-- Carreras, libros, apuntes y minijuego de examen implementados (`Sistema_Examenes.gd`, `Modal_Examen.gd`).
-
-### ~~4. Eventos aleatorios narrativos~~ ✅ HECHO
-- 20 eventos generales con franja horaria + despido por higiene.
-
-### 5. Minijuego genérico aplicado a actividades
-- **Por qué**: convierte tiempo pasivo en activo, pero hay que validar antes de escalar.
-- **Qué hacer**:
-  - UN minijuego sencillo (tap-rhythm, memoria, o cálculo mental rápido).
-  - Skin distinto por actividad para que parezca específico.
-  - Opcional. Da +20% al efecto base de la actividad.
-- **Esfuerzo**: 4–7 días.
-- **Nota**: NO hacer un minijuego por actividad (8+ minijuegos = trampa de scope). Si funciona el genérico, después se escala.
-
-### 7. Relaciones simples (NPCs)
-- **Por qué**: añade dimensión social, abre el espacio para eventos románticos y narrativos.
-- **Qué hacer**:
-  - 2–3 NPCs base: amigo, pareja potencial, familiar.
-  - Cada uno tiene `afinidad` (0–100).
-  - Programar "Quedar con X" sube afinidad + salud mental.
-  - Si afinidad > umbral → desbloquea evento (cita, boda, etc.).
-- **Esfuerzo**: 1 semana.
-
-### 8. Hitos por edad
-- **Por qué**: estructura narrativa al largo plazo. Da sentido a las 60 semanas reales.
-- **Qué hacer**:
-  - 25 años → puedes casarte.
-  - 30 años → puedes tener hijos.
-  - 50 años → reflexión de mitad de vida.
-  - 65 años → jubilación.
-  - 80+ años → game over (muerte implementada, falta conectar con edad).
-- **Esfuerzo**: 3–5 días.
-
-### 9. Avatar visual del personaje
-- **Por qué último**: muchísimo trabajo de assets. No es necesario para validar que el juego funciona.
-- **Qué hacer**: dejarlo para después del MVP. Mientras tanto, un retrato estático + texto descriptivo basta.
-- **Esfuerzo**: 2–4 semanas (con assets).
+**Esfuerzo:** 2–3 semanas.
 
 ---
 
-## Notas estratégicas
+### 3.2 Minijuego de fútbol (prioridad 2)
 
-- **No intentar todo a la vez.** Implementar 1–2 al mismo tiempo, validar, seguir.
-- **El "killer feature" del juego es el examen universitario.** Es lo que diferencia este juego de un BitLife clónico. Construirlo bien.
-- **Avatar visual y minijuegos por actividad** son trampas de scope para un prototipo. Resistir el impulso.
-- **Onboarding de los primeros 10 minutos** es lo que determina la retención en móvil. Cuando esté el roadmap implementado, dedicar 1 semana solo a pulir esos primeros minutos.
+**Objetivo:** que el partido del domingo sea el momento que espera el jugador, no un mensaje de texto.
+
+#### Lo que ya existe
+
+La carrera de futbolista está implementada: fichaje, entrenamientos, liga dominical de 4 equipos, playoff, Modo Rápido, salarios, primas, lesiones y conflictos con el trabajo. Los partidos se resuelven con `Simulador_Futbol` y se notifican en Mensajes.
+
+#### Diseño propuesto — «Partido en 90 segundos»
+
+- Al empezar un bloque `Partido_Futbol`, si el jugador está en la app, aparece una tarjeta **«Hoy hay partido: ¿lo juegas?»** con las opciones «Jugar» y «Simular». Si no responde en 30 s o no está, se simula como ahora.
+- Minijuego vertical 720×1280, **5–6 acciones decisivas**:
+  - **3 ataques:** arrastrar para pasar o chutar, barra de potencia/precisión, portero y defensas en movimiento.
+  - **2 defensas:** tocar la zona de corte o hacer swipe para entrar al rival.
+  - **1 penalti** si el partido llega empatado (usa Sangre Fría).
+- Cada acción tiene un resultado (gol, ocasión, pérdida, parada, corte). La actuación genera un `rendimiento` 0–100 y goles/asistencias.
+- **Integración con la simulación:** la base del partido sigue saliendo de `Calcular_Puntuacion_Partido` y de la media del rival; el minijuego sustituye la variación aleatoria y añade los goles/asistencias del jugador. El resultado de la liga sigue siendo coherente. Si el jugador no juega, se usa la simulación actual.
+- La condición física, la convocatoria y la relación con el entrenador siguen mandando: baja condición = menos acciones y más lentitud.
+- Recompensas: primas actuales + bonus de MVP si el rendimiento es alto; subida de relación y progreso de Deporte.
+- **Fuera del MVP:** 11v11 completo, táctica, modo mánager y licencias reales.
+
+#### Hitos
+
+- **H1:** motor puro de acciones (`Resolver_Accion`, `Calcular_Rendimiento`) + tests.
+- **H2:** pantalla de partido con 5 acciones, arte placeholder y HUD.
+- **H3:** integración con `Sistema_Futbol`, tarjeta de elección, auto-simulación y resultados.
+- **H4:** arte final (campo, portero, defensas, balón), SFX, pulido y QA.
+
+#### Criterios de aceptación
+
+- Partido de 60–120 s, jugable con una mano y con opción de saltar.
+- El rendimiento correlaciona con Deporte, condición y Sangre Fría.
+- No hay softlocks; la tabla de liga sigue cuadrando y el auto-simulador sigue funcionando.
+- Tests del motor puro y de la integración.
+
+**Esfuerzo:** 2–3 semanas (incluido arte).
+
+> **Fase 2 (después):** modo mánager tipo Top Eleven (plantilla, táctica, fichajes y economía de club). No empezar hasta cerrar la Fase 1.
+
+---
+
+### 3.3 Minijuego de bolsa (prioridad 3)
+
+**Objetivo:** convertir la inversión pasiva en una decisión activa y divertida, sin romper la economía.
+
+#### Diseño propuesto — «Sala de trading»
+
+- Se mantiene la **inversión pasiva actual** como «gestión delegada» para quien no quiera jugar.
+- Nueva sesión activa de **2–3 minutos**, en horizontal 1280×720, accesible desde la tarjeta de Bolsa:
+  - Eliges el capital (sale de tu dinero; puedes perderlo).
+  - **4 activos ficticios** con perfiles: índice estable, empresa de crecimiento, startup volátil y bono seguro.
+  - **8 rondas.** En cada ronda ves una noticia y un gráfico de velas; decides comprar, mantener o vender. Una barra de ejecución añade precisión (comprar barato / vender caro).
+  - Comisión del 1 %; sin cortos en el MVP; stop-loss opcional.
+  - Al final: P&L, XP de `Progreso_Inversion`, desbloqueo de activos/análisis y mensaje de resultado.
+- `Progreso_Inversion` desbloquea activos y mejora la lectura de noticias; `Sangre_Fría` reduce el pánico (venta forzada si es baja); la salud mental afecta a la claridad de las pistas.
+- La inversión pasiva sigue existiendo, pero da menos XP y menos control.
+- **Hitos:** motor de mercado determinista por semilla + tests; UI de gráfico/noticias; integración con dinero y progreso; balance de retorno y riesgo.
+- **Criterios:** sesión comprensible tras una partida; el skill pesa más que la suerte (objetivo 60/40); no hay dinero infinito; se puede perder; tests.
+
+**Esfuerzo:** 2 semanas (la UI del gráfico es lo más caro).
+
+---
+
+### 3.4 Cocina: balance y pulido (prioridad 4, en paralelo)
+
+**Decisión:** **no añadir mundos, niveles, recetas ni monedas** hasta que los otros tres pilares estén cerrados. La cocina ya es prácticamente funcional; ahora toca que sea justa y legible.
+
+#### Trabajo
+
+- **Curva de dificultad:** medir con un bot/headless los 60 niveles (clientes, spawn, paciencia, metas y tiempo de limpieza). Detectar picos y valles. Objetivo: 1 estrella con juego básico, 3 estrellas con maestría/mejoras; ningún nivel imposible sin mejoras.
+- **Economía:** comparar €/hora de cocina (propinas + parte del beneficio) con trabajos y fútbol. Bandas objetivo:
+  - Niveles 1–5: aprendizaje, paga baja.
+  - Niveles 6–10: comparable a un trabajo a tiempo parcial.
+  - Niveles 11–15: comparable a un trabajo a tiempo completo, exigiendo mejoras.
+  - Modo práctica: al 25 %, complemento, no granja.
+- **Mejoras:** payback de 3–5 sesiones; evitar mejoras muertas; mostrar el retorno en la pantalla de Mejoras.
+- **Claridad:** resultado con desglose (ticket, ventas, propinas, costes, Caja y dinero personal), «siguiente estrella» y aviso de merma.
+- **UX/accesibilidad:** objetivos táctiles grandes, tickets legibles, pausa clara, skip de tutorial para veteranos y colores que no dependan solo del tono.
+- **QA:** 10 niveles seguidos sin fugas, 60 fps en Android medio, 720×1280 y 720×1600, guardado/carga.
+- **No hacer:** más contenido, nuevas monedas, anuncios dentro del minijuego ni multijugador.
+
+#### Criterios de aceptación
+
+- Curva documentada y sin picos injustos.
+- €/h dentro de la banda objetivo.
+- 10 niveles seguidos sin crash ni fuga de memoria.
+- Tests actualizados.
+
+**Esfuerzo:** 3–5 días.
+
+---
+
+## 4. Fase 2 — Economía y mundo (después de los cuatro pilares)
+
+- **Auditoría económica global:** tabla de fuentes y sumideros. Alquiler 200 €/semana, sueldos 10–36 €/h, fútbol 150–10.000 €/semana, matrículas 400–750 €/año, cocina, bolsa y bienestar. Definir bandas y evitar exponenciales. Ajustar salarios de fútbol y retorno de bolsa si hace falta.
+- **Modos de dificultad:** Relajado / Normal / Desafiante. `Modo_Rapido` sigue siendo velocidad, no dificultad.
+- **Logros y metaprogresión** con bonificaciones permanentes entre partidas.
+- **Relaciones (NPCs):** 2–3 NPCs, afinidad 0–100, quedadas y eventos; impacto en salud mental.
+- **Hitos por edad:** 25 boda, 30 hijos, 50 mitad de vida, 65 jubilación, 80 muerte (conectada a la muerte existente).
+- **Más actividades:** socializar, limpiar, meditar, pasear; que compitan por el calendario.
+- **Notificaciones locales:** examen, partido y alquiler; plugin Android.
+- **Onboarding:** primeros 10 minutos y tutorial por pilar.
+
+---
+
+## 5. Fase 3 — Lanzamiento
+
+- Integrar anuncios reales (AdMob/UMP/SSV) sobre `Proveedor_Anuncios`; sin pagos ni moneda premium.
+- Rendimiento y batería, migración de saves, QA en dispositivos y beta cerrada.
+- Assets de tienda, política de privacidad, rating de edad y diferenciación legal.
+- Avatares y animaciones adicionales solo si el resto está cerrado.
+
+---
+
+## 6. Orden de sprints
+
+| Sprint | Duración | Trabajo | Salida |
+|---|---|---|---|
+| **S1** | 1 semana | Universidad H1–H2 | Matrícula única y examen jugable todo el día. |
+| **S2** | 1 semana | Universidad H3–H4 + cocina | Casos prácticos, banco ampliado y balance de cocina. |
+| **S3–S4** | 2 semanas | Fútbol H1–H4 | Partido jugable de 90 s integrado en la liga. |
+| **S5–S6** | 1–2 semanas | Bolsa | Sala de trading completa. |
+| **S7** | 1 semana | Economía global | Auditoría, dificultad y ajustes entre pilares. |
+| **S8+** | — | Fase 2 | Relaciones, hitos, logros y onboarding. |
+
+---
+
+## 7. No hacer ahora
+
+- Modo mánager de fútbol.
+- Más mundos o niveles de cocina.
+- Más carreras universitarias (4 bastan hasta que los exámenes sean divertidos).
+- Un minijuego distinto para cada actividad.
+- Multijugador o funciones sociales.
+- Pagos o moneda premium.
+- Ampliar el avatar visual (ya existe creador y personaje).
+
+---
+
+## 8. Riesgos
+
+| Riesgo | Mitigación |
+|---|---|
+| El fútbol crece de alcance (11v11, táctica, mánager). | MVP de 5 acciones; auto-simulación siempre disponible. |
+| El rediseño universitario rompe saves o calendario. | Migración explícita y tests de estados. |
+| La bolsa se convierte en una máquina de dinero. | Comisiones, riesgo real, capital limitado y simulación. |
+| El balance de cocina queda obsoleto al cambiar la economía. | Hacer la auditoría global después de los pilares y revisar entonces. |
+| Sesiones demasiado largas en móvil. | Todo skippable o auto-resoluble; 2–5 minutos por acción. |
+
+---
+
+## 9. Métricas de éxito
+
+- El jugador puede explicar el bucle de cada pilar.
+- Sesión media de 3–8 minutos con al menos una decisión significativa.
+- **>60 %** de exámenes jugados por el jugador, **>40 %** de partidos jugados y **>50 %** de sesiones de bolsa completadas.
+- Ningún blocker de progresión y ninguna fuente de dinero infinita.
+- Suites GUT en verde y 60 fps en Android medio.
+
+---
+
+## 10. Base ya implementada (referencia)
+
+- **Progreso volátil y habilidades:** [`Documentacion/Progreso.md`](Documentacion/Progreso.md).
+- **Cocina:** [`Funcionalidades/Minijuego_Cocina/Documentacion/MINIJUEGO_COCINA.md`](Funcionalidades/Minijuego_Cocina/Documentacion/MINIJUEGO_COCINA.md).
+- **Fútbol:** [`Funcionalidades/Actividades/Futbol/Documentacion/CARRERA_FUTBOL.md`](Funcionalidades/Actividades/Futbol/Documentacion/CARRERA_FUTBOL.md).
+- **Universidad:** [`Funcionalidades/Carreras/Documentacion/SISTEMA_CARRERAS.md`](Funcionalidades/Carreras/Documentacion/SISTEMA_CARRERAS.md).
+- **Bolsa:** [`Funcionalidades/Economia/Invertir_En_Bolsa/Documentacion/INVERTIR.md`](Funcionalidades/Economia/Invertir_En_Bolsa/Documentacion/INVERTIR.md).
+- **Propuesta de fútbol y mánager:** [`notebookLM/08_PROPUESTA_FUTBOL_Y_MANAGER.md`](notebookLM/08_PROPUESTA_FUTBOL_Y_MANAGER.md).
+
+---
+
+## 11. Reglas de trabajo
+
+1. **No intentar todo a la vez.** Un pilar en profundidad y otro en paralelo como máximo.
+2. **Cada pilar se valida jugando**, no solo con tests.
+3. **Todo cambio actualiza su documentación de funcionalidad y el contexto de NotebookLM.**
+4. **Los saves antiguos deben seguir cargando.** Cualquier campo nuevo necesita fallback.
+5. **El auto-simulador es sagrado:** el jugador que no abre la app no puede quedar bloqueado.

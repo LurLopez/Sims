@@ -34,15 +34,22 @@ func _Preparar() -> void:
 	Variables_Dinamicas.Cocina_Estado = Variables_Dinamicas.Cocina_Estado_Por_Defecto()
 	Variables_Dinamicas.Cocina_Estado["restaurantes_desbloqueados"] = ["burger_street"]
 	Variables_Dinamicas.Cocina_Estado["fondos_cocina"] = 450
-	Variables_Dinamicas.Cocina_Estado["rango_logro"] = 2
-	Variables_Dinamicas.Cocina_Estado["estrellas_nivel"] = {
-		"burger_street_1": 3, "burger_street_2": 2, "burger_street_3": 1
-	}
+	Variables_Dinamicas.Cocina_Estado["estrellas_nivel"] = {}
+	var restante_captura: int = 62
+	for rest_id in Sistema_Cocina.ORDEN_RESTAURANTES:
+		for n in range(1, 16):
+			if restante_captura <= 0:
+				break
+			var valor_captura: int = mini(3, restante_captura)
+			Variables_Dinamicas.Cocina_Estado["estrellas_nivel"]["%s_%d" % [rest_id, n]] = valor_captura
+			restante_captura -= valor_captura
+		if restante_captura <= 0:
+			break
 	Variables_Dinamicas.Necesidades_Basicas = [80, 80, 80, 80, 80]
 	Variables_Estaticas.Habilidades = [50, 50, 50, 50, 50, 50, 50]
 
 	_vp = SubViewport.new()
-	_vp.size = Vector2i(720, 1280)
+	_vp.size = Vector2i(1280, 720)
 	_vp.render_target_update_mode = SubViewport.UPDATE_ALWAYS
 	add_child(_vp)
 

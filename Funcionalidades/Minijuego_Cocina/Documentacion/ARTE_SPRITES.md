@@ -2,7 +2,7 @@
 
 ## 1. Resumen
 
-Pack de **149 sprites PNG** para el escenario del minijuego de cocina de estilo casual, más **3 recursos de composición** para el banner de la tarjeta «Cocina» y el fondo del selector (`Banner_Cocina.png`, `Emplatado/Plato_Perspectiva.png` y `Fondo_Restaurante_Selector.png`), un **layout JSON** y una **escena editable de muestra a 1280×720** que reproduce la composición de referencia: chef a la izquierda, cuatro clientes tras el mostrador, tickets de pedido, vitrina, estaciones de cocina y primer plano de acero inoxidable. Las **15 ilustraciones de mejoras** (`Mejoras/`) son nuevas y se usan en la pantalla de Mejoras.
+Pack de **152 sprites PNG** para el escenario del minijuego de cocina de estilo casual —134 del pack base + 15 de mejoras + **3 fondos de los mundos nuevos**—, más **3 recursos de composición** para el banner de la tarjeta «Cocina» y el fondo del selector (`Banner_Cocina.png`, `Emplatado/Plato_Perspectiva.png` y `Fondo_Restaurante_Selector.png`), un **layout JSON** y una **escena editable de muestra a 1280×720** que reproduce la composición de referencia: chef a la izquierda, cuatro clientes tras el mostrador, tickets de pedido, vitrina, estaciones de cocina y primer plano de acero inoxidable. Las **15 ilustraciones de mejoras** (`Mejoras/`) son nuevas y se usan en la pantalla de Mejoras.
 
 - Arte **original generado por IA** (no se han extraído sprites del juego original).
 - Dirección: 2.5D casual, brillos suaves, colores saturados, perspectiva ligeramente cenital.
@@ -41,12 +41,13 @@ Pack de **149 sprites PNG** para el escenario del minijuego de cocina de estilo 
 | `Estaciones/` | 8 | Máquinas y estaciones de cocina |
 | `Mostrador/` | 8 | Módulos, vitrina, caja y tiras de mostrador |
 | `Emplatado/` | 22 | Platos, bandejas, salsas, utensilios y props |
-| `UI/` | 24 | HUD, tickets, monedas, botones y estrellas |
+| `UI/` | 28 | 24 del pack + 4 botones glossy 9-patch de los modales (`Boton_Modal_*`); HUD, tickets, monedas, botones y estrellas |
 | `Decoracion/` | 8 | Toldos, rótulos, planta, lámpara y trofeo |
 | `Efectos/` | 8 | Vapor, humo, chispas, fuego, monedas, estrellas, frescura y enfado |
 | `Mejoras/` | 15 | Tres variantes (Nv.1/Nv.2/Nv.3) de cada una de las 5 mejoras |
+| `Fondos/` | 3 | Fondos 16:9 de Bistró, Mercado y Alta Cocina (1280×720) |
 | Raíz | 1 | `Fondo_Restaurante.png` |
-| **Total** | **149** | |
+| **Total** | **152** | |
 
 La carpeta `Emplatado/` contiene además `Plato_Perspectiva.png`, la raíz contiene `Banner_Cocina.png` y `Fondo_Restaurante_Selector.png`; los tres son recursos de composición y no se cuentan en los 149 sprites del pack. Se detallan a continuación.
 
@@ -57,6 +58,18 @@ La carpeta `Emplatado/` contiene además `Plato_Perspectiva.png`, la raíz conti
 | `Banner_Cocina.png` (raíz) | 1288×284 | `Arte_Fuente/Minijuego_Cocina/Fondos/banner_cocina_maestro.png` (1913×822) | Fondo del banner de la tarjeta «Cocina» en `Pantalla_Minijuegos`: mostrador de diner con damero crema/negro, borde metálico inferior y comedor desenfocado detrás. Lleva horneados el desenfoque de fondo, la viñeta y la luz cálida. |
 | `Emplatado/Plato_Perspectiva.png` | 640×297 | `Arte_Fuente/Minijuego_Cocina/plato_perspectiva_maestro.png` (1336×1177) | Plato vacío de cerámica blanca en perspectiva 3/4 (ala, hueco, brillos y transparencia limpia) para el banner y el pase jugable; en esas composiciones sustituye al plato cenital `Plato_Vacio.png`. |
 | `Fondo_Restaurante_Selector.png` (raíz) | 360×640 | Generado con `tools/generar_fondo_selector.py` desde `Fondo_Restaurante.png` | Fondo vertical desenfocado y viñeteado del selector cartoon de niveles; se usa detrás del marco celeste y no forma parte del pack. |
+
+### Fondos de los mundos nuevos (`Fondos/`)
+
+Los tres fondos 16:9 se generaron a partir de los prompts de `Arte_Fuente/Minijuego_Cocina/prompts_fondos_restaurantes.md` y se redujeron a **1280×720** con Lanczos. Los maestros viven en `Arte_Fuente/Minijuego_Cocina/Fondos/`.
+
+| Archivo | Mundo | Maestro | Uso |
+|---|---|---|---|
+| `Fondos/Fondo_Bistro.png` | Bistró Tradicional | `fondo_bistro_maestro.png` | Comedor francés con banquinas burdeos, mármol, latón, cafetera y vitrina de postres. |
+| `Fondos/Fondo_Mercado.png` | Cocina de Mercado | `fondo_mercado_maestro.png` | Taberna mediterránea con azulejos azules, vigas, jamones, horno de leña y puestos de verdura. |
+| `Fondos/Fondo_Alta_Cocina.png` | Alta Cocina Gourmet | `fondo_alta_cocina_maestro.png` | Comedor de lujo en hora azul con paneles azul noche, lámparas de latón, mesas de mantel blanco y bodega. |
+
+Se cargan con `Arte_Cocina.fondo_restaurante(id)` y se usan en la cocina, la pantalla de carga y la miniatura de la tarjeta de mundo. Los tres están marcados como **VRAM comprimida (ETC2/S3TC)** con `tools/optimizar_import_texturas.py`.
 
 Se consumen desde `Scripts/GUI/Minijuego_Cocina/Arte_Cocina.gd` (`TEX_BANNER`, `TEX_PLATO_PERSPECTIVA` y la textura cacheada `textura_sombra_contacto()`) y `Scripts/Globales/Script_Principal.gd` (`_Actualizar_Pantalla_Minijuegos()`, `_Anadir_Item_Banner()`, `_Anadir_Sombra_Banner()`).
 
@@ -104,13 +117,17 @@ Se consumen desde `Scripts/GUI/Minijuego_Cocina/Arte_Cocina.gd` (`TEX_BANNER`, `
 
 `Plato_Vacio.png`, `Pila_Platos.png`, `Bandeja_Metal.png`, `Bandeja_Tomate.png`, `Bandejas_Apiladas.png`, `Cesta_Patatas.png`, `Bol_Lechuga.png`, `Salsera.png`, `Ketchup.png`, `Mostaza.png`, `Sal_Pimienta.png`, `Rastrillo_Salsas.png`, `Pinzas.png`, `Espatula.png`, `Tabla_Cortar.png`, `Servilleta.png`, `Servilletero.png`, `Tarro_Pepinillos.png`, `Vasos_Rojos.png`, `Tapas_Vasos.png`, `Pajitas.png`, `Limpiador.png`.
 
-> **Emplatado en el juego:** el pase es un puesto 3D. La base es la bandeja metálica renderizada `Emplatado/Bandeja_Metal.png`, con borde, paredes interiores y sombra de contacto; dentro va una alfombrilla beige hundida y detrás una mampara de cristal con marco cromado y filo verde (`Arte_Cocina.Fondo_Pase`). El pase muestra **siempre cuatro huecos**: al empezar se abren dos y las mejoras de Emplatado abren el tercero (`Nv.2`) y el cuarto (`Nv.3`); los cerrados son rebajes metálicos con candado y una pastilla de nivel. Los platos activos usan `Emplatado/Plato_Perspectiva.png` (640×297, `PLATO_PERSPECTIVA = 0.464`), cerámica 3/4 con filo celeste grueso. El plato se centra en su hueco y el ancho se acota por el alto para que la hamburguesa siempre quepa. `Bandeja_Metal.png` también se usa para la bandeja de carne cruda.
+> **Emplatado en el juego:** el pase es un puesto 3D. La base es la bandeja metálica renderizada `Emplatado/Bandeja_Metal.png`, con borde, paredes interiores y sombra de contacto; dentro va una alfombrilla beige hundida y detrás una mampara de cristal con marco cromado y filo verde (`Arte_Cocina.Fondo_Pase`). El pase muestra **siempre cuatro huecos**: al empezar se abren dos y las mejoras de Emplatado abren el tercero (`Nv.2`) y el cuarto (`Nv.3`); los cerrados son rebajes metálicos con candado y una pastilla de nivel. Los platos activos usan `Emplatado/Plato_Perspectiva.png` (640×297, `PLATO_PERSPECTIVA = 0.464`), cerámica 3/4 con filo celeste grueso. El plato se centra en su hueco con `ancho_plato_visible()` y `centro_plato_visible()`, y deja un margen de 2 px en cada celda; el ancho se acota por la celda para que los cuatro platos compartan la misma línea de base sin invadir la celda vecina. `Bandeja_Metal.png` también se usa para la bandeja de carne cruda.
+>
+> **Filete del Bistró:** `Arte_Cocina.dibujar_filete()` dibuja por código un filete con hueso en 3/4, costra, veteado de grasa, marcas de parrilla, hueso lateral con nudillos, brillo de jugo y romero. El color de la carne y el centro rosado cambian con el punto (`crudo`, `poco_hecho`, `al_punto`, `hecho`, `quemado`). Se usa en la parrilla, el pase, los tickets, la despensa y las ilustraciones de mejoras; al ser vectorial escala de 30 a 220 px sin perder nitidez. `dibujar_plato_bistro()` monta el plato 3/4 del pack con el filete, la salsa y un abanico de patatas alineado con el borde.
 >
 > **Alineación de iconos y capas:** los PNG de `Comida/Ingredientes` y `Comida/Platos` llevan ~10 px de margen transparente y encuadres distintos, así que no se pueden alinear por el tamaño de la textura. `Arte_Cocina.region_contenido()` calcula una sola vez (y cachea) el rectángulo de píxeles visibles con alfa > 24 y `dibujar_tex_recortada()` dibuja solo esa región. La bandeja inferior usa `rect_icono_alineado()` para que los seis iconos compartan línea de base (y = 70), centro horizontal (x = 49) y altura máxima (56 px) sin deformar su proporción; el icono de «Pan» es `Pan_Superior.png`, igual que el fantasma del plato vacío. La hamburguesa se compone con `_capas_hamburguesa()`, que fija ancho, alto y solape de cada capa sobre un eje común de 120 unidades. El fantasma del pan y su botón «+» comparten el centro del plato, de modo que quedan siempre alineados.
 
-### `UI/` (24)
+### `UI/` (28: 24 del pack + 4 botones 9-patch)
 
 `Ticket_Verde.png`, `Ticket_Rojo.png`, `Moneda.png`, `Pila_Monedas.png`, `Gema.png`, `Reloj.png`, `Bote_Propinas.png`, `Burbuja.png`, `Boton_Verde.png`, `Boton_Azul.png`, `Boton_Naranja.png`, `Boton_Check.png`, `Boton_X.png`, `Flecha.png`, `Engranaje.png`, `Estrella_Dorada.png`, `Estrella_Plateada.png`, `Estrella_Vacia.png`, `Corazon.png`, `Candado_Abierto.png`, `Candado_Cerrado.png`, `Insignia_Nivel.png`, `Regalo.png`, `Cinta_Dorada.png`.
+
+Además, `Boton_Modal_Azul.png`, `Boton_Modal_Verde.png`, `Boton_Modal_Naranja.png` y `Boton_Modal_Rojo.png` (600×64) son texturas 9-patch de los botones glossy de los modales, generadas con `tools/generar_botones_modal.py` a partir de `Boton_Azul/Verde/Naranja.png` (el rojo, por rotación de tono y refuerzo de saturación). No forman parte del pack original: los remaches laterales se conservan y el centro se rellena con una columna estirable.
 
 ### `Decoracion/` (8)
 
@@ -129,6 +146,8 @@ Tres variantes por cada mejora, de básica a profesional:
 - `termostato_nv1.png`, `termostato_nv2.png`, `termostato_nv3.png` — dial manual, dial de precisión y panel digital.
 - `ingredientes_nv1.png`, `ingredientes_nv2.png`, `ingredientes_nv3.png` — caja de madera, bandeja de acero y cesta premium.
 - `ambiente_nv1.png`, `ambiente_nv2.png`, `ambiente_nv3.png` — jukebox de mesa, jukebox de diner y jukebox de lujo.
+
+El **Bistró Tradicional** no reutiliza estas láminas de hamburguesas: sus cinco mejoras se dibujan por código con `Arte_Cocina.dibujar_mejora_bistro()` (parrilla con filetes, pase con platos y café, dial del punto, tabla de género y comedor). La tarjeta grande y los iconos de 48 px usan la misma composición en dos escalas, y los textos de beneficios/frases salen de `MEJORAS_UI_POR_RESTAURANTE`; así el Bistró no muestra «vasos de refresco» ni una plancha de burgers.
 
 Se generaron con el modelo de imagen a partir de cinco hojas maestras (`Arte_Fuente/Minijuego_Cocina/Mejoras/hoja_<mejora>.png`), cada una con las tres variantes en fila sobre magenta. El procesado es reproducible con:
 
@@ -337,5 +356,5 @@ Este pack es una **obra original** con arte propio generado para el proyecto; no
 - 152 PNG válidos y 152 `.import`: 149 del pack en RGBA (incluidas las 15 mejoras), el banner opaco en RGB, el plato en RGBA y el fondo del selector en RGBA; ~26,2 MB en runtime.
 - 58 entradas de layout; 0 rutas rotas.
 - Escena: 76 nodos, 59 `TextureRect`, 9 `Label` y 46 recursos externos (43 texturas, 2 fuentes y el script); 0 rutas rotas.
-- Tests del minijuego: **33/33, 678 asserts** (incluye 11 tests de arrastre y toque rápido, 1 de pedidos deterministas, 6 de alineación del arte y la compra de mejoras con la Caja). La pantalla de Mejoras añade 1 test y no altera la suite existente.
+- Tests del minijuego: **45/45, 1318 asserts** (incluye 11 tests de arrastre y toque rápido, 1 de pedidos deterministas, 6 de alineación del arte, 10 de los mundos 2–4 y la compra de mejoras con la Caja). La pantalla de Mejoras añade 1 test y no altera la suite existente.
 - Escena ejecutada en Godot 4.7.2 a 1280×720 y capturada en `Arte_Fuente/Minijuego_Cocina/escenario_godot_1280x720.png`.

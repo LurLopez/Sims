@@ -1,22 +1,24 @@
 # Sistema de Carreras Universitarias - Documentación Completa
 
-**Versión:** 1.1  
-**Estado:** Implementado  
-**Última actualización:** 10 de Junio de 2026  
+**Versión:** 1.2  
+**Estado:** Implementado (UI móvil rediseñada en nov 2026; ciclo/examen en Roadmap v3.0 Prioridad 1)  
+**Última actualización:** 21 de Noviembre de 2026  
 
 ---
 
 ## Tabla de Contenidos
 
 1. [Visión General](#visión-general)
-2. [Duración Total](#duración-total)
-3. [Ciclo Semanal Completo](#ciclo-semanal-completo)
-4. [Estados del Botón](#estados-del-botón)
-5. [Flujos Detallados](#flujos-detallados)
-6. [Timeline de Ejemplos](#timeline-de-ejemplos)
-7. [Dinero y Matrícula](#dinero-y-matrícula)
-8. [El Examen Real del Jugador](#el-examen-real-del-jugador)
-9. [Reglas Clave](#reglas-clave)
+2. [Interfaz de usuario](#interfaz-de-usuario)
+3. [Duración Total](#duración-total)
+4. [Ciclo Semanal Completo](#ciclo-semanal-completo)
+5. [Estados del Botón](#estados-del-botón)
+6. [Flujos Detallados](#flujos-detallados)
+7. [Timeline de Ejemplos](#timeline-de-ejemplos)
+8. [Dinero y Matrícula](#dinero-y-matrícula)
+9. [El Examen Real del Jugador](#el-examen-real-del-jugador)
+10. [Reglas Clave](#reglas-clave)
+11. [Rediseño planificado en el Roadmap v3.0 (Prioridad 1)](#rediseño-planificado-en-el-roadmap-v30-prioridad-1)
 
 ---
 
@@ -32,6 +34,25 @@ El sistema de carreras universitarias es una **mecánica híbrida** (1 semana re
 **Carreras disponibles:** Ingeniería Informática, Derecho y Bellas Artes duran 4 años; **Medicina dura 5 años** (la única con duración distinta, para ser más difícil). Solo se puede cursar una carrera a la vez (`Variables_Dinamicas.Carrera_Actual`) y no se puede repetir una carrera que ya esté en `Carreras_Completadas`.
 
 **Objetivo final:** Completar todos los años de la carrera elegida en ~N semanas reales de juego (N = `carrera.años_totales`)
+
+---
+
+## Interfaz de usuario
+
+La pantalla de Carrera y todos sus modales se rediseñaron para móvil vertical (base `720×1280` con `aspect=expand`). Mantienen la identidad visual del juego —banda de cabecera, tarjetas blancas, Bricolage/DM Sans, iconos Lucide y animaciones de pulsación— y usan el color de cada titulación como acento.
+
+| Pantalla | Qué incluye |
+|---|---|
+| **Carrera universitaria** | Tarjeta de expediente con icono y color de la carrera, estado, progreso del curso, línea temporal de años, acción contextual, acceso a apuntes, consejo de estudio y títulos obtenidos. Sin carrera activa muestra una guía de tres pasos. |
+| **Elegir carrera** | Tarjetas táctiles con duración, coste anual, dificultad y estado de graduación. |
+| **Programar examen** | Selector directo de día y hora en rejilla, resumen de matrícula/prematrícula, coste y aviso de saldo insuficiente. |
+| **Apuntes** | Lector con pestañas de año fijas, temario maquetado por secciones, numeración, viñetas con negritas, tiempo de lectura y estado vacío. Sustituye el antiguo `AcceptDialog` con `TextEdit`. |
+| **Test del jugador** | Preguntas en tarjetas, opciones A–D táctiles con estado seleccionado, progreso fijo, aviso de respuestas pendientes, confirmación al salir y resultado con anillo de nota y bonus. |
+| **Resultado oficial** | Ficha de expediente con estado, nota final, test del jugador, recompensa de graduación y cierre seguro. Sustituye el `AcceptDialog` de texto. |
+
+La base común `Modal_Carrera_Base.gd` construye el velo, la tarjeta a pantalla casi completa, la cabecera, el área de contenido desplazable y el pie de acciones fijo. Los modales son `CanvasLayer`; `popup_centered()` se conserva como no-op para no romper las llamadas antiguas de `Script_Principal.gd`.
+
+Capturas de QA generadas con `Escenas/Herramientas/Captura_Carreras.tscn` (`Funcionalidades/Carreras/Documentacion/Capturas/`). Tests de humo de la UI: `Funcionalidades/Carreras/Tests/test_ui_carreras.gd`.
 
 ---
 
@@ -616,14 +637,19 @@ var Inicio_Semana_Carrera: int = -1            # minuto absoluto (legacy, no cr�
 | `Scripts/Logica/Escena_Principal/Actividades/Carreras/Carrera_Bellas_Artes.gd` | Carrera concreta (4 años) |
 | `Scripts/Logica/Escena_Principal/Actividades/Carreras/Sistema_Examenes.gd` | Autoload: cálculo de notas, progreso |
 | `Scripts/Logica/Escena_Principal/Actividades/Actividades.gd` | Conversión Lunes 00:00, disparo examen automático |
-| `Scripts/Globales/Script_Principal.gd` | Botón único, máquina de estados, modales, diploma |
-| `Scripts/Logica/Escena_Principal/Actividades/Carreras/UI/Modal_Seleccionar_Carrera.gd` | Selector de carrera (excluye completadas) al no tener carrera activa |
-| `Scripts/Logica/Escena_Principal/Actividades/Carreras/UI/Modal_Seleccionar_Examen.gd` | Elige día (solo Mi-V) y hora |
-| `Scripts/Logica/Escena_Principal/Actividades/Carreras/UI/Modal_Examen.gd` | Test 10 preguntas (ruta genérica vía `carrera.slug_contenido`) |
-| `Scripts/Logica/Escena_Principal/Actividades/Carreras/UI/Lector_Libros.gd` | Modal "Leer Apuntes" con pestañas por año (ruta genérica) |
+| `Scripts/Globales/Script_Principal.gd` | Pantalla Carrera, botón único, máquina de estados y apertura de modales |
+| `Scripts/Logica/Escena_Principal/Actividades/Carreras/UI/Modal_Carrera_Base.gd` | Base visual común: velo, tarjeta, cabecera, scroll, pie, confirmaciones |
+| `Scripts/Logica/Escena_Principal/Actividades/Carreras/UI/Anillo_Nota.gd` | Anillo animado de nota para las pantallas de resultado |
+| `Scripts/Logica/Escena_Principal/Actividades/Carreras/UI/Modal_Seleccionar_Carrera.gd` | Selector de carrera con tarjetas, coste, dificultad y graduaciones |
+| `Scripts/Logica/Escena_Principal/Actividades/Carreras/UI/Modal_Seleccionar_Examen.gd` | Elige día (Mi-V) y hora con selector directo |
+| `Scripts/Logica/Escena_Principal/Actividades/Carreras/UI/Modal_Examen.gd` | Test de 10 preguntas con opciones táctiles y resultado del test |
+| `Scripts/Logica/Escena_Principal/Actividades/Carreras/UI/Modal_Resultado_Examen.gd` | Ficha del resultado oficial del examen automático |
+| `Scripts/Logica/Escena_Principal/Actividades/Carreras/UI/Lector_Libros.gd` | Lector de apuntes por año con temario maquetado |
 | `Scripts/GUI/Escena_Principal/Lector_Libro.gd` | Lector tipo libro de la pestaña Inventario; también renderiza la página `"diploma"` |
 | `Scripts/Logica/Escena_Principal/Actividades/Carreras/Contenido/preguntas_<slug>.json` | Banco de preguntas por carrera (`ing_informatica`, `derecho`, `medicina`, `bellas_artes`) |
 | `Scripts/Logica/Escena_Principal/Actividades/Carreras/Contenido/apuntes_<slug>_anioN.txt` | Apuntes por año y carrera |
+| `Funcionalidades/Carreras/Tests/test_ui_carreras.gd` | Pruebas GUT de humo de los modales (señales, respuestas y apuntes) |
+| `Scripts/Otro/Herramientas/Captura_Carreras.gd` | QA visual de todos los estados y modales de Carreras |
 | `Scripts/Otro/Guardar/Guardar_Variables_Dinamicas.gd` | Serialización de Carrera_Actual y Carreras_Completadas (reconstruye por `script_path`, sin cambios) |
 
 ---
@@ -647,4 +673,17 @@ var Inicio_Semana_Carrera: int = -1            # minuto absoluto (legacy, no cr�
 
 ---
 
-**Implementación completada el 10 de Junio de 2026.**
+## Rediseño planificado en el Roadmap v3.0 (Prioridad 1)
+
+> **Estado:** Pendiente de implementación (ver `01_ROADMAP_Y_PROGRESO.md` §3.1). Es el **primer foco** de trabajo para discutir y cerrar detalles antes de programar.
+
+- **Problemas detectados en el sistema actual:** doble paso prematrícula/matrícula con reglas ocultas; examen automático donde el test del jugador solo suma +10 %; ventana de 1 hora que castiga al jugador móvil; estudio genérico sin clases; banco corto de 10 preguntas por año; nota opaca y recompensa plana de 2.000 €.
+- **Diseño objetivo (MVP):**
+  1. **Matrícula única** (sin prematrícula ni conversión del lunes).
+  2. **Clases + estudio:** nueva actividad «Asistir a clase» (2 bloques/semana, 90 min) que sube progreso y desbloquea pistas de apuntes.
+  3. **Examen pendiente todo el día (00:00–23:59):** el jugador puede hacerlo a cualquier hora de ese día; si no, a las 23:59 se resuelve automáticamente con penalización.
+  4. **Test (60 %) + Caso práctico por carrera (40 %):** 10 preguntas cronometradas (25 s) + caso propio de Ingeniería/Derecho/Medicina/Bellas Artes.
+  5. **Nueva fórmula de nota:** `40 % progreso + 50 % examen + 10 % estado`, con bonus por tramo (Notable ≥ 70, Matrícula de Honor ≥ 85) y banco ampliado a 30–40 preguntas por año.
+  6. **Compatibilidad:** migración explícita para saves antiguos con prematrícula/matriculado.
+
+**Implementación base del 10 de Junio de 2026; UI móvil rediseñada el 21 de Noviembre de 2026.**

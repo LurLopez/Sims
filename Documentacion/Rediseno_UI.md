@@ -40,6 +40,9 @@ paleta, las tipografías, la forma de las tarjetas, los botones y la composició
   - Etiquetas de hora a la derecha y filas de 30 minutos coincidentes con la rejilla.
   - Título «Horario semanal», subtítulo con el número de semana, leyenda Libre/Ocupado/Pasado,
     día actual resaltado en coral y selector Anterior / S19 / Siguiente.
+  - Botón inferior «Volver a la semana actual», siempre visible: activo al consultar otra
+    semana y en gris («Estás en la semana actual») cuando ya se está en la del Sim. El atajo
+    superior «Ir a hoy» se mantiene.
   - La vista empieza siempre en las 00:00 y se desplaza verticalmente para ver el día completo.
 - Perfil (mensajes, información e inventario).
 - Tienda, Carrera y Economía.

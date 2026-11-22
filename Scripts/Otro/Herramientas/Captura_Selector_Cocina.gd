@@ -20,16 +20,20 @@ func _ready() -> void:
 	Variables_Dinamicas.Cocina_Estado["estrellas_nivel"] = {
 		"burger_street_1": 3,
 		"burger_street_2": 3,
-		"burger_street_3": 2,
-		"burger_street_4": 1,
-		"burger_street_5": 1,
-		"burger_street_6": 1,
-		"burger_street_7": 1,
+		"burger_street_3": 3,
+		"burger_street_4": 3,
+		"burger_street_5": 3,
+		"burger_street_6": 3,
+		"burger_street_7": 3,
+		"burger_street_8": 3,
+		"burger_street_9": 3,
+		"burger_street_10": 3,
+		"burger_street_11": 3,
+		"burger_street_12": 1,
 	}
-	Variables_Dinamicas.Cocina_Estado["rango_logro"] = 1
 
-	var ancho: int = int(OS.get_environment("CAPTURA_ANCHO")) if OS.get_environment("CAPTURA_ANCHO") != "" else 720
-	var alto: int = int(OS.get_environment("CAPTURA_ALTO")) if OS.get_environment("CAPTURA_ALTO") != "" else 1280
+	var ancho: int = int(OS.get_environment("CAPTURA_ANCHO")) if OS.get_environment("CAPTURA_ANCHO") != "" else 1280
+	var alto: int = int(OS.get_environment("CAPTURA_ALTO")) if OS.get_environment("CAPTURA_ALTO") != "" else 720
 	var vp := SubViewport.new()
 	vp.size = Vector2i(ancho, alto)
 	vp.transparent_bg = false
@@ -42,6 +46,12 @@ func _ready() -> void:
 	await get_tree().process_frame
 
 	await _Capturar(vp, "selector_mundos.png")
+
+	# Detalle de Maestría: progreso por estrellas y recompensas de cada rango.
+	mini._Abrir_Modal_Maestria()
+	await get_tree().create_timer(0.5).timeout
+	await _Capturar(vp, "selector_maestria.png")
+	mini._modal_maestria.visible = false
 
 	mini._restaurante_actual = "burger_street"
 	mini._restaurante_expandido = "burger_street"

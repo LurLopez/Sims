@@ -25,6 +25,7 @@ boot_splash/bg_color=Color(0.953, 0.961, 0.973, 1)
 
 Variables_Dinamicas="*res://Scripts/Globales/Principales_Variables/Variables_Dinamicas.gd"
 Variables_Estaticas="*res://Scripts/Globales/Principales_Variables/Variables_Estaticas.gd"
+Sistema_Bolsa="*res://Scripts/Logica/Escena_Principal/Economia/Sistema_Bolsa.gd"
 Guardar_Variables_Dinamicas="*res://Scripts/Otro/Guardar/Guardar_Variables_Dinamicas.gd"
 Guardar_Variables_Estaticas="*res://Scripts/Otro/Guardar/Guardar_Variables_Estaticas.gd"
 Funciones_Globales="*res://Scripts/Globales/Funciones_Globales.gd"

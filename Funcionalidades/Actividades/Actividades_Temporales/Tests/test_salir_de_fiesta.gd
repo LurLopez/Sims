@@ -5,8 +5,11 @@ extends GutTest
 
 const NOMBRE := "Salir_De_Fiesta"
 
+var _save_path_original: String = ""
+
 
 func before_all():
+	_save_path_original = Guardar_Variables_Dinamicas.save_path
 	_Inicializar_Matriz()
 
 
@@ -38,7 +41,7 @@ func after_each():
 	var ruta_prueba := "user://test_salir_de_fiesta.dat"
 	if FileAccess.file_exists(ruta_prueba):
 		DirAccess.remove_absolute(ruta_prueba)
-	Guardar_Variables_Dinamicas.save_path = "user://guardado//variables//Guardar_Variables_Dinamicas.dat"
+	Guardar_Variables_Dinamicas.save_path = _save_path_original
 
 
 func _Inicializar_Matriz() -> void:

@@ -1,264 +1,463 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Invertir en Bolsa - Documentación</title>
-    <style>
-        body { font-family: 'Segoe UI', sans-serif; line-height: 1.6; max-width: 900px; margin: 0 auto; padding: 20px; background: #f5f5f5; color: #333; }
-        .container { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        h1 { color: #2c3e50; border-bottom: 3px solid #27ae60; padding-bottom: 10px; }
-        h2 { color: #34495e; margin-top: 30px; padding-top: 15px; border-top: 1px solid #ecf0f1; }
-        h3 { color: #7f8c8d; }
-        .section { margin: 20px 0; padding: 15px; background: #ecf0f1; border-left: 4px solid #27ae60; border-radius: 4px; }
-        .critical { background: #fadbd8; border-left-color: #e74c3c; color: #c0392b; font-weight: bold; }
-        .info { background: #d6eaf8; border-left-color: #2980b9; }
-        .success { background: #d5f4e6; border-left-color: #27ae60; }
-        .warning { background: #fef9e7; border-left-color: #f39c12; }
-        table { width: 100%; border-collapse: collapse; margin: 20px 0; background: white; border-radius: 4px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        th { background: #27ae60; color: white; padding: 12px; text-align: left; }
-        td { padding: 10px 12px; border-bottom: 1px solid #ecf0f1; }
-        tr:last-child td { border-bottom: none; }
-        code { background: #f8f9fa; padding: 2px 6px; border-radius: 3px; font-family: monospace; font-size: 0.9em; }
-        pre { background: #2c3e50; color: #ecf0f1; padding: 15px; border-radius: 6px; overflow-x: auto; }
-        pre code { background: none; color: inherit; padding: 0; }
-        .flow-step { display: flex; align-items: flex-start; margin: 10px 0; }
-        .step-number { background: #27ae60; color: white; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 12px; flex-shrink: 0; }
-        .checklist li { margin: 8px 0; list-style: none; }
-        .checklist li::before { content: "☑ "; color: #27ae60; font-weight: bold; }
-        .formula-box { background: #f0faf4; border: 2px solid #27ae60; border-radius: 8px; padding: 15px; margin: 15px 0; font-family: monospace; }
-        .badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 0.85em; font-weight: bold; margin: 2px; }
-        .badge-verde { background: #d5f4e6; color: #1e8449; }
-        .badge-rojo { background: #fadbd8; color: #c0392b; }
-        .badge-gris { background: #ecf0f1; color: #7f8c8d; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Invertir en Bolsa - Documentación</title>
+<style>
+body { font-family: 'Segoe UI', sans-serif; line-height: 1.6; max-width: 980px; margin: 0 auto; padding: 20px; background: #f5f5f5; color: #333; }
+.container { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+h1 { color: #2c3e50; border-bottom: 3px solid #27ae60; padding-bottom: 10px; }
+h2 { color: #34495e; margin-top: 30px; padding-top: 15px; border-top: 1px solid #ecf0f1; }
+h3 { color: #566573; }
+table { width: 100%; border-collapse: collapse; margin: 20px 0; background: white; border-radius: 4px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+th { background: #27ae60; color: white; padding: 12px; text-align: left; }
+td { padding: 10px 12px; border-bottom: 1px solid #ecf0f1; vertical-align: top; }
+tr:last-child td { border-bottom: none; }
+code { background: #f8f9fa; padding: 2px 6px; border-radius: 3px; font-family: monospace; font-size: 0.9em; }
+pre { background: #2c3e50; color: #ecf0f1; padding: 15px; border-radius: 6px; overflow-x: auto; }
+pre code { background: none; color: inherit; padding: 0; }
+blockquote { margin: 20px 0; padding: 15px; background: #fef9e7; border-left: 4px solid #f39c12; border-radius: 4px; }
+li { margin: 6px 0; }
+input[type=checkbox] { margin-right: 6px; }
+</style>
 </head>
 <body>
 <div class="container">
+<h1>Invertir en Bolsa</h1>
+<h2>Descripción general</h2>
+<p>Sistema de inversión <strong>pasiva</strong> con gestión de cartera, eventos de mercado, historial y estadísticas. El jugador puede aportar dinero cuando quiera, añadir capital a una posición abierta, retirar solo una parte o cerrar la posición completa. El valor de la cartera fluctúa automáticamente mientras hay dinero invertido.</p>
+<p>La pantalla dedicada (<strong>Economía → Bolsa e inversiones</strong>) incluye tres pestañas:</p>
+<ul>
+<li><strong>Resumen:</strong> valor de la cartera, beneficio, nivel inversor, pulso del mercado y perfil inversor.</li>
+<li><strong>Evolución:</strong> gráfico del beneficio acumulado con periodos de 1, 5 y 10 años o todo el historial.</li>
+<li><strong>Estadísticas:</strong> aportado, retirado, rentabilidad, tasa de acierto, mejores y peores operaciones, tiempo invertido, eventos, rachas y máxima caída.</li>
+</ul>
+<blockquote>
+<p>El minijuego activo de trading («Sala de trading») sigue pendiente. Esta mejora mantiene la inversión pasiva como modo cómodo y deja el motor preparado para compartir progreso con el futuro minijuego.</p>
+</blockquote>
+<hr />
+<h2>Variables dinámicas</h2>
+<h3>Posición actual</h3>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Tipo</th>
+<th>Rango</th>
+<th>Descripción</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Esta_Invirtiendo</code></td>
+<td><code>bool</code></td>
+<td>—</td>
+<td><code>true</code> mientras haya valor en la cartera</td>
+</tr>
+<tr>
+<td><code>Dinero_Invertido</code></td>
+<td><code>float</code></td>
+<td>≥ 0</td>
+<td>Coste base de la posición abierta (aportes menos coste liberado en retiradas)</td>
+</tr>
+<tr>
+<td><code>Valor_Inversion</code></td>
+<td><code>float</code></td>
+<td>≥ 0</td>
+<td>Valor actual de la cartera</td>
+</tr>
+<tr>
+<td><code>Salud_Mental_Al_Invertir</code></td>
+<td><code>int</code></td>
+<td>1–100</td>
+<td>Snapshot de salud mental al abrir una posición nueva</td>
+</tr>
+<tr>
+<td><code>Progreso_Inversion</code></td>
+<td><code>int</code></td>
+<td>1–100</td>
+<td>Nivel inversor</td>
+</tr>
+<tr>
+<td><code>Inversion_Minuto_Inicio</code></td>
+<td><code>int</code></td>
+<td>≥ -1</td>
+<td>Minuto de juego en el que se abrió la posición</td>
+</tr>
+<tr>
+<td><code>Inversion_Tendencia</code></td>
+<td><code>float</code></td>
+<td>-1…1</td>
+<td>Régimen de mercado (bajista ↔ alcista)</td>
+</tr>
+</tbody>
+</table>
+<h3>Historial y estadísticas</h3>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Tipo</th>
+<th>Descripción</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Inversion_Historial</code></td>
+<td><code>Array</code></td>
+<td>Puntos <code>{minuto, beneficio, valor, invertido}</code> para el gráfico</td>
+</tr>
+<tr>
+<td><code>Inversion_Operaciones</code></td>
+<td><code>Array</code></td>
+<td>Últimas 40 operaciones <code>{minuto, tipo, cantidad, beneficio, cerrado, acumulado}</code></td>
+</tr>
+<tr>
+<td><code>Inversion_Eventos</code></td>
+<td><code>Array</code></td>
+<td>Últimos 30 eventos <code>{minuto, titulo, delta_pct, importe, tipo}</code></td>
+</tr>
+<tr>
+<td><code>Inversion_Aportado_Total</code></td>
+<td><code>float</code></td>
+<td>Dinero total aportado a lo largo de la partida</td>
+</tr>
+<tr>
+<td><code>Inversion_Retirado_Total</code></td>
+<td><code>float</code></td>
+<td>Dinero total retirado</td>
+</tr>
+<tr>
+<td><code>Inversion_Beneficio_Realizado</code></td>
+<td><code>float</code></td>
+<td>Beneficio/pérdida ya materializado en retiradas</td>
+</tr>
+<tr>
+<td><code>Inversion_Num_Aportes</code></td>
+<td><code>int</code></td>
+<td>Número total de aportes</td>
+</tr>
+<tr>
+<td><code>Inversion_Num_Retiradas</code></td>
+<td><code>int</code></td>
+<td>Número total de retiradas</td>
+</tr>
+<tr>
+<td><code>Inversion_Cierres_Ganadores</code></td>
+<td><code>int</code></td>
+<td>Retiradas con beneficio &gt; 0,01 €</td>
+</tr>
+<tr>
+<td><code>Inversion_Cierres_Perdedores</code></td>
+<td><code>int</code></td>
+<td>Retiradas con pérdida &lt; -0,01 €</td>
+</tr>
+<tr>
+<td><code>Inversion_Mejor_Operacion</code></td>
+<td><code>float</code></td>
+<td>Mejor beneficio realizado</td>
+</tr>
+<tr>
+<td><code>Inversion_Peor_Operacion</code></td>
+<td><code>float</code></td>
+<td>Peor pérdida realizada</td>
+</tr>
+<tr>
+<td><code>Inversion_Eventos_Subida</code> / <code>_Bajada</code></td>
+<td><code>int</code></td>
+<td>Eventos de mercado al alza / a la baja</td>
+</tr>
+<tr>
+<td><code>Inversion_Panicos</code></td>
+<td><code>int</code></td>
+<td>Auto-ventas por pánico</td>
+</tr>
+<tr>
+<td><code>Inversion_Minutos_Activos</code></td>
+<td><code>int</code></td>
+<td>Minutos de juego con una posición abierta</td>
+</tr>
+<tr>
+<td><code>Inversion_Racha_Actual</code></td>
+<td><code>int</code></td>
+<td>Racha actual del mercado (positiva = subidas)</td>
+</tr>
+<tr>
+<td><code>Inversion_Mejor_Racha</code> / <code>_Peor_Racha</code></td>
+<td><code>int</code></td>
+<td>Mejor racha alcista / bajista</td>
+</tr>
+<tr>
+<td><code>Inversion_Racha_Operaciones</code></td>
+<td><code>int</code></td>
+<td>Retiradas rentables consecutivas</td>
+</tr>
+<tr>
+<td><code>Inversion_Mejor_Racha_Operaciones</code></td>
+<td><code>int</code></td>
+<td>Mejor racha de retiradas rentables</td>
+</tr>
+<tr>
+<td><code>Inversion_Pico_Beneficio</code></td>
+<td><code>float</code></td>
+<td>Pico de beneficio acumulado alcanzado</td>
+</tr>
+<tr>
+<td><code>Inversion_Max_Caida</code></td>
+<td><code>float</code></td>
+<td>Mayor caída desde un pico (drawdown)</td>
+</tr>
+<tr>
+<td><code>Inversion_Ultimo_Evento_Minuto</code></td>
+<td><code>int</code></td>
+<td>Minuto del último evento de mercado</td>
+</tr>
+</tbody>
+</table>
+<p><code>Inversion_...</code> es el prefijo persistente de la bolsa. <code>Inversion_Historial</code>, <code>Inversion_Operaciones</code> e <code>Inversion_Eventos</code> se recortan automáticamente para no hacer crecer el guardado sin límite.</p>
+<hr />
+<h2>Flujo de ejecución</h2>
+<h3>1. Abrir la pantalla</h3>
+<p>El botón de la tarjeta <strong>Bolsa e inversiones</strong> abre <code>Panel_Bolsa</code> a pantalla completa. El panel se reconstruye cada vez que se abre porque <code>Gestionar_Visibilidad.Quitar_Todo()</code> oculta recursivamente todos los controles de la pantalla anterior.</p>
+<h3>2. Invertir o aportar</h3>
+<p><code>Sistema_Bolsa.Invertir(cantidad, minuto)</code>:</p>
+<pre><code class="language-gdscript">if no hay posición:
+    Dinero_Invertido = 0
+    Valor_Inversion = 0
+    Salud_Mental_Al_Invertir = Necesidades_Basicas[1]
+    Inversion_Minuto_Inicio = minuto
 
-    <h1>📈 Invertir en Bolsa</h1>
-    <div class="section success">
-        Sistema de inversión financiera pasiva. El jugador mete dinero en "la bolsa" y su valor fluctúa automáticamente cada ~8 horas de juego. Al principio se pierde dinero; al final de la partida, con suficiente progreso, se gana consistentemente.
-    </div>
+Dinero -= cantidad
+Dinero_Invertido += cantidad
+Valor_Inversion += cantidad
+Esta_Invirtiendo = true
+Inversion_Aportado_Total += cantidad
+Inversion_Num_Aportes += 1
+</code></pre>
+<p>La salud mental solo se captura al <strong>abrir</strong> una posición. Aportar más capital a una posición existente conserva el snapshot original.</p>
+<h3>3. Tick de mercado</h3>
+<p><code>Actividades._Tick_Inversion()</code> llama una vez por minuto de juego a <code>Sistema_Bolsa.Procesar_Minuto()</code> mientras <code>Esta_Invirtiendo</code> es verdadero. Cada minuto suma <code>Inversion_Minutos_Activos</code>.</p>
+<p>El evento de mercado ocurre con probabilidad <strong>1/480 por minuto</strong> (~3 eventos por día de juego):</p>
+<pre><code class="language-gdscript">tendencia = clamp(tendencia * 0.90 + randfn(0.0, 0.20), -1.0, 1.0)
+prob_subida = clamp(
+    0.15 + ((nivel - 1) / 99.0) * 0.70
+         + (mental - 50.0) / 300.0
+         + tendencia * 0.05,
+    0.05, 0.95)
+</code></pre>
+<ul>
+<li>Nivel 1 y salud mental 50: ~15 % de probabilidad de subida.</li>
+<li>Nivel 100 y salud mental 50: ~85 %.</li>
+<li>La tendencia de mercado añade hasta ±5 puntos porcentuales; no sustituye al nivel.</li>
+<li>La salud mental del snapshot aporta hasta ±16,6 puntos porcentuales.</li>
+</ul>
+<p>Magnitud del movimiento:</p>
+<ul>
+<li>Evento normal: <strong>0,5 % – 3,0 %</strong>.</li>
+<li>Shock (6 % de probabilidad): <strong>3,0 % – 6,5 %</strong>, con titulares dramáticos.</li>
+</ul>
+<p>El valor nunca baja de 0,01 €. Cada evento genera un titular ficticio (resultados, tipos, inflación, rally, pánico…) que se muestra en el resumen y en el historial.</p>
+<h3>4. Retirar parcialmente o cerrar</h3>
+<p><code>Sistema_Bolsa.Retirar(cantidad, motivo, minuto)</code>:</p>
+<pre><code class="language-gdscript">fraccion = cantidad / Valor_Inversion
+coste_liberado = Dinero_Invertido * fraccion
+beneficio = cantidad - coste_liberado
 
-    <h2>Variables afectadas</h2>
-    <table>
-        <tr>
-            <th>Variable</th>
-            <th>Tipo</th>
-            <th>Rango</th>
-            <th>Descripción</th>
-        </tr>
-        <tr>
-            <td><code>Variables_Dinamicas.Esta_Invirtiendo</code></td>
-            <td>bool</td>
-            <td>—</td>
-            <td><code>true</code> mientras haya dinero en bolsa</td>
-        </tr>
-        <tr>
-            <td><code>Variables_Dinamicas.Dinero_Invertido</code></td>
-            <td>float</td>
-            <td>≥ 0</td>
-            <td>Cantidad original puesta (base para calcular %)</td>
-        </tr>
-        <tr>
-            <td><code>Variables_Dinamicas.Valor_Inversion</code></td>
-            <td>float</td>
-            <td>≥ 0</td>
-            <td>Valor actual de la cartera (sube/baja con los ticks)</td>
-        </tr>
-        <tr>
-            <td><code>Variables_Dinamicas.Salud_Mental_Al_Invertir</code></td>
-            <td>int</td>
-            <td>1–100</td>
-            <td><strong>Snapshot</strong> de salud mental al pulsar "Invertir" — no cambia después</td>
-        </tr>
-        <tr>
-            <td><code>Variables_Dinamicas.Progreso_Inversion</code></td>
-            <td>int</td>
-            <td>1–100</td>
-            <td>Habilidad inversora; sube lentamente mientras se está invertido</td>
-        </tr>
-        <tr>
-            <td><code>Variables_Estaticas.Habilidades[6]</code></td>
-            <td>int</td>
-            <td>1–100</td>
-            <td>Sangre Fría — umbral de pánico para auto-venta</td>
-        </tr>
-    </table>
-
-    <h2>Los 3 factores que determinan el resultado</h2>
-
-    <table>
-        <tr>
-            <th>Factor</th>
-            <th>Cuándo importa</th>
-            <th>Efecto en <code>prob_subida</code></th>
-        </tr>
-        <tr>
-            <td><strong>Progreso_Inversion</strong></td>
-            <td>Cada evento de mercado</td>
-            <td>Progreso=1 → 15% sube &nbsp;|&nbsp; Progreso=50 → 50% &nbsp;|&nbsp; Progreso=100 → 85%</td>
-        </tr>
-        <tr>
-            <td><strong>Salud Mental (snapshot)</strong></td>
-            <td>Solo al momento de invertir</td>
-            <td>Mental=20 → −10 pp &nbsp;|&nbsp; Mental=80 → +10 pp</td>
-        </tr>
-        <tr>
-            <td><strong>Sangre Fría (Habilidades[6])</strong></td>
-            <td>Cada evento con pérdida &gt;15%</td>
-            <td>Si &lt;30: auto-vende con pánico. Si ≥30: aguanta las pérdidas</td>
-        </tr>
-    </table>
-
-    <div class="section critical">
-        ⚠️ CRÍTICO — Snapshot de salud mental: la salud mental solo importa en el momento de pulsar "Invertir". Después, aunque cambie, no afecta al rendimiento de la inversión activa.
-    </div>
-
-    <h2>Fórmula del tick de mercado</h2>
-    <div class="formula-box">
-        <strong>Evento ocurre con probabilidad 1/480 por minuto (~3 veces/día)</strong><br><br>
-        tendencia = (Progreso_Inversion − 1) / 99<br>
-        factor_mental = (Salud_Mental_Al_Invertir − 50) / 300<br>
-        <strong>prob_subida = clamp(0.15 + tendencia × 0.70 + factor_mental, 0.05, 0.95)</strong><br><br>
-        cambio_pct = aleatorio entre 0.5% y 3.0%<br>
-        → Si randf() &lt; prob_subida: Valor_Inversion += Valor × cambio_pct<br>
-        → Si no: Valor_Inversion −= Valor × cambio_pct (mínimo 0)
-    </div>
-
-    <h2>Flujo completo</h2>
-
-    <div class="flow-step">
-        <div class="step-number">1</div>
-        <div>El jugador pulsa <strong>"Invertir en Bolsa"</strong> → se abre una ventana con <code>LineEdit</code> para introducir la cantidad. También se muestra cuánto dinero tiene disponible.</div>
-    </div>
-    <div class="flow-step">
-        <div class="step-number">2</div>
-        <div>Al confirmar: <code>Dinero -= cantidad</code>, <code>Dinero_Invertido = cantidad</code>, <code>Valor_Inversion = cantidad</code>, <code>Esta_Invirtiendo = true</code>, <strong>snapshot</strong> de <code>Necesidades_Basicas[1]</code> → <code>Salud_Mental_Al_Invertir</code>.</div>
-    </div>
-    <div class="flow-step">
-        <div class="step-number">3</div>
-        <div>Cada minuto de juego, <code>Actividades.Actualizar_Horario</code> llama a <code>_Tick_Inversion()</code>. Con probabilidad 1/480 ocurre un evento de mercado que sube o baja <code>Valor_Inversion</code>.</div>
-    </div>
-    <div class="flow-step">
-        <div class="step-number">4</div>
-        <div>Tras cada evento: si <code>Habilidades[6] &lt; 30</code> y la pérdida supera el 15%, se ejecuta <strong>auto-venta por pánico</strong> → el dinero vuelve a <code>Dinero</code> y se envía un mensaje al perfil.</div>
-    </div>
-    <div class="flow-step">
-        <div class="step-number">5</div>
-        <div>Si se produce un evento de mercado, el <code>Progreso_Inversion</code> tiene 1/20 de probabilidad de subir 1 punto (máximo 100).</div>
-    </div>
-    <div class="flow-step">
-        <div class="step-number">6</div>
-        <div>El botón "Bolsa" en la barra superior muestra el valor actual y el % en tiempo real. Al pulsarlo mientras se invierte, aparece diálogo de confirmación para retirar manualmente.</div>
-    </div>
-
-    <h2>Casos de uso</h2>
-    <table>
-        <tr>
-            <th>Escenario</th>
-            <th>Estado inicial</th>
-            <th>Resultado</th>
-        </tr>
-        <tr>
-            <td>Invertir 500€ con 1000€ disponibles</td>
-            <td>Dinero=1000, Esta_Invirtiendo=false</td>
-            <td>Dinero=500, Valor_Inversion=500, Esta_Invirtiendo=true</td>
-        </tr>
-        <tr>
-            <td>Progreso=1, salud mental=50 (inversor novato)</td>
-            <td>—</td>
-            <td>prob_subida≈15% → pierde dinero en la gran mayoría de eventos</td>
-        </tr>
-        <tr>
-            <td>Progreso=100, salud mental=80 (experto)</td>
-            <td>—</td>
-            <td>prob_subida≈95% → gana en casi todos los eventos</td>
-        </tr>
-        <tr>
-            <td>Sangre_Fría=10, pérdida del 20%</td>
-            <td>Habilidades[6]=10, pct_cambio=−0.20</td>
-            <td>Auto-venta + mensaje en perfil <span class="badge badge-rojo">PÁNICO</span></td>
-        </tr>
-        <tr>
-            <td>Sangre_Fría=70, pérdida del 20%</td>
-            <td>Habilidades[6]=70, pct_cambio=−0.20</td>
-            <td>NO hay auto-venta, continúa invertido <span class="badge badge-verde">AGUANTA</span></td>
-        </tr>
-        <tr>
-            <td>Retirar manualmente con ganancias</td>
-            <td>Valor_Inversion=700, Dinero=200</td>
-            <td>Dinero=900, Esta_Invirtiendo=false</td>
-        </tr>
-    </table>
-
-    <h2>UI — Nodos</h2>
-    <table>
-        <tr>
-            <th>Nodo</th>
-            <th>Tipo</th>
-            <th>Posición</th>
-            <th>Cuándo visible</th>
-        </tr>
-        <tr>
-            <td><code>Inversion_Button</code></td>
-            <td>Button (dinámico)</td>
-            <td>left=495, top=10, right=718, bottom=60</td>
-            <td>Siempre (via <code>Visibilizar_Lo_Basico</code>)</td>
-        </tr>
-        <tr>
-            <td><code>_ventana_invertir</code></td>
-            <td>Window (dinámico)</td>
-            <td>Centrado en pantalla</td>
-            <td>Al pulsar el botón sin inversión activa</td>
-        </tr>
-        <tr>
-            <td><code>_dialog_retirar</code></td>
-            <td>ConfirmationDialog (dinámico)</td>
-            <td>Centrado en pantalla</td>
-            <td>Al pulsar el botón con inversión activa</td>
-        </tr>
-    </table>
-
-    <h2>Persistencia</h2>
-    <table>
-        <tr>
-            <th>Clave en save</th>
-            <th>Tipo</th>
-            <th>Fallback (saves antiguos)</th>
-        </tr>
-        <tr><td><code>"Esta_Invirtiendo"</code></td><td>bool</td><td><code>false</code></td></tr>
-        <tr><td><code>"Dinero_Invertido"</code></td><td>float</td><td><code>0.0</code></td></tr>
-        <tr><td><code>"Valor_Inversion"</code></td><td>float</td><td><code>0.0</code></td></tr>
-        <tr><td><code>"Salud_Mental_Al_Invertir"</code></td><td>int</td><td><code>50</code></td></tr>
-        <tr><td><code>"Progreso_Inversion"</code></td><td>int</td><td><code>1</code></td></tr>
-    </table>
-
-    <h2>Notas técnicas</h2>
-    <table>
-        <tr>
-            <th>Aspecto</th>
-            <th>Detalle</th>
-        </tr>
-        <tr><td>Frecuencia de eventos</td><td>1/480 por minuto → ~3 eventos/día real (~3 al año en el juego)</td></tr>
-        <tr><td>Punto neutro</td><td>Progreso_Inversion ≈ 50 con salud mental=50 → prob_subida = 0.50</td></tr>
-        <tr><td>Velocidad de aprendizaje</td><td>~1 punto/semana real de inversión activa → 100 alcanzable al final de la partida</td></tr>
-        <tr><td>Valor mínimo</td><td><code>max(0.0, ...)</code> → nunca negativo, pero puede llegar a 0</td></tr>
-        <tr><td>Sangre_Fría</td><td>Habilidades[6], ya generada en <code>First_Time</code> (7 habilidades innatas)</td></tr>
-    </table>
-
-    <h2>Checklist de implementación</h2>
-    <ul class="checklist">
-        <li><code>Variables_Dinamicas.gd</code> — 5 variables nuevas añadidas</li>
-        <li><code>First_Time.gd</code> — <code>Progreso_Inversion = 1</code> en <code>Crear_Progreso()</code></li>
-        <li><code>Guardar_Variables_Dinamicas.gd</code> — save + load de las 5 variables con fallback</li>
-        <li><code>Actividades.gd</code> — <code>_Tick_Inversion()</code>, <code>_Auto_Vender_Inversion()</code> + llamada en <code>Actualizar_Horario()</code></li>
-        <li><code>Script_Principal.gd</code> — botón dinámico, ventana de cantidad, diálogo de retirada, actualización cada frame</li>
-        <li><code>Gestionar_Visibilidad.gd</code> — <code>inversion_button</code> en <code>Visibilizar_Lo_Basico()</code></li>
-        <li><code>Script_Principal._Renderizar_Info()</code> — fila "Inversiones X/100" en Tab Info del perfil</li>
-    </ul>
-
+Dinero += cantidad
+Valor_Inversion -= cantidad
+Dinero_Invertido -= coste_liberado
+Inversion_Beneficio_Realizado += beneficio
+</code></pre>
+<p>Si <code>cantidad</code> cubre todo el valor, la posición se cierra (<code>Esta_Invirtiendo = false</code>) y se resetean <code>Valor_Inversion</code> y <code>Dinero_Invertido</code>.</p>
+<p>El beneficio acumulado del gráfico es:</p>
+<pre><code class="language-text">beneficio_acumulado = beneficio_realizado + (valor_actual - coste_base)
+</code></pre>
+<p>Al aportar o retirar, el beneficio acumulado no cambia: solo se mueve dinero propio entre efectivo y cartera.</p>
+<h3>5. Venta por pánico</h3>
+<p>Se mantiene la regla original: si <strong>Sangre Fría &lt; 30</strong> y la posición pierde más del <strong>15 %</strong> respecto a su coste base, se vende todo automáticamente. Se incrementa <code>Inversion_Panicos</code> y se crea un mensaje en el perfil.</p>
+<p>La pantalla avisa de este riesgo cuando la Sangre Fría es baja.</p>
+<h3>6. Progreso del nivel inversor</h3>
+<ul>
+<li><code>1/20</code> de probabilidad de +1 punto por evento de mercado.</li>
+<li>+1 punto al cerrar una posición completa con beneficio &gt; 0,01 €.</li>
+<li>Máximo 100.</li>
+</ul>
+<p>El progreso se guardaba desde la primera versión, pero <strong>no se cargaba</strong>: la habilidad volvía siempre a 1. Corregido en <code>Guardar_Variables_Dinamicas.load_game()</code>.</p>
+<hr />
+<h2>Historial y gráfico</h2>
+<ul>
+<li>Se registra un punto después de cada evento y de cada operación.</li>
+<li>Si ya existe un punto en el mismo minuto, se actualiza en vez de duplicarse.</li>
+<li>El máximo es de <strong>600 puntos</strong>. Al superarlo se reduce la resolución a la mitad conservando el primer y el último punto, para no perder la forma de la curva.</li>
+<li>El gráfico pinta verde por encima de cero y rojo por debajo, con relleno suave, línea de cero discontinua y marcadores de aportes (azul), retiradas (oro) y ventas por pánico (rojo).</li>
+<li>Periodos: <strong>1 año</strong>, <strong>5 años</strong>, <strong>10 años</strong> y <strong>Todo</strong>. Un año equivale a <code>Variables_Estaticas.Dias_Por_Anio()</code> días de juego (7 en modo normal, 1 en modo rápido).</li>
+<li>El panel añade un punto visual con el valor actual aunque todavía no se haya registrado un evento, para que la línea llegue hasta «Ahora».</li>
+</ul>
+<h3>Estadísticas mostradas</h3>
+<table>
+<thead>
+<tr>
+<th>Métrica</th>
+<th>Cálculo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Beneficio total</td>
+<td><code>Beneficio_Realizado + (Valor_Inversion - Dinero_Invertido)</code></td>
+</tr>
+<tr>
+<td>Rentabilidad</td>
+<td><code>Beneficio_Total / Inversion_Aportado_Total * 100</code></td>
+</tr>
+<tr>
+<td>Capital aportado</td>
+<td><code>Inversion_Aportado_Total</code></td>
+</tr>
+<tr>
+<td>Capital retirado</td>
+<td><code>Inversion_Retirado_Total</code></td>
+</tr>
+<tr>
+<td>Operaciones</td>
+<td><code>Num_Aportes + Num_Retiradas</code></td>
+</tr>
+<tr>
+<td>Tasa de acierto</td>
+<td><code>Cierres_Ganadores / (Cierres_Ganadores + Cierres_Perdedores)</code></td>
+</tr>
+<tr>
+<td>Mejor / peor operación</td>
+<td>Máximo y mínimo beneficio realizado</td>
+</tr>
+<tr>
+<td>Tiempo invertido</td>
+<td><code>Inversion_Minutos_Activos</code> formateado en años/días</td>
+</tr>
+<tr>
+<td>Eventos de mercado</td>
+<td><code>Eventos_Subida + Eventos_Bajada</code></td>
+</tr>
+<tr>
+<td>Racha del mercado</td>
+<td>Racha actual de subidas o bajadas</td>
+</tr>
+<tr>
+<td>Máxima caída</td>
+<td>Mayor diferencia entre <code>Inversion_Pico_Beneficio</code> y el beneficio actual</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2>UI</h2>
+<h3>Archivos</h3>
+<table>
+<thead>
+<tr>
+<th>Archivo</th>
+<th>Función</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Scripts/Logica/Escena_Principal/Economia/Sistema_Bolsa.gd</code></td>
+<td>Autoload con toda la lógica: operaciones, mercado, historial, estadísticas y compatibilidad de guardado</td>
+</tr>
+<tr>
+<td><code>Scripts/GUI/Escena_Principal/Bolsa/Panel_Bolsa.gd</code></td>
+<td>Pantalla completa con pestañas Resumen / Evolución / Estadísticas y diálogo de cantidad</td>
+</tr>
+<tr>
+<td><code>Scripts/GUI/Escena_Principal/Bolsa/Grafico_Bolsa.gd</code></td>
+<td>Control <code>Grafico_Bolsa</code> que dibuja la evolución del beneficio</td>
+</tr>
+<tr>
+<td><code>Scripts/Globales/Script_Principal.gd</code></td>
+<td>Abre la pantalla desde la tarjeta de Economía y actualiza el dinero al operar</td>
+</tr>
+<tr>
+<td><code>Scripts/Logica/Escena_Principal/Actividades/Actividades.gd</code></td>
+<td>Llamadas a <code>Sistema_Bolsa.Procesar_Minuto()</code> y <code>Auto_Vender_Por_Panico()</code></td>
+</tr>
+</tbody>
+</table>
+<h3>Acciones</h3>
+<ul>
+<li><strong>Invertir en bolsa:</strong> solo si no hay posición abierta.</li>
+<li><strong>Aportar:</strong> añade capital a la posición actual.</li>
+<li><strong>Retirar:</strong> permite una cantidad parcial o el total.</li>
+<li>El diálogo incluye botones rápidos <strong>25 % / 50 % / 75 % / Todo</strong>, validación visible y aviso del riesgo de pánico.</li>
+</ul>
+<h3>Navegación</h3>
+<ul>
+<li>La tarjeta de Economía muestra el porcentaje actual y cambia a <strong>Gestionar inversión (X €)</strong> cuando hay una posición abierta.</li>
+<li>La pantalla de Bolsa mantiene activa la pestaña superior <strong>Economía</strong>.</li>
+<li>Volver con la flecha devuelve a Economía.</li>
+</ul>
+<hr />
+<h2>Persistencia y compatibilidad</h2>
+<p>Claves nuevas en <code>Guardar_Variables_Dinamicas.game_data_func()</code>:</p>
+<pre><code class="language-text">Inversion_Historial, Inversion_Operaciones, Inversion_Eventos,
+Inversion_Tendencia, Inversion_Ultimo_Evento_Minuto, Inversion_Minuto_Inicio,
+Inversion_Aportado_Total, Inversion_Retirado_Total, Inversion_Beneficio_Realizado,
+Inversion_Num_Aportes, Inversion_Num_Retiradas, Inversion_Cierres_Ganadores,
+Inversion_Cierres_Perdedores, Inversion_Mejor_Operacion, Inversion_Peor_Operacion,
+Inversion_Eventos_Subida, Inversion_Eventos_Bajada, Inversion_Panicos,
+Inversion_Minutos_Activos, Inversion_Racha_Actual, Inversion_Mejor_Racha,
+Inversion_Peor_Racha, Inversion_Racha_Operaciones, Inversion_Mejor_Racha_Operaciones,
+Inversion_Pico_Beneficio, Inversion_Max_Caida
+</code></pre>
+<p>Al cargar, <code>Sistema_Bolsa.Asegurar_Estado()</code>:</p>
+<ul>
+<li>Sanea tipos y recorta arrays.</li>
+<li>Descarta posiciones inválidas (<code>Esta_Invirtiendo</code> con valor 0).</li>
+<li>Si el guardado es antiguo y hay una posición activa, rellena <code>Inversion_Aportado_Total</code> con <code>Dinero_Invertido</code> y siembra el primer punto del historial.</li>
+<li>Ajusta el nivel a 1–100 y la tendencia a -1…1.</li>
+</ul>
+<p>Los guardados antiguos sin las claves nuevas cargan sin errores.</p>
+<hr />
+<h2>Tests</h2>
+<p><code>Funcionalidades/Economia/Invertir_En_Bolsa/Tests/test_sistema_bolsa.gd</code> (GUT):</p>
+<ul>
+<li>Invertir descuenta efectivo y abre posición.</li>
+<li>Aportar suma al coste base.</li>
+<li>Retirada parcial reparte coste y beneficio.</li>
+<li>Retirada total cierra y registra ganancia/pérdida.</li>
+<li>Auto-venta por pánico y ausencia de auto-venta con Sangre Fría alta.</li>
+<li>Nivel +1 al cerrar en positivo.</li>
+<li>Estadísticas y tasa de acierto.</li>
+<li>Filtro y compactación del historial.</li>
+<li>Migración de guardados antiguos.</li>
+<li>Claves de guardado.</li>
+<li>Construcción del panel, pestañas y diálogos de invertir/retirar.</li>
+<li><code>Grafico_Bolsa</code> acepta puntos y marcadores.</li>
+<li>Guardado atómico con <code>.bak</code> y sin temporales residuales.</li>
+</ul>
+<p>También se mantiene <code>test_inversion.gd</code> con las comprobaciones básicas anteriores. El script antiguo no extiende <code>GutTest</code>, por lo que GUT lo ignora y sirve como prueba manual.</p>
+<hr />
+<h2>Notas de balance</h2>
+<ul>
+<li>El evento ocurre solo mientras hay una posición abierta; no se simula el mercado con la cartera vacía.</li>
+<li>La tendencia es un paseo aleatorio con reversión suave. No garantiza beneficios: un nivel alto mejora la probabilidad, pero un shock puede borrar varios eventos positivos.</li>
+<li>No hay comisiones en la inversión pasiva. La comisión del 1 % queda reservada para el futuro minijuego de trading, según el roadmap.</li>
+<li>La auto-venta por pánico sigue siendo la consecuencia directa de una Sangre Fría baja (&lt;30). La pantalla avisa antes de invertir.</li>
+</ul>
+<hr />
+<h2>Checklist</h2>
+<ul>
+<li>[x] <code>Variables_Dinamicas.gd</code>: variables de historial y estadísticas.</li>
+<li>[x] <code>Sistema_Bolsa.gd</code>: motor de aportes, retiradas, eventos, historial y estadísticas.</li>
+<li>[x] <code>Grafico_Bolsa.gd</code>: gráfico de evolución con periodos y marcadores.</li>
+<li>[x] <code>Panel_Bolsa.gd</code>: pantalla Resumen / Evolución / Estadísticas y diálogos.</li>
+<li>[x] <code>Script_Principal.gd</code>: tarjeta de Economía, apertura del panel y actualización del dinero.</li>
+<li>[x] <code>Actividades.gd</code>: wrappers <code>_Tick_Inversion</code> y <code>_Auto_Vender_Inversion</code>.</li>
+<li>[x] <code>Guardar_Variables_Dinamicas.gd</code>: guardado, carga, migración y corrección de <code>Progreso_Inversion</code>.</li>
+<li>[x] <code>Menu.gd</code>: reinicio del estado de bolsa en partidas nuevas.</li>
+<li>[x] <code>First_Time.gd</code>: reinicio defensivo al crear una partida nueva.</li>
+<li>[x] <code>project.godot</code>: autoload <code>Sistema_Bolsa</code>.</li>
+<li>[x] Tests GUT del sistema, del panel y del gráfico.</li>
+</ul>
 </div>
 </body>
 </html>

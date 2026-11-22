@@ -154,7 +154,9 @@ Escena_Principal.tscn
     │   │   ├── Crear_Actividad (Button)
     │   │   └── Cancelar (Button)
     │
-    ├── Tienda_Button (Button)           ← visible siempre, abre la tienda
+    ├── Boton_Ajustes_Header (Button)    ← generado en _Redisenar_Superior; engranaje (settings), abre Panel_Ajustes
+    ├── Boton_Tienda_Header (Button)     ← generado en _Redisenar_Superior; icono de tienda junto al dinero, único acceso a la Tienda
+    ├── Tienda_Button (Button)           ← en la escena por compatibilidad, siempre oculto (_Redisenar_Superior / Visibilizar_Lo_Basico)
     ├── Alquiler_Button (Button)         ← visible siempre, estado alquiler/calle
     │
     └── Tienda (Control)                 ← visible=false por defecto
@@ -195,6 +197,14 @@ Escena_Principal.tscn
 NOTA: El layout de las tarjetas (332×442, vitrina 304×200, rejilla y centrado)
 se construye en `Script_Principal._Redisenar_Tienda()`. Los iconos se generan
 con `tools/procesar_iconos_tienda.py` y se cargan con `Estilos_UI.icono_tienda()`.
+
+BARRA SUPERIOR (noviembre 2026):
+- 6 pestañas: Perfil, Economía, Horario (`Calendario_Button`), Carrera, Minijuegos y Vestuario.
+- `Tienda_Button` sigue en la escena por compatibilidad, pero `_Redisenar_Superior()` y
+  `Visibilizar_Lo_Basico()` lo mantienen oculto (`visible = false`).
+- La Tienda se abre solo con el icono `Boton_Tienda_Header` (x=460), junto al chip del dinero.
+- `Boton_Ajustes_Header` (x=414, icono `settings`) es el único botón de audio y abre `Panel_Ajustes`.
+  `Boton_Musica_Header` se eliminó.
 
 PESTAÑA BIENESTAR (ANUNCIOS + CLÍNICA):
 - La construye `Scripts/GUI/Tienda/Tienda_Bienestar.gd` dentro de `Objetos_Ventajas`.

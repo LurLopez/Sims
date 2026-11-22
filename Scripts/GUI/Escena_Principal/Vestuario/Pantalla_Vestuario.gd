@@ -35,18 +35,18 @@ var _lbl_categoria: Label = null
 var _lbl_desbloqueo: Label = null
 var _pill_estado: PanelContainer = null
 var _chips: HFlowContainer = null
-var _barra_maestria: ProgressBar = null
-var _lbl_maestria: Label = null
 var _scroll: ScrollContainer = null
+var _card_maestria: PanelContainer = null
+var _lbl_maestria_rango: Label = null
+var _lbl_maestria_detalle: Label = null
+var _lbl_maestria_texto: Label = null
+var _barra_maestria: ProgressBar = null
 var _hbox: HBoxContainer = null
 var _lbl_cuenta: Label = null
 var _lbl_saldo: Label = null
 var _btn_equipar: Button = null
 var _cards: Dictionary = {}
 var _botones_filtro: Dictionary = {}
-var _card_consejo: PanelContainer = null
-var _lbl_consejo_titulo: Label = null
-var _lbl_consejo_texto: Label = null
 
 
 func _ready() -> void:
@@ -151,7 +151,8 @@ func _Construir() -> void:
 	_hbox.add_theme_constant_override("separation", int(SEPARACION_TARJETAS))
 	_scroll.add_child(_hbox)
 
-	col.add_child(_Crear_Tarjeta_Consejo())
+	col.add_child(_Crear_Tarjeta_Maestria())
+
 	var relleno := Control.new()
 	relleno.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	relleno.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -255,103 +256,6 @@ func _Crear_Tarjeta_Preview() -> PanelContainer:
 	espaciador.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	info.add_child(espaciador)
 
-	_Crear_Progreso_Maestria(info)
-
-	var pista := HBoxContainer.new()
-	pista.add_theme_constant_override("separation", 8)
-	info.add_child(pista)
-	var icono := Estilos_UI.icono_rect("shirt", 15, Estilos_UI.TINTA_FANTASMA)
-	icono.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	pista.add_child(icono)
-	var lbl_pista := Estilos_UI.texto("Toca una tarjeta para probarla.", 12,
-		Estilos_UI.TINTA_FANTASMA, 500)
-	lbl_pista.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	lbl_pista.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	lbl_pista.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	pista.add_child(lbl_pista)
-
-	return card
-
-
-func _Crear_Progreso_Maestria(parent: VBoxContainer) -> void:
-	var caja := VBoxContainer.new()
-	caja.name = "Progreso_Maestria"
-	caja.add_theme_constant_override("separation", 4)
-	parent.add_child(caja)
-
-	var fila := HBoxContainer.new()
-	fila.add_theme_constant_override("separation", 6)
-	caja.add_child(fila)
-	fila.add_child(Estilos_UI.icono_rect("chef-hat", 13, Estilos_UI.TINTA_FANTASMA))
-	var titulo := Estilos_UI.texto("MAESTRÍA CULINARIA", 10, Estilos_UI.TINTA_FANTASMA, 700)
-	titulo.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	fila.add_child(titulo)
-	_lbl_maestria = Estilos_UI.texto("", 10, Estilos_UI.TINTA_SUAVE, 700)
-	fila.add_child(_lbl_maestria)
-
-	_barra_maestria = ProgressBar.new()
-	_barra_maestria.custom_minimum_size = Vector2(0, 8)
-	_barra_maestria.show_percentage = false
-	_barra_maestria.add_theme_stylebox_override("background", Estilos_UI.barra_fondo())
-	_barra_maestria.add_theme_stylebox_override("fill", Estilos_UI.barra_relleno(Estilos_UI.ORO))
-	caja.add_child(_barra_maestria)
-	_Actualizar_Progreso_Maestria()
-
-
-func _Actualizar_Progreso_Maestria() -> void:
-	if _barra_maestria == null or _lbl_maestria == null:
-		return
-	var rango := Sistema_Cocina.Obtener_Rango_Logro()
-	var niveles := int(Variables_Estaticas.Record_Max_Niveles_Cocina)
-	var siguiente := 45
-	for i in range(Sistema_Cocina.RANGOS_LOGRO.size()):
-		if int(Sistema_Cocina.RANGOS_LOGRO[i]["rango"]) == rango + 1:
-			siguiente = int(Sistema_Cocina.RANGOS_LOGRO[i]["niveles"])
-			break
-	if rango >= 9:
-		_barra_maestria.value = 100.0
-		_lbl_maestria.text = "Rango máximo"
-	else:
-		_barra_maestria.value = clampf(float(niveles) / float(maxi(1, siguiente)) * 100.0, 0.0, 100.0)
-		_lbl_maestria.text = "Rango %d/9 · %d niveles" % [rango, niveles]
-
-
-func _Crear_Tarjeta_Consejo() -> PanelContainer:
-	var card := PanelContainer.new()
-	card.name = "Card_Consejo"
-	card.custom_minimum_size = Vector2(0, 96)
-	card.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
-	var st := Estilos_UI.caja(Color("#f0f7ff"), 14, Color(Estilos_UI.AZUL, 0.18), 1, 0)
-	card.add_theme_stylebox_override("panel", st)
-	_card_consejo = card
-
-	var m := MarginContainer.new()
-	m.add_theme_constant_override("margin_left", 14)
-	m.add_theme_constant_override("margin_right", 14)
-	m.add_theme_constant_override("margin_top", 12)
-	m.add_theme_constant_override("margin_bottom", 12)
-	card.add_child(m)
-
-	var h := HBoxContainer.new()
-	h.add_theme_constant_override("separation", 12)
-	m.add_child(h)
-	h.add_child(Estilos_UI.badge_icono("sparkles", 38, 18, Estilos_UI.AZUL, Color.WHITE, 10))
-
-	var v := VBoxContainer.new()
-	v.alignment = BoxContainer.ALIGNMENT_CENTER
-	v.add_theme_constant_override("separation", 2)
-	v.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	v.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	h.add_child(v)
-	_lbl_consejo_titulo = Estilos_UI.texto("Tu armario", 14, Estilos_UI.TINTA, 700)
-	_lbl_consejo_titulo.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	v.add_child(_lbl_consejo_titulo)
-	_lbl_consejo_texto = Estilos_UI.parrafo(
-		"Toca una tarjeta para probarla. Las prendas con precio se compran con dinero; las que tienen candado se ganan en Cocina.",
-		12, Estilos_UI.TINTA_SUAVE)
-	_lbl_consejo_texto.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	v.add_child(_lbl_consejo_texto)
-	_Actualizar_Texto_Consejo()
 	return card
 
 
@@ -380,6 +284,108 @@ func _Crear_Cabecera_Coleccion() -> HBoxContainer:
 	fila.add_child(der)
 
 	return fila
+
+
+func _Crear_Tarjeta_Maestria() -> PanelContainer:
+	var card := PanelContainer.new()
+	card.name = "Card_Maestria_Cocina"
+	card.custom_minimum_size = Vector2(0, 108)
+	card.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	card.add_theme_stylebox_override("panel",
+		Estilos_UI.caja(Color("#fffbeb"), 14, Color(Estilos_UI.ORO, 0.34), 1, 0))
+	card.visible = false
+	_card_maestria = card
+
+	var m := MarginContainer.new()
+	m.add_theme_constant_override("margin_left", 14)
+	m.add_theme_constant_override("margin_right", 14)
+	m.add_theme_constant_override("margin_top", 12)
+	m.add_theme_constant_override("margin_bottom", 12)
+	card.add_child(m)
+
+	var h := HBoxContainer.new()
+	h.add_theme_constant_override("separation", 12)
+	m.add_child(h)
+	h.add_child(Estilos_UI.badge_icono("chef-hat", 38, 18, Estilos_UI.ORO, Color.WHITE, 10))
+
+	var v := VBoxContainer.new()
+	v.add_theme_constant_override("separation", 5)
+	v.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	v.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	h.add_child(v)
+
+	var fila := HBoxContainer.new()
+	fila.add_theme_constant_override("separation", 8)
+	v.add_child(fila)
+	var titulo := Estilos_UI.texto("MAESTRÍA CULINARIA", 10, Estilos_UI.TINTA_FANTASMA, 700)
+	titulo.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	fila.add_child(titulo)
+	_lbl_maestria_rango = Estilos_UI.texto("", 12, ORO_LEGIBLE, 700)
+	_lbl_maestria_rango.name = "Lbl_Maestria_Rango"
+	_lbl_maestria_rango.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	fila.add_child(_lbl_maestria_rango)
+
+	_barra_maestria = ProgressBar.new()
+	_barra_maestria.name = "Barra_Maestria_Cocina"
+	_barra_maestria.custom_minimum_size = Vector2(0, 8)
+	_barra_maestria.show_percentage = false
+	_barra_maestria.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_barra_maestria.add_theme_stylebox_override("background", Estilos_UI.barra_fondo())
+	_barra_maestria.add_theme_stylebox_override("fill", Estilos_UI.barra_relleno(Estilos_UI.ORO))
+	v.add_child(_barra_maestria)
+
+	var pie := HBoxContainer.new()
+	pie.add_theme_constant_override("separation", 8)
+	v.add_child(pie)
+	_lbl_maestria_detalle = Estilos_UI.texto("", 11, Estilos_UI.TINTA_SUAVE, 600)
+	_lbl_maestria_detalle.name = "Lbl_Maestria_Detalle"
+	pie.add_child(_lbl_maestria_detalle)
+	_lbl_maestria_texto = Estilos_UI.texto(
+		"Gana estrellas en el minijuego de Cocina para ascender de rango.", 11, Estilos_UI.TINTA_SUAVE, 600)
+	_lbl_maestria_texto.name = "Lbl_Maestria_Texto"
+	_lbl_maestria_texto.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_lbl_maestria_texto.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	_lbl_maestria_texto.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	pie.add_child(_lbl_maestria_texto)
+
+	_Actualizar_Tarjeta_Maestria()
+	return card
+
+
+## Muestra el rango actual de Maestría Culinaria solo cuando el filtro Cocina
+## está activo. El ascenso se consigue reuniendo estrellas en el minijuego.
+func _Actualizar_Tarjeta_Maestria() -> void:
+	if _card_maestria == null or not is_instance_valid(_card_maestria):
+		return
+	_card_maestria.visible = (_filtro_actual == "cocina")
+	if not _card_maestria.visible:
+		return
+	var p := Sistema_Cocina.Obtener_Progreso_Maestria()
+	var rango := int(p.get("rango", 0))
+	var estrellas := int(p.get("estrellas", 0))
+	var info: Dictionary = p.get("info", {})
+	var maximo := bool(p.get("maximo", false))
+	if _lbl_maestria_rango != null:
+		_lbl_maestria_rango.text = "Rango %d/9 · %s" % [rango, str(info.get("nombre", ""))]
+	if maximo:
+		if _barra_maestria != null:
+			_barra_maestria.value = 100.0
+		if _lbl_maestria_detalle != null:
+			_lbl_maestria_detalle.text = "%d / %d ★ · Rango máximo" % [
+				estrellas, Sistema_Cocina.ESTRELLAS_TOTALES_MAX]
+		if _lbl_maestria_texto != null:
+			_lbl_maestria_texto.text = "Ya has alcanzado la Estrella Michelin."
+		return
+	var en_rango := int(p.get("en_rango", 0))
+	var necesarios := maxi(1, int(p.get("necesario", 20)))
+	if _barra_maestria != null:
+		_barra_maestria.value = clampf(
+			float(p.get("progreso", 0.0)) * 100.0, 0.0, 100.0)
+	if _lbl_maestria_detalle != null:
+		_lbl_maestria_detalle.text = "%d/%d ★ para el Rango %d · %d totales" % [
+			en_rango, necesarios, rango + 1, estrellas]
+	if _lbl_maestria_texto != null:
+		_lbl_maestria_texto.text = "Gana estrellas en el minijuego de Cocina para ascender de rango."
 
 
 func _Crear_Saldo() -> PanelContainer:
@@ -457,7 +463,7 @@ func _Cambiar_Filtro(id: String) -> void:
 			_clave_seleccionada = elegida
 	_Reconstruir_Carrusel()
 	_Actualizar_Filtros_Estilos()
-	_Actualizar_Texto_Consejo()
+	_Actualizar_Tarjeta_Maestria()
 	_Actualizar_Preview()
 	_Asegurar_Tarjeta_Visible.call_deferred(_clave_seleccionada)
 
@@ -1009,36 +1015,6 @@ func _Actualizar_Saldo() -> void:
 	_lbl_saldo.text = "%d €" % int(Variables_Dinamicas.Dinero)
 
 
-func _Actualizar_Texto_Consejo() -> void:
-	if _lbl_consejo_titulo == null or _lbl_consejo_texto == null:
-		return
-	match _filtro_actual:
-		"tienda":
-			_lbl_consejo_titulo.text = "Tienda de ropa"
-			_lbl_consejo_texto.text = "Estas prendas se compran con el dinero de tu Sim. Puedes probarlas antes de pagar."
-		"diario":
-			_lbl_consejo_titulo.text = "Ropa de diario"
-			_lbl_consejo_texto.text = "Camisetas, sudaderas, pijamas y looks de verano. Las prendas básicas son gratis."
-		"deporte":
-			_lbl_consejo_titulo.text = "Ropa deportiva"
-			_lbl_consejo_texto.text = "Conjuntos ligeros con bonus de progreso Deportivo. Se aplican al entrenar."
-		"elegante":
-			_lbl_consejo_titulo.text = "Elegante"
-			_lbl_consejo_texto.text = "Trajes, esmóquines y vestidos con bonus de salario. Perfectos para la oficina."
-		"trabajo":
-			_lbl_consejo_titulo.text = "Ropa de trabajo"
-			_lbl_consejo_texto.text = "Uniformes con bonus de progreso, salario o higiene. Se compran con dinero."
-		"fiesta":
-			_lbl_consejo_titulo.text = "Fiesta"
-			_lbl_consejo_texto.text = "Looks con brillo para destacar en tus salidas. Toca una tarjeta para probarlos."
-		"cocina":
-			_lbl_consejo_titulo.text = "El armario de un chef"
-			_lbl_consejo_texto.text = "Los rangos 1, 3, 6 y 9 de Maestría Culinaria desbloquean una prenda nueva."
-		_:
-			_lbl_consejo_titulo.text = "Tu armario"
-			_lbl_consejo_texto.text = "Toca una tarjeta para probarla. Las prendas con precio se compran con dinero; las que tienen candado se ganan en Cocina."
-
-
 func _Desplazar_Carrusel(direccion: int) -> void:
 	if _scroll == null:
 		return
@@ -1067,9 +1043,8 @@ func abrir() -> void:
 		_filtro_actual = "todo"
 	_Reconstruir_Carrusel()
 	_Actualizar_Preview()
-	_Actualizar_Progreso_Maestria()
 	_Actualizar_Filtros_Estilos()
-	_Actualizar_Texto_Consejo()
+	_Actualizar_Tarjeta_Maestria()
 	_Actualizar_Saldo()
 	_Aplicar_Estilos_Tarjetas_Todas()
 	_Asegurar_Tarjeta_Visible.call_deferred(_clave_seleccionada)

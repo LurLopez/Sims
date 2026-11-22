@@ -13,6 +13,7 @@ independiente para cada bus y opción de restablecer los valores por defecto.
 | Preferencias | `user://configuracion_ajustes.cfg` |
 | Configuración antigua (solo migración) | `user://configuracion_audio.cfg` |
 | Tests | `Funcionalidades/Ajustes/Tests/test_ajustes.gd` |
+| Icono del engranaje (menú, cabecera y panel) | `Imagenes/UI/Iconos/settings.svg` |
 
 ## Autoload `Ajustes`
 
@@ -58,15 +59,16 @@ Utilidades:
 `Musica.gd` mantiene su API histórica (`Obtener_Volumen()`,
 `Establecer_Volumen()`, `Esta_Silenciado()`, `Establecer_Silencio()`,
 `Alternar_Silencio()` y la señal `silencio_cambiado`) como delegación a
-`Ajustes`, de modo que los botones de altavoz existentes siguen funcionando sin
-cambios.
+`Ajustes`, de modo que el resto del código y los tests antiguos siguen
+funcionando. Los botones de altavoz (`Boton_Musica` y `Boton_Musica_Header`) se
+eliminaron: todo el audio se controla desde `Panel_Ajustes`.
 
 ## Panel `Panel_Ajustes`
 
 Overlay `CanvasLayer` con `layer = 120`, fondo oscurecido y tarjeta centrada
 estilo BitLife. Se construye por completo en código con `Estilos_UI` y contiene:
 
-- Cabecera roja con el icono `settings-2` y el título «AJUSTES».
+- Cabecera roja con el icono `settings` y el título «AJUSTES».
 - Bloque **Música** (icono `volume-2`, color rojo): porcentaje, botón de
   silencio, barra táctil y actualización inmediata de la música de fondo.
 - Bloque **Efectos de sonido** (icono `sparkles`, color azul): porcentaje,
@@ -82,13 +84,48 @@ estando muteado se desactiva el silencio.
 
 ### Puntos de apertura
 
-- Menú principal: botón `Boton_Ajustes` (icono `settings-2`) en la cabecera,
-  junto al altavoz `Boton_Musica`. Abre `Panel_Ajustes` desde `Menu.gd`.
-- Escena principal: botón `Boton_Ajustes_Header` en la cabecera roja, a la
-  izquierda del altavoz. Abre `Panel_Ajustes` desde `Script_Principal.gd`.
+- Menú principal: único botón `Boton_Ajustes` (icono `settings`) en la cabecera.
+  Abre `Panel_Ajustes` desde `Menu.gd`. Ya no existe el altavoz `Boton_Musica`.
+- Escena principal: único botón `Boton_Ajustes_Header` en la cabecera roja
+  (posición x=414, icono `settings`), a la izquierda del icono de tienda
+  `Boton_Tienda_Header` (x=460). Abre `Panel_Ajustes` desde `Script_Principal.gd`.
+  Sustituye a los antiguos `Boton_Musica_Header` y `Boton_Ajustes_Header`, que
+  convivían; ahora hay una sola entrada de audio.
 
 Ambos scripts guardan una única referencia al panel para no abrir duplicados y
 la liberan al recibir la señal `cerrado`.
+
+### Supervivencia a los cambios de pantalla
+
+El panel debe seguir visible aunque el jugador cambie de pestaña mientras lo
+tiene abierto. Por eso su `_ready()` lo añade al grupo definido en
+`Gestionar_Visibilidad.GRUPO_OVERLAY_MODAL` (`"overlay_modal"`):
+
+```gdscript
+add_to_group(Gestionar_Visibilidad.GRUPO_OVERLAY_MODAL)
+```
+
+`Recursivo_Desvisibilizar()` y `Recursivo_Visibilizar()` de
+`Scripts/GUI/Escena_Principal/Gestionar_Visibilidad.gd` ignoran cualquier nodo de
+ese grupo y todo su subárbol. Sin este registro, un barrido de visibilidad
+ocultaba el velo y la tarjeta del panel; el nodo seguía vivo, pero invisible, y
+su referencia bloqueaba volver a abrirlo.
+
+Además, el botón de cabecera `Boton_Ajustes_Header` se crea en tiempo de
+ejecución como hijo directo de la raíz, así que debe re-visibilizarse
+explícitamente:
+
+- `Visibilizar_Lo_Basico()` lo incluye en su lista de nodos a mostrar tras
+  `Quitar_Todo()`.
+- `Script_Principal._Redisenar_Superior()` fuerza `visible = true` en el botón;
+  cubre la vuelta desde el minijuego de cocina, que vuelve a llamar a ese
+  método.
+
+El antiguo `Boton_Musica_Header` ya no existe, por lo que no hay que
+sincronizar iconos de altavoz (`volume-2`/`x`) en la cabecera.
+
+Si se añade otro overlay modal (confirmación, pausa, menú), conviene registrarlo
+también en `overlay_modal` para que los cambios de pestaña no lo oculten.
 
 ## Persistencia y migración
 

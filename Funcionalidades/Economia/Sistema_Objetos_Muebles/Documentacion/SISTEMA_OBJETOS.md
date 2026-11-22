@@ -1,304 +1,328 @@
 # Sistema de Objetos/Muebles
 
 ## Descripción
-Sistema de compra, venta y selección de objetos que afectan a necesidades básicas mediante multiplicadores de probabilidad. Inspirado en los Sims.
+
+Tienda de muebles con **36 objetos repartidos en 6 categorías**. Cada categoría
+funciona como una ranura exclusiva: el Sim equipa un solo mueble por categoría y
+ese mueble modula una actividad o aporta una bonificación pasiva.
+
+| Categoría | Ranura | Qué mejora |
+|---|---|---|
+| **Dormir** | Cama | Descanso de `Dormir` |
+| **Comer** | Mesa | Hambre de `Comer_Tupper` y `Comer_Basura` |
+| **Duchar** | Ducha/bañera | Higiene de `Duchar` |
+| **Salón** | Conjunto de salón | Salud mental y Descanso de `Ver_La_Television` |
+| **Estudio** | Escritorio/biblioteca | Progreso Académico y Manualidades |
+| **Cocina** | Cocina | Progreso Culinario y calidad de los tuppers |
 
 ## Estructura
 
 ### Clases
+
 ```
-Scripts/Logica/Escena_Principal/Economia/Herencia/
-├── Objeto.gd (clase_name Objeto)
-│   ├── nombre: String
-│   ├── precio: float
-│   ├── multiplicador: float (1.0 = sin efecto)
-│   ├── afecta_a: String (ej: "Dormir", "Comer", "Duchar")
-│   └── es_basico: bool (true = no se puede vender si es único)
-├── Objeto_Dormir.gd (extends Objeto)
-├── Objeto_Comer.gd (extends Objeto)
-└── Objeto_Duchar.gd (extends Objeto)
+Scripts/Logica/Escena_Principal/Economia/
+├── Catalogo_Tienda.gd          ← datos de las 6 categorías y los 36 muebles
+├── Herencia/
+│   ├── Objeto.gd               ← precio, multiplicador, tier, efecto y bonus
+│   ├── Objeto_Dormir.gd
+│   ├── Objeto_Comer.gd
+│   ├── Objeto_Duchar.gd
+│   └── Objeto_Ropa.gd          ← ropa equipable del Vestuario
+└── Ropa_Catalogo.gd
 ```
 
-### Variables
-**Variables_Estaticas:**
+`Catalogo_Tienda.Registrar_En()` materializa cada diccionario de `DATOS` como un
+`Objeto` dentro de `Variables_Estaticas.Catalogo_Objetos`.
+
+### Campos de `Objeto`
+
 ```gdscript
-var Catalogo_Objetos: Dictionary = {
-    "Cama_Basica": Objeto_Dormir(...),    # multiplicador 1.0, es_basico true
-    "Cama_Premium": Objeto_Dormir(...),   # multiplicador 1.05
-    "Cama_Lujo": Objeto_Dormir(...),      # multiplicador 1.10
-    # ... más objetos
-}
+@export var nombre: String             # clave interna (Cama_Premium)
+@export var nombre_visible: String     # nombre de la tarjeta (Cama Premium)
+@export var descripcion: String        # tooltip de la tarjeta
+@export var precio: float
+@export var multiplicador: float       # 1.0 = sin efecto
+@export var afecta_a: String           # categoría/ranura
+@export var es_basico: bool            # gratis y entregado al empezar
+@export var tier: String               # basico | premium | lujo | elite
+@export var etiqueta_efecto: String    # "×1.05 Descanso (+5%)"
+@export var bonus_progreso_deporte: float
+@export var bonus_progreso_academico: float
+@export var bonus_progreso_manualidades: float
+@export var bonus_progreso_cocina: float
+@export var bonus_calidad_tupper: float
 ```
 
-**Variables_Dinamicas:**
+### Variables dinámicas
+
 ```gdscript
 var Objetos_Poseidos: Dictionary = {
     "Cama_Basica": true,
-    "Cama_Premium": false,
-    # ... estado de posesión
+    "Sofa_Chester": true,
+    # ...
 }
 
 var Objeto_Seleccionado: Dictionary = {
-    "Dormir": "Cama_Basica",    # qué objeto está usando
+    "Dormir": "Cama_Basica",
     "Comer": "Mesa_Basica",
-    "Duchar": "Ducha_Basica"
+    "Duchar": "Ducha_Basica",
+    "Salon": "Sofa_Basico",
+    "Estudio": "Escritorio_Basico",
+    "Cocina": "Cocina_Basica",
+    "Ropa": "Ropa_Calle",
 }
 ```
+
+`Variables_Estaticas.Asegurar_Objetos_Basicos()` garantiza que cada categoría
+tenga su mueble básico poseído y seleccionado. Se llama al crear partida y al
+cargar cualquier save, de modo que las partidas antiguas reciben gratis los
+básicos de Salón, Estudio y Cocina.
 
 ## Flujos
 
 ### Compra
+
 ```gdscript
 Actividades.Comprar_Objeto("Cama_Premium")
 ```
-- Validación: objeto existe, no lo posee, tiene dinero
-- Efecto: `-precio` dinero, `+true` en `Objetos_Poseidos`
-- Retorna: `bool` (éxito/fracaso)
+
+- Valida que el objeto exista, no se posea y haya dinero.
+- Descuenta el precio y marca `Objetos_Poseidos[clave] = true`.
+- La UI muestra un aviso si falta dinero o si la compra se completa.
 
 ### Venta
+
 ```gdscript
 Actividades.Vender_Objeto("Cama_Premium")
 ```
-- Validación: lo posee, no es único de su categoría, no está seleccionado
-- Efecto: `+precio*0.5` dinero, `-false` en `Objetos_Poseidos`
-- Retorna: `bool`
 
-### Selección
+- No permite vender el único objeto de la categoría.
+- No permite vender el objeto equipado.
+- Devuelve el **50 %** del precio.
+
+### Equipado
+
 ```gdscript
 Actividades.Seleccionar_Objeto("Dormir", "Cama_Premium")
 ```
-- Validación: lo posee, categoría coincide
-- Efecto: actualiza `Objeto_Seleccionado["Dormir"]`
-- Retorna: `bool`
 
-## Lógica de Multiplicador
+- Valida posesión y categoría.
+- Actualiza `Objeto_Seleccionado[categoría]`.
+- El cambio se refleja en la siguiente actividad y en el resumen de Necesidades.
 
-### Implementación Actual
-En `Actividades_Necesidades_Basicas.gd`:
+## Bonificaciones
+
+### Multiplicador de necesidades
+
+`Actividades_Necesidades_Basicas._Obtener_Multiplicador()` traduce la actividad
+a su ranura y lee el mueble equipado:
 
 ```gdscript
-func _Obtener_Multiplicador(nombre_actividad: String) -> float:
-    match nombre_actividad:
-        "Dormir", "Duchar":
-            var clave = Variables_Dinamicas.Objeto_Seleccionado.get(nombre_actividad, "")
-            if clave == "" or not Variables_Estaticas.Catalogo_Objetos.has(clave):
-                return 1.0
-            return Variables_Estaticas.Catalogo_Objetos[clave].multiplicador
-        _:
-            return 1.0
-```
-
-Aplica el multiplicador **solo a efectos positivos**:
-```gdscript
-if por_cuanto > 0 and multiplicador != 1.0:
-    valor_maximo = max(1, floor(valor_maximo / multiplicador))
-```
-
-**Ejemplo:**
-- Actividad Dormir: efecto +4 descanso cada ~15 min
-- Cama Premium (1.05): efecto sube a +4.2, intervalo baja a ~14.3 min
-- Resultado: descansa más rápido, NO acelera caída de hambre/higiene
-
-### Expansión Futura (No Implementada)
-**Objetivo:** Permitir objetos que reduzcan efectos negativos.
-
-**Ejemplo:** Ropa Premium (multiplicador 0.95 en Higiene)
-- Actividad normal pierde higiene cada ~20 min
-- Con ropa: pierde cada ~21 min (0.95 * 20)
-
-**Cambio necesario:**
-```gdscript
-if multiplicador != 1.0:
-    if por_cuanto > 0:  # Efectos positivos
-        valor_maximo = max(1, floor(valor_maximo / multiplicador))
-    else:  # Efectos negativos
-        valor_maximo = floor(valor_maximo * multiplicador)
-```
-
-**Nuevos objetos:**
-- `Objeto_Higiene.gd` (extends Objeto)
-- `Ropa_Premium`: precio 150, multiplicador 0.95, afecta_a "Duchar"
-
-## Inicialización
-
-### First_Time
-```gdscript
-Crear_Objetos_Iniciales()
-# Inicia con los básicos de cada categoría
-Objetos_Poseidos = {
-    "Cama_Basica": true,
-    "Mesa_Basica": true,
-    "Ducha_Basica": true
-}
-Objeto_Seleccionado = {
-    "Dormir": "Cama_Basica",
-    "Comer": "Mesa_Basica",
-    "Duchar": "Ducha_Basica"
+const _CATEGORIA_POR_ACTIVIDAD := {
+    "Dormir": "Dormir",
+    "Duchar": "Duchar",
+    "Comer_Tupper": "Comer",
+    "Comer_Basura": "Comer",
+    "Ver_La_Television": "Salon",
 }
 ```
 
-### Guardado
-En `Guardar_Variables_Dinamicas.gd`:
-- Guarda `Objetos_Poseidos` (Dictionary)
-- Guarda `Objeto_Seleccionado` (Dictionary)
-- Fallback para saves antiguos: inicializa con `_Inicializar_Objetos_Por_Defecto()`
+El multiplicador **solo acelera efectos positivos**, así que una cama mejor no
+acelera la caída de hambre ni de higiene. Ejemplo: `Cama_Imperial` (×1.15)
+reduce el intervalo de +4 Descanso de 15 a ~13 minutos.
 
-## Restricciones
+### Progreso de Estudio
 
-1. **Obligatoriedad:** Siempre hay al menos un objeto seleccionado por categoría
-2. **Venta:** No se puede vender si es el único de su categoría
-3. **Venta:** No se puede vender si está actualmente seleccionado
-4. **Precio:** Reventa = 50% del precio original
+`Variables_Estaticas.Obtener_Bonus_Progreso_Objeto(indice)` devuelve el bonus del
+mueble equipado en `Estudio` para Deporte/Académico/Manualidades.
+`Actividades_Habilidades.Ejecutar_Actividad_Progreso()` lo aplica como una
+división extra del intervalo, igual que los bonus de ropa.
 
-## Catálogo Implementado (6 objetos)
+### Cocina
 
-| Nombre | Categoría | Precio | Multiplicador | Básico | Descripción |
-|--------|-----------|--------|----------------|--------|-------------|
-| **Cama_Basica** | Dormir | 0€ | 1.0 | ✓ | Cama de inicio. No se puede vender si es única. |
-| **Cama_Premium** | Dormir | 200€ | 1.05 | ✗ | Descanso 5% más rápido. |
-| **Cama_Lujo** | Dormir | 800€ | 1.10 | ✗ | Descanso 10% más rápido. |
-| **Mesa_Basica** | Comer | 0€ | 1.0 | ✓ | Mesa de inicio sin efecto sobre los alimentos. `Mesa_Premium` fue retirada y comer ya no usa mesas. |
-| **Ducha_Basica** | Duchar | 0€ | 1.0 | ✓ | Ducha de inicio. No se puede vender si es única. |
-| **Ducha_Premium** | Duchar | 200€ | 1.05 | ✗ | Higiene 5% más rápida. |
+- `Obtener_Bonus_Progreso_Cocina_Objeto()` acelera `Progreso_Cocina` en
+  `Actividades_Habilidades.Calcular_Max_Progreso_Cocina()`.
+- `Obtener_Bonus_Calidad_Tupper_Objeto()` multiplica la calidad base al crear
+  un tupper en `Alimentacion.Crear_Tupper()`.
+- Los bonus de cocina y ropa se acumulan de forma secuencial.
 
-## Testing
+## Catálogo implementado (36 muebles)
 
-Ubicación: `Funcionalidades/Economia/Sistema_Objetos_Muebles/Tests/`
+### Dormir — multiplicador de Descanso
 
-Tests pendientes:
-- [ ] Compra exitosa y fallida (dinero insuficiente, objeto ya poseído)
-- [ ] Venta exitosa y fallida (único, seleccionado)
-- [ ] Selección de objeto
-- [ ] Aplicación de multiplicador en actividades
-- [ ] Persistencia en guardado
-- [ ] Fallback para saves antiguos
+| Clave | Precio | Multiplicador | Tier |
+|---|---:|---:|---|
+| `Cama_Basica` | 0 € | ×1.00 | Básico |
+| `Litera_Compacta` | 90 € | ×1.02 | Básico |
+| `Cama_Premium` | 200 € | ×1.05 | Premium |
+| `Cama_Nube` | 460 € | ×1.07 | Premium |
+| `Cama_Lujo` | 800 € | ×1.10 | Lujo |
+| `Cama_Imperial` | 1.800 € | ×1.15 | Élite |
 
-## Cómo Expandir el Catálogo
+### Comer — multiplicador de Hambre
 
-### Añadir un nuevo objeto (ej: Cama Súper Premium)
+| Clave | Precio | Multiplicador | Tier |
+|---|---:|---:|---|
+| `Mesa_Basica` | 0 € | ×1.00 | Básico |
+| `Mesa_Familiar` | 120 € | ×1.03 | Básico |
+| `Mesa_Roble` | 260 € | ×1.05 | Premium |
+| `Mesa_Cristal` | 450 € | ×1.07 | Premium |
+| `Isla_Desayuno` | 750 € | ×1.10 | Lujo |
+| `Mesa_Chef` | 1.500 € | ×1.15 | Élite |
 
-```gdscript
-# En Variables_Estaticas._Inicializar_Catalogo_Objetos()
+### Duchar — multiplicador de Higiene
 
-var cama_super = Objeto_Dormir.new()
-cama_super.nombre = "Cama_Super_Premium"
-cama_super.precio = 1500.0
-cama_super.multiplicador = 1.15  # +15%
-cama_super.afecta_a = "Dormir"
-cama_super.es_basico = false
-Catalogo_Objetos["Cama_Super_Premium"] = cama_super
-```
+| Clave | Precio | Multiplicador | Tier |
+|---|---:|---:|---|
+| `Ducha_Basica` | 0 € | ×1.00 | Básico |
+| `Banera_Clasica` | 160 € | ×1.03 | Básico |
+| `Ducha_Premium` | 200 € | ×1.05 | Premium |
+| `Ducha_Lluvia` | 390 € | ×1.07 | Premium |
+| `Banera_Jacuzzi` | 850 € | ×1.10 | Lujo |
+| `Cabina_Spa` | 1.750 € | ×1.15 | Élite |
 
-### Crear una nueva categoría (ej: Objetos para Higiene/efectos negativos)
+### Salón — multiplicador de Salud mental
 
-1. Crear `Objeto_Higiene.gd`:
-   ```gdscript
-   class_name Objeto_Higiene
-   extends Objeto
-   ```
+| Clave | Precio | Multiplicador | Tier |
+|---|---:|---:|---|
+| `Sofa_Basico` | 0 € | ×1.00 | Básico |
+| `Sofa_Esquinero` | 180 € | ×1.03 | Básico |
+| `Sofa_Chester` | 360 € | ×1.05 | Premium |
+| `Sofa_Relax` | 620 € | ×1.08 | Premium |
+| `Sofa_Modular` | 980 € | ×1.11 | Lujo |
+| `Sofa_Imperial` | 1.900 € | ×1.16 | Élite |
 
-2. Añadir objetos en el catálogo:
-   ```gdscript
-   var ropa_premium = Objeto_Higiene.new()
-   ropa_premium.nombre = "Ropa_Premium"
-   ropa_premium.precio = 150.0
-   ropa_premium.multiplicador = 0.95  # Reduce caída de higiene en 5%
-   ropa_premium.afecta_a = "Duchar"
-   ropa_premium.es_basico = false
-   Catalogo_Objetos["Ropa_Premium"] = ropa_premium
-   ```
+### Estudio — bonus de progreso
 
-3. Actualizar lógica de multiplicadores en `Actividades_Necesidades_Basicas.gd` para soportar multiplicadores < 1.0 en efectos negativos (ver sección "Expansión Futura")
+| Clave | Precio | Efecto | Tier |
+|---|---:|---|---|
+| `Escritorio_Basico` | 0 € | Sin bonificación | Básico |
+| `Escritorio_Moderno` | 150 € | Académico +4 % | Básico |
+| `Escritorio_Ejecutivo` | 340 € | Académico +7 % | Premium |
+| `Mesa_Dibujo` | 520 € | Manualidades +9 % | Premium |
+| `Escritorio_Gaming` | 900 € | Académico +10 % · Manualidades +3 % | Lujo |
+| `Biblioteca_Roble` | 1.700 € | Académico +14 % · Manualidades +5 % | Élite |
+
+### Cocina — progreso y calidad
+
+| Clave | Precio | Efecto | Tier |
+|---|---:|---|---|
+| `Cocina_Basica` | 0 € | Sin bonificación | Básico |
+| `Cocina_Modular` | 170 € | Cocina +4 % | Básico |
+| `Cocina_Isla` | 320 € | Cocina +6 % | Premium |
+| `Cocina_Chef` | 680 € | Cocina +8 % · Tupper +5 % | Premium |
+| `Cocina_Pro` | 1.150 € | Cocina +10 % · Tupper +8 % | Lujo |
+| `Cocina_Industrial` | 2.100 € | Cocina +14 % · Tupper +12 % | Élite |
 
 ## UI de la Tienda
 
-### Estructura de Nodos
+### Estructura
 
-Añadida bajo el nodo raíz de `Escena_Principal.tscn`:
+`Escenas/Escena_Principal/Tienda.tscn` es una escena mínima:
 
 ```
-Tienda (Control, visible=false por defecto, z_index=5)
-├── Flecha_Atras (Button)         ← arriba-izq, vuelve al menú
-├── Titulo (Label)                ← "TIENDA"
-├── Categorias (Control)
-│   ├── Tab_Dormir (Button)       ← icono bed-double
-│   ├── Tab_Comer (Button)        ← icono utensils
-│   └── Tab_Duchar (Button)       ← icono shower-head
-├── Objetos_Dormir (Control)
-│   ├── Cama_Basica (Panel)
-│   ├── Cama_Premium (Panel)
-│   └── Cama_Lujo (Panel)
-├── Objetos_Comer (Control)
-│   └── Mesa_Basica (Panel)
-└── Objetos_Duchar (Control)
-    ├── Ducha_Basica (Panel)
-    └── Ducha_Premium (Panel)
+Tienda (Control, script Tienda_Objetos.gd)
+├── Fondo_Seccion (ColorRect)
+├── Flecha_Atras (Button)
+├── Titulo (Label)
+└── Objetos_Ventajas (Control, Tienda_Bienestar.gd)
 ```
 
-Cada `Panel` de objeto contiene:
-- `Imagen_Placeholder` (Panel) → vitrina con el fondo tintado, la píldora de nivel (`BÁSICO`/`PREMIUM`/`LUJO`) y un `Icono_Item` (`TextureRect`) con la ilustración propia del mueble
-- `Nombre`, `Precio`, `Multiplicador` (Labels)
-- `En_Uso` (Label, "✓ En uso") — visible solo si seleccionado
-- `Comprar`, `Vender`, `Elegir` (Buttons superpuestos en el mismo slot)
+`Tienda_Objetos.gd` construye en código:
 
-El layout final de las tarjetas se construye en `Script_Principal._Redisenar_Tienda()`: rejilla de 2 columnas (tarjeta 332×442), vitrina de 304×200 y una tarjeta única o la tercera de Dormir centradas.
+- **Barra de categorías** desplazable horizontalmente: Dormir, Comer, Duchar,
+  Salón, Estudio, Cocina y Bienestar.
+- **Rejilla de tarjetas** de 2 columnas dentro de un `ScrollContainer` vertical
+  (332×390 por tarjeta), por lo que el catálogo puede crecer sin tocar la
+  escena ni usar posiciones fijas.
+- **Toast** de confirmación/aviso para compras, ventas, equipado y dinero
+  insuficiente.
 
-### Ilustraciones de los muebles
+Cada tarjeta contiene:
 
-Las tarjetas usan ilustraciones 2.5D propias en lugar de emojis o iconos Lucide:
+- `Imagen_Placeholder` (Panel) con fondo tintado por categoría.
+- `Icono_Item` (`TextureRect`) con el PNG del mueble o un icono Lucide de
+  respaldo.
+- `Tier_Pill` con BÁSICO/PREMIUM/LUJO/ÉLITE.
+- `Nombre`, `Precio`, `Multiplicador` (efecto) y `En_Uso`/`Estado`.
+- `Comprar`, `Elegir` y `Vender`, que se muestran según el estado.
 
-- **Originales:** JPG con fondo magenta plano en `Arte_Fuente/Tienda/Fuente/` (`Cama_Basica.jpg`, `Ducha_Premium.jpg`, …). Los prompts del lote están en `Arte_Fuente/Tienda/prompts.md`.
-- **Runtime:** PNG cuadrados 512×512 con alfa en `Imagenes/Tienda/Iconos/`, con el nombre exacto de la clave del catálogo (`Cama_Basica.png`, `Cama_Premium.png`, `Cama_Lujo.png`, `Mesa_Basica.png`, `Ducha_Basica.png`, `Ducha_Premium.png`).
-- **Pipeline:** `python3 tools/procesar_iconos_tienda.py [--preview preview.png]` recorta el magenta por croma, elimina el derrame del borde, limpia motas, recorta al contenido y centra cada objeto con un 5 % de margen transparente.
-- **Carga:** `Estilos_UI.icono_tienda(clave)` resuelve la ruta desde `Estilos_UI.RUTAS_ICONOS_TIENDA` y cachea la textura. Si falta el PNG, la tarjeta cae al icono Lucide anterior.
-
-Capturas de la tienda con las ilustraciones integradas: `Documentacion/Capturas/01_tienda_dormir.png`, `02_tienda_comer.png` y `03_tienda_duchar.png`.
-
-### Estados Visuales del Panel
-
-Construidos en código (`Script_Principal._Inicializar_Tienda_Estilos()`):
-
-| Estado | StyleBox | Borde |
-|---|---|---|
-| No poseído | `_tienda_estilo_normal` | Gris (3px) |
-| Poseído, no seleccionado | `_tienda_estilo_owned` | Azul (4px) |
-| Seleccionado (en uso) | `_tienda_estilo_selected` | Verde (5px) |
-
-### Reglas de Visibilidad de Botones
-
-Calculadas en `_Actualizar_Card_Tienda(categoria, clave)`:
+### Reglas de visibilidad
 
 | Botón | Visible cuando |
 |---|---|
-| `Comprar` | NO poseído |
-| `Vender` | Poseído **y** NO seleccionado **y** existe otro poseído de misma categoría |
-| `Elegir` | Poseído **y** NO seleccionado |
-| `En_Uso` | Seleccionado |
+| `Comprar` | No poseído |
+| `Elegir` | Poseído y no seleccionado |
+| `Vender` | Poseído, no seleccionado y existe otro objeto de la categoría |
+| Estado «En uso» | Seleccionado |
+| Estado «En propiedad» | Poseído y no seleccionado |
+| Estado «Te faltan N €» | No poseído y sin dinero suficiente |
 
-### Funciones de Visibilidad (`Gestionar_Visibilidad.gd`)
+### Navegación
 
-```gdscript
-Visibilizar_Tienda(raiz)
-    # Oculta todo, deja visibles solo Fondo, Moneda, Dinero_Label, Alquiler_Button
-    # Muestra el Control Tienda y abre la categoría Dormir
+`Gestionar_Visibilidad.Visibilizar_Tienda()` muestra la tienda y llama a
+`Tienda.Abrir_Categoria("Dormir")`. La tienda ya no tiene pestaña superior: el
+nodo `Tienda_Button` permanece en la escena por compatibilidad, pero
+`_Redisenar_Superior()` y `Visibilizar_Lo_Basico()` lo ocultan. El único acceso
+es el icono rápido `Boton_Tienda_Header`, junto al dinero, que llama a
+`_on_tienda_tab_pressed()`. La flecha de vuelta lleva al inicio, salvo cuando se
+abre desde Necesidades, que regresa a esa pantalla.
+`Mostrar_Categoria_Tienda()` delega en el mismo método. Los wrappers
+`_on_tab_<categoria>_pressed()` de `Script_Principal` se mantienen para las
+capturas de QA.
 
-Mostrar_Categoria_Tienda(raiz, categoria)
-    # Oculta Objetos_Dormir/Comer/Duchar y muestra solo la categoría indicada
-```
+## Ilustraciones
 
-### Handlers en `Script_Principal.gd`
+- **Originales de una sola pieza:** JPG/PNG con fondo magenta en
+  `Arte_Fuente/Tienda/Fuente/`.
+- **Láminas 2×2 nuevas:** `Lamina_Salon.png`, `Lamina_Dormir_Comer_1.png`,
+  `Lamina_Comer_1.png`, `Lamina_Duchar_1.png`, etc. Se cortan con
+  `python3 tools/cortar_sprites.py <lamina> Arte_Fuente/Tienda/Fuente
+  --grid 2x2 --names ...`.
+- **Runtime:** PNG 512×512 con alfa en `Imagenes/Tienda/Iconos/`, con el nombre
+  exacto de la clave del catálogo.
+- **Pipeline:** `python3 tools/procesar_iconos_tienda.py --preview preview.png`
+  acepta JPG con magenta (recorta por croma) y PNG ya recortados (usa su alfa),
+  limpia motas, recorta al contenido y centra con un 5 % de margen.
+- **Carga:** `Estilos_UI.icono_tienda(clave)` resuelve automáticamente
+  `res://Imagenes/Tienda/Iconos/<clave>.png`; no hay que ampliar un diccionario
+  al añadir un mueble. La carga es perezosa (solo los 6 muebles de la categoría
+  abierta) y la caché es débil, así que al cambiar de categoría se liberan las
+  texturas que ya no se ven.
+- **Capturas de QA:** `Documentacion/Capturas/01_tienda_dormir.png` …
+  `07_tienda_estados.png` (Dormir, Comer, Duchar, Salón, Estudio, Cocina y
+  estados Equipar/Vender).
 
-- `_on_tienda_button_pressed` — abre la tienda, refresca UI
-- `_on_tienda_flecha_atras_pressed` — `Quitar_Todo` (vuelve al menú)
-- `_on_tab_<dormir|comer|duchar>_pressed` — switcher de categorías
-- 18 handlers `_on_<comprar|vender|elegir>_<objeto>_pressed` → delegan a 3 helpers (`_Tienda_Comprar/Vender/Elegir`) que llaman a `Actividades.Comprar_Objeto/Vender_Objeto/Seleccionar_Objeto`, refrescan UI y `Actualizar_Dinero()`
+## Testing
 
-### Limitaciones Actuales de la UI
+`Funcionalidades/Economia/Sistema_Objetos_Muebles/Tests/test_tienda_objetos.gd`
+cubre:
 
-- La vitrina está pensada para las seis ilustraciones actuales; un objeto nuevo sin PNG usa el respaldo Lucide, pero conviene añadir su ilustración y su entrada en `Estilos_UI.RUTAS_ICONOS_TIENDA`.
-- Las tarjetas usan posiciones fijas en coordenadas de diseño 720×1280 (el dock inferior empieza en `alto - 96`); una cuarta fila requeriría scroll.
+- 6 categorías × 6 muebles y básicos gratis.
+- `Asegurar_Objetos_Basicos()`.
+- Compra, equipado y venta con restricciones.
+- Multiplicadores de Dormir, Comer y Salón.
+- Bonus de Estudio y Cocina.
+- Calidad del tupper con `Cocina_Industrial`.
 
-## Estado Actual
+## Cómo ampliar el catálogo
 
-- **Implementado:** 6 objetos en catálogo, 3 categorías (Dormir, Comer, Duchar), backend completo (compra/venta/selección), aplicación de multiplicador en Dormir/Duchar, guardado/carga, UI de tienda funcional con tabs y estados visuales, y tarjetas con ilustraciones 2.5D propias (Cama Básica/Premium/Lujo, Mesa Básica, Ducha Básica/Premium). La alimentación pasó a `Cocinar`/`Comer_Tupper`/`Comer_Basura`; las mesas ya no modulan comer.
-- **Planeado:** Efectos negativos (multiplicador < 1.0), más categorías (Ocio, Trabajo).
+1. Añade un diccionario a `Catalogo_Tienda.DATOS` con `clave`, `nombre`,
+   `categoria`, `precio`, `tier`, `efecto` y los bonus que correspondan.
+2. Guarda su ilustración como `<clave>.jpg` (fondo magenta) o `<clave>.png`
+   (alfa) en `Arte_Fuente/Tienda/Fuente/`.
+3. Ejecuta `python3 tools/procesar_iconos_tienda.py`.
+4. Si es el primer mueble de una categoría nueva, añade la categoría a
+   `Catalogo_Tienda.CATEGORIAS`, su `basico` y su icono Lucide; la barra y la
+   rejilla se generan solas.
+5. Si la categoría mejora una actividad nueva, añádela al mapa
+   `_CATEGORIA_POR_ACTIVIDAD` de `Actividades_Necesidades_Basicas.gd` o usa los
+   campos de bonus de progreso.
+
+## Estado actual
+
+- **Implementado:** 36 muebles, 6 categorías, tienda con scroll, compra/venta/
+  equipado, multiplicadores de necesidades, bonus de progreso de Estudio,
+  bonus de Cocina y calidad de tupper, migración de saves, toasts y arte 2.5D.
+- **Planeado:** efectos negativos (< 1.0), más categorías (Deporte, Oficina) y
+  filtros/ordenación dentro de cada categoría.

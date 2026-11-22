@@ -196,532 +196,247 @@ La implementación es **robusta y correcta**:
 - ✓ Necesidades caen rápidamente en la calle (mecánica de presión)
 # Invertir en Bolsa
 
-## Descripción General
+Sistema de inversión **pasiva** con cartera, eventos de mercado, historial y estadísticas. La lógica vive en el autoload `Sistema_Bolsa` (`Scripts/Logica/Escena_Principal/Economia/Sistema_Bolsa.gd`); la UI es una pantalla completa con pestañas **Resumen / Evolución / Estadísticas** (`Scripts/GUI/Escena_Principal/Bolsa/Panel_Bolsa.gd` + `Grafico_Bolsa.gd`).
 
-Sistema de inversión financiera pasiva. El jugador puede meter dinero en la "bolsa" y su valor fluctúa cada ~8 horas de juego según su habilidad inversora (`Progreso_Inversion`). El resultado a largo plazo depende de tres factores:
+## Funciones principales
 
-- **`Progreso_Inversion`** (progreso 1–100): determina la tendencia; al principio es muy probable perder, al final muy probable ganar.
-- **`Salud_Mental_Al_Invertir`** (snapshot): la salud mental en el **momento exacto de invertir** modifica la probabilidad. Después no cambia aunque cambie la salud mental real.
-- **`Sangre_Fría` (`Habilidades[6]`)**: si es muy baja (<30) y la pérdida supera el 15%, el personaje entra en pánico y retira automáticamente la inversión.
+- **Aportar**: abre o amplía la posición. `Dinero_Invertido` es el coste base y el snapshot de salud mental solo se captura al abrir una posición nueva.
+- **Retirar**: permite retiradas parciales o el cierre total. El coste base se libera de forma proporcional y el beneficio se materializa.
+- **Beneficio acumulado**: `Inversion_Beneficio_Realizado + (Valor_Inversion - Dinero_Invertido)`. El gráfico no baja artificialmente al aportar o retirar.
+- **Eventos**: 1/480 por minuto invertido. `prob_subida = clamp(0.15 + ((nivel-1)/99)*0.70 + (mental-50)/300 + tendencia*0.05, 0.05, 0.95)`. La tendencia es un paseo aleatorio con reversión (`t*0.90 + randfn(0,0.20)`, ±1). Movimiento normal 0,5–3,0 %; shock (6 %) 3,0–6,5 % con titulares.
+- **Auto-venta por pánico**: `Sangre_Fría < 30` y pérdida > 15 % → venta total, `Inversion_Panicos += 1` y mensaje en el perfil.
+- **Nivel inversor**: +1 con probabilidad 1/20 por evento y +1 al cerrar una posición completa en positivo (máx. 100). Corregida su carga desde el guardado.
+- **Historial**: puntos `{minuto, beneficio, valor, invertido}` tras eventos/operaciones; máximo 600 con compactación. `Inversion_Operaciones` guarda 40 operaciones y `Inversion_Eventos` 30 titulares.
+- **Estadísticas**: aportado, retirado, beneficio total, rentabilidad, tasa de acierto, mejor/peor operación, tiempo invertido, eventos (subidas/bajadas), rachas y máxima caída.
+- **UI**: gráfico verde/rojo con línea de cero, marcadores de aportes/retiradas/pánico, periodos 1/5/10 años/Todo; diálogo de cantidad con 25/50/75/Todo y validación. Sin comisiones en la inversión pasiva.
 
-El objetivo en el juego es que el jugador aprenda a invertir durante los ~60 años de partida, pasando de perder dinero al principio a ganar de forma consistente al final.
+## Persistencia
 
----
+Se añaden las claves `Inversion_*` a `Guardar_Variables_Dinamicas.game_data_func()` y se sanean al cargar con `Sistema_Bolsa.Asegurar_Estado()`. Los saves antiguos sin claves cargan con valores por defecto; si tenían una posición activa se rellena el coste base y se siembra el primer punto del historial.
 
-## Variables Dinámicas / Estáticas afectadas
+## Tests y documentación
 
-| Variable | Tipo | Rango | Descripción |
-|---|---|---|---|
-| `Variables_Dinamicas.Esta_Invirtiendo` | `bool` | — | `true` mientras haya dinero en bolsa |
-| `Variables_Dinamicas.Dinero_Invertido` | `float` | ≥ 0 | Cantidad original puesta (base para calcular %) |
-| `Variables_Dinamicas.Valor_Inversion` | `float` | ≥ 0 | Valor actual de la cartera (sube/baja con los ticks) |
-| `Variables_Dinamicas.Salud_Mental_Al_Invertir` | `int` | 1–100 | Snapshot de `Necesidades_Basicas[1]` al pulsar "Invertir" |
-| `Variables_Dinamicas.Progreso_Inversion` | `int` | 1–100 | Habilidad inversora; sube mientras se está invertido |
-| `Variables_Estaticas.Habilidades[6]` | `int` | 1–100 | Sangre Fría: umbral de auto-venta por pánico |
+- Tests GUT: `Funcionalidades/Economia/Invertir_En_Bolsa/Tests/test_sistema_bolsa.gd` (19 tests).
+- Documentación completa: `Funcionalidades/Economia/Invertir_En_Bolsa/Documentacion/INVERTIR.md`.
+- El minijuego activo de trading sigue pendiente; la inversión pasiva se mantiene como modo cómodo.
 
----
-
-## Flujo de Ejecución
-
-### 1. El jugador invierte
-
-Desde `Script_Principal._Confirmar_Invertir()`:
-
-```gdscript
-var cantidad = float(texto)
-# CRÍTICO: El snapshot de salud mental se toma aquí, no cambia durante la inversión.
-Variables_Dinamicas.Dinero -= cantidad
-Variables_Dinamicas.Dinero_Invertido = cantidad
-Variables_Dinamicas.Valor_Inversion = cantidad
-Variables_Dinamicas.Esta_Invirtiendo = true
-Variables_Dinamicas.Salud_Mental_Al_Invertir = int(Variables_Dinamicas.Necesidades_Basicas[1])
-```
-
-### 2. Tick por minuto (en `Actividades.Actualizar_Horario`)
-
-Cada minuto procesado:
-
-```gdscript
-if Variables_Dinamicas.Esta_Invirtiendo:
-    _Tick_Inversion()
-```
-
-### 3. `_Tick_Inversion()` en `Actividades.gd`
-
-```gdscript
-func _Tick_Inversion():
-    # Evento de mercado: probabilidad 1/480 por minuto (~1 vez cada 8 horas).
-    if randi() % 480 != 0:
-        return
-
-    var progreso = Variables_Dinamicas.Progreso_Inversion
-    var mental = Variables_Dinamicas.Salud_Mental_Al_Invertir
-
-    # prob_subida: 0.15 en progreso=1, 0.50 en progreso=50, 0.85 en progreso=100.
-    var tendencia = (progreso - 1.0) / 99.0
-    var factor_mental = (mental - 50.0) / 300.0
-    var prob_subida = clamp(0.15 + tendencia * 0.70 + factor_mental, 0.05, 0.95)
-
-    var cambio_pct = (randi() % 26 + 5) / 1000.0  # 0.5% a 3.0%
-
-    if randf() < prob_subida:
-        Variables_Dinamicas.Valor_Inversion += Variables_Dinamicas.Valor_Inversion * cambio_pct
-    else:
-        Variables_Dinamicas.Valor_Inversion -= Variables_Dinamicas.Valor_Inversion * cambio_pct
-        Variables_Dinamicas.Valor_Inversion = max(0.0, Variables_Dinamicas.Valor_Inversion)
-
-    # CRÍTICO: Auto-venta solo si Sangre_Fría < 30 Y pérdida > 15%.
-    var sangre_fria = Variables_Estaticas.Habilidades[6]
-    if sangre_fria < 30 and Variables_Dinamicas.Dinero_Invertido > 0:
-        var pct_cambio = (Variables_Dinamicas.Valor_Inversion - Variables_Dinamicas.Dinero_Invertido) / Variables_Dinamicas.Dinero_Invertido
-        if pct_cambio < -0.15:
-            _Auto_Vender_Inversion()
-            return
-
-    # Mejora de Progreso_Inversion: 1/20 por evento (~1 punto cada 2 semanas).
-    if Variables_Dinamicas.Progreso_Inversion < 100:
-        if randi() % 20 == 0:
-            Variables_Dinamicas.Progreso_Inversion += 1
-```
-
-### 4. `_Auto_Vender_Inversion()` — venta por pánico
-
-```gdscript
-func _Auto_Vender_Inversion():
-    var invertido = Variables_Dinamicas.Dinero_Invertido
-    var valor_actual = Variables_Dinamicas.Valor_Inversion
-    var pct_perdida = (invertido - valor_actual) / invertido * 100.0 if invertido > 0 else 0.0
-    Variables_Dinamicas.Dinero += valor_actual
-    Variables_Dinamicas.Esta_Invirtiendo = false
-    Variables_Dinamicas.Valor_Inversion = 0.0
-    Variables_Dinamicas.Dinero_Invertido = 0.0
-    # Envía mensaje al perfil del jugador.
-    var msg = Mensaje.new()
-    msg.titulo = "Inversión retirada automáticamente"
-    msg.descripcion = "Tu sangre fría es baja. Al alcanzar un %.0f%% de pérdidas has entrado en pánico..." % [pct_perdida]
-    msg.leido = false
-    msg.minuto = Variables_Dinamicas.Minute
-    Variables_Dinamicas.Mensajes.append(msg)
-```
-
-### 5. El jugador retira manualmente
-
-Desde `Script_Principal._Confirmar_Retirar()`:
-
-```gdscript
-Variables_Dinamicas.Dinero += Variables_Dinamicas.Valor_Inversion
-Variables_Dinamicas.Esta_Invirtiendo = false
-Variables_Dinamicas.Valor_Inversion = 0.0
-Variables_Dinamicas.Dinero_Invertido = 0.0
-```
-
----
-
-## UI: Nodos y Visibilidad
-
-### Botón de inversión
-
-Creado dinámicamente en `Script_Principal._Inicializar_Boton_Inversion()`:
-
-```
-Escena_Principal (raíz)
-  └── Inversion_Button  (Button, z_index=10, left=495, top=10, right=718, bottom=60)
-```
-
-**Texto del botón:**
-- Sin invertir: `"Invertir\nen Bolsa"`
-- Invirtiendo: `"Bolsa\n700€ (+15.3%)"` (valor actual + % respecto al invertido)
-
-Se actualiza cada frame desde `Script_Principal.Actualizar_Dinero()` → `_Actualizar_Boton_Inversion()`.
-
-`Gestionar_Visibilidad.Visibilizar_Lo_Basico()` incluye `raiz.inversion_button.visible = true`.
-
-### Ventana de inversión (entrada de cantidad)
-
-`Window` personalizado creado la primera vez que se pulsa:
-- Campo `LineEdit` para introducir la cantidad en €
-- Label actualizado con el dinero disponible en el momento
-- Botones "Invertir" / "Cancelar"
-
-### Diálogo de retirada
-
-`ConfirmationDialog` estándar que muestra valor actual y % de ganancia/pérdida.
-
-### Pantalla de Perfil (Tab Info)
-
-`_Renderizar_Info()` añade la fila `"Inversiones  X / 100"` en la sección PROGRESO.
-
----
-
-## Persistencia (Save/Load)
-
-En `Guardar_Variables_Dinamicas.gd`:
-
-| Clave | Tipo | Fallback para saves antiguos |
-|---|---|---|
-| `"Esta_Invirtiendo"` | bool | `false` |
-| `"Dinero_Invertido"` | float | `0.0` |
-| `"Valor_Inversion"` | float | `0.0` |
-| `"Salud_Mental_Al_Invertir"` | int | `50` |
-| `"Progreso_Inversion"` | int | `1` |
-
-Se guarda con `store_var` binario al mismo archivo que el resto de variables dinámicas.
-
----
-
-## Casos de Uso
-
-| Escenario | Qué ocurre | Resultado esperado |
-|---|---|---|
-| Jugador pulsa "Invertir en Bolsa" sin inversión activa | Se abre la ventana con LineEdit | Introduce 500€ → `Dinero -= 500`, `Valor_Inversion = 500` |
-| Tick de mercado con Progreso_Inversion=1 | `prob_subida ≈ 15%` | La mayoría de eventos reducen `Valor_Inversion` |
-| Tick de mercado con Progreso_Inversion=100 | `prob_subida ≈ 85%` | La mayoría de eventos aumentan `Valor_Inversion` |
-| Sangre_Fría=15, pérdida acumulada > 15% en un tick | Condición `<30 y pct<-0.15` se cumple | Auto-venta, mensaje en perfil |
-| Sangre_Fría=70, pérdida del 20% | Condición `<30` es falsa | NO hay auto-venta, sigue invertido |
-| Jugador pulsa botón mientras invierte | Se muestra diálogo de confirmación con valor actual | Si acepta: `Dinero += Valor_Inversion`, fin de inversión |
-
----
-
-## Notas Técnicas
-
-| Aspecto | Detalle |
-|---|---|
-| Frecuencia de eventos | 1/480 por minuto → ~3 eventos por día real (1 día real = 1 año de juego) |
-| Punto neutro de progreso | Progreso_Inversion ≈ 50 → prob_subida ≈ 0.50 (ni gana ni pierde en media) |
-| Impacto de salud mental | ±10 pp sobre `prob_subida` (va de -0.167 a +0.167 ajustado por 300) |
-| Rango de cambio por evento | 0.5% a 3.0% del `Valor_Inversion` actual |
-| Valor mínimo | `max(0.0, ...)` → nunca negativo |
-| Velocidad de progreso | ~1 punto cada 2 semanas reales de inversión activa (1/20 por evento × 3 eventos/día × 7 días/semana ≈ 1.05 pts/semana) |
-| Sangre_Fría como innata | `Habilidades[6]` — ya generada en `First_Time.Crear_Habilidades()` (7 habilidades) |
-| Snapshot de salud mental | Se captura al invertir en `Necesidades_Basicas[1]`; NO se actualiza mientras dura la inversión |
-
----
-
-## Convenciones de Nombres (Godot)
-
-| Elemento | Nombre en código |
-|---|---|
-| Botón dinámico | `inversion_button` (var en Script_Principal) |
-| Ventana de cantidad | `_ventana_invertir` (var en Script_Principal) |
-| Input de cantidad | `_input_cantidad_invertir` (LineEdit) |
-| Diálogo de retirada | `_dialog_retirar` (ConfirmationDialog) |
-| Tick principal | `Actividades._Tick_Inversion()` |
-| Auto-venta | `Actividades._Auto_Vender_Inversion()` |
-
----
-
-## Checklist de Implementación
-
-- [x] `Variables_Dinamicas.gd`: añadir 5 variables nuevas
-- [x] `First_Time.gd`: inicializar `Progreso_Inversion = 1` en `Crear_Progreso()`
-- [x] `Guardar_Variables_Dinamicas.gd`: guardar y cargar las 5 variables con fallback
-- [x] `Actividades.gd`: `_Tick_Inversion()`, `_Auto_Vender_Inversion()` + llamada en `Actualizar_Horario`
-- [x] `Script_Principal.gd`: botón dinámico, ventana de cantidad, diálogo de retirada, `_Actualizar_Boton_Inversion()` en `Actualizar_Dinero()`
-- [x] `Gestionar_Visibilidad.gd`: `inversion_button.visible = true` en `Visibilizar_Lo_Basico()`
-- [x] `Script_Principal._Renderizar_Info()`: fila "Inversiones X/100" en Tab Info del perfil
 # Sistema de Objetos/Muebles
 
 ## Descripción
-Sistema de compra, venta y selección de objetos que afectan a necesidades básicas mediante multiplicadores de probabilidad. Inspirado en los Sims.
+Tienda de muebles con **36 objetos repartidos en 6 categorías** (`Dormir`, `Comer`, `Duchar`, `Salón`, `Estudio`, `Cocina`). Cada categoría actúa como una ranura exclusiva: el Sim equipa un mueble por categoría y ese mueble aplica un multiplicador a una necesidad básica o un bonus pasivo de progreso/calidad.
 
 ## Estructura
 
 ### Clases
 ```
-Scripts/Logica/Escena_Principal/Economia/Herencia/
-├── Objeto.gd (clase_name Objeto)
-│   ├── nombre: String
-│   ├── precio: float
-│   ├── multiplicador: float (1.0 = sin efecto)
-│   ├── afecta_a: String (ej: "Dormir", "Comer", "Duchar")
-│   └── es_basico: bool (true = no se puede vender si es único)
-├── Objeto_Dormir.gd (extends Objeto)
-├── Objeto_Comer.gd (extends Objeto)
-└── Objeto_Duchar.gd (extends Objeto)
+Scripts/Logica/Escena_Principal/Economia/
+├── Catalogo_Tienda.gd          ← datos de las 6 categorías y los 36 muebles
+├── Herencia/
+│   ├── Objeto.gd               ← precio, multiplicador, tier, efecto y bonus
+│   ├── Objeto_Dormir.gd
+│   ├── Objeto_Comer.gd
+│   ├── Objeto_Duchar.gd
+│   └── Objeto_Ropa.gd          ← ropa equipable del Vestuario
 ```
 
 ### Variables
 **Variables_Estaticas:**
 ```gdscript
-var Catalogo_Objetos: Dictionary = {
-    "Cama_Basica": Objeto_Dormir(...),    # multiplicador 1.0, es_basico true
-    "Cama_Premium": Objeto_Dormir(...),   # multiplicador 1.05
-    "Cama_Lujo": Objeto_Dormir(...),      # multiplicador 1.10
-    # ... más objetos
-}
+var Catalogo_Objetos: Dictionary  # Materializado desde Catalogo_Tienda.DATOS + Ropa_Catalogo.DATOS
 ```
 
 **Variables_Dinamicas:**
 ```gdscript
-var Objetos_Poseidos: Dictionary = {
-    "Cama_Basica": true,
-    "Cama_Premium": false,
-    # ... estado de posesión
-}
-
+var Objetos_Poseidos: Dictionary = { "Cama_Basica": true, ... }
 var Objeto_Seleccionado: Dictionary = {
-    "Dormir": "Cama_Basica",    # qué objeto está usando
+    "Dormir": "Cama_Basica",
     "Comer": "Mesa_Basica",
-    "Duchar": "Ducha_Basica"
+    "Duchar": "Ducha_Basica",
+    "Salon": "Sofa_Basico",
+    "Estudio": "Escritorio_Basico",
+    "Cocina": "Cocina_Basica",
+    "Ropa": "Ropa_Calle"
 }
 ```
+`Variables_Estaticas.Asegurar_Objetos_Basicos()` entrega automáticamente los básicos gratuitos de cada categoría en partidas nuevas y en saves antiguos.
 
 ## Flujos
 
 ### Compra
-```gdscript
-Actividades.Comprar_Objeto("Cama_Premium")
-```
-- Validación: objeto existe, no lo posee, tiene dinero
-- Efecto: `-precio` dinero, `+true` en `Objetos_Poseidos`
-- Retorna: `bool` (éxito/fracaso)
+`Actividades.Comprar_Objeto(clave)` valida existencia, no posesión y saldo suficiente → descuenta precio y marca `Objetos_Poseidos[clave] = true`.
 
 ### Venta
-```gdscript
-Actividades.Vender_Objeto("Cama_Premium")
-```
-- Validación: lo posee, no es único de su categoría, no está seleccionado
-- Efecto: `+precio*0.5` dinero, `-false` en `Objetos_Poseidos`
-- Retorna: `bool`
+`Actividades.Vender_Objeto(clave)` valida posesión, que no sea el único de su categoría y que no esté seleccionado → devuelve `precio * 0.5`.
 
 ### Selección
-```gdscript
-Actividades.Seleccionar_Objeto("Dormir", "Cama_Premium")
-```
-- Validación: lo posee, categoría coincide
-- Efecto: actualiza `Objeto_Seleccionado["Dormir"]`
-- Retorna: `bool`
+`Actividades.Seleccionar_Objeto(categoria, clave)` valida posesión y categoría → actualiza `Objeto_Seleccionado[categoria]`.
 
-## Lógica de Multiplicador
+## Lógica de Multiplicadores y Bonificaciones
 
-### Implementación Actual
 En `Actividades_Necesidades_Basicas.gd`:
 
 ```gdscript
+const _CATEGORIA_POR_ACTIVIDAD := {
+    "Dormir": "Dormir",
+    "Duchar": "Duchar",
+    "Comer_Tupper": "Comer",
+    "Comer_Basura": "Comer",
+    "Ver_La_Television": "Salon",
+}
+
 func _Obtener_Multiplicador(nombre_actividad: String) -> float:
-    match nombre_actividad:
-        "Dormir", "Duchar":
-            var clave = Variables_Dinamicas.Objeto_Seleccionado.get(nombre_actividad, "")
-            if clave == "" or not Variables_Estaticas.Catalogo_Objetos.has(clave):
-                return 1.0
-            return Variables_Estaticas.Catalogo_Objetos[clave].multiplicador
-        _:
-            return 1.0
-```
-Las mesas ya no modulan comer: `Comer_Tupper` usa la calidad del tupper y `Comer_Basura` tiene efectos fijos.
-
-Aplica el multiplicador **solo a efectos positivos**:
-```gdscript
-if por_cuanto > 0 and multiplicador != 1.0:
-    valor_maximo = max(1, floor(valor_maximo / multiplicador))
+    var categoria: String = str(_CATEGORIA_POR_ACTIVIDAD.get(nombre_actividad, ""))
+    if categoria == "":
+        return 1.0
+    return Variables_Estaticas.Obtener_Multiplicador_Objeto(categoria)
 ```
 
-**Ejemplo:**
-- Actividad Dormir: efecto +4 descanso cada ~15 min
-- Cama Premium (1.05): efecto sube a +4.2, intervalo baja a ~14.3 min
-- Resultado: descansa más rápido, NO acelera caída de hambre/higiene
+El multiplicador aplica **solo a efectos positivos** (`if por_cuanto > 0 and multiplicador != 1.0: valor_maximo = max(1, floor(valor_maximo / multiplicador))`).
+Los muebles de **Estudio** aportan `bonus_progreso` en `Actividades_Habilidades.Ejecutar_Actividad_Progreso()` (Académico y Manualidades) y los de **Cocina** aceleran `Calcular_Max_Progreso_Cocina()` y mejoran la calidad base de `Alimentacion.Crear_Tupper()`.
 
-### Expansión Futura (No Implementada)
-**Objetivo:** Permitir objetos que reduzcan efectos negativos.
+## Guardado y Restricciones
 
-**Ejemplo:** Ropa Premium (multiplicador 0.95 en Higiene)
-- Actividad normal pierde higiene cada ~20 min
-- Con ropa: pierde cada ~21 min (0.95 * 20)
+- `Guardar_Variables_Dinamicas.gd` guarda `Objetos_Poseidos` y `Objeto_Seleccionado`; al cargar, llama a `Asegurar_Objetos_Basicos()` y `Sistema_Cocina.Asegurar_Prendas_Iniciales()`.
+- **Obligatoriedad:** siempre hay al menos un objeto seleccionado por categoría.
+- **Venta:** no se puede vender si es el único de su categoría ni si está actualmente seleccionado. Reventa = `50%` del precio original.
 
-**Cambio necesario:**
-```gdscript
-if multiplicador != 1.0:
-    if por_cuanto > 0:  # Efectos positivos
-        valor_maximo = max(1, floor(valor_maximo / multiplicador))
-    else:  # Efectos negativos
-        valor_maximo = floor(valor_maximo * multiplicador)
-```
+## Catálogo Implementado (36 muebles)
 
-**Nuevos objetos:**
-- `Objeto_Higiene.gd` (extends Objeto)
-- `Ropa_Premium`: precio 150, multiplicador 0.95, afecta_a "Duchar"
+6 categorías × 6 muebles, definidos en `Catalogo_Tienda.DATOS`:
 
-## Inicialización
+| Categoría | Básico | Gama alta | Efecto |
+|---|---|---|---|
+| **Dormir** | `Cama_Basica` 0 € | `Cama_Imperial` 1.800 € (×1.15) | Descanso de `Dormir` |
+| **Comer** | `Mesa_Basica` 0 € | `Mesa_Chef` 1.500 € (×1.15) | Hambre de tupper/comida rápida |
+| **Duchar** | `Ducha_Basica` 0 € | `Cabina_Spa` 1.750 € (×1.15) | Higiene de `Duchar` |
+| **Salón** | `Sofa_Basico` 0 € | `Sofa_Imperial` 1.900 € (×1.16) | Salud mental de `Ver_La_Television` |
+| **Estudio** | `Escritorio_Basico` 0 € | `Biblioteca_Roble` 1.700 € (+14 % Académico, +5 % Manualidades) | Progreso de habilidades |
+| **Cocina** | `Cocina_Basica` 0 € | `Cocina_Industrial` 2.100 € (+14 % Cocina, +12 % Tupper) | Progreso culinario y calidad |
 
-### First_Time
-```gdscript
-Crear_Objetos_Iniciales()
-# Inicia con los básicos de cada categoría
-Objetos_Poseidos = {
-    "Cama_Basica": true,
-    "Mesa_Basica": true,
-    "Ducha_Basica": true
-}
-Objeto_Seleccionado = {
-    "Dormir": "Cama_Basica",
-    "Comer": "Mesa_Basica",
-    "Duchar": "Ducha_Basica"
-}
-```
-
-### Guardado
-En `Guardar_Variables_Dinamicas.gd`:
-- Guarda `Objetos_Poseidos` (Dictionary)
-- Guarda `Objeto_Seleccionado` (Dictionary)
-- Fallback para saves antiguos: inicializa con `_Inicializar_Objetos_Por_Defecto()`
-
-## Restricciones
-
-1. **Obligatoriedad:** Siempre hay al menos un objeto seleccionado por categoría
-2. **Venta:** No se puede vender si es el único de su categoría
-3. **Venta:** No se puede vender si está actualmente seleccionado
-4. **Precio:** Reventa = 50% del precio original
-
-## Catálogo Implementado (7 objetos)
-
-| Nombre | Categoría | Precio | Multiplicador | Básico | Descripción |
-|--------|-----------|--------|----------------|--------|-------------|
-| **Cama_Basica** | Dormir | 0€ | 1.0 | ✓ | Cama de inicio. No se puede vender si es única. |
-| **Cama_Premium** | Dormir | 200€ | 1.05 | ✗ | Descanso 5% más rápido. |
-| **Cama_Lujo** | Dormir | 800€ | 1.10 | ✗ | Descanso 10% más rápido. |
-| **Mesa_Basica** | Comer | 0€ | 1.0 | ✓ | Mesa de inicio sin efecto sobre los alimentos. Ya no hay mesas premium. |
-| **Ducha_Basica** | Duchar | 0€ | 1.0 | ✓ | Ducha de inicio. No se puede vender si es única. |
-| **Ducha_Premium** | Duchar | 200€ | 1.05 | ✗ | Higiene 5% más rápida. |
+Cada categoría tiene 6 niveles: básico, básico mejorado, premium, premium
+superior, lujo y élite. La lista completa con precios, multiplicadores y textos
+de efecto está en `Funcionalidades/Economia/Sistema_Objetos_Muebles/Documentacion/SISTEMA_OBJETOS.md`.
 
 ## Testing
 
-Ubicación: `Funcionalidades/Economia/Sistema_Objetos_Muebles/Tests/`
+Ubicación: `Funcionalidades/Economia/Sistema_Objetos_Muebles/Tests/test_tienda_objetos.gd`
 
-Tests pendientes:
-- [ ] Compra exitosa y fallida (dinero insuficiente, objeto ya poseído)
-- [ ] Venta exitosa y fallida (único, seleccionado)
-- [ ] Selección de objeto
-- [ ] Aplicación de multiplicador en actividades
-- [ ] Persistencia en guardado
-- [ ] Fallback para saves antiguos
+Cubre:
+- [x] Integridad del catálogo (6 × 6) y básicos gratis.
+- [x] `Asegurar_Objetos_Basicos()` para partidas nuevas y antiguas.
+- [x] Compra, equipado y venta (único y seleccionado).
+- [x] Multiplicadores de Dormir, Comer y Salón.
+- [x] Bonus de Estudio y Cocina.
+- [x] Calidad del tupper según la cocina equipada.
 
 ## Cómo Expandir el Catálogo
 
-### Añadir un nuevo objeto (ej: Cama Súper Premium)
+### Añadir un nuevo mueble
 
 ```gdscript
-# En Variables_Estaticas._Inicializar_Catalogo_Objetos()
-
-var cama_super = Objeto_Dormir.new()
-cama_super.nombre = "Cama_Super_Premium"
-cama_super.precio = 1500.0
-cama_super.multiplicador = 1.15  # +15%
-cama_super.afecta_a = "Dormir"
-cama_super.es_basico = false
-Catalogo_Objetos["Cama_Super_Premium"] = cama_super
+# En Catalogo_Tienda.DATOS
+{
+    "clave": "Cama_Super_Premium",
+    "nombre": "Cama Súper Premium",
+    "categoria": "Dormir",
+    "precio": 2500.0,
+    "multiplicador": 1.20,
+    "tier": "elite",
+    "efecto": "×1.20 Descanso (+20%)",
+    "descripcion": "Cama soñada por encima de cualquier lujo.",
+}
 ```
 
-### Crear una nueva categoría (ej: Objetos para Higiene/efectos negativos)
+Después:
+1. Guarda `Cama_Super_Premium.jpg` (magenta) o `.png` (alfa) en
+   `Arte_Fuente/Tienda/Fuente/`.
+2. Ejecuta `python3 tools/procesar_iconos_tienda.py`.
+3. La tarjeta aparece automáticamente; no hay que tocar la escena ni añadir
+   conexiones en `Script_Principal`.
 
-1. Crear `Objeto_Higiene.gd`:
-   ```gdscript
-   class_name Objeto_Higiene
-   extends Objeto
-   ```
+### Crear una categoría nueva
 
-2. Añadir objetos en el catálogo:
-   ```gdscript
-   var ropa_premium = Objeto_Higiene.new()
-   ropa_premium.nombre = "Ropa_Premium"
-   ropa_premium.precio = 150.0
-   ropa_premium.multiplicador = 0.95  # Reduce caída de higiene en 5%
-   ropa_premium.afecta_a = "Duchar"
-   ropa_premium.es_basico = false
-   Catalogo_Objetos["Ropa_Premium"] = ropa_premium
-   ```
-
-3. Actualizar lógica de multiplicadores en `Actividades_Necesidades_Basicas.gd` para soportar multiplicadores < 1.0 en efectos negativos (ver sección "Expansión Futura")
+Añade un diccionario a `Catalogo_Tienda.CATEGORIAS` con `id`, `nombre`, `icono`
+Lucide, `color`, `fondo` y `basico`, y registra sus muebles en `DATOS`. Si la
+categoría mejora una actividad, añádela al mapa `_CATEGORIA_POR_ACTIVIDAD` de
+`Actividades_Necesidades_Basicas.gd`; si aporta progreso, usa los campos
+`bonus_progreso_*` y las funciones de `Variables_Estaticas`.
 
 ## UI de la Tienda
 
-### Estructura de Nodos
+### Catálogo y estructura
 
-Añadida bajo el nodo raíz de `Escena_Principal.tscn`:
+`Catalogo_Tienda.DATOS` define **36 muebles en 6 categorías** (6 por categoría):
+Dormir, Comer, Duchar, Salón, Estudio y Cocina. Cada categoría es una ranura
+exclusiva (un mueble equipado por categoría). `Asegurar_Objetos_Basicos()`
+entrega el básico de cada ranura al empezar y a los saves antiguos.
 
 ```
-Tienda (Control, visible=false por defecto, z_index=5)
-├── Flecha_Atras (Button)         ← arriba-izq, vuelve al menú
-├── Titulo (Label)                ← "TIENDA"
-├── Categorias (Control)
-│   ├── Tab_Dormir (Button)       ← icono bed-double
-│   ├── Tab_Comer (Button)        ← icono utensils
-│   └── Tab_Duchar (Button)       ← icono shower-head
-├── Objetos_Dormir (Control)
-│   ├── Cama_Basica (Panel)
-│   ├── Cama_Premium (Panel)
-│   └── Cama_Lujo (Panel)
-├── Objetos_Comer (Control)
-│   └── Mesa_Basica (Panel)
-└── Objetos_Duchar (Control)
-    ├── Ducha_Basica (Panel)
-    └── Ducha_Premium (Panel)
+Tienda (Control, Tienda_Objetos.gd)
+├── Fondo_Seccion
+├── Flecha_Atras
+├── Titulo
+├── Categorias_Scroll/Categorias
+│   └── Tab_Dormir · Tab_Comer · Tab_Duchar · Tab_Salon · Tab_Estudio · Tab_Cocina · Tab_Ventajas
+├── Contenido_Scroll/Margen_Objetos/Rejilla_Objetos
+│   └── 36 tarjetas Panel generadas desde Catalogo_Tienda.DATOS
+└── Objetos_Ventajas (Tienda_Bienestar.gd)
 ```
 
-Cada `Panel` de objeto contiene:
-- `Imagen_Placeholder` (Panel) → vitrina con el fondo tintado, la píldora de nivel (`BÁSICO`/`PREMIUM`/`LUJO`) y un `Icono_Item` (`TextureRect`) con la ilustración propia del mueble
-- `Nombre`, `Precio`, `Multiplicador` (Labels)
-- `En_Uso` (Label, "✓ En uso") — visible solo si seleccionado
-- `Comprar`, `Vender`, `Elegir` (Buttons superpuestos en el mismo slot)
+Cada tarjeta (332×390) contiene:
+- `Imagen_Placeholder` con fondo tintado por categoría e `Icono_Item`
+  (`TextureRect`) con el PNG 512×512 del mueble.
+- `Tier_Pill` BÁSICO/PREMIUM/LUJO/ÉLITE.
+- `Nombre`, `Precio`, `Multiplicador` (efecto) y estado (`En uso`/`En propiedad`/`Te faltan N €`).
+- `Comprar`, `Elegir` y `Vender`, visibles según el estado.
+- Un toast confirma compras, ventas, equipado y errores de dinero.
 
-El layout final de las tarjetas se construye en `Script_Principal._Redisenar_Tienda()`: rejilla de 2 columnas (tarjeta 332×442), vitrina de 304×200 y una tarjeta única o la tercera de Dormir centradas.
-
-### Ilustraciones de los muebles
-
-Las tarjetas usan ilustraciones 2.5D propias en lugar de emojis o iconos Lucide:
-
-- **Originales:** JPG con fondo magenta plano en `Arte_Fuente/Tienda/Fuente/` (`Cama_Basica.jpg`, `Ducha_Premium.jpg`, …). Los prompts del lote están en `Arte_Fuente/Tienda/prompts.md`.
-- **Runtime:** PNG cuadrados 512×512 con alfa en `Imagenes/Tienda/Iconos/`, con el nombre exacto de la clave del catálogo (`Cama_Basica.png`, `Cama_Premium.png`, `Cama_Lujo.png`, `Mesa_Basica.png`, `Ducha_Basica.png`, `Ducha_Premium.png`).
-- **Pipeline:** `python3 tools/procesar_iconos_tienda.py [--preview preview.png]` recorta el magenta por croma, elimina el derrame del borde, limpia motas, recorta al contenido y centra cada objeto con un 5 % de margen transparente.
-- **Carga:** `Estilos_UI.icono_tienda(clave)` resuelve la ruta desde `Estilos_UI.RUTAS_ICONOS_TIENDA` y cachea la textura. Si falta el PNG, la tarjeta cae al icono Lucide anterior.
-
-### Estados Visuales del Panel
-
-Construidos en código (`Script_Principal._Inicializar_Tienda_Estilos()`):
-
-| Estado | StyleBox | Borde |
-|---|---|---|
-| No poseído | `_tienda_estilo_normal` | Gris (3px) |
-| Poseído, no seleccionado | `_tienda_estilo_owned` | Azul (4px) |
-| Seleccionado (en uso) | `_tienda_estilo_selected` | Verde (5px) |
-
-### Reglas de Visibilidad de Botones
-
-Calculadas en `_Actualizar_Card_Tienda(categoria, clave)`:
+### Reglas de visibilidad
 
 | Botón | Visible cuando |
 |---|---|
-| `Comprar` | NO poseído |
-| `Vender` | Poseído **y** NO seleccionado **y** existe otro poseído de misma categoría |
-| `Elegir` | Poseído **y** NO seleccionado |
-| `En_Uso` | Seleccionado |
+| `Comprar` | No poseído |
+| `Elegir` (Equipar) | Poseído y no seleccionado |
+| `Vender` | Poseído, no seleccionado y existe otro de la categoría |
+| `En uso` | Seleccionado |
 
-### Funciones de Visibilidad (`Gestionar_Visibilidad.gd`)
+### Ilustraciones
 
-```gdscript
-Visibilizar_Tienda(raiz)
-    # Oculta todo, deja visibles solo Fondo, Moneda, Dinero_Label, Alquiler_Button
-    # Muestra el Control Tienda y abre la categoría Dormir
+- **Originales:** JPG con fondo magenta o PNG recortado en
+  `Arte_Fuente/Tienda/Fuente/`. Las nuevas tandas se generan como láminas 2×2
+  (`Lamina_Salon.png`, `Lamina_Comer_1.png`, …) y se cortan con
+  `python3 tools/cortar_sprites.py <lamina> Arte_Fuente/Tienda/Fuente --grid 2x2 --names ...`.
+- **Runtime:** PNG 512×512 con alfa en `Imagenes/Tienda/Iconos/<clave>.png`
+  (36 ilustraciones).
+- **Pipeline:** `python3 tools/procesar_iconos_tienda.py --preview preview.png`
+  acepta JPG magenta (recorte por croma) y PNG con alfa, limpia motas, recorta
+  al contenido y centra con 5 % de margen.
+- **Carga:** `Estilos_UI.icono_tienda(clave)` resuelve la ruta automáticamente
+  (`res://Imagenes/Tienda/Iconos/<clave>.png`) y cachea; si falta, usa un icono
+  Lucide de respaldo.
 
-Mostrar_Categoria_Tienda(raiz, categoria)
-    # Oculta Objetos_Dormir/Comer/Duchar/Ventajas y muestra solo la categoría indicada
-```
+### Navegación
 
-### Handlers en `Script_Principal.gd`
-
-- `_on_tienda_button_pressed` — abre la tienda, refresca UI
-- `_on_tienda_flecha_atras_pressed` — `Quitar_Todo` (vuelve al menú)
-- `_on_tab_<dormir|comer|duchar|ventajas>_pressed` — switcher de categorías; Ventajas abre la pestaña Bienestar (anuncios + clínica)
-- 18 handlers `_on_<comprar|vender|elegir>_<objeto>_pressed` → delegan a 3 helpers (`_Tienda_Comprar/Vender/Elegir`) que llaman a `Actividades.Comprar_Objeto/Vender_Objeto/Seleccionar_Objeto`, refrescan UI y `Actualizar_Dinero()`
-
-### Limitaciones Actuales de la UI
-
-- La vitrina está pensada para las seis ilustraciones actuales; un objeto nuevo sin PNG usa el respaldo Lucide, pero conviene añadir su ilustración y su entrada en `Estilos_UI.RUTAS_ICONOS_TIENDA`.
-- Las tarjetas de muebles usan posiciones fijas en coordenadas de diseño 720×1280 (el dock inferior empieza en `alto - 92`). La pestaña Bienestar sí usa un `ScrollContainer` y se adapta a pantallas altas.
+- `Gestionar_Visibilidad.Visibilizar_Tienda()` muestra la tienda y abre Dormir.
+- `Mostrar_Categoria_Tienda()` delega en `Tienda_Objetos.Abrir_Categoria()`.
+- La tienda ya no es una pestaña de la barra superior: `Tienda_Button` sigue en
+  la escena solo por compatibilidad y `_Redisenar_Superior()` /
+  `Visibilizar_Lo_Basico()` lo mantienen oculto. El único acceso es el icono
+  `Boton_Tienda_Header` (x=460), junto al chip del dinero, que llama a
+  `_on_tienda_tab_pressed()`. Su flecha vuelve al inicio; desde Necesidades
+  regresa a Necesidades.
+- `Script_Principal` conserva los wrappers `_on_tab_<categoria>_pressed()` para
+  capturas de QA y abre/cierra la pantalla.
 
 ## Estado Actual
 
-- **Implementado:** 6 objetos en catálogo, 3 categorías (Dormir, Comer, Duchar), backend completo (compra/venta/selección), aplicación de multiplicador en Dormir/Duchar, guardado/carga, UI de tienda funcional con tabs y estados visuales, y tarjetas con ilustraciones 2.5D propias (Cama Básica/Premium/Lujo, Mesa Básica, Ducha Básica/Premium). La alimentación pasó a `Cocinar`/`Comer_Tupper`/`Comer_Basura`; las mesas ya no modulan comer.
-- **Planeado:** Efectos negativos (multiplicador < 1.0), más categorías de muebles (Ocio, Trabajo) e integración de una red de anuncios real (sin pagos ni moneda premium).
+- **Implementado:** 36 muebles, 6 categorías, rejilla desplazable, compra/venta/
+  equipado, multiplicadores en Dormir/Duchar/Comer/Salón, bonus de progreso de
+  Estudio, bonus de Cocina y calidad de tupper, migración de saves, toasts y 36
+  ilustraciones 2.5D. Tests en
+  `Funcionalidades/Economia/Sistema_Objetos_Muebles/Tests/test_tienda_objetos.gd`.
+- **Planeado:** efectos negativos (multiplicador < 1.0), más categorías (Deporte,
+  Oficina) y filtros/ordenación por precio o efecto.
 
 
 ---

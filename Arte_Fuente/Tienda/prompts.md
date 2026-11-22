@@ -129,3 +129,45 @@ Los seis JPG ya están procesados e integrados en el juego. Los originales viven
 4. Hoja de control opcional: `python3 tools/procesar_iconos_tienda.py --preview /tmp/tienda_iconos_preview.png`.
 
 Si se rehace algún icono, basta con guardar el JPG sobre el original y volver a ejecutar el script; Godot reimporta los PNG automáticamente.
+
+---
+
+## Ampliación del catálogo (36 muebles)
+
+La tienda creció de 6 a **36 muebles**: 6 categorías × 6 niveles. Para que el
+estilo siguiera siendo consistente, los 30 muebles nuevos se generaron en
+**láminas de 2×2** (o 2×1) con el mismo prompt maestro, usando como referencia
+`Cama_Lujo.jpg`, `Mesa_Basica.jpg` y `Ducha_Premium.jpg`.
+
+| Lámina | Contenido |
+|---|---|
+| `Lamina_Salon.png` | Sofá Básico, Esquinero, Chester y Relax |
+| `Lamina_Dormir_Comer_1.png` | Litera Compacta, Cama Nube, Cama Imperial y Mesa Familiar |
+| `Lamina_Comer_1.png` | Mesa de Roble, Mesa de Cristal, Isla de Desayuno y Mesa del Chef |
+| `Lamina_Duchar_1.png` | Bañera Clásica, Ducha Lluvia, Jacuzzi y Cabina Spa |
+| `Lamina_Salon_Estudio_1.png` | Sofá Modular, Salón Imperial, Escritorio Básico y Moderno |
+| `Lamina_Estudio_1.png` | Escritorio Ejecutivo, Mesa de Dibujo, Escritorio Gaming y Biblioteca |
+| `Lamina_Cocina_1.png` | Cocina Básica, Modular, con Isla y del Chef |
+| `Lamina_Cocina_2.png` | Cocina Pro y Cocina Industrial |
+
+### Reglas de las láminas
+
+- Fondo magenta `#FF00FF` plano de borde a borde, sin sombra de contacto.
+- Cuatro objetos separados en cuadrantes invisibles, con ≥8 % de margen
+  magenta alrededor y sin cruzar los ejes centrales.
+- Un solo objeto por celda, cámara 3/4 elevada, misma luz y paleta.
+- Nada de texto, logos, marcos, líneas de rejilla ni personas.
+
+### Corte y procesado
+
+```bash
+python3 tools/cortar_sprites.py Arte_Fuente/Tienda/Fuente/Lamina_Salon.png \
+  Arte_Fuente/Tienda/Fuente --grid 2x2 \
+  --names Sofa_Basico,Sofa_Esquinero,Sofa_Chester,Sofa_Relax
+
+python3 tools/procesar_iconos_tienda.py --preview /tmp/tienda_preview.png
+```
+
+`cortar_sprites.py` recorta cada celda; `procesar_iconos_tienda.py` acepta tanto
+JPG con magenta como PNG ya recortados con alfa, limpia motas, centra el objeto
+y guarda los 512×512 finales en `Imagenes/Tienda/Iconos/`.

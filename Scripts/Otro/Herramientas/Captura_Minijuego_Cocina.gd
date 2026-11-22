@@ -78,6 +78,53 @@ func _Capturar_Partida(nombre: String) -> void:
 	await get_tree().create_timer(1.6).timeout
 	await RenderingServer.frame_post_draw
 	_Guardar(vp, "minijuego_cocina_pase_nv3.png")
+
+	# Modales cartoon (pausa, confirmación de salida y ficha de nivel).
+	mini._Abrir_Modal_Pausa()
+	await get_tree().create_timer(0.6).timeout
+	await RenderingServer.frame_post_draw
+	_Guardar(vp, "modal_pausa.png")
+	mini._Reanudar_Partida()
+	await get_tree().process_frame
+
+	mini._Intentar_Volver_Al_Mapa()
+	await get_tree().create_timer(0.6).timeout
+	await RenderingServer.frame_post_draw
+	_Guardar(vp, "modal_confirmar_salida.png")
+	mini._Cancelar_Salida_Partida()
+	await get_tree().process_frame
+
+	mini._Abrir_Modal_Inicio(2)
+	await get_tree().create_timer(0.6).timeout
+	await RenderingServer.frame_post_draw
+	_Guardar(vp, "modal_nivel.png")
+	mini._modal_inicio.visible = false
+
+	# Modal de resultados con un resumen de ejemplo.
+	mini._Mostrar_Modal_Resultados({
+		"estrellas": 3,
+		"superado": true,
+		"ventas": 128,
+		"propinas_servicio": 14,
+		"coste_ingredientes": 32,
+		"coste_servicio": 12,
+		"coste_merma": 3,
+		"costes_totales": 47,
+		"beneficio_neto": 95,
+		"caja_ganada": 95,
+		"reparto_sim": 4.75,
+		"dinero_ganado": 11.4,
+		"recaudacion": 142,
+		"propinas_eur": 7.0,
+		"bono_estrellas_eur": 4.4,
+		"modo_practica": false,
+		"plus_nomina_activado": true,
+		"subio_rango": false
+	})
+	await get_tree().create_timer(0.8).timeout
+	await RenderingServer.frame_post_draw
+	_Guardar(vp, "modal_resultados.png")
+	mini._modal_resultados.visible = false
 	vp.queue_free()
 
 

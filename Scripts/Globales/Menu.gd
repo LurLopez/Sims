@@ -6,7 +6,6 @@ const CREADOR_PERSONAJE := preload("res://Scripts/GUI/Menu/Creador_Personaje.gd"
 @onready var contenido: Control = $Contenido
 
 var _boton_principal: Button
-var _boton_musica: Button
 var _boton_ajustes: Button
 var _panel_ajustes: Panel_Ajustes
 var _intro_en_curso := false
@@ -22,8 +21,6 @@ func _ready() -> void:
 	_construir_menu()
 	_animar_entrada()
 	get_viewport().size_changed.connect(_Ajustar_Pie)
-	if not Musica.silencio_cambiado.is_connected(_on_musica_silencio_cambiado):
-		Musica.silencio_cambiado.connect(_on_musica_silencio_cambiado)
 
 	if Variables_Dinamicas.Muerto:
 		_Mostrar_Game_Over()
@@ -41,11 +38,6 @@ func _Ajustar_Pie() -> void:
 		pie.position = Vector2(24, _Alto_Pantalla() - 64.0)
 
 
-func _alternar_musica() -> void:
-	Musica.Alternar_Silencio()
-	_Actualizar_Boton_Musica()
-
-
 func _abrir_ajustes() -> void:
 	if _intro_en_curso or _creador_abierto != null or _modal_confirmacion != null:
 		return
@@ -54,18 +46,6 @@ func _abrir_ajustes() -> void:
 	_panel_ajustes = Panel_Ajustes.new()
 	_panel_ajustes.cerrado.connect(func(): _panel_ajustes = null)
 	add_child(_panel_ajustes)
-
-
-func _on_musica_silencio_cambiado(_silenciado: bool) -> void:
-	_Actualizar_Boton_Musica()
-
-
-func _Actualizar_Boton_Musica() -> void:
-	if _boton_musica == null or not is_instance_valid(_boton_musica):
-		return
-	var silenciado := Musica.Esta_Silenciado()
-	_boton_musica.icon = Estilos_UI.icono("x" if silenciado else "volume-2")
-	_boton_musica.tooltip_text = "Activar la música" if silenciado else "Silenciar la música"
 
 
 func _construir_menu() -> void:
@@ -98,17 +78,12 @@ func _construir_menu() -> void:
 	version_pill.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	header.add_child(version_pill)
 
-	_boton_musica = Estilos_UI.boton_icono("volume-2", Estilos_UI.ROJO_BIT, 40)
-	_boton_musica.name = "Boton_Musica"
-	_boton_musica.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	_boton_musica.pressed.connect(_alternar_musica)
-	header.add_child(_boton_musica)
-	_Actualizar_Boton_Musica()
-
-	_boton_ajustes = Estilos_UI.boton_icono("settings-2", Estilos_UI.ROJO_BIT, 40)
+	# Un único botón de ajustes: desde el panel se regulan la música y los
+	# efectos de sonido.
+	_boton_ajustes = Estilos_UI.boton_icono("settings", Estilos_UI.ROJO_BIT, 40)
 	_boton_ajustes.name = "Boton_Ajustes"
 	_boton_ajustes.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	_boton_ajustes.tooltip_text = "Ajustes"
+	_boton_ajustes.tooltip_text = "Ajustes de sonido"
 	_boton_ajustes.pressed.connect(_abrir_ajustes)
 	header.add_child(_boton_ajustes)
 
@@ -638,6 +613,7 @@ func _reiniciar_partida_desde_cero() -> void:
 	Variables_Dinamicas.Valor_Inversion = 0.0
 	Variables_Dinamicas.Salud_Mental_Al_Invertir = 50
 	Variables_Dinamicas.Progreso_Inversion = 1
+	Sistema_Bolsa.Reiniciar_Estado()
 	Variables_Dinamicas.Cooldown_Trabajos = {}
 	Variables_Dinamicas.Estados_Temporales = {}
 	Variables_Dinamicas.Fiesta_Evento_Ocurrido = false

@@ -1,6 +1,6 @@
 extends Node
 
-# Captura de QA visual: abre la Tienda y guarda sus cuatro pestañas.
+# Captura de QA visual: abre la Tienda y guarda sus pestañas de muebles y Bienestar.
 # No forma parte del juego ni se ejecuta en producción.
 #
 # Uso:
@@ -34,9 +34,26 @@ func _ready() -> void:
 	escena._on_tab_duchar_pressed()
 	await get_tree().create_timer(0.4).timeout
 	await _Capturar("tienda_03_duchar.png")
+	escena._on_tab_salon_pressed()
+	await get_tree().create_timer(0.4).timeout
+	await _Capturar("tienda_04_salon.png")
+	escena._on_tab_estudio_pressed()
+	await get_tree().create_timer(0.4).timeout
+	await _Capturar("tienda_05_estudio.png")
+	escena._on_tab_cocina_pressed()
+	await get_tree().create_timer(0.4).timeout
+	await _Capturar("tienda_06_cocina.png")
 	escena._on_tab_ventajas_pressed()
 	await get_tree().create_timer(0.9).timeout
-	await _Capturar("tienda_04_ventajas.png")
+	await _Capturar("tienda_07_ventajas.png")
+	# Estado de muestra: un mueble equipado y varios en propiedad para revisar
+	# los botones Equipar/Vender y los estados de las tarjetas. No se guarda.
+	Variables_Dinamicas.Objetos_Poseidos["Cama_Nube"] = true
+	Variables_Dinamicas.Objetos_Poseidos["Cama_Imperial"] = true
+	Variables_Dinamicas.Objeto_Seleccionado["Dormir"] = "Cama_Nube"
+	escena._on_tab_dormir_pressed()
+	await get_tree().create_timer(0.4).timeout
+	await _Capturar("tienda_08_estados.png")
 	print("Capturas de tienda guardadas en ", ProjectSettings.globalize_path(DIR_SALIDA))
 	get_tree().quit()
 

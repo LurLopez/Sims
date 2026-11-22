@@ -51,14 +51,14 @@ APK no lee ese MP3 ni crea el segundo reproductor con stream.
 - `Minijuego_Cocina.gd` llama a `Musica.Reproducir_Minijuego()` en `_ready()` y a
   `Musica.Reproducir_General()` en `_exit_tree()`, de modo que cualquier salida
   del minijuego (botón, muerte del Sim o cierre de escena) restaura la general.
-- Botón de altavoz en el menú principal y en la cabecera de la escena principal
-  (`Boton_Musica` / `Boton_Musica_Header`): alterna el silencio y actualiza el
-  icono (`volume-2` / `x`).
-- Botón de engranaje (`Boton_Ajustes` / `Boton_Ajustes_Header`): abre
-  `Panel_Ajustes`, donde se regulan por separado el volumen de la música y el de
-  los efectos de sonido (bus `SFX`), con silencio y restablecimiento. El panel
-  mantiene el altavoz rápido de la cabecera sincronizado mediante
-  `Ajustes.silencio_musica_cambiado` → `Musica.silencio_cambiado`.
+- El audio se controla con un único botón de ajustes: engranaje `Boton_Ajustes`
+  (menú) / `Boton_Ajustes_Header` (cabecera de la escena principal, icono
+  `settings`). Abre `Panel_Ajustes`, donde se regulan por separado el volumen y
+  el silencio de la música y de los efectos (bus `SFX`). Ya no hay botones de
+  altavoz en el menú ni en la cabecera, y se eliminaron
+  `_on_boton_musica_pressed`, `_on_musica_silencio_cambiado`,
+  `_Actualizar_Boton_Musica` (en `Script_Principal.gd` y `Menu.gd`) y la
+  conexión a `Musica.silencio_cambiado`.
 - Los efectos del minijuego (`Sonidos_Cocina.gd`) usan el bus `SFX`, no el de
   música; silenciar uno no afecta al otro.
 

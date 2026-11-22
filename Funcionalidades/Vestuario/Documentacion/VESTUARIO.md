@@ -92,7 +92,7 @@ deshabilitado.
 | `Atuendo_Chef_Gala` | Atuendo de Chef de Gala | `gala` | 6 | +20% salario en hostelería y -5% Higiene |
 | `Traje_Estrella_Michelin` | Traje Estrella Michelin | `michelin` | 9 | +30% salario, -5% Higiene y +25% propinas |
 
-Los rangos se ganan superando niveles en `Minijuego_Cocina` (cada 5 niveles).
+Los rangos se ganan reuniendo estrellas en `Minijuego_Cocina` (cada 20 ★).
 Las prendas bloqueadas aparecen en el carrusel con candado y el rango necesario;
 se pueden previsualizar al tocar su tarjeta, pero no se pueden equipar.
 
@@ -105,9 +105,9 @@ se pueden previsualizar al tocar su tarjeta, pero no se pueden equipar.
 Cada `Objeto_Ropa` declara su `categoria`. El filtro `Tienda` es especial: muestra
 todas las prendas con `desbloqueo == "tienda"`, estén compradas o no. Al cambiar
 de filtro se reconstruye el carrusel, se actualiza el contador («X/Y en tu
-armario») y el consejo inferior cambia para explicar la categoría. Si la prenda
-seleccionada no pertenece al filtro, se intenta seleccionar la primera prenda
-disponible o comprable.
+armario») y, en el filtro `Cocina`, aparece la tarjeta de Maestría Culinaria. Si
+la prenda seleccionada no pertenece al filtro, se intenta seleccionar la primera
+prenda disponible o comprable.
 
 ## Modelo visual
 
@@ -185,8 +185,8 @@ de la apariencia que consume el renderizador.
 - **Cabecera:** botón volver, título «Vestuario», subtítulo y píldora de saldo.
 - **Tarjeta de vista previa:** escenario con degradado, rayos, halo y sombra de
   suelo; personaje `cuerpo_completo` animado; columna con categoría, nombre,
-  píldora `EQUIPADO`/`EN PRUEBA`/`EN TIENDA`, efecto, chips de bonificaciones,
-  desbloqueo/precio y barra de Maestría Culinaria.
+  píldora `EQUIPADO`/`EN PRUEBA`/`EN TIENDA`, efecto, chips de bonificaciones y
+  desbloqueo/precio.
 - **Colección:** contador, flechas de carrusel y filtros por categoría.
 - **Tarjetas:** miniatura circular del Sim con esa prenda, nombre, estado
   (`Equipado`/`Disponible`/`En tienda`/`Rango N`), check verde, candado o
@@ -195,7 +195,9 @@ de la apariencia que consume el renderizador.
   pero no se pueden equipar.
 - **Barra inferior fija:** CTA dinámico `Equipar atuendo`, `Comprar por X €`,
   `Faltan X €` o `Atuendo equipado`.
-- **Consejo inferior:** cambia según el filtro para explicar la categoría.
+- **Tarjeta de Maestría Culinaria (solo filtro Cocina):** muestra el rango
+  actual (`Rango X/9 · Nombre`), el progreso de estrellas hacia el siguiente
+  rango y el aviso «Gana estrellas en el minijuego de Cocina para ascender de rango».
 
 ### API pública (tests y otras pantallas)
 

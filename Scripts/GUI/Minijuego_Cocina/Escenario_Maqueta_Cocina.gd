@@ -28,7 +28,7 @@ func _ready() -> void:
 
 func _Aplicar_Formato_Horizontal() -> void:
 	_formato_aplicado = true
-	if DisplayServer.get_name() in ["android", "ios"]:
+	if DisplayServer.get_name().to_lower() in ["android", "ios"]:
 		DisplayServer.screen_set_orientation(DisplayServer.SCREEN_LANDSCAPE)
 	var win := get_window()
 	if win != null:
@@ -39,7 +39,7 @@ func _Aplicar_Formato_Horizontal() -> void:
 
 func _Restaurar_Formato_Vertical() -> void:
 	_formato_aplicado = false
-	if DisplayServer.get_name() in ["android", "ios"]:
+	if DisplayServer.get_name().to_lower() in ["android", "ios"]:
 		DisplayServer.screen_set_orientation(DisplayServer.SCREEN_PORTRAIT)
 	var win := get_window()
 	if win != null:

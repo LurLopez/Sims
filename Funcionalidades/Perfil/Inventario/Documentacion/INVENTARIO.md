@@ -162,7 +162,7 @@ Los libros desbloqueados forman parte del objeto `Carrera`, que se guarda dentro
 | Primer libro automático | Al abrir la pestaña se carga `libros[0]` sin que el usuario pulse nada |
 | Botones dinámicos | Se recrean cada vez que se abre la pestaña (`queue_free` + recrear) |
 | Ruta de contenido hardcoded | Solo soporta una carrera actualmente; generalizar si se añaden más |
-| Relación con libros_button | `libros_button` (botón dinámico en pantalla principal) abre `Lector_Libros` como popup; es independiente del inventario del perfil |
+| Relación con libros_button | La pantalla Carrera abre `Carreras/UI/Lector_Libros.gd` como overlay modal con pestañas por año; es independiente del inventario del perfil |
 
 ---
 

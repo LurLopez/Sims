@@ -28,6 +28,9 @@ var _cerrando := false
 
 
 func _ready() -> void:
+	# Los barridos de visibilidad de las pantallas (cambio de pestaña, volver
+	# al inicio, etc.) no deben ocultar un modal abierto.
+	add_to_group(Gestionar_Visibilidad.GRUPO_OVERLAY_MODAL)
 	layer = 120
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_Construir_UI()
@@ -133,7 +136,7 @@ func _Crear_Banda() -> Control:
 	fila.add_theme_constant_override("separation", 10)
 	banda.add_child(fila)
 
-	fila.add_child(Estilos_UI.icono_rect("settings-2", 22, Color.WHITE))
+	fila.add_child(Estilos_UI.icono_rect("settings", 22, Color.WHITE))
 	fila.add_child(Estilos_UI.titulo("AJUSTES", 19, Color.WHITE))
 	return banda
 

@@ -75,10 +75,13 @@ func Ejecutar_Minuto_Cocinar() -> Dictionary:
 
 func Crear_Tupper() -> Dictionary:
 	var nuevo_id: int = _Siguiente_Id_Tupper()
+	# Las cocinas de gama alta mejoran la calidad base del tupper.
+	var bonus_calidad: float = Variables_Estaticas.Obtener_Bonus_Calidad_Tupper_Objeto()
+	var calidad: int = int(round(float(Variables_Dinamicas.Progreso_Cocina) * (1.0 + bonus_calidad)))
 	var tupper: Dictionary = {
 		"id": nuevo_id,
 		"porcentaje_restante": 100.0,
-		"calidad": clampi(Variables_Dinamicas.Progreso_Cocina, 1, 100),
+		"calidad": clampi(calidad, 1, 100),
 		"minuto_creacion": int(Variables_Dinamicas.Minute),
 		"minuto_caducidad": int(Variables_Dinamicas.Minute) + Variables_Estaticas.Obtener_Minutos_Caducidad_Tupper()
 	}

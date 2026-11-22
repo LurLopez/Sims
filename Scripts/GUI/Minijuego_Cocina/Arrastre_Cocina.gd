@@ -18,6 +18,10 @@ signal arrastre_movido(payload: Dictionary, pos: Vector2)
 signal arrastre_soltado(payload: Dictionary, destino: Dictionary, pos: Vector2)
 signal arrastre_cancelado(payload: Dictionary)
 signal origen_tocado(payload: Dictionary, origen: Dictionary)
+# Zonas que solo responden al toque (clientes, controles del pase...). Se usan
+# cuando no hay un origen arrastrable debajo del dedo, para que un toque corto
+# haga la acción principal sin obligar a arrastrar.
+signal zona_tocada(datos: Dictionary)
 
 const UMBRAL_ARRASTRE: float = 9.0
 
@@ -25,6 +29,8 @@ var habilitado: bool = true
 var destino_actual: Dictionary = {}
 
 var _origenes: Array[Dictionary] = []
+var _zonas_toque: Array[Dictionary] = []
+var _toque: Dictionary = {}
 var _destinos: Array[Dictionary] = []
 var _presionando: bool = false
 var _activo: bool = false
@@ -53,6 +59,8 @@ func _ready() -> void:
 
 func limpiar_registros() -> void:
 	_origenes.clear()
+	_zonas_toque.clear()
+	_toque = {}
 	_destinos.clear()
 	destino_actual = {}
 
@@ -61,16 +69,45 @@ func registrar_origen(rect: Rect2, datos: Dictionary, obtener: Callable) -> void
 	_origenes.append({"rect": rect, "datos": datos, "obtener": obtener})
 
 
+func registrar_toque(rect: Rect2, datos: Dictionary) -> void:
+	_zonas_toque.append({"rect": rect, "datos": datos})
+
+
 func registrar_destino(rect: Rect2, datos: Dictionary, acepta: Callable) -> void:
 	_destinos.append({"rect": rect, "datos": datos, "acepta": acepta})
 
 
-func _origen_bajo(pos: Vector2) -> Dictionary:
+func _origenes_bajo(pos: Vector2) -> Array[Dictionary]:
+	var candidatos: Array[Dictionary] = []
 	for i in range(_origenes.size() - 1, -1, -1):
 		var o: Dictionary = _origenes[i]
 		if (o["rect"] as Rect2).has_point(pos):
-			return o
-	return {}
+			candidatos.append(o)
+	if candidatos.size() > 1:
+		candidatos.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+			var da: float = (a["rect"] as Rect2).get_center().distance_squared_to(pos)
+			var db: float = (b["rect"] as Rect2).get_center().distance_squared_to(pos)
+			return da < db)
+	return candidatos
+
+
+func _origen_bajo(pos: Vector2) -> Dictionary:
+	var candidatos := _origenes_bajo(pos)
+	return candidatos[0] if not candidatos.is_empty() else {}
+
+
+func _toque_bajo(pos: Vector2) -> Dictionary:
+	var mejor: Dictionary = {}
+	var mejor_dist: float = INF
+	for i in range(_zonas_toque.size() - 1, -1, -1):
+		var z: Dictionary = _zonas_toque[i]
+		var r: Rect2 = z["rect"]
+		if r.has_point(pos):
+			var dist: float = r.get_center().distance_squared_to(pos)
+			if dist < mejor_dist:
+				mejor_dist = dist
+				mejor = z
+	return mejor
 
 
 func _destino_bajo(pos: Vector2) -> Dictionary:
@@ -140,21 +177,27 @@ func _Iniciar_Pulsacion(pos: Vector2) -> void:
 		_pos = pos
 		_pos_anterior = pos
 		_velocidad = Vector2.ZERO
-		var origen: Dictionary = _origen_bajo(pos)
-		if origen.is_empty():
-			return
-		var obtener: Callable = origen["obtener"]
-		var info: Dictionary = obtener.call(origen["datos"])
-		if info.is_empty() or not info.has("payload"):
-			return
-		_presionando = true
-		_origen = origen
-		_payload = info["payload"]
-		_textura = info.get("textura", null)
-		_dibujante = info.get("dibujar", Callable())
-		_tam_icono = info.get("tam", Vector2(92, 92))
-		_inclinacion = 0.0
-		get_viewport().set_input_as_handled()
+		_toque = {}
+		for origen in _origenes_bajo(pos):
+			var obtener: Callable = origen["obtener"]
+			var info: Dictionary = obtener.call(origen["datos"])
+			if not info.is_empty() and info.has("payload"):
+				_presionando = true
+				_origen = origen
+				_payload = info["payload"]
+				_textura = info.get("textura", null)
+				_dibujante = info.get("dibujar", Callable())
+				_tam_icono = info.get("tam", Vector2(92, 92))
+				_inclinacion = 0.0
+				get_viewport().set_input_as_handled()
+				return
+		# Sin origen arrastrable: si hay una zona de toque, recordarla para
+		# disparar su acción al levantar el dedo. Nunca activa un arrastre.
+		var zona: Dictionary = _toque_bajo(pos)
+		if not zona.is_empty():
+			_toque = zona
+			_presionando = true
+			get_viewport().set_input_as_handled()
 
 
 func _Mover(pos: Vector2) -> void:
@@ -171,6 +214,12 @@ func _Mover(pos: Vector2) -> void:
 	if not _presionando:
 		return
 	if pos.distance_to(_pos_inicial) < UMBRAL_ARRASTRE:
+		return
+	# Si era una zona de solo toque, un movimiento la cancela: el jugador
+	# quería desplazarse, no activar la acción.
+	if not _toque.is_empty():
+		_presionando = false
+		_toque = {}
 		return
 	# Activar arrastre
 	_activo = true
@@ -189,6 +238,8 @@ func _Soltar(pos: Vector2) -> void:
 		_pos = pos
 		var destino: Dictionary = _destino_bajo(pos)
 		arrastre_soltado.emit(_payload, destino, pos)
+	elif not _toque.is_empty():
+		zona_tocada.emit(_toque.get("datos", {}))
 	else:
 		origen_tocado.emit(_payload, _origen)
 	_Limpiar()
@@ -208,6 +259,7 @@ func _Limpiar() -> void:
 	_textura = null
 	_dibujante = Callable()
 	_origen = {}
+	_toque = {}
 	destino_actual = {}
 	_velocidad = Vector2.ZERO
 	_inclinacion = 0.0

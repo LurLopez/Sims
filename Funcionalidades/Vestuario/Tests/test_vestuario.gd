@@ -335,6 +335,10 @@ func test_06c_filtros_por_categoria() -> void:
 	pantalla.abrir()
 	await get_tree().process_frame
 
+	var card_maestria := pantalla.find_child("Card_Maestria_Cocina", true, false) as PanelContainer
+	assert_not_null(card_maestria, "Existe la tarjeta de Maestría Culinaria")
+	assert_false(card_maestria.visible, "La maestría solo se muestra en el filtro Cocina")
+
 	assert_eq(pantalla.obtener_tarjetas().size(), Sistema_Cocina.ORDEN_ROPA.size())
 	pantalla._Cambiar_Filtro("deporte")
 	await get_tree().process_frame
@@ -349,6 +353,19 @@ func test_06c_filtros_por_categoria() -> void:
 	pantalla._Cambiar_Filtro("cocina")
 	await get_tree().process_frame
 	assert_eq(pantalla.obtener_tarjetas().size(), 4)
+
+	assert_true(card_maestria.visible, "El filtro Cocina muestra el rango de maestría")
+	var lbl_rango := pantalla.find_child("Lbl_Maestria_Rango", true, false) as Label
+	assert_not_null(lbl_rango)
+	assert_true(lbl_rango.text.begins_with("Rango "), "Se indica el rango actual")
+	var lbl_texto := pantalla.find_child("Lbl_Maestria_Texto", true, false) as Label
+	assert_not_null(lbl_texto)
+	assert_string_contains(lbl_texto.text.to_lower(), "minijuego",
+		"Se invita a jugar el minijuego para ascender")
+
+	pantalla._Cambiar_Filtro("todo")
+	await get_tree().process_frame
+	assert_false(card_maestria.visible, "Al salir de Cocina se oculta la maestría")
 
 
 func test_07_escena_principal_sin_ropa_en_apuntes() -> void:
