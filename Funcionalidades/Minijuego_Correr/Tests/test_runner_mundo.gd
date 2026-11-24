@@ -126,6 +126,64 @@ func test_choque_frontal_tropieza_y_segundo_choque_cae() -> void:
 	assert_true(sim.esta_reanimable())
 
 
+func test_choque_frontal_con_tren_largo_termina_la_partida() -> void:
+	var sim := Runner_Simulacion.new()
+	sim.reiniciar(false)
+	sim.anadir_obstaculo("TREN_LARGO", 0, -0.5, 0)
+	var ev: Dictionary = sim.avanzar(0.02, false)
+	assert_true(bool(ev["caido"]), "Un tren de lleno debe tumbar al Sim al instante")
+	assert_true(bool(ev["choco"]))
+	assert_false(bool(ev["tropiezo"]), "Un tren no debe dejar al Sim perdiendo el equilibrio")
+	assert_false(sim.esta_vivo())
+	assert_true(sim.esta_reanimable())
+	assert_eq(str(sim.jugador["tipo_caida"]), "TREN_LARGO")
+
+
+func test_choque_frontal_con_tren_movil_termina_la_partida() -> void:
+	var sim := Runner_Simulacion.new()
+	sim.reiniciar(false)
+	sim.anadir_obstaculo("TREN_MOVIL", 0, -0.5, 1, 6.0)
+	var ev: Dictionary = sim.avanzar(0.02, false)
+	assert_true(bool(ev["caido"]))
+	assert_false(bool(ev["tropiezo"]))
+	assert_false(sim.esta_vivo())
+	assert_eq(str(sim.jugador["tipo_caida"]), "TREN_MOVIL")
+
+
+func test_choque_lateral_con_tren_termina_la_partida() -> void:
+	var sim := Runner_Simulacion.new()
+	sim.reiniciar(false)
+	sim.anadir_obstaculo("TREN_LARGO", 1, 0.0, 0)
+	assert_eq(sim.aplicar_comando("DERECHA"), "TROPIEZO_CAIDA")
+	assert_false(sim.esta_vivo())
+	assert_true(sim.esta_reanimable())
+
+
+func test_tabla_salva_de_un_tren_y_se_consume() -> void:
+	var sim := Runner_Simulacion.new()
+	sim.reiniciar(false)
+	assert_eq(sim.aplicar_comando("TABLA"), "TABLA")
+	sim.anadir_obstaculo("TREN_LARGO", 0, -0.5, 0)
+	var ev: Dictionary = sim.avanzar(0.02, false)
+	assert_true(bool(ev["tabla_salvo"]))
+	assert_false(bool(ev["caido"]))
+	assert_true(sim.esta_vivo())
+	assert_almost_eq(float(sim.powerups["tabla"]), 0.0, 0.01)
+
+
+func test_tabla_absorbe_choque_lateral_y_permite_el_cambio() -> void:
+	var sim := Runner_Simulacion.new()
+	sim.reiniciar(false)
+	assert_eq(sim.aplicar_comando("TABLA"), "TABLA")
+	sim.anadir_obstaculo("TREN_LARGO", 1, 0.0, 0)
+	assert_eq(sim.aplicar_comando("DERECHA"), "CARRIL")
+	assert_eq(int(sim.jugador["carril_objetivo"]), 1)
+	assert_true(sim.esta_vivo())
+	var ev: Dictionary = sim.avanzar(0.02, false)
+	assert_true(bool(ev["tabla_salvo"]))
+	assert_almost_eq(float(sim.powerups["tabla"]), 0.0, 0.01)
+
+
 func test_tren_movil_avanza_con_velocidad_relativa() -> void:
 	var sim := Runner_Simulacion.new()
 	sim.reiniciar(false)
@@ -243,6 +301,101 @@ func test_generador_puede_crear_trenes_en_movimiento() -> void:
 				trenes += 1
 		sim.obstaculos.clear()
 	assert_gt(trenes, 0, "Las oleadas deben incluir trenes en movimiento")
+
+
+func test_generador_no_amontona_trenes_moviles() -> void:
+	var sim := Runner_Simulacion.new()
+	sim.configurar_semilla(2026)
+	sim.reiniciar(false)
+	sim.distancia = 800.0
+	var max_activos: int = 0
+	for _i in range(120):
+		sim.generar_oleada(-100.0)
+		var activos: int = 0
+		for obs in sim.obstaculos:
+			if str(obs["tipo"]) == "TREN_MOVIL":
+				activos += 1
+		max_activos = maxi(max_activos, activos)
+		var quedan: Array[Dictionary] = []
+		for obs in sim.obstaculos:
+			if str(obs["tipo"]) == "TREN_MOVIL":
+				quedan.append(obs)
+		sim.obstaculos = quedan
+	assert_lte(max_activos, Runner_Simulacion.MAX_TRENES_MOVILES_ACTIVOS,
+		"No debe haber más de un tren móvil activo a la vez")
+
+
+func test_oleada_espera_si_los_tres_carriles_estan_ocupados() -> void:
+	var sim := Runner_Simulacion.new()
+	sim.reiniciar(false)
+	for carril in [-1, 0, 1]:
+		sim.anadir_obstaculo("TREN_LARGO", carril, -120.0)
+	var antes: int = sim.obstaculos.size()
+	assert_false(sim.generar_oleada(-115.0), "La oleada debe esperar a que se libere un carril")
+	assert_eq(sim.obstaculos.size(), antes, "No debe añadir obstáculos sin salida")
+
+
+func test_oleada_con_dos_carriles_ocupados_usa_el_libre() -> void:
+	var sim := Runner_Simulacion.new()
+	sim.reiniciar(false)
+	sim.anadir_obstaculo("TREN_LARGO", -1, -120.0)
+	sim.anadir_obstaculo("TREN_LARGO", 0, -120.0)
+	var id_antes: int = sim._siguiente_id
+	assert_true(sim.generar_oleada(-115.0))
+	for obs in sim.obstaculos:
+		if int(obs["id"]) < id_antes:
+			continue
+		if int(obs["carril"]) != 1:
+			continue
+		# En el único carril libre solo puede haber algo saltable, rodable o con rampa.
+		if not bool(obs["tiene_rampa"]):
+			assert_true(str(obs["tipo"]) == "VALLA_BAJA" or str(obs["tipo"]) == "ARCO_ALTO",
+				"El carril libre no puede llevar un muro alto sin rampa")
+
+
+func test_brecha_entre_oleadas_cubre_un_tren_largo() -> void:
+	var sim := Runner_Simulacion.new()
+	sim.reiniciar(false)
+	sim._largo_ultima_oleada = Runner_Simulacion.LARGO_TREN_LARGO
+	assert_gte(sim._calcular_brecha_oleada(), Runner_Simulacion.LARGO_TREN_LARGO + Runner_Simulacion.MARGEN_ENTRE_OLEADAS)
+
+
+func test_simulacion_larga_no_cierra_los_tres_carriles() -> void:
+	for semilla in [7, 21, 99]:
+		var sim := Runner_Simulacion.new()
+		sim.configurar_semilla(semilla)
+		sim.reiniciar(false)
+		var t: float = 0.0
+		while t < 180.0:
+			sim.jugador["invulnerable"] = 999.0
+			sim.avanzar(0.05, true)
+			t += 0.05
+
+			var moviles: int = 0
+			for obs in sim.obstaculos:
+				if str(obs["tipo"]) == "TREN_MOVIL":
+					moviles += 1
+			assert_lte(moviles, Runner_Simulacion.MAX_TRENES_MOVILES_ACTIVOS,
+				"Semilla %d a %.0f m: demasiados trenes móviles activos" % [semilla, sim.distancia])
+
+			var bloqueados: int = 0
+			var hay_rampa: bool = false
+			for carril in [-1, 0, 1]:
+				for obs in sim.obstaculos:
+					if bool(obs.get("golpeado", false)) or int(obs["carril"]) != carril:
+						continue
+					var tipo: String = str(obs["tipo"])
+					if tipo != "SETO_ALTO" and tipo != "PASARELA_RAMPA" and tipo != "TREN_LARGO" and tipo != "TREN_LARGO_RAMPA" and tipo != "TREN_MOVIL":
+						continue
+					var medio: float = float(obs["largo"]) * 0.5
+					if float(obs["z"]) + medio > -0.6 and float(obs["z"]) - medio < 0.6:
+						bloqueados += 1
+						if bool(obs["tiene_rampa"]):
+							hay_rampa = true
+						break
+			if bloqueados >= 3:
+				assert_true(hay_rampa,
+					"Semilla %d a %.0f m: muro de tres carriles sin rampa" % [semilla, sim.distancia])
 
 
 func test_tren_largo_ocupa_tres_vagones_y_se_puede_coronar() -> void:

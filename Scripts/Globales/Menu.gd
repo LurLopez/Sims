@@ -607,6 +607,8 @@ func _reiniciar_partida_desde_cero() -> void:
 		"resultado_puesto": -1, "resultado_procesado": false
 	}
 	Variables_Dinamicas.Carrera_Futbol = Variables_Dinamicas.Carrera_Futbol_Por_Defecto()
+	Variables_Dinamicas.Manager_Estado = Variables_Dinamicas.Manager_Estado_Por_Defecto()
+	Sistema_Manager.Asegurar_Desbloqueo_QA()
 	Variables_Dinamicas.Mensajes = []
 	Variables_Dinamicas.Esta_Invirtiendo = false
 	Variables_Dinamicas.Dinero_Invertido = 0.0

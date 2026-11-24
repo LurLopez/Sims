@@ -153,6 +153,9 @@ func load_game():
 		# Carrera de futbolista — fallback y normalización para saves antiguos.
 		Variables_Dinamicas.Carrera_Futbol = _Normalizar_Carrera_Futbol(
 			game_data.get("Carrera_Futbol", {}))
+		# «El Mánager» — retrocompatible: los saves antiguos cargan bloqueados.
+		Variables_Dinamicas.Manager_Estado = Sistema_Manager.Normalizar_Estado(
+			game_data.get("Manager_Estado", {}))
 		# Minijuego de cocina — fallback y merge recursivo para saves antiguos.
 		Variables_Dinamicas.Cocina_Estado = _Normalizar_Cocina_Estado(
 			game_data.get("Cocina_Estado", {}))
@@ -325,6 +328,7 @@ func game_data_func():
 		"Inversion_Max_Caida": Variables_Dinamicas.Inversion_Max_Caida,
 		"Cooldown_Trabajos": Variables_Dinamicas.Cooldown_Trabajos,
 		"Carrera_Futbol": Variables_Dinamicas.Carrera_Futbol.duplicate(true),
+		"Manager_Estado": Variables_Dinamicas.Manager_Estado,
 		"Estados_Temporales": _Estados_Temporales_Serializables(),
 		"Fiesta_Evento_Ocurrido": Variables_Dinamicas.Fiesta_Evento_Ocurrido,
 		"Progreso_Cocina": Variables_Dinamicas.Progreso_Cocina,

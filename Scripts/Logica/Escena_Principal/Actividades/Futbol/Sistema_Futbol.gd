@@ -90,6 +90,7 @@ func Obtener_Estado_Legible() -> String:
 		"Despedido": return "Despedido"
 		"Ascenso_Pendiente": return "Ascenso pendiente"
 		"Rescindido": return "Contrato rescindido"
+		"Retirado": return "Retirado"
 		_: return estado.replace("_", " ")
 
 
@@ -174,6 +175,9 @@ func Hay_Conflicto_Fichaje() -> bool:
 func Fichar(despedir_trabajo: bool = false) -> Dictionary:
 	if Carrera_Activa():
 		return {"fichado": false, "requiere_conflicto": false, "motivo": "Ya tienes un contrato en vigor."}
+	if str(Variables_Dinamicas.Carrera_Futbol.get("Estado_Temporada", "")) == "Retirado":
+		return {"fichado": false, "requiere_conflicto": false,
+			"motivo": "Te has retirado como futbolista. Tu futuro está en los banquillos."}
 
 	var requisitos: Dictionary = Cumple_Requisitos_Fichaje()
 	if not bool(requisitos.get("cumple", false)):
@@ -238,6 +242,41 @@ func Rescindir_Contrato(descripcion: String = "") -> void:
 
 func Rescindir_Por_Trabajo() -> void:
 	Rescindir_Contrato("Has dejado el fútbol para centrarte en tu nuevo empleo.")
+
+
+# ------------------------------------------------------------------
+# Retirada como futbolista (desbloqueo de «El Mánager»)
+# ------------------------------------------------------------------
+
+func Puede_Retirarse() -> bool:
+	# Se puede colgar las botas con 32 años o tras tres temporadas completas.
+	if not Carrera_Activa():
+		return false
+	var edad: int = Variables_Estaticas.Calcular_Edad()
+	var temporadas: int = int(Variables_Dinamicas.Carrera_Futbol.get("Temporadas_Jugadas", 0))
+	return edad >= 32 or temporadas >= 3
+
+
+func Retirarse_Como_Jugador() -> void:
+	if not Carrera_Activa():
+		return
+	_Limpiar_Bloques_Futbol(_Minuto_Abs())
+	var est: Dictionary = Variables_Dinamicas.Carrera_Futbol
+	est["Activo"] = false
+	est["Estado_Temporada"] = "Retirado"
+	est["Entrenamiento_En_Curso"] = false
+	est["Entrenamiento_Fin_Abs"] = -1
+	est["Partido_En_Curso"] = false
+	est["Partido_Jornada"] = -1
+	est["Partido_Convocado"] = false
+	est["Partido_Decisivo"] = false
+	est["Partido_Fin_Abs"] = -1
+	est["Conflicto_Ascenso_Pendiente"] = false
+	est["Division_Ascenso_Pendiente"] = 0
+	_Mensaje("Retirada como futbolista",
+		"Has colgado las botas después de %d partidos. Tu legado te abre las puertas del banquillo: ya puedes fundar tu propio club en «El Mánager»." \
+			% int(est.get("Partidos_Jugados", 0)))
+	Guardar_Variables_Dinamicas.save_game()
 
 
 func Cambiar_Asistencia(clave: String, valor: bool) -> bool:

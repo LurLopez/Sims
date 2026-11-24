@@ -729,6 +729,9 @@ func Actualizar_Horario(minutos_a_procesar: int) -> bool:
 		# salario y cambio de temporada. Se resuelve antes de ejecutar la celda
 		# para que el bloque recién programado ya sea el que se ejecute.
 		Sistema_Futbol.Tick_Minuto()
+		# «El Mánager»: recuperación de energía, envejecimiento, nóminas,
+		# mercado IA y calendario de jornadas. O(1) si el modo no está activo.
+		Sistema_Manager.Tick_Minuto()
 		var celda = Variables_Dinamicas.Matriz_Jugador[Variables_Dinamicas.Minute_Minute][Variables_Dinamicas.Minute_Day]
 		var cd_pendiente: Dictionary = Variables_Dinamicas.Carrera_Deportiva_Pendiente
 		if cd_pendiente.get("inscrito", false) and cd_pendiente.get("resultado_puesto", -1) == -1:

@@ -113,6 +113,45 @@ var Carrera_Futbol: Dictionary = CARRERA_FUTBOL_BASE.duplicate(true)
 func Carrera_Futbol_Por_Defecto() -> Dictionary:
 	return CARRERA_FUTBOL_BASE.duplicate(true)
 
+# Sistema «El Mánager» (Fase 2 — Modo Club tipo Top Eleven).
+# Ecosistema cerrado de 16 clubes en 4 divisiones; el club del usuario se
+# funda en la 3ª Regional. La base se duplica siempre para no compartir
+# referencias entre partidas.
+const MANAGER_ESTADO_BASE: Dictionary = {
+	"Version": 1,
+	"Desbloqueado": false,
+	"Titulo_Entrenador": false,
+	"Retirado_Como_Jugador": false,
+	"Activo": false,
+	"Reputacion": 25,
+	"Club_Usuario_Id": "club_usr",
+	"Temporada": 1,
+	"Semana_Tick": -1,
+	"Dia_Tick": -1,
+	"Partido_Pendiente": false,
+	"Jornada_Actual": 0,
+	"Partido_Local_Id": "",
+	"Partido_Visitante_Id": "",
+	"Partido_Es_Local": false,
+	"Partido_Jornada": 0,
+	"Ultima_Jornada_Iniciada": -1,
+	"Ultimo_Dia_Nomina": -1,
+	"Ultimos_Resultados": [],
+	"Clubes": {},
+	"Divisiones": {
+		"1": [],
+		"2": [],
+		"3": [],
+		"4": []
+	},
+	"Historial": []
+}
+var Manager_Estado: Dictionary = MANAGER_ESTADO_BASE.duplicate(true)
+
+
+func Manager_Estado_Por_Defecto() -> Dictionary:
+	return MANAGER_ESTADO_BASE.duplicate(true)
+
 # Sistema de Minijuego de Cocina (gestión de pedidos).
 const COCINA_ESTADO_BASE: Dictionary = {
 	"restaurantes_desbloqueados": [],

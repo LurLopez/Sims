@@ -9,6 +9,8 @@ extends RefCounted
 # Sim: tres carriles, salto, rodar, tropiezos con segundo aviso, tabla
 # hoverboard de 30 s, imán, x2, súper zapatillas, jetpack, pogo, llaves de
 # reanimación, trenes en movimiento, rampas a los techos, monedas y retos.
+# Los trenes son letales al primer impacto (sin tabla); las oleadas reservan
+# siempre un carril seguro y no amontonan trenes móviles.
 #
 # El jugador conserva SIEMPRE el modelo 3D del Sim del proyecto; aquí solo
 # vive la física y el estado que consume Runner_Mundo.gd.
@@ -29,6 +31,7 @@ const METROS_RAMPA_VELOCIDAD: float = 950.0
 const VELOCIDAD_EXTRA_CICLISTA: float = 14.0
 const VELOCIDAD_RELATIVA_TREN_MIN: float = -8.0
 const VELOCIDAD_RELATIVA_TREN_MAX: float = 10.0
+const TIEMPO_MIN_LLEGADA_TREN_MOVIL: float = 3.2
 
 # Física del corredor
 const SUAVIZADO_CARRIL: float = 17.0
@@ -87,6 +90,9 @@ const PUNTOS_POR_MISION: int = 750
 const METROS_APERTURA_SEGURA: float = 42.0
 const BRECHA_OLEADA_MIN: float = 22.0
 const FACTOR_BRECHA_VELOCIDAD: float = 0.62
+const MARGEN_ENTRE_OLEADAS: float = 14.0
+const MARGEN_CORREDOR_OLEADA: float = 34.0
+const MAX_TRENES_MOVILES_ACTIVOS: int = 1
 const INTERVALO_HITO_METROS: int = 250
 const DISTANCIA_GUARDIA_LEJOS: float = 48.0
 const DISTANCIA_GUARDIA_CEBO: float = 4.5
@@ -137,6 +143,8 @@ var _rng := RandomNumberGenerator.new()
 var _mision_pendiente: String = ""
 var _ralenti_tropiezo: float = 0.0
 var _ultimo_metro_mision: int = 0
+var _largo_ultima_oleada: float = 0.0
+var _tabla_salvo_pendiente: bool = false
 
 
 func _init() -> void:
@@ -177,6 +185,8 @@ func reiniciar(sembrar_inicio: bool = true) -> void:
 	_mision_pendiente = ""
 	_ralenti_tropiezo = 0.0
 	_ultimo_metro_mision = 0
+	_largo_ultima_oleada = 0.0
+	_tabla_salvo_pendiente = false
 	_crear_misiones()
 	if sembrar_inicio:
 		sembrar_pista_inicial()
@@ -379,14 +389,24 @@ func aplicar_comando(comando: String) -> String:
 		if siguiente_carril < CARRIL_MIN or siguiente_carril > CARRIL_MAX:
 			return ""
 
-		if _carril_bloqueado_lateralmente(siguiente_carril, float(jugador["y"])):
-			if float(jugador["tiempo_tropiezo"]) > 0.0 and float(powerups["tabla"]) <= 0.0:
+		var obs_lateral: Dictionary = _obstaculo_lateral(siguiente_carril, float(jugador["y"]))
+		if not obs_lateral.is_empty():
+			var tipo_lateral: String = str(obs_lateral["tipo"])
+			if _choque_mortal(tipo_lateral) and float(powerups["tabla"]) > 0.0:
+				# La tabla absorbe el impacto lateral y el cambio de carril sigue.
+				_salvar_con_tabla(tipo_lateral)
+			elif _choque_mortal(tipo_lateral):
+				obs_lateral["golpeado"] = true
+				_caer(tipo_lateral)
+				return "TROPIEZO_CAIDA"
+			elif float(jugador["tiempo_tropiezo"]) > 0.0 and float(powerups["tabla"]) <= 0.0:
 				_caer("lateral")
 				return "TROPIEZO_CAIDA"
-			if float(jugador["invulnerable"]) <= 0.0:
-				_tropezar("lateral")
-				jugador["inclinacion_z"] = float(-dir) * 0.32
-			return "TROPIEZO"
+			else:
+				if float(jugador["invulnerable"]) <= 0.0:
+					_tropezar("lateral")
+					jugador["inclinacion_z"] = float(-dir) * 0.32
+				return "TROPIEZO"
 
 		jugador["carril_objetivo"] = siguiente_carril
 		_progreso_mision("carriles", 1)
@@ -456,7 +476,14 @@ func _bloquea_carril(tipo: String) -> bool:
 	return _es_tipo_plataforma(tipo) or tipo == "CICLISTA" or tipo == "TREN_MOVIL"
 
 
-func _carril_bloqueado_lateralmente(carril_objetivo: int, jugador_y: float) -> bool:
+## Devuelve true para los obstáculos que, golpeados de lleno, terminan la
+## carrera. Los trenes son sólidos y no se pueden atravesar perdiendo el
+## equilibrio: chocar con uno derriba al Sim al instante.
+func _choque_mortal(tipo: String) -> bool:
+	return tipo == "TREN_MOVIL" or tipo == "TREN_LARGO" or tipo == "TREN_LARGO_RAMPA"
+
+
+func _obstaculo_lateral(carril_objetivo: int, jugador_y: float) -> Dictionary:
 	for obs in obstaculos:
 		if bool(obs.get("golpeado", false)):
 			continue
@@ -469,8 +496,8 @@ func _carril_bloqueado_lateralmente(carril_objetivo: int, jugador_y: float) -> b
 		var atras_z: float = float(obs["z"]) - medio_largo
 		if frente_z > -0.60 and atras_z < 0.60:
 			if jugador_y < float(obs["altura"]) - 0.55:
-				return true
-	return false
+				return obs
+	return {}
 
 
 ## Calcula la altura de soporte bajo el corredor (suelo 0, rampa o pasarela elevada).
@@ -519,72 +546,134 @@ func calcular_suelo_soporte(jugador_x: float, jugador_y: float) -> Dictionary:
 # Generador de oleadas justas (inspirado en las secciones b-s-b / s-s-s-s)
 # ----------------------------------------------------------------------------
 
-func generar_oleada(spawn_z: float = SPAWN_Z) -> void:
-	var orden: Array[int] = [-1, 0, 1]
-	for i in range(orden.size() - 1, 0, -1):
-		var j: int = _rng.randi_range(0, i)
-		var tmp: int = orden[i]
-		orden[i] = orden[j]
-		orden[j] = tmp
+func generar_oleada(spawn_z: float = SPAWN_Z) -> bool:
+	var primer_id: int = _siguiente_id
 
 	# Túnel ocasional: no bloquea, baja la cámara y deja una línea de monedas.
 	if distancia > 520.0 and _rng.randf() < 0.08:
 		anadir_obstaculo("TUNEL", 0, spawn_z)
 		for k in range(6):
 			anadir_moneda(0, 0.95, spawn_z + 4.0 - float(k) * 2.6, float(k) * 0.4)
-		return
+		_largo_ultima_oleada = LARGO_TUNEL
+		return true
 
 	var dificultad: float = minf(1.0, distancia / 800.0)
-	var carril_seguro: int = orden[0]
-	var carriles_peligro: Array[int] = [orden[1], orden[2]]
+
+	# Elegir el carril seguro entre los que no estén ya ocupados por obstáculos
+	# de oleadas anteriores que aún se solapen con esta. Así nunca se cierran
+	# los tres carriles a la vez.
+	var ocupados: Array[int] = _carriles_ocupados_corredor(spawn_z)
+	var libres: Array[int] = []
+	for carril_libre in [CARRIL_MIN, 0, CARRIL_MAX]:
+		if not ocupados.has(int(carril_libre)):
+			libres.append(int(carril_libre))
+	if libres.is_empty():
+		# Esperar a que se libere un carril antes de lanzar otra oleada.
+		return false
+
+	var carril_seguro: int = libres[_rng.randi_range(0, libres.size() - 1)]
+	var carriles_peligro: Array[int] = []
+	for carril_peligro in [CARRIL_MIN, 0, CARRIL_MAX]:
+		if int(carril_peligro) != carril_seguro:
+			carriles_peligro.append(int(carril_peligro))
+
 	var usar_dos_peligros: bool = _rng.randf() < (0.45 + dificultad * 0.40)
 	var peligros_activos: Array[int] = [carriles_peligro[0]]
 	if usar_dos_peligros:
 		peligros_activos.append(carriles_peligro[1])
+
+	# Pre-decidir los obstáculos de peligro para poder limitar los trenes.
+	var trenes_moviles_previos: int = _contar_trenes_moviles_activos()
+	var permitir_movil: bool = trenes_moviles_previos < MAX_TRENES_MOVILES_ACTIVOS
+	# Nunca más de dos trenes por oleada, y solo uno si ya hay un tren móvil
+	# de una oleada anterior que pueda seguir en pantalla.
+	var max_trenes_ola: int = 1 if trenes_moviles_previos > 0 else 2
+	var tipos_peligro: Array[String] = []
+	var trenes_peligro: int = 0
+	for _i in range(peligros_activos.size()):
+		var r: float = _rng.randf()
+		var tipo_peligro: String = ""
+		if r < 0.32:
+			tipo_peligro = "SETO_ALTO"
+		elif r < 0.42 and distancia > 300.0:
+			tipo_peligro = "TREN_LARGO" if trenes_peligro < max_trenes_ola else "VALLA_BAJA"
+		elif r < 0.50 and distancia > 70.0:
+			tipo_peligro = "CICLISTA"
+		elif r < 0.66 and distancia > 120.0:
+			if permitir_movil:
+				tipo_peligro = "TREN_MOVIL"
+				permitir_movil = false
+			else:
+				tipo_peligro = "VALLA_BAJA"
+		elif r < 0.82:
+			tipo_peligro = "VALLA_BAJA"
+		else:
+			tipo_peligro = "ARCO_ALTO"
+		tipos_peligro.append(tipo_peligro)
+		if tipo_peligro == "TREN_LARGO" or tipo_peligro == "TREN_MOVIL":
+			trenes_peligro += 1
 
 	var carril_rampa: int = -99
 	var largo_rampa_actual: float = LARGO_PLATAFORMA
 	var carril_valla: int = -99
 	var carril_arco: int = -99
 
+	# El carril seguro siempre lleva un obstáculo pasable (saltable, rodable o
+	# con rampa) o queda completamente libre. Nunca un tren sin rampa.
 	var tirada: float = _rng.randf()
+	var tipo_seguro: String = ""
 	if tirada < 0.24:
-		carril_rampa = carril_seguro
-		largo_rampa_actual = LARGO_PLATAFORMA
-		anadir_obstaculo("PASARELA_RAMPA", carril_seguro, spawn_z)
+		tipo_seguro = "PASARELA_RAMPA"
 	elif tirada < 0.33 and distancia > 450.0:
-		carril_rampa = carril_seguro
-		largo_rampa_actual = LARGO_TREN_LARGO
-		anadir_obstaculo("TREN_LARGO_RAMPA", carril_seguro, spawn_z)
+		# Evitar un tercer tren: si los dos carriles de peligro ya llevan tren,
+		# el seguro usa una valla saltable en lugar de otro tren con rampa.
+		tipo_seguro = "TREN_LARGO_RAMPA" if trenes_peligro < max_trenes_ola else "VALLA_BAJA"
 	elif tirada < 0.52:
-		carril_valla = carril_seguro
-		anadir_obstaculo("VALLA_BAJA", carril_seguro, spawn_z + 3.0)
+		tipo_seguro = "VALLA_BAJA"
 	elif tirada < 0.70:
-		carril_arco = carril_seguro
-		anadir_obstaculo("ARCO_ALTO", carril_seguro, spawn_z + 3.0)
-	# Resto 30%: carril_seguro completamente libre.
+		tipo_seguro = "ARCO_ALTO"
 
-	for i in range(peligros_activos.size()):
+	if tipo_seguro == "PASARELA_RAMPA" or tipo_seguro == "TREN_LARGO_RAMPA":
+		carril_rampa = carril_seguro
+		largo_rampa_actual = LARGO_TREN_LARGO if tipo_seguro == "TREN_LARGO_RAMPA" else LARGO_PLATAFORMA
+		anadir_obstaculo(tipo_seguro, carril_seguro, spawn_z)
+	elif tipo_seguro == "VALLA_BAJA":
+		carril_valla = carril_seguro
+		anadir_obstaculo(tipo_seguro, carril_seguro, spawn_z + 3.0)
+	elif tipo_seguro == "ARCO_ALTO":
+		carril_arco = carril_seguro
+		anadir_obstaculo(tipo_seguro, carril_seguro, spawn_z + 3.0)
+
+	for i in range(tipos_peligro.size()):
 		var carril: int = peligros_activos[i]
-		var r: float = _rng.randf()
-		if r < 0.32:
-			anadir_obstaculo("SETO_ALTO", carril, spawn_z - float(i) * 3.5)
-		elif r < 0.42 and distancia > 300.0:
-			anadir_obstaculo("TREN_LARGO", carril, spawn_z - 10.0)
-		elif r < 0.50 and distancia > 70.0:
-			anadir_obstaculo("CICLISTA", carril, spawn_z - 18.0)
-		elif r < 0.66 and distancia > 120.0:
-			var es_express: bool = _rng.randf() < 0.35
-			var vel_rel: float = _rng.randf_range(11.0, 19.0) if es_express else _rng.randf_range(VELOCIDAD_RELATIVA_TREN_MIN, 6.0)
-			anadir_obstaculo("TREN_MOVIL", carril, spawn_z - 6.0, -1, vel_rel)
-		elif r < 0.82:
-			if carril_valla == -99:
-				carril_valla = carril
-			anadir_obstaculo("VALLA_BAJA", carril, spawn_z + 2.0)
-		else:
-			if carril_arco == -99:
-				carril_arco = carril
-			anadir_obstaculo("ARCO_ALTO", carril, spawn_z + 2.0)
+		var tipo: String = tipos_peligro[i]
+		# No apilar un obstáculo fijo sobre un tren/ciclista en movimiento:
+		# se solaparían en el mismo carril. El móvil ya bloquea esa vía.
+		if _carril_tiene_movil(carril):
+			continue
+		match tipo:
+			"SETO_ALTO":
+				anadir_obstaculo(tipo, carril, spawn_z - float(i) * 3.5)
+			"TREN_LARGO":
+				anadir_obstaculo(tipo, carril, spawn_z - 10.0)
+			"CICLISTA":
+				anadir_obstaculo(tipo, carril, spawn_z - 18.0)
+			"TREN_MOVIL":
+				var es_express: bool = _rng.randf() < 0.35
+				var vel_rel: float = _rng.randf_range(6.0, VELOCIDAD_RELATIVA_TREN_MAX) if es_express else _rng.randf_range(VELOCIDAD_RELATIVA_TREN_MIN, 4.0)
+				# Dar siempre tiempo de reacción: el tren se coloca lo bastante
+				# lejos según la velocidad de cierre real.
+				var cierre: float = velocidad + maxf(0.0, vel_rel)
+				var z_movil: float = minf(spawn_z - 6.0, -cierre * TIEMPO_MIN_LLEGADA_TREN_MOVIL)
+				anadir_obstaculo(tipo, carril, z_movil, -1, vel_rel)
+			"VALLA_BAJA":
+				if carril_valla == -99:
+					carril_valla = carril
+				anadir_obstaculo(tipo, carril, spawn_z + 2.0)
+			"ARCO_ALTO":
+				if carril_arco == -99:
+					carril_arco = carril
+				anadir_obstaculo(tipo, carril, spawn_z + 2.0)
 
 	# Líneas y arcos de monedas guiando la mejor trayectoria
 	if carril_rampa != -99:
@@ -616,6 +705,82 @@ func generar_oleada(spawn_z: float = SPAWN_Z) -> void:
 	if distancia >= _proxima_llave_dist:
 		anadir_powerup("LLAVE", carril_seguro, 1.30, spawn_z - 12.0)
 		_proxima_llave_dist = distancia + 700.0
+
+	_largo_ultima_oleada = _calcular_largo_oleada(primer_id)
+	return true
+
+
+## Carriles que ya tienen un obstáculo bloqueante que se solapa con el corredor
+## donde va a nacer la próxima oleada (incluye trenes móviles que se acercan).
+func _carriles_ocupados_corredor(spawn_z: float) -> Array[int]:
+	var ocupados: Array[int] = []
+	for obs in obstaculos:
+		if bool(obs.get("golpeado", false)):
+			continue
+		var tipo: String = str(obs["tipo"])
+		if tipo == "TUNEL" or not _bloquea_carril(tipo):
+			continue
+		var medio_largo: float = float(obs["largo"]) * 0.5
+		var frente_z: float = float(obs["z"]) + medio_largo
+		var atras_z: float = float(obs["z"]) - medio_largo
+		var ocupa: bool = false
+		if tipo == "TREN_MOVIL" or tipo == "CICLISTA":
+			# Un móvil puede alcanzar la oleada aunque ahora esté lejos: su
+			# carril queda reservado para que nunca cierre el carril seguro.
+			ocupa = float(obs["z"]) < 20.0
+		else:
+			ocupa = frente_z > spawn_z - MARGEN_CORREDOR_OLEADA and atras_z < spawn_z + MARGEN_CORREDOR_OLEADA
+		var carril: int = int(obs["carril"])
+		if ocupa and not ocupados.has(carril):
+			ocupados.append(carril)
+	return ocupados
+
+
+func _contar_trenes_moviles_activos() -> int:
+	var total: int = 0
+	for obs in obstaculos:
+		if bool(obs.get("golpeado", false)):
+			continue
+		if str(obs["tipo"]) == "TREN_MOVIL":
+			total += 1
+	return total
+
+
+func _carril_tiene_movil(carril: int) -> bool:
+	for obs in obstaculos:
+		if bool(obs.get("golpeado", false)):
+			continue
+		var tipo: String = str(obs["tipo"])
+		if tipo != "TREN_MOVIL" and tipo != "CICLISTA":
+			continue
+		if int(obs["carril"]) == carril:
+			return true
+	return false
+
+
+## Separación mínima hasta la próxima oleada: nunca menor que la longitud de
+## la oleada anterior para que dos trenes largos no se solapen.
+func _calcular_brecha_oleada() -> float:
+	var brecha: float = maxf(BRECHA_OLEADA_MIN, velocidad * FACTOR_BRECHA_VELOCIDAD + 8.0)
+	return maxf(brecha, _largo_ultima_oleada + MARGEN_ENTRE_OLEADAS)
+
+
+## Extensión longitudinal (en metros) de los obstáculos fijos de una oleada,
+## para separar la siguiente lo suficiente y evitar solapes de trenes largos.
+func _calcular_largo_oleada(primer_id: int) -> float:
+	var minimo: float = INF
+	var maximo: float = -INF
+	for obs in obstaculos:
+		if int(obs["id"]) < primer_id:
+			continue
+		if str(obs["tipo"]) == "TREN_MOVIL":
+			continue
+		var medio_largo: float = float(obs["largo"]) * 0.5
+		minimo = minf(minimo, float(obs["z"]) - medio_largo)
+		maximo = maxf(maximo, float(obs["z"]) + medio_largo)
+	if minimo == INF:
+		return 0.0
+	return maxf(0.0, maximo - minimo)
 
 
 func _elegir_powerup() -> String:
@@ -665,6 +830,10 @@ func avanzar(dt: float, generar_oleadas: bool = true) -> Dictionary:
 	var estado: String = str(jugador["estado"])
 	if estado == "CAIDO" or estado == "CHOCADO":
 		return eventos
+
+	if _tabla_salvo_pendiente:
+		eventos["tabla_salvo"] = true
+		_tabla_salvo_pendiente = false
 
 	# Actualizar temporizadores (jetpack/pogo mandan sobre el resto)
 	for clave in ["iman", "zapatillas", "multiplicador", "tabla", "jetpack", "pogo"]:
@@ -830,14 +999,18 @@ func avanzar(dt: float, generar_oleadas: bool = true) -> Dictionary:
 		if not obs_hit.is_empty():
 			var tipo_choque: String = str(obs_hit["tipo"])
 			if float(powerups["tabla"]) > 0.0:
-				powerups["tabla"] = 0.0
-				jugador["invulnerable"] = INVULNERABLE_TRAS_TABLA_SEG
-				jugador["tiempo_tropiezo"] = 0.0
-				jugador["anim_tropiezo"] = 0.0
-				if str(jugador["estado"]) == "TROPEZANDO":
-					jugador["estado"] = "CORRIENDO"
-				_limpiar_obstaculos_zona(-30.0, 10.0)
+				_salvar_con_tabla(tipo_choque)
 				eventos["tabla_salvo"] = true
+				_tabla_salvo_pendiente = false
+			elif _choque_mortal(tipo_choque):
+				# Un tren de lleno no se atraviesa perdiendo el equilibrio:
+				# la carrera termina y se ofrece la reanimación.
+				obs_hit["golpeado"] = true
+				_caer(tipo_choque)
+				eventos["caido"] = true
+				eventos["choco"] = true
+				eventos["tipo_choque"] = tipo_choque
+				return eventos
 			elif float(jugador["tiempo_tropiezo"]) > 0.0 or estado == "TROPEZANDO":
 				_caer(tipo_choque)
 				eventos["caido"] = true
@@ -932,11 +1105,12 @@ func avanzar(dt: float, generar_oleadas: bool = true) -> Dictionary:
 		if bool(pu["recogido"]) or float(pu["z"]) > DESPAWN_Z:
 			powerups_entidades.remove_at(i)
 
-	# Generar siguiente oleada
+	# Generar siguiente oleada. Solo se confirma la brecha si la oleada se ha
+	# podido colocar; si los tres carriles están comprometidos se reintenta en
+	# el siguiente paso (nunca se amontonan trenes sin salida).
 	if generar_oleadas and distancia >= _siguiente_oleada_dist:
-		generar_oleada(SPAWN_Z)
-		var brecha: float = maxf(BRECHA_OLEADA_MIN, velocidad * FACTOR_BRECHA_VELOCIDAD + 8.0)
-		_siguiente_oleada_dist = distancia + brecha
+		if generar_oleada(SPAWN_Z):
+			_siguiente_oleada_dist = distancia + _calcular_brecha_oleada()
 
 	_actualizar_guardia(dt)
 
@@ -987,6 +1161,17 @@ func _activar_pogo() -> void:
 			anadir_moneda(carril, y, z, float(k) * 0.3 + float(carril) * 0.2)
 	var tipos: Array[String] = ["IMAN", "ZAPATILLAS", "MULTIPLICADOR", "JETPACK"]
 	anadir_powerup(tipos[_rng.randi_range(0, tipos.size() - 1)], 0, ALTURA_MAXIMA_POGO + 0.95, -DISTANCIA_POGO - 6.0)
+
+
+func _salvar_con_tabla(_tipo: String) -> void:
+	powerups["tabla"] = 0.0
+	jugador["invulnerable"] = maxf(float(jugador["invulnerable"]), INVULNERABLE_TRAS_TABLA_SEG)
+	jugador["tiempo_tropiezo"] = 0.0
+	jugador["anim_tropiezo"] = 0.0
+	if str(jugador["estado"]) == "TROPEZANDO":
+		jugador["estado"] = "CORRIENDO"
+	_limpiar_obstaculos_zona(-30.0, 10.0)
+	_tabla_salvo_pendiente = true
 
 
 func _tropezar(tipo: String) -> void:

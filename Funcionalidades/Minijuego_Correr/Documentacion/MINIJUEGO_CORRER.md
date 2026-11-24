@@ -16,6 +16,8 @@ Web* (Poki), adaptadas a la escala y al arte de SIMS:
 
 - Tres carriles, salto, rodado, caída rápida y rampas a los techos.
 - **Tropiezo antes de morir**: el primer choque marea 3 s; el segundo derriba.
+  **Los trenes son la excepción**: chocar de lleno contra un tren (frontal o
+  lateral) termina la carrera al instante; solo la tabla lo absorbe.
 - Trenes aparcados y **trenes en movimiento**, incluidos **trenes largos de 3 vagones** y **exprés en sentido contrario**.
 - **Intro cinematográfica** con cámara de acercamiento, **túnel** con cámara rasante y cuenta atrás al reanudar.
 - Tabla hoverboard de **30 s**, imán, x2, súper zapatillas, **jetpack**,
@@ -38,11 +40,11 @@ ropa equipada, envejecimiento, expresiones y animación articulada.
 | `Scripts/GUI/Minijuego_Correr/Minijuego_Correr.gd` | Menú, HUD, gestos, teclado, pausa, reanimación, resultado y audio. |
 | `Scripts/GUI/Minijuego_Correr/Runner_Simulacion.gd` | Lógica pura: carriles, salto, rodado, tropiezo, trenes, túneles, power-ups, monedas, retos, puntuación y reanimación. |
 | `Scripts/GUI/Minijuego_Correr/Runner_Mundo.gd` | `SubViewport` 3D, cámara, iluminación, chunks, sincronización de entidades, partículas, clima y guardia. |
-| `Scripts/GUI/Minijuego_Correr/Runner_Personaje_3D.gd` | Sim 3D articulado; añade jetpack, pogo, tabla, aura de imán, pose de vuelo y choque. |
-| `Scripts/GUI/Minijuego_Correr/Runner_Escenario_3D.gd` | Materiales, chunks ferroviarios, trenes, rampas, túneles, monedas y power-ups esculpidos. |
-| `Scripts/GUI/Minijuego_Correr/Runner_Mallas_3D.gd` | Generador de mallas biseladas (vagones, rampas, monedas, imán, estrella, tabla). |
-| `Scripts/GUI/Minijuego_Correr/Runner_Guardia_3D.gd` | Guardia y perro procedurales que persiguen al corredor. |
-| `Scripts/GUI/Minijuego_Correr/Runner_Texturas_3D.gd` | Texturas procedurales de balasto, traviesas, muros, trenes y sombras. |
+| `Scripts/GUI/Minijuego_Correr/Runner_Personaje_3D.gd` | Sim 3D articulado (mantiene apariencia y ropa canónica del Sim); equipa `.glb` de Blender para `hoverboard`, `jetpack`, `pogo` y `alas_zapatilla`. |
+| `Scripts/GUI/Minijuego_Correr/Runner_Escenario_3D.gd` | Carga los 35 `.glb` de vía, mobiliario, edificios, trenes, obstáculos, monedas y power-ups y los adapta a `Runner_Curvo.gdshader`. |
+| `Scripts/GUI/Minijuego_Correr/Runner_Guardia_3D.gd` | Guardia y perro K9 cargados desde `guardia.glb` y `perro_policia.glb` con jerarquía articulada y contorno de tinta. |
+| `Scripts/GUI/Minijuego_Correr/Runner_Texturas_3D.gd` | Texturas 3D UV (libreas del vagón Blender, cristales nocturnos, balasto, muros, carteles y sombras). |
+| `Arte_Fuente/Modelos3D/Correr/` + `Modelos/Minijuego_Correr/` | 34 scripts paramétricos en Blender (`bpy`/`bmesh`), texturas UV y 38 archivos `.glb` validados. |
 | `Scripts/GUI/Minijuego_Correr/Sonidos_Correr.gd` | Pool de SFX en el bus `SFX`. |
 | `Escenas/Minijuego_Correr/Minijuego_Correr.tscn` | Escena mínima que monta el controlador. |
 | `Escenas/Herramientas/Captura_Correr.tscn` + `Captura_Correr.gd` | Capturas QA de menú, partida, túnel, techo, tabla, jetpack, pogo, guardia, reanimación, noche, pausa y resultado. |
@@ -50,11 +52,9 @@ ropa equipada, envejecimiento, expresiones y animación articulada.
 
 ### Arte y assets
 
-- `Imagenes/Minijuego_Correr/` conserva el pack 2D histórico del parque.
-- El runner 3D actual usa geometría y texturas generadas por código; no
-  `preload` de PNG grandes en el arranque.
-- La ropa sale de `Sistema_Cocina.Obtener_Apariencia_Con_Ropa_Equipada()` y se
-  dibuja en el modelo 3D.
+- `Imagenes/Minijuego_Correr/` conserva el pack 2D histórico del parque y `Texturas3D/` guarda las texturas UV de los modelos Blender.
+- Todos los modelos 3D estáticos y articulados de escenario, obstáculos, power-ups, guardia y perro K9 provienen de `.glb` modelados en Blender (`Arte_Fuente/Modelos3D/Correr/`).
+- El Sim corredor sigue generándose dinámicamente en `Runner_Personaje_3D.gd` desde `Sistema_Cocina.Obtener_Apariencia_Con_Ropa_Equipada()` para reflejar toda su ropa, peinados y envejecimiento.
 
 ### Integración
 
@@ -100,14 +100,17 @@ como toque.
 | `SETO_ALTO` / vagón aparcado | Cambiar de carril o subir por rampa |
 | `PASARELA_RAMPA` | Subir la rampa y correr por el techo |
 | `CICLISTA` / vagoneta | Cambiar de carril |
-| `TREN_MOVIL` | Cambiar de carril; se acerca o se aleja con velocidad relativa. Algunos son exprés y llegan muy rápido |
-| `TREN_LARGO` / `TREN_LARGO_RAMPA` | Tren de **3 vagones** (40,5 m); cambiar de carril o subir por su rampa y correr por el techo |
+| `TREN_MOVIL` | Cambiar de carril; se acerca o se aleja con velocidad relativa. Los exprés se colocan más lejos para garantizar al menos 3,2 s de reacción |
+| `TREN_LARGO` / `TREN_LARGO_RAMPA` | Tren de **3 vagones** (40,5 m); cambiar de carril o subir por su rampa y correr por el techo. **Un choque de lleno derriba al instante** |
 | `TUNEL` | No colisiona; activa la cámara rasante |
 
 ### Tropiezo y reanimación
 
-- Primer choque frontal o lateral: `TROPEZANDO` durante **3 s**, cámara con
-  sacudida y guardia acercándose.
+- Primer choque frontal o lateral contra vallas, arcos, setos o ciclistas:
+  `TROPEZANDO` durante **3 s**, cámara con sacudida y guardia acercándose.
+- **Trenes:** `TREN_LARGO`, `TREN_LARGO_RAMPA` y `TREN_MOVIL` no se atraviesan
+  perdiendo el equilibrio. Un impacto frontal o al cambiar de carril pasa
+  directamente a `CAIDO` y abre la reanimación.
 - El obstáculo que provocó el tropiezo se marca como golpeado para no repetir.
 - Segundo choque mientras está mareado: `CAIDO`.
 - Si hay tabla activa, absorbe el golpe, elimina obstáculos cercanos y deja
@@ -213,20 +216,24 @@ godot --headless --path . -s addons/gut/gut_cmdln.gd \
   -gdir=res://Funcionalidades/Minijuego_Correr -ginclude_subdirs -gexit
 ```
 
-Resultado actual: **33/33 tests** del runner y **355/355** de la suite completa.
+Resultado actual: **43/43 tests** del runner (33 de simulación/escena + 10 de recompensas y récords).
 
 Cubren:
 
 - carriles, salto, súper salto, rodado y caída rápida;
 - valla, arco, rampa y techo;
 - tropiezo lateral y frontal + segundo choque;
-- tabla protectora y limpieza de obstáculos;
+- **choque con tren frontal y lateral: caída inmediata y reanimación**;
+- tabla protectora y limpieza de obstáculos, también frente a trenes;
 - imán entre carriles;
 - tren móvil con velocidad relativa;
 - túnel sin colisión y cámara rasante;
 - jetpack, pogo, llaves y reanimación;
 - puntuación por distancia/multiplicador y retos;
-- generador de oleadas con al menos un carril pasable;
+- **generador de oleadas justo**: un solo tren móvil activo, como máximo dos
+  trenes por oleada, carril seguro garantizado y separación que cubre un tren
+  largo de 3 vagones;
+- **simulación larga sin muros de tres carriles** (180 s por semilla);
 - apariencia 3D, peinados, atuendos y carga/limpieza de escena;
 - recompensas, récords, persistencia y aplicación al Sim.
 
@@ -260,7 +267,20 @@ Salida en `user://capturas_correr/`:
 - **Escala de metros:** carriles de 2,7 m y cámara baja para que la velocidad
   se lea bien en vertical.
 - **Trenes móviles con velocidad relativa:** se suman al desplazamiento del
-  mundo, de modo que un tren puede alcanzar o dejar atrás al jugador.
+  mundo, de modo que un tren puede alcanzar o dejar atrás al jugador. Para que
+  sea justo, solo hay **un tren móvil activo a la vez** y su punto de aparición
+  se calcula para dejar al menos **3,2 s** de reacción según la velocidad de
+  cierre real (velocidad del jugador + velocidad relativa del tren).
+- **Oleadas sin callejones sin salida:** antes de colocar una oleada se
+  reservan los carriles que aún tienen obstáculos solapados; si los tres están
+  comprometidos, la oleada se pospone al siguiente paso. El carril seguro solo
+  lleva valla, arco, pasarela o tren con rampa (nunca un muro alto sin rampa).
+- **Separación por longitud:** la distancia hasta la siguiente oleada se calcula
+  como `max(velocidad·0,62+8, largo_oleada+14)`. Así dos trenes de 3 vagones
+  (40,5 m) no se solapan ni crean un muro de tres carriles.
+- **Impacto de tren letal:** `TREN_LARGO`, `TREN_LARGO_RAMPA` y `TREN_MOVIL`
+  pasan a `CAIDO` al primer contacto frontal o lateral; ya no se atraviesan
+  perdiendo el equilibrio. La tabla sigue absorbiendo el golpe y se consume.
 - **Túnel sin colisión:** es una cobertura visual/cámara; la simulación solo
   marca `tunel` para que `Runner_Mundo` baje la cámara.
 - **Reanimación con llaves del run:** evita moneda premium y mantiene la

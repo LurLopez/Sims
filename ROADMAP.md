@@ -152,7 +152,7 @@ La carrera de futbolista está implementada: fichaje, entrenamientos, liga domin
 
 **Esfuerzo:** 2–3 semanas (incluido arte).
 
-> **Fase 2 (después):** modo mánager tipo Top Eleven (plantilla, táctica, fichajes y economía de club). No empezar hasta cerrar la Fase 1.
+> **Fase 2 (implementada):** modo mánager tipo Top Eleven (16 clubes, plantilla, táctica, fichajes, economía de club y partido en vivo). Se adelantó a petición del usuario; ver `Funcionalidades/Manager/Documentacion/MANAGER.md`. El minijuego de partido de 60–120 s de la Fase 1 sigue pendiente como pieza independiente.
 
 ---
 

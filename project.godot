@@ -37,6 +37,7 @@ Sistema_Carreras_Deportivas="*res://Scripts/Logica/Escena_Principal/Actividades/
 Sistema_Notificaciones="*res://Scripts/Globales/Sistema_Notificaciones.gd"
 Actividades="*res://Scripts/Logica/Escena_Principal/Actividades/Actividades.gd"
 Sistema_Futbol="*res://Scripts/Logica/Escena_Principal/Actividades/Futbol/Sistema_Futbol.gd"
+Sistema_Manager="*res://Scripts/Logica/Escena_Principal/Manager/Sistema_Manager.gd"
 Alimentacion="*res://Scripts/Logica/Escena_Principal/Actividades/Alimentacion.gd"
 Sistema_Cocina="*res://Scripts/Logica/Escena_Principal/Minijuego_Cocina/Sistema_Cocina.gd"
 Sistema_Correr="*res://Scripts/Logica/Escena_Principal/Minijuego_Correr/Sistema_Correr.gd"

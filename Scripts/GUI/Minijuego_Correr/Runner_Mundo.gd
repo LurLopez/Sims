@@ -169,8 +169,8 @@ func _construir_escena_3d() -> void:
 	_sol.light_energy = 1.05
 	_sol.shadow_enabled = true
 	_sol.shadow_bias = 0.04
-	_sol.shadow_normal_bias = 1.35
-	_sol.shadow_opacity = 0.62
+	_sol.shadow_normal_bias = 0.55
+	_sol.shadow_opacity = 0.68
 	_sol.directional_shadow_mode = DirectionalLight3D.SHADOW_ORTHOGONAL
 	_sol.directional_shadow_max_distance = 58.0
 	_sol.rotation_degrees = Vector3(-46.0, 28.0, 0.0)
@@ -330,7 +330,7 @@ func cambiar_carril(direccion: int) -> void:
 		tropiezo.emit()
 		_emitir_particulas(Vector3(float(simulacion.jugador["x"]), float(simulacion.jugador["y"]) + 0.9, 0.0), 12, Color("#f97316"), 4.8)
 	elif res == "TROPIEZO_CAIDA":
-		_al_caer("lateral")
+		_al_caer(str(simulacion.jugador.get("tipo_caida", "lateral")))
 
 
 func saltar() -> void:

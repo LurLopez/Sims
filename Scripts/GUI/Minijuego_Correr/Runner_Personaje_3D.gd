@@ -121,6 +121,50 @@ static func _mat(col: Color, roughness: float = 0.88, metallic: float = 0.0,
 	return m
 
 
+static func _cargar_accesorio_glb(nombre: String, con_contorno: bool = true) -> Mesh:
+	var ruta := "res://Modelos/Minijuego_Correr/%s.glb" % nombre
+	var escena: Node = null
+	if ResourceLoader.exists(ruta):
+		var ps := ResourceLoader.load(ruta) as PackedScene
+		if ps != null:
+			escena = ps.instantiate()
+	if escena == null:
+		var abs_path := ProjectSettings.globalize_path(ruta)
+		if FileAccess.file_exists(abs_path):
+			var doc := GLTFDocument.new()
+			var state := GLTFState.new()
+			if doc.append_from_file(abs_path, state) == OK:
+				escena = doc.generate_scene(state)
+	if escena == null:
+		push_error("No se pudo cargar accesorio GLB: %s" % ruta)
+		return BoxMesh.new()
+
+	var malla_orig: Mesh = null
+	var cola: Array[Node] = [escena]
+	while not cola.is_empty():
+		var n: Node = cola.pop_back()
+		if n is MeshInstance3D and (n as MeshInstance3D).mesh != null:
+			malla_orig = (n as MeshInstance3D).mesh
+			break
+		for c in n.get_children():
+			cola.append(c)
+
+	var malla: Mesh = malla_orig.duplicate() if malla_orig != null else BoxMesh.new()
+	escena.free()
+
+	if con_contorno:
+		var outline := _crear_pass_contorno(0.0085)
+		for s in range(malla.get_surface_count()):
+			var std := malla.surface_get_material(s) as StandardMaterial3D
+			if std == null:
+				continue
+			var cop := std.duplicate() as StandardMaterial3D
+			if not (cop.emission_enabled and cop.emission_energy_multiplier > 1.2):
+				cop.next_pass = outline
+			malla.surface_set_material(s, cop)
+	return malla
+
+
 static func _mat_textura(tex: Texture2D, roughness: float = 0.90, con_contorno: bool = true, grosor_contorno: float = 0.010) -> StandardMaterial3D:
 	var m := StandardMaterial3D.new()
 	m.albedo_color = Color.WHITE
@@ -1171,32 +1215,32 @@ func aplicar_apariencia(datos: Dictionary, edad: int = -1) -> void:
 	_right_foot = res_leg_r["foot"]
 	_sneaker_glow_r = res_leg_r["glow"]
 
-	# 7. Hover-Longboard (Tabla urbana luminosa bajo los pies cuando está activa)
+	# 7. Hover-Longboard (Tabla urbana luminosa Blender .glb bajo los pies)
 	_hoverboard = Node3D.new()
 	_hoverboard.name = "Hoverboard"
 	_hoverboard.position = Vector3(0.0, 0.14, 0.0)
 	_hoverboard.visible = false
 	_body_pivot.add_child(_hoverboard)
-	_box(_hoverboard, Vector3(0.56, 0.08, 1.56), Vector3.ZERO, mat_oscuro)
-	_box(_hoverboard, Vector3(0.08, 0.09, 1.48), Vector3(-0.27, 0.0, 0.0), mat_cian, Vector3.ZERO, false)
-	_box(_hoverboard, Vector3(0.08, 0.09, 1.48), Vector3(0.27, 0.0, 0.0), mat_coral, Vector3.ZERO, false)
-	_cyl(_hoverboard, 0.18, 0.24, 0.08, Vector3(0.0, -0.06, 0.56), mat_cian, Vector3.ZERO, 12, false)
+	var mi_hover := MeshInstance3D.new()
+	mi_hover.name = "HoverboardMesh"
+	mi_hover.mesh = _cargar_accesorio_glb("hoverboard")
+	mi_hover.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
+	_hoverboard.add_child(mi_hover)
 
-	# 7b. Mochila jetpack (dos botellas cian + llamas) y pogo-cohete
+	# 7b. Mochila jetpack Blender .glb (dos propulsores + llamas animadas) y pogo-cohete .glb
 	_jetpack = Node3D.new()
 	_jetpack.name = "Jetpack"
 	_jetpack.position = Vector3(0.0, 0.86, 0.24)
 	_jetpack.visible = false
 	_body_pivot.add_child(_jetpack)
-	_box(_jetpack, Vector3(0.52, 0.60, 0.24), Vector3.ZERO, mat_oscuro)
-	_box(_jetpack, Vector3(0.44, 0.10, 0.27), Vector3(0.0, 0.20, -0.01), mat_coral, Vector3.ZERO, false)
-	_box(_jetpack, Vector3(0.34, 0.18, 0.06), Vector3(0.0, 0.00, 0.14), mat_cian, Vector3.ZERO, false)
+	var mi_jet := MeshInstance3D.new()
+	mi_jet.name = "JetpackMesh"
+	mi_jet.mesh = _cargar_accesorio_glb("jetpack")
+	mi_jet.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
+	_jetpack.add_child(mi_jet)
 	for lado in [-1.0, 1.0]:
-		_cyl(_jetpack, 0.13, 0.15, 0.58, Vector3(lado * 0.29, -0.06, 0.20), mat_coral, Vector3.ZERO, 12, false)
-		_cyl(_jetpack, 0.10, 0.13, 0.10, Vector3(lado * 0.29, 0.20, 0.20), mat_cian, Vector3.ZERO, 12, false)
-		_cyl(_jetpack, 0.075, 0.11, 0.18, Vector3(lado * 0.29, -0.40, 0.20), mat_oscuro, Vector3.ZERO, 12, false)
 		var llama := Node3D.new()
-		llama.position = Vector3(lado * 0.29, -0.50, 0.20)
+		llama.position = Vector3(lado * 0.25, -0.42, 0.09)
 		_jetpack.add_child(llama)
 		var cono := CylinderMesh.new()
 		cono.top_radius = 0.02
@@ -1205,20 +1249,19 @@ func aplicar_apariencia(datos: Dictionary, edad: int = -1) -> void:
 		cono.radial_segments = 10
 		var mi_con := MeshInstance3D.new()
 		mi_con.mesh = cono
-		var mat_llama := _mat(Color("#fb923c"), 0.25, 0.0, Color("#f97316"), 2.6, false)
+		var mat_llama := _mat(Color("#fb923c"), 0.25, 0.0, Color("#f97316"), 1.15, false)
 		mi_con.material_override = mat_llama
 		mi_con.position.y = -0.28
 		llama.add_child(mi_con)
-		var nucleo := _sphere(llama, 0.10, Vector3(0.0, -0.06, 0.0), _mat(Color("#fef08a"), 0.2, 0.0, Color("#fde047"), 3.2, false), Vector3(1.0, 1.8, 1.0))
+		var nucleo := _sphere(llama, 0.10, Vector3(0.0, -0.06, 0.0), _mat(Color("#fde047"), 0.2, 0.0, Color("#facc15"), 1.45, false), Vector3(1.0, 1.8, 1.0))
 		nucleo.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		_jetpack_llamas.append(llama)
-	_cyl(_jetpack, 0.24, 0.28, 0.06, Vector3(0.0, 0.32, 0.0), mat_coral, Vector3.ZERO, 14, false)
 	var luz_jet := OmniLight3D.new()
 	luz_jet.name = "LuzJetpack"
 	luz_jet.light_color = Color("#fb923c")
 	luz_jet.light_energy = 1.6
 	luz_jet.omni_range = 2.4
-	luz_jet.position = Vector3(0.0, -0.45, 0.10)
+	luz_jet.position = Vector3(0.0, -0.45, 0.09)
 	_jetpack.add_child(luz_jet)
 
 	_pogo = Node3D.new()
@@ -1226,12 +1269,11 @@ func aplicar_apariencia(datos: Dictionary, edad: int = -1) -> void:
 	_pogo.position = Vector3(0.0, 0.08, 0.0)
 	_pogo.visible = false
 	_body_pivot.add_child(_pogo)
-	_cyl(_pogo, 0.035, 0.045, 0.92, Vector3(0.0, -0.44, 0.0), mat_oscuro, Vector3.ZERO, 10, false)
-	_cyl(_pogo, 0.11, 0.13, 0.22, Vector3(0.0, -0.86, 0.0), mat_coral, Vector3.ZERO, 12, false)
-	_box(_pogo, Vector3(0.46, 0.05, 0.08), Vector3(0.0, 0.04, 0.0), mat_cian, Vector3.ZERO, false)
-	for lado in [-1.0, 1.0]:
-		_box(_pogo, Vector3(0.05, 0.05, 0.34), Vector3(lado * 0.22, 0.02, 0.0), mat_cian, Vector3.ZERO, false)
-	_sphere(_pogo, 0.10, Vector3(0.0, -0.98, 0.0), _mat(Color("#38bdf8"), 0.2, 0.0, Color("#38bdf8"), 2.2, false))
+	var mi_pogo := MeshInstance3D.new()
+	mi_pogo.name = "PogoMesh"
+	mi_pogo.mesh = _cargar_accesorio_glb("pogo")
+	mi_pogo.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
+	_pogo.add_child(mi_pogo)
 
 	# 8. Aura energética del Imán
 	_magnet_aura = Node3D.new()
@@ -1828,8 +1870,15 @@ func _construir_pierna_articulada(lado: float, hip_leg_x: float, leg_scale: floa
 		for lz: float in [-7.5 * ESC, -10.5 * ESC]:
 			_box(piv_foot, Vector3(9.2 * ESC, 1.8 * ESC, 1.8 * ESC), Vector3(0.0, -h_foot + 12.5 * ESC, lz), mat_blanco, Vector3.ZERO, false)
 
-	var glow := _box(piv_foot, Vector3(0.28, 0.20, 0.42), Vector3(0.0, -h_foot * 0.5, -0.03), mat_glow, Vector3.ZERO, false)
+	var glow := MeshInstance3D.new()
+	glow.name = "AlasZapatilla"
+	glow.mesh = _cargar_accesorio_glb("alas_zapatilla")
+	if glow.mesh is BoxMesh:
+		glow.material_override = mat_glow
+	glow.position = Vector3(0.0, -h_foot + 0.045, -0.03)
+	glow.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	glow.visible = false
+	piv_foot.add_child(glow)
 
 	return {"hip": piv_hip, "knee": piv_knee, "foot": piv_foot, "glow": glow}
 

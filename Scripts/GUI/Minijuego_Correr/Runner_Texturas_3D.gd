@@ -30,6 +30,10 @@ var tren_frente_emission: Texture2D
 var tren_techo_albedo: Texture2D
 var tren_techo_normal: Texture2D
 
+var vagon_bl_carroceria: Array[Texture2D] = []
+var vagon_bl_letrero: Array[Texture2D] = []
+var vagon_bl_cristal_em: Texture2D
+
 var rampa_albedo: Texture2D
 var rampa_emission: Texture2D
 var valla_peligro_albedo: Texture2D
@@ -64,6 +68,13 @@ func _init() -> void:
 	tren_frente_emission = _cargar("tren_frente_emission.png")
 	tren_techo_albedo = _cargar("tren_techo_albedo.png")
 	tren_techo_normal = _cargar("tren_techo_normal.png")
+
+	vagon_bl_carroceria.clear()
+	vagon_bl_letrero.clear()
+	for i in range(4):
+		vagon_bl_carroceria.append(_cargar("vagon_bl_carroceria_%d.png" % i))
+		vagon_bl_letrero.append(_cargar("vagon_bl_letrero_%d.png" % i))
+	vagon_bl_cristal_em = _cargar("vagon_bl_cristal_em.png")
 
 	rampa_albedo = _cargar("rampa_albedo.png")
 	rampa_emission = _cargar("rampa_emission.png")

@@ -8,6 +8,7 @@ extends Node
 const TUTORIAL_INICIAL := preload("res://Scripts/GUI/Escena_Principal/Tutorial_Inicial.gd")
 const _MODAL_TUPPERS_SCRIPT := preload("res://Scripts/GUI/Escena_Principal/Tuppers/Modal_Tuppers.gd")
 const _PANEL_FUTBOL_ESCENA := preload("res://Escenas/Escena_Principal/Panel_Futbol.tscn")
+const _PANEL_MANAGER_ESCENA := preload("res://Escenas/Escena_Principal/Panel_Manager.tscn")
 
 var mirar_semana
 var calendario_solo_lectura: bool = false
@@ -102,6 +103,10 @@ var _dialogo_futbol_trabajo: ConfirmationDialog = null
 var _trabajo_conflicto_futbol: Actividad_Fija_Trabajo = null
 var _conflicto_ascenso_mostrado: bool = false
 
+# «El Mánager» (Fase 2 — Modo Club)
+var _panel_manager: Control = null
+var _capa_panel_manager: CanvasLayer = null
+
 
 func _Crear_Badge(parent: Control) -> Label:
 	var lbl = Label.new()
@@ -149,10 +154,11 @@ func _Actualizar_Badges():
 		_badge_tab_mensajes.visible = count > 0
 	if _badge_minijuegos != null:
 		_badge_minijuegos.text = "!"
-		_badge_minijuegos.visible = _minijuegos_novedad_pendiente
+		_badge_minijuegos.visible = _minijuegos_novedad_pendiente or Sistema_Manager.Hay_Novedad()
 
 func _ready():
 	Musica.Reproducir_General()
+	Sistema_Manager.Asegurar_Desbloqueo_QA()
 	Inicializar_Otros_Scripts()
 	# Los diálogos se estilizan al añadirse, sin recorrer todo el árbol cada
 	# medio segundo (en móvil eso generaba picos de CPU y basura).
@@ -3335,13 +3341,13 @@ func _Actualizar_Pantalla_Minijuegos() -> void:
 		v.add_child(btn_jugar)
 
 	_Anadir_Tarjeta_Correr()
+	_Anadir_Tarjeta_Manager()
 
 	# Contenedor modular preparado para añadir futuros minijuegos
 	var sep_lbl := Estilos_UI.texto("PRÓXIMOS MINIJUEGOS", 11, Estilos_UI.TINTA_FANTASMA, 700)
 	_minijuegos_vbox.add_child(sep_lbl)
 
 	for futuro in [
-		["Fútbol · Modo Partido", "Toma decisiones tácticas y tira faltas durante tus encuentros.", "trophy", Estilos_UI.EXITO],
 		["Trading en Directo", "Opera en sesiones rápidas de bolsa con noticias en tiempo real.", "trending-up", Estilos_UI.AZUL]
 	]:
 		var fcard := PanelContainer.new()
@@ -3444,6 +3450,188 @@ func _Anadir_Tarjeta_Correr() -> void:
 	btn_jugar.name = "Btn_Jugar_Correr"
 	btn_jugar.pressed.connect(_Abrir_Minijuego_Correr)
 	v.add_child(btn_jugar)
+
+
+# Tarjeta de «El Mánager» dentro del hub de Minijuegos.
+func _Anadir_Tarjeta_Manager() -> void:
+	var desbloqueado: bool = Sistema_Manager.Desbloqueado()
+	var activo: bool = Sistema_Manager.Activo()
+	var club: Dictionary = Sistema_Manager.Club_Usuario()
+	var card := PanelContainer.new()
+	card.name = "Card_Minijuego_Manager"
+	var st := Estilos_UI.caja_tarjeta(16, 3)
+	st.border_color = Color("#0f766e") if desbloqueado else Estilos_UI.BORDE
+	card.add_theme_stylebox_override("panel", st)
+	_minijuegos_vbox.add_child(card)
+
+	var m := MarginContainer.new()
+	m.add_theme_constant_override("margin_left", 18)
+	m.add_theme_constant_override("margin_right", 18)
+	m.add_theme_constant_override("margin_top", 16)
+	m.add_theme_constant_override("margin_bottom", 16)
+	card.add_child(m)
+
+	var v := VBoxContainer.new()
+	v.add_theme_constant_override("separation", 10)
+	m.add_child(v)
+
+	# Cabecera ilustrada procedural: estadio + escudo + mánager.
+	var banner := Banner_Manager.new()
+	banner.name = "Banner_Manager"
+	banner.configurar(club)
+	v.add_child(banner)
+
+	var cab := HBoxContainer.new()
+	cab.add_theme_constant_override("separation", 12)
+	v.add_child(cab)
+	cab.add_child(Estilos_UI.badge_icono("trophy" if desbloqueado else "lock", 46, 22,
+		Color("#0f766e") if desbloqueado else Estilos_UI.TINTA_FANTASMA, Color.WHITE, 12))
+	var tit_col := VBoxContainer.new()
+	tit_col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	tit_col.add_theme_constant_override("separation", 2)
+	cab.add_child(tit_col)
+	tit_col.add_child(Estilos_UI.titulo("El Mánager", 19, Estilos_UI.TINTA))
+	if activo:
+		tit_col.add_child(Estilos_UI.texto("%s · %s" % [
+			str(club.get("nombre", "")),
+			Datos_Manager.Nombre_Division(int(club.get("division", 4)))],
+			12, Estilos_UI.TINTA_SUAVE, 600))
+	else:
+		tit_col.add_child(Estilos_UI.texto("Funda tu club y dirígelo desde la 3ª Regional", 12,
+			Estilos_UI.TINTA_SUAVE, 500))
+	if activo:
+		cab.add_child(Estilos_UI.pill_estado("%dº · Rep. %d" % [
+			Sistema_Manager.Obtener_Posicion_Usuario(),
+			Sistema_Manager.Obtener_Reputacion()],
+			Color("#ccfbf1"), Color("#115e59")))
+	elif desbloqueado:
+		cab.add_child(Estilos_UI.pill_estado("Listo para fundar",
+			Estilos_UI.EXITO_SUAVE, Estilos_UI.EXITO_OSCURO))
+	else:
+		cab.add_child(Estilos_UI.pill_estado("Bloqueado",
+			Estilos_UI.SUPERFICIE_2, Estilos_UI.TINTA_SUAVE))
+
+	if activo:
+		var chips := HFlowContainer.new()
+		chips.add_theme_constant_override("h_separation", 8)
+		chips.add_theme_constant_override("v_separation", 6)
+		chips.add_child(Estilos_UI.pill_estado("Caja %s" % _Formatear_Euros_Manager(
+			int(club.get("presupuesto", 0))), Color("#ccfbf1"), Color("#115e59")))
+		chips.add_child(Estilos_UI.pill_estado("Temporada %d · J%d/4" % [
+			Sistema_Manager.Obtener_Temporada(), mini(4, Sistema_Manager.Obtener_Jornada() + 1)],
+			Estilos_UI.AZUL_SUAVE, Estilos_UI.AZUL))
+		if Sistema_Manager.Puede_Jugar_Manual():
+			chips.add_child(Estilos_UI.pill_estado("¡Partido oficial pendiente!",
+				Estilos_UI.EXITO_SUAVE, Estilos_UI.EXITO_OSCURO))
+		else:
+			chips.add_child(Estilos_UI.pill_estado(Sistema_Manager.Obtener_Proximo_Partido_Texto(),
+				Estilos_UI.SUPERFICIE_2, Estilos_UI.TINTA))
+		v.add_child(chips)
+		v.add_child(Estilos_UI.parrafo(
+			"Gestiona vestuario, pizarra táctica, instalaciones, cantera y partidos de 90 minutos en directo.",
+			13, Estilos_UI.TINTA_SUAVE))
+	else:
+		v.add_child(Estilos_UI.parrafo(
+			"Retírate como futbolista o paga el título de entrenador para fundar tu club, fichar promesas y competir en directo.",
+			13, Estilos_UI.TINTA_SUAVE))
+
+	var texto_btn: String = "Gestionar club" if activo else ("Fundar club" if desbloqueado else "Desbloquear")
+	if activo and Sistema_Manager.Puede_Jugar_Manual():
+		texto_btn = "Entrar al club · Jugar partido"
+	var btn := Estilo_Manager.boton(
+		texto_btn,
+		"exito" if (activo or desbloqueado) else "primario",
+		"play" if activo else "key",
+		Estilos_UI.EXITO if (activo or desbloqueado) else Estilo_Manager.COLOR_MANAGER,
+		50)
+	btn.name = "Btn_Abrir_Manager"
+	btn.pressed.connect(_Abrir_Manager)
+	v.add_child(btn)
+
+
+func _Formatear_Euros_Manager(numero: int) -> String:
+	var negativo: bool = numero < 0
+	var texto: String = str(absi(numero))
+	var salida: String = ""
+	var contador: int = 0
+	for i in range(texto.length() - 1, -1, -1):
+		salida = texto.substr(i, 1) + salida
+		contador += 1
+		if contador % 3 == 0 and i > 0:
+			salida = "." + salida
+	return ("-" if negativo else "") + salida + " €"
+
+
+func _Abrir_Manager() -> void:
+	if _capa_panel_manager != null and is_instance_valid(_capa_panel_manager):
+		return
+	if _transicion_minijuego_activa:
+		return
+	_transicion_minijuego_activa = true
+
+	var club: Dictionary = Sistema_Manager.Club_Usuario()
+	var transicion = _Obtener_Transicion_Minijuego().new()
+	transicion.name = "Transicion_Minijuego"
+	transicion.configurar_tema("manager", club)
+	add_child(transicion)
+	var titulo_t: String = str(club.get("nombre", "El Mánager")) if not club.is_empty() else "El Mánager"
+	var sub_t: String = "Preparando el vestuario y la pizarra…" if not club.is_empty() else "Accediendo a los despachos del club…"
+	await transicion.Cubrir(titulo_t, sub_t)
+
+	if not is_inside_tree() or not is_instance_valid(transicion):
+		_transicion_minijuego_activa = false
+		return
+
+	_capa_panel_manager = CanvasLayer.new()
+	_capa_panel_manager.name = "Capa_Panel_Manager"
+	_capa_panel_manager.layer = 60
+	add_child(_capa_panel_manager)
+	_panel_manager = _PANEL_MANAGER_ESCENA.instantiate()
+	_capa_panel_manager.add_child(_panel_manager)
+	_panel_manager.cerrado.connect(_on_panel_manager_cerrado)
+	await get_tree().create_timer(0.14).timeout
+
+	if not is_inside_tree() or not is_instance_valid(transicion):
+		_transicion_minijuego_activa = false
+		return
+
+	await transicion.Descubrir("¡Saltamos al campo!" if not club.is_empty() else "¡Bienvenido al banquillo!")
+	_transicion_minijuego_activa = false
+
+
+func _on_panel_manager_cerrado() -> void:
+	if _transicion_minijuego_activa:
+		return
+	_transicion_minijuego_activa = true
+	var transicion = _Obtener_Transicion_Minijuego().new()
+	transicion.name = "Transicion_Minijuego"
+	transicion.configurar_tema("manager", Sistema_Manager.Club_Usuario())
+	add_child(transicion)
+	await transicion.Cubrir("Volviendo al Sim", "Saliendo de las instalaciones…")
+
+	if not is_inside_tree():
+		_transicion_minijuego_activa = false
+		return
+
+	if _panel_manager != null and is_instance_valid(_panel_manager):
+		_panel_manager.visible = false
+		if _panel_manager.has_method("_Aplicar_Orientacion_Vertical"):
+			_panel_manager._Aplicar_Orientacion_Vertical()
+	if _capa_panel_manager != null and is_instance_valid(_capa_panel_manager):
+		_capa_panel_manager.queue_free()
+	_capa_panel_manager = null
+	_panel_manager = null
+	_Refrescar_Tras_Minijuego_Cocina()
+	_Actualizar_Pantalla_Minijuegos_Si_Visible()
+	await get_tree().process_frame
+	await get_tree().process_frame
+
+	if not is_inside_tree() or not is_instance_valid(transicion):
+		_transicion_minijuego_activa = false
+		return
+
+	await transicion.Descubrir("¡De vuelta al día a día!")
+	_transicion_minijuego_activa = false
 
 
 # Añade un sprite al banner respetando su relación de aspecto dentro de la caja.

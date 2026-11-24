@@ -205,19 +205,27 @@ func _Seccion_Sin_Club() -> void:
 		int(req.get("requisito_edad", 30))], bool(req.get("cumple_edad", false)))
 
 	var nota: String = ""
+	var retirado: bool = str(Variables_Dinamicas.Carrera_Futbol.get(
+		"Estado_Temporada", "")) == "Retirado"
 	match str(Variables_Dinamicas.Carrera_Futbol.get("Estado_Temporada", "")):
 		"Despedido":
 			nota = "Tu último club te despidió. Puedes volver a empezar desde la 3ª División."
 		"Rescindido":
 			nota = "Rescindiste tu contrato anterior. Puedes firmar de nuevo si sigues cumpliendo los requisitos."
+		"Retirado":
+			nota = "Te has retirado como futbolista. Ya no puedes volver a fichar: tu carrera continúa en «El Mánager»."
 	if nota != "":
-		v.add_child(Estilos_UI.parrafo(nota, 12, Estilos_UI.AVISO))
+		v.add_child(Estilos_UI.parrafo(nota, 12, Estilos_UI.AVISO if retirado else Estilos_UI.TINTA_SUAVE))
 
 	var btn := Estilos_UI.boton("Realizar prueba de fichaje", "exito", "trophy", Estilos_UI.EXITO, 54)
-	btn.disabled = not bool(req.get("cumple", false))
+	btn.disabled = retirado or not bool(req.get("cumple", false))
 	btn.pressed.connect(_Intentar_Fichar)
 	v.add_child(btn)
-	if not bool(req.get("cumple", false)):
+	if retirado:
+		v.add_child(Estilos_UI.texto(
+			"Tu legado como futbolista te permite fundar un club en el apartado Minijuegos.",
+			12, Estilos_UI.TINTA_FANTASMA))
+	elif not bool(req.get("cumple", false)):
 		v.add_child(Estilos_UI.texto(
 			"Mejora tu Deporte o espera a cumplir los requisitos para poder fichar.",
 			12, Estilos_UI.TINTA_FANTASMA))

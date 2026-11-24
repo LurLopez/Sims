@@ -2555,9 +2555,30 @@ func _dibujar_detalles_fiesta(met: Dictionary, _ropa: Color, ropa_sec: Color, ro
 	draw_line(Vector2(-hip_x + 3.0, 127.0), Vector2(hip_x - 3.0, 127.0), ropa_det, 1.6, true)
 
 
-func _dibujar_detalles_futbol(met: Dictionary, ropa: Color, ropa_sec: Color, ropa_det: Color,
-		grosor: float, _detalle: String) -> void:
+func _dibujar_detalles_futbol(met: Dictionary, _ropa: Color, ropa_sec: Color, ropa_det: Color,
+		grosor: float, detalle: String) -> void:
 	var waist_x: float = met["waist_x"]
+
+	var texto_dorsal := "10"
+	if detalle.begins_with("club_"):
+		var partes := detalle.split("_")
+		if partes.size() >= 3:
+			var patron_club := int(partes[1])
+			texto_dorsal = partes[2]
+			if patron_club == 1:
+				for sx in [-12.0, 0.0, 12.0]:
+					draw_rect(Rect2(sx - 3.0, 56.0, 6.0, 44.0), Color(ropa_sec, 0.42))
+			elif patron_club == 2:
+				draw_colored_polygon(PackedVector2Array([
+					Vector2(-20.0, 54.0), Vector2(-11.0, 54.0),
+					Vector2(20.0, 99.0), Vector2(11.0, 99.0),
+				]), Color(ropa_sec, 0.50))
+			elif patron_club == 3:
+				draw_rect(Rect2(0.0, 54.0, 21.0, 46.0), Color(ropa_sec, 0.35))
+			elif patron_club == 4:
+				draw_rect(Rect2(-20.0, 72.0, 40.0, 9.0), Color(ropa_sec, 0.55))
+	elif detalle.begins_with("dorsal_"):
+		texto_dorsal = detalle.substr(7)
 
 	# Cuello en V con ribete.
 	_poligono_tinta(PackedVector2Array([
@@ -2586,10 +2607,15 @@ func _dibujar_detalles_futbol(met: Dictionary, ropa: Color, ropa_sec: Color, rop
 	var estrella := _puntos_estrella(centro + Vector2(0.0, 1.0), 2.8, 1.2, 5)
 	draw_colored_polygon(estrella, ropa_sec)
 
-	# Dorsal 10 en el pecho.
+	# Dorsal en el pecho.
 	var fuente := ThemeDB.fallback_font
 	if fuente != null:
-		draw_string(fuente, Vector2(-8.0, 104.0), "10", HORIZONTAL_ALIGNMENT_LEFT, -1, 20, ropa_det)
+		if detalle == "" or detalle == "numero_10":
+			draw_string(fuente, Vector2(-8.0, 104.0), "10", HORIZONTAL_ALIGNMENT_LEFT, -1, 20, ropa_det)
+		else:
+			var ancho_d := fuente.get_string_size(texto_dorsal, HORIZONTAL_ALIGNMENT_CENTER, -1, 18).x
+			draw_string(fuente, Vector2(-ancho_d * 0.5, 100.0), texto_dorsal,
+				HORIZONTAL_ALIGNMENT_LEFT, -1, 18, ropa_det)
 
 	# Cintura del short.
 	draw_line(Vector2(-waist_x + 2.0, 100.0), Vector2(waist_x - 2.0, 100.0),

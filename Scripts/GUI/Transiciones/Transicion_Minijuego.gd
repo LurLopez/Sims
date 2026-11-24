@@ -31,17 +31,20 @@ const TEX_CHEF := preload("res://Imagenes/Minijuego_Cocina/Chef/Poses/Chef_Pulga
 
 var _raiz: Control
 var _cortina: Panel
-var _rayos: Control
+var _rayos: Rayos_Telon
 var _centro: CenterContainer
 var _contenido: VBoxContainer
+var _hero_manager: HBoxContainer
 var _chef: TextureRect
 var _lbl_titulo: Label
 var _lbl_sub: Label
-var _puntos: Control
+var _puntos: Puntos_Carga
 var _tween: Tween
 var _ancho: float = 720.0
 var _alto: float = 1280.0
 var _animando: bool = false
+var _tema: String = "cocina"
+var _club_tema: Dictionary = {}
 # Mantiene el telón cubriendo aunque cambie el tamaño del viewport entre
 # Cubrir() y Descubrir() (p. ej. al fijar la orientación del minijuego).
 var _cubierta: bool = false
@@ -51,9 +54,17 @@ func _ready() -> void:
 	layer = 120
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_Construir()
+	_Aplicar_Tema()
 	_Ajustar_Al_Viewport()
 	if get_viewport() != null:
 		get_viewport().size_changed.connect(_Ajustar_Al_Viewport)
+
+
+func configurar_tema(modo: String = "cocina", club: Dictionary = {}) -> void:
+	_tema = modo
+	_club_tema = club.duplicate(true) if not club.is_empty() else {}
+	if is_inside_tree() and _cortina != null:
+		_Aplicar_Tema()
 
 
 # ----------------------------------------------------------------------------
@@ -76,7 +87,8 @@ func Cubrir(titulo: String, subtitulo: String) -> void:
 	_cortina.position = Vector2(0.0, _alto + 8.0)
 	_contenido.modulate.a = 0.0
 	_puntos.modulate.a = 0.0
-	_chef.scale = Vector2(0.82, 0.82)
+	var figura: Control = _hero_manager if _tema == "manager" else _chef
+	figura.scale = Vector2(0.82, 0.82)
 
 	_tween = create_tween()
 	_tween.set_parallel(true)
@@ -84,14 +96,14 @@ func Cubrir(titulo: String, subtitulo: String) -> void:
 		.set_trans(Tween.TRANS_QUART).set_ease(Tween.EASE_OUT)
 	_tween.tween_property(_contenido, "modulate:a", 1.0, 0.18) \
 		.set_delay(DURACION_CUBRIR * 0.30)
-	_tween.tween_property(_chef, "scale", Vector2.ONE, 0.22) \
+	_tween.tween_property(figura, "scale", Vector2.ONE, 0.22) \
 		.set_delay(DURACION_CUBRIR * 0.32) \
 		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	_tween.tween_property(_puntos, "modulate:a", 1.0, 0.17) \
 		.set_delay(DURACION_CUBRIR * 0.50)
 	await _tween.finished
 	_animando = false
-	_Iniciar_Balanceo_Chef()
+	_Iniciar_Balanceo_Figura()
 
 
 ## Retira el telón hacia arriba para descubrir la vista preparada. Se libera solo.
@@ -159,6 +171,15 @@ func _Construir() -> void:
 	_contenido.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_centro.add_child(_contenido)
 
+	_hero_manager = HBoxContainer.new()
+	_hero_manager.name = "Hero_Manager"
+	_hero_manager.alignment = BoxContainer.ALIGNMENT_CENTER
+	_hero_manager.add_theme_constant_override("separation", 14)
+	_hero_manager.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	_hero_manager.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_hero_manager.visible = false
+	_contenido.add_child(_hero_manager)
+
 	_chef = TextureRect.new()
 	_chef.name = "Chef"
 	_chef.texture = TEX_CHEF
@@ -193,8 +214,8 @@ func _Ajustar_Al_Viewport() -> void:
 	if vp == null:
 		return
 	var tam: Vector2 = vp.get_visible_rect().size
-	_ancho = maxf(720.0, tam.x)
-	_alto = maxf(1280.0, tam.y)
+	_ancho = maxf(320.0, tam.x)
+	_alto = maxf(320.0, tam.y)
 
 	if _cortina != null and is_instance_valid(_cortina):
 		_cortina.size = Vector2(_ancho, _alto + ALTO_EXTRA)
@@ -208,23 +229,53 @@ func _Ajustar_Al_Viewport() -> void:
 		_rayos.size = Vector2(_ancho, _alto)
 
 
+func _Aplicar_Tema() -> void:
+	var es_mgr: bool = _tema == "manager"
+	_chef.visible = not es_mgr
+	_hero_manager.visible = es_mgr
+	var acento: Color = Color("#10b981") if es_mgr else COLOR_ACENTO
+	var sub_col: Color = Color("#a7f3d0") if es_mgr else COLOR_SUBTITULO
+	var st := _cortina.get_theme_stylebox("panel") as StyleBoxFlat
+	if st != null:
+		st.border_color = acento
+	_lbl_sub.add_theme_color_override("font_color", sub_col)
+	_rayos.color_rayo = Color(0.06, 0.72, 0.50, 0.08) if es_mgr else Color(0.98, 0.62, 0.15, 0.055)
+	_puntos.color_punto = Color("#34d399") if es_mgr else Color(0.984, 0.749, 0.141)
+
+	if not es_mgr:
+		return
+	for c in _hero_manager.get_children():
+		c.queue_free()
+	var cols: Array = _club_tema.get("colores", ["#0f766e", "#ffffff"]) if not _club_tema.is_empty() else ["#0f766e", "#ffffff"]
+	if not _club_tema.is_empty():
+		var escudo := Cresta_Manager.new()
+		escudo.custom_minimum_size = Vector2(92, 106)
+		escudo.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		escudo.configurar(str(_club_tema.get("nombre", "MGR")), cols, int(_club_tema.get("escudo_patron", 1)), 0.0)
+		_hero_manager.add_child(escudo)
+	var coach := Estilo_Manager.crear_retrato_manager(120, cols, "feliz", false, "medio_cuerpo")
+	_hero_manager.add_child(coach)
+	_hero_manager.pivot_offset = Vector2(105.0 if not _club_tema.is_empty() else 60.0, 60.0)
+
+
 func _Detener_Tween() -> void:
 	if _tween != null and _tween.is_valid():
 		_tween.kill()
 	_tween = null
 
 
-func _Iniciar_Balanceo_Chef() -> void:
-	if _chef == null or not is_instance_valid(_chef):
+func _Iniciar_Balanceo_Figura() -> void:
+	var figura: Control = _hero_manager if _tema == "manager" else _chef
+	if figura == null or not is_instance_valid(figura):
 		return
-	_chef.scale = Vector2.ONE
-	_chef.rotation = 0.0
-	var tw := _chef.create_tween().set_loops()
-	tw.tween_property(_chef, "rotation", deg_to_rad(-2.5), 0.55) \
+	figura.scale = Vector2.ONE
+	figura.rotation = 0.0
+	var tw := figura.create_tween().set_loops()
+	tw.tween_property(figura, "rotation", deg_to_rad(-2.5), 0.55) \
 		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	tw.tween_property(_chef, "rotation", deg_to_rad(2.5), 0.65) \
+	tw.tween_property(figura, "rotation", deg_to_rad(2.5), 0.65) \
 		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	tw.tween_property(_chef, "rotation", 0.0, 0.55) \
+	tw.tween_property(figura, "rotation", 0.0, 0.55) \
 		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 
 
@@ -234,6 +285,7 @@ func _Iniciar_Balanceo_Chef() -> void:
 
 class Rayos_Telon extends Control:
 	var _t: float = 0.0
+	var color_rayo := Color(0.98, 0.62, 0.15, 0.055)
 
 	func _init() -> void:
 		mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -255,11 +307,11 @@ class Rayos_Telon extends Control:
 				centro,
 				centro + Vector2(cos(a - ancho), sin(a - ancho)) * radio,
 				centro + Vector2(cos(a + ancho), sin(a + ancho)) * radio,
-			]), Color(0.98, 0.62, 0.15, 0.055))
+			]), color_rayo)
 
 
 class Puntos_Carga extends Control:
-	const COLOR_PUNTO := Color(0.984, 0.749, 0.141)
+	var color_punto := Color(0.984, 0.749, 0.141)
 	var _t: float = 0.0
 
 	func _init() -> void:
@@ -279,7 +331,7 @@ class Puntos_Carga extends Control:
 		for i in range(3):
 			var fase: float = _t * 4.6 - float(i) * 0.85
 			var onda: float = maxf(0.0, sin(fase))
-			var color_punto := Color(COLOR_PUNTO, 0.35 + 0.65 * onda)
+			var col := Color(color_punto, 0.35 + 0.65 * onda)
 			draw_circle(Vector2(
 				centro.x + (float(i) - 1.0) * separacion,
-				centro.y - onda * 5.0), radio, color_punto)
+				centro.y - onda * 5.0), radio, col)

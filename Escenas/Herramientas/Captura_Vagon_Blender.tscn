@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://Scripts/Otro/Herramientas/Captura_Vagon_Blender.gd" id="1_vagon"]
+
+[node name="Captura_Vagon_Blender" type="Node"]
+script = ExtResource("1_vagon")
