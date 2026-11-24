@@ -6,8 +6,8 @@
 > - **4 mundos jugables × 15 niveles = 60 niveles** (no 3 mundos/45 niveles como en la propuesta inicial):
 >   1. **Burger & Street Food** (montaje de hamburguesas, patatas y refrescos).
 >   2. **Bistró Tradicional** (punto del filete: crudo/poco hecho/al punto/hecho/quemado, filete vectorial 3/4 con hueso, etiquetas bajo la carne, quemados retirables, servicio completo por toque rápido además de arrastre, patatas, salsa, café, tarta y mejoras con textos/arte propios).
->   3. **Cocina de Mercado** (olla combinatoria de 2 ingredientes por lotes de 4 raciones: fabada, pisto, arroz del senyoret + plancha de huevos + agua/sangría).
->   4. **Alta Cocina Gourmet** (horno con ventana dorada 62–88 %, sartén de salsa que se quema si no se remueve, maridaje obligatorio tinto/blanco y flor opcional +3 € propina).
+>   3. **Cocina de Mercado** (2–4 cazuelas independientes en paralelo combinando 2 ingredientes: fabada, pisto, arroz del senyoret, con margen de quemado + plancha de huevos + agua/sangría).
+>   4. **Alta Cocina Gourmet** (corte de pescado entero a clicks en tabla y fritura en sartén, horno con ventana dorada 62–88 %, cazo de salsa que se quema si no se remueve, bodega sommelier tinto/blanco con decantado rápido, 33 sprites 2.5D propios en `Alta/`, guía visual `? GUÍA`, tutorial en vivo y mejoras propias).
 > - **Formato y UX:** todo el minijuego (selector 2×2 de mundos, mapa 5×3 de niveles, pantalla de Mejoras y partida) corre en **horizontal `1280×720`** (restaura `720×1280` al volver al Sim); partidas por número de clientes (11–31, sin límite de tiempo), botón **MENÚ** (seguir/repetir/salir), pase de 4 huecos (2 abiertos; Nv.2/Nv.3 abren los demás), mueble bajo de despensa, modales cartoon compartidos (`Arte_Modal_Cocina.gd`) y 15 SFX propios en bus `SFX`.
 > - **Economía:** **Caja del restaurante en € + costes** (`ventas − 30% ingredientes − (6 € + 2 € × nivel) − 30% merma`), que paga las 5 mejoras (`Mejoras_Cocina.gd`, 90–360 €). El Sim cobra propinas (50 % del bote, ×1.5 en turno, ×0.25 en práctica), `5%` del beneficio neto y primas por estrellas. Fuera de turno, los 2 primeros servicios/día con ≥1★ dan paga completa; después modo práctica al 25 %.
 > - **Progresión y QA:** desbloqueo por trabajar 1 minuto en su puesto o superar 1 nivel del mundo anterior (`desbloqueo_total_qa = true` en `Sistema_Cocina.gd` durante pruebas QA; poner `false` antes de publicar). Rangos de Maestría Culinaria 0–9 (cada 20 ★), 4 prendas exclusivas en Vestuario y bonos pasivos. Suite cocina: **52/52 tests** (1441 aserciones).
@@ -67,8 +67,8 @@ El minijuego se desarrolla en una escena 2D vertical (`720×1280`) pensada para 
 Conectados con el mundo del juego (desbloqueo al trabajar 1 minuto en el puesto o al superar 1 nivel del mundo anterior):
 1. **Mundo 1 — *Burger & Street Food* (`Comida Rápida`):** hamburguesas, patatas fritas, refrescos y toppings.
 2. **Mundo 2 — *Bistró Tradicional* (`Ayudante de Cocina`):** filetes al punto, patatas, salsa, café y tarta de cereza (servicio táctil completo y mejoras con arte propio).
-3. **Mundo 3 — *Cocina de Mercado* (`Cocinero de Partida`):** guisos por lotes en olla de 4 raciones, huevos a la plancha, agua y sangría.
-4. **Mundo 4 — *Alta Cocina Gourmet* (`Chef Ejecutivo`):** horno con ventana dorada, sartén de salsa que se quema, maridaje tinto/blanco y flor opcional (+3 € propina).
+3. **Mundo 3 — *Cocina de Mercado* (`Cocinero de Partida`):** guisos en 2–4 cazuelas independientes en paralelo, huevos a la plancha, agua y sangría.
+4. **Mundo 4 — *Alta Cocina Gourmet* (`Chef Ejecutivo`):** pescado entero cortado a clicks en tabla + fritura en sartén, horno con ventana dorada, cazo de salsa, maridaje tinto/blanco con decantado rápido, 33 sprites 2.5D propios en `Alta/` y mejoras propias.
 
 ### B. Tienda de Mejoras del Restaurante (progresión de gestión de restaurantes)
 

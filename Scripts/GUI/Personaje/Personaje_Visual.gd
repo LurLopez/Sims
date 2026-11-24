@@ -318,19 +318,21 @@ func obtener_rig_pose(nombre_pose: String, t: float, es_mujer: bool, ap_datos: D
 	var bob := sin(t * (2.4 - 0.30 * postura)) * 1.4 * (1.0 - 0.38 * postura) if animar_idle else 0.0
 
 	var arm_sh_x := sh_x - 3.2
+	var idle_sway := sin(t * 1.6) * 1.6 if animar_idle else 0.0
 	var rig := {
 		"offset": Vector2(0.0, bob),
 		"root_rot": 0.0,
 		"head_offset": Vector2(0.0, bob * 0.35),
-		"head_rot": 0.0,
-		"arm_l": [Vector2(-arm_sh_x, 61.0), Vector2(-sh_x - 9.0, 92.0), Vector2(-sh_x - 5.0, 123.0)],
-		"arm_r": [Vector2(arm_sh_x, 61.0), Vector2(sh_x + 9.0, 92.0), Vector2(sh_x + 5.0, 123.0)],
+		"head_rot": deg_to_rad(sin(t * 0.9) * 1.4) if animar_idle else 0.0,
+		"arm_l": [Vector2(-arm_sh_x, 61.0), Vector2(-sh_x - 9.0 - idle_sway * 0.5, 92.0), Vector2(-sh_x - 5.0 - idle_sway, 123.0)],
+		"arm_r": [Vector2(arm_sh_x, 61.0), Vector2(sh_x + 9.0 + idle_sway * 0.5, 92.0), Vector2(sh_x + 5.0 + idle_sway, 123.0)],
 		"hand_l_tipo": "abierta",
 		"hand_r_tipo": "abierta",
 		"leg_l": [Vector2(-hip_x, 124.0), Vector2(-hip_x - 1.0, 165.0), Vector2(-hip_x - 2.0, 203.0)],
 		"leg_r": [Vector2(hip_x, 124.0), Vector2(hip_x + 1.0, 165.0), Vector2(hip_x + 2.0, 203.0)],
-		"mirada": Vector2.ZERO,
+		"mirada": Vector2(sin(t * 0.55) * 0.9, sin(t * 0.42) * 0.4) if animar_idle else Vector2.ZERO,
 		"brazos_delante": false,
+		"vista_perfil": false,
 	}
 
 	match nombre_pose:
@@ -363,343 +365,411 @@ func obtener_rig_pose(nombre_pose: String, t: float, es_mujer: bool, ap_datos: D
 			rig["leg_r"] = [Vector2(hip_x, 122.0), Vector2(4.0, 162.0), Vector2(-24.0, 182.0)]
 			rig["mirada"] = Vector2(-1.8, 1.0)
 		"correr":
-			var vel: float = 13.5 if variacion == "sprint" else (6.8 if variacion in ["beber_agua", "secar_sudor"] else 9.0)
-			var fase_carrera: float = t * vel
-			var cyc: float = sin(fase_carrera)
-			var cyc2: float = cos(fase_carrera)
+			rig["vista_perfil"] = true
+			var es_sprint := variacion == "sprint"
+			var es_lento := variacion in ["beber_agua", "secar_sudor"]
+			var vel: float = 13.8 if es_sprint else (6.6 if es_lento else 9.6)
+			var p: float = t * vel
+			var p_l: float = p + PI
+			var amp_th: float = 0.72 if es_sprint else (0.48 if es_lento else 0.60)
+			var amp_arm: float = 0.92 if es_sprint else (0.58 if es_lento else 0.76)
 			var salto_y: float = 0.0
 			if variacion == "salto":
-				salto_y = -sin(clampf(fase_variacion, 0.0, 1.0) * PI) * 30.0
-			rig["offset"] = Vector2(cyc2 * 1.2, -absf(cyc) * (7.0 if variacion == "sprint" else 5.0) + salto_y)
-			rig["root_rot"] = deg_to_rad((16.0 if variacion == "sprint" else 9.0) + absf(cyc) * 1.5)
-			rig["head_rot"] = deg_to_rad(-5.0 - absf(cyc) * 2.0)
-			rig["head_offset"] = Vector2(-cyc2 * 0.8, sin(fase_carrera * 2.0) * 1.2)
-			rig["arm_l"] = [Vector2(-sh_x, 57.0), Vector2(-sh_x - 9.0 + cyc * 15.0, 82.0 - absf(cyc) * 4.0), Vector2(-sh_x + cyc * 27.0, 63.0 + maxf(0.0, cyc) * 9.0)]
-			rig["arm_r"] = [Vector2(sh_x, 57.0), Vector2(sh_x + 9.0 - cyc * 15.0, 82.0 - absf(cyc) * 4.0), Vector2(sh_x - cyc * 27.0, 63.0 + maxf(0.0, -cyc) * 9.0)]
-			rig["leg_l"] = [Vector2(-hip_x, 124.0), Vector2(-hip_x + cyc * 22.0, 162.0 - maxf(0.0, cyc) * 7.0), Vector2(-hip_x + cyc * 34.0, 200.0 - maxf(0.0, cyc) * 20.0)]
-			rig["leg_r"] = [Vector2(hip_x, 124.0), Vector2(hip_x - cyc * 22.0, 162.0 - maxf(0.0, -cyc) * 7.0), Vector2(hip_x - cyc * 34.0, 200.0 - maxf(0.0, -cyc) * 20.0)]
-			rig["mirada"] = Vector2(1.4, -0.3)
+				salto_y = -sin(clampf(fase_variacion, 0.0, 1.0) * PI) * 28.0
+
+			var bounce_amp: float = 6.5 if es_sprint else (3.0 if es_lento else 4.8)
+			var vuelo: float = absf(cos(p))
+			rig["offset"] = Vector2(0.0, -vuelo * bounce_amp + salto_y)
+			var lean: float = 18.0 if es_sprint else (8.0 if es_lento else 12.5)
+			rig["root_rot"] = deg_to_rad(lean + vuelo * 1.8)
+			rig["head_rot"] = deg_to_rad(-lean * 0.55 - vuelo * 1.5)
+			rig["head_offset"] = Vector2(1.0, sin(p * 2.0) * 1.1)
+			rig["mirada"] = Vector2(1.4, -0.2)
+
+			# Piernas biomecánicas en perfil (ambas apuntando hacia +X)
+			var leg_r_res := _pierna_carrera_perfil(Vector2(-1.0, 124.0), p, amp_th)
+			var leg_l_res := _pierna_carrera_perfil(Vector2(2.0, 124.0), p_l, amp_th)
+			rig["leg_r"] = leg_r_res["pts"]
+			rig["leg_l"] = leg_l_res["pts"]
+			rig["foot_rot_r"] = leg_r_res["foot_rot"]
+			rig["foot_rot_l"] = leg_l_res["foot_rot"]
+
+			# Brazos opuestos a las piernas, con codo doblado y longitudes constantes
+			var ang_arm_r: float = -cos(p) * amp_arm
+			var ang_arm_l: float = cos(p) * amp_arm
+			rig["arm_r"] = _brazo_carrera_perfil(Vector2(-1.0, 57.0), ang_arm_r)
+			rig["arm_l"] = _brazo_carrera_perfil(Vector2(2.0, 57.0), ang_arm_l)
+			rig["hand_l_tipo"] = "puno"
+			rig["hand_r_tipo"] = "puno"
+
 			if variacion == "salto":
 				var medio := sin(clampf(fase_variacion, 0.0, 1.0) * PI)
-				rig["leg_l"][1] = Vector2(-hip_x + 12.0 * medio, 156.0 - medio * 12.0)
-				rig["leg_r"][1] = Vector2(hip_x + 8.0 * medio, 158.0 - medio * 10.0)
+				rig["leg_r"] = [Vector2(-1.0, 124.0), Vector2(26.0 * medio + 14.0, 146.0 - medio * 16.0), Vector2(28.0 * medio + 12.0, 186.0 - medio * 18.0)]
+				rig["leg_l"] = [Vector2(2.0, 124.0), Vector2(-14.0 * medio - 8.0, 156.0 - medio * 6.0), Vector2(-34.0 * medio - 16.0, 190.0 - medio * 8.0)]
+				rig["foot_rot_r"] = -0.20 * medio
+				rig["foot_rot_l"] = 0.55 * medio
+				rig["arm_r"] = [Vector2(-1.0, 57.0), Vector2(12.0, 74.0 - medio * 12.0), Vector2(32.0, 54.0 - medio * 20.0)]
+				rig["arm_l"] = [Vector2(2.0, 57.0), Vector2(-12.0, 70.0 - medio * 8.0), Vector2(-26.0, 50.0 - medio * 12.0)]
 			elif variacion == "secar_sudor":
-				var sw := sin(t * 7.5) * 9.0
-				rig["arm_r"] = [Vector2(sh_x, 57.0), Vector2(sh_x + 19.0, 44.0), Vector2(6.0 + sw, -20.0)]
-				rig["brazos_delante"] = true
+				var sw := sin(t * 8.0) * 5.0
+				rig["head_rot"] = deg_to_rad(-12.0)
+				rig["arm_r"] = [Vector2(-1.0, 57.0), Vector2(22.0, 42.0), Vector2(18.0 + sw, 14.0)]
+				rig["hand_r_tipo"] = "abierta"
 			elif variacion == "beber_agua":
-				rig["head_rot"] = deg_to_rad(-11.0)
-				rig["arm_r"] = [Vector2(sh_x, 57.0), Vector2(sh_x + 17.0, 65.0), Vector2(16.0, 22.0)]
-				rig["brazos_delante"] = true
+				rig["head_rot"] = deg_to_rad(-14.0)
+				rig["arm_r"] = [Vector2(-1.0, 57.0), Vector2(20.0, 54.0), Vector2(40.0, 26.0)]
+				rig["prop_r_rot"] = -0.72
+				rig["hand_r_tipo"] = "sostener"
 			elif variacion == "senalar":
 				var se := sin(clampf(fase_variacion, 0.0, 1.0) * PI)
 				rig["head_rot"] = deg_to_rad(-8.0)
-				rig["mirada"] = Vector2(2.0, -0.6)
-				rig["arm_r"] = [Vector2(sh_x, 57.0), Vector2(sh_x + 24.0, 52.0), Vector2(sh_x + 48.0 + se * 14.0, 35.0)]
-				rig["brazos_delante"] = true
+				rig["mirada"] = Vector2(2.0, -0.5)
+				rig["arm_r"] = [Vector2(-1.0, 57.0), Vector2(24.0, 48.0), Vector2(49.0 + se * 6.0, 38.0)]
+				rig["hand_r_tipo"] = "abierta"
 		"dormir":
-			var resp := sin(t * 1.9) * 2.2
-			var cabeceo := sin(t * 1.3) * 1.3
-			var rot_cabeza := deg_to_rad(-9.0 + cabeceo)
-			var off_x := sin(t * 0.33) * 0.9
+			var resp := sin(t * 1.9) * 2.0
+			var cabeceo := sin(t * 1.3) * 1.4
+			var rot_cabeza := deg_to_rad(-11.0 + cabeceo)
+			var off_x := -1.5 + sin(t * 0.35) * 1.0
 			if variacion == "darse_vuelta":
 				var k := sin(clampf(fase_variacion, 0.0, 1.0) * PI)
-				rot_cabeza = deg_to_rad(16.0 * k)
-				off_x = k * 4.0
+				rot_cabeza = deg_to_rad(lerpf(-11.0, 14.0, k))
+				off_x = lerpf(-1.5, 4.5, k)
 			elif variacion == "roncar":
-				resp = sin(t * 3.8) * 3.4
-				rot_cabeza = deg_to_rad(-3.0 + sin(t * 3.8) * 4.0)
+				resp = sin(t * 3.8) * 3.2
+				rot_cabeza = deg_to_rad(-5.0 + sin(t * 3.8) * 3.8)
 			elif variacion == "sonar":
-				rot_cabeza = deg_to_rad(-6.0 + sin(t * 0.9) * 3.0)
-			rig["offset"] = Vector2(off_x, resp)
+				rot_cabeza = deg_to_rad(-9.0 + sin(t * 0.9) * 3.2)
+			rig["offset"] = Vector2(off_x, 8.0 + resp)
 			rig["head_offset"] = Vector2(0.0, cabeceo * 0.5 + resp * 0.15)
 			rig["head_rot"] = rot_cabeza
-			rig["arm_l"] = [Vector2(-sh_x, 59.0), Vector2(-sh_x - 13.0, 81.0), Vector2(-21.0, 56.0)]
-			rig["arm_r"] = [Vector2(sh_x, 59.0), Vector2(sh_x + 13.0, 81.0), Vector2(21.0, 56.0)]
+			rig["arm_l"] = [Vector2(-sh_x, 59.0), Vector2(-sh_x - 10.0, 74.0), Vector2(-18.0, 46.0)]
+			rig["arm_r"] = [Vector2(sh_x, 59.0), Vector2(sh_x + 10.0, 74.0), Vector2(18.0, 46.0)]
 			if variacion == "estirar_brazo":
 				var est := sin(clampf(fase_variacion, 0.0, 1.0) * PI)
-				rig["arm_l"] = [Vector2(-sh_x, 57.0), Vector2(-sh_x - 22.0, 26.0 - est * 18.0), Vector2(-sh_x - 13.0, -14.0 - est * 24.0)]
+				rig["arm_l"] = [Vector2(-sh_x, 57.0), Vector2(-sh_x - 16.0, 34.0 - est * 10.0), Vector2(-sh_x - 10.0, 8.0 - est * 14.0)]
 			elif variacion == "abrazar_almohada":
-				rig["arm_l"] = [Vector2(-sh_x, 59.0), Vector2(-sh_x - 20.0, 76.0), Vector2(-12.0, 64.0)]
-				rig["arm_r"] = [Vector2(sh_x, 59.0), Vector2(sh_x + 20.0, 76.0), Vector2(12.0, 64.0)]
+				var ab := sin(t * 2.2) * 1.6
+				rig["arm_l"] = [Vector2(-sh_x, 59.0), Vector2(-sh_x - 14.0, 56.0), Vector2(-24.0, 28.0 + ab)]
+				rig["arm_r"] = [Vector2(sh_x, 59.0), Vector2(sh_x + 14.0, 56.0), Vector2(24.0, 28.0 + ab)]
 				rig["brazos_delante"] = true
-				rig["head_rot"] = deg_to_rad(-12.0 + sin(t * 1.2) * 2.0)
+				rig["head_rot"] = deg_to_rad(-13.0 + sin(t * 1.2) * 2.2)
 		"comer":
 			_aplicar_rig_comer(rig, sh_x, t, variacion, fase_variacion)
 		"duchar":
-			var frote := sin(t * 6.0)
-			var frote2 := sin(t * 6.0 + 1.2)
-			rig["offset"] = Vector2(sin(t * 4.0) * 1.2, sin(t * 3.5) * 1.8)
+			var frote := sin(t * 6.5)
+			var frote2 := sin(t * 6.5 + 1.2)
+			rig["offset"] = Vector2(sin(t * 3.8) * 1.2, sin(t * 3.2) * 1.6)
 			rig["head_offset"] = Vector2(0.0, sin(t * 2.2) * 0.8)
-			rig["head_rot"] = deg_to_rad(frote * 4.0)
-			rig["arm_l"] = [Vector2(-sh_x, 57.0), Vector2(-sh_x - 15.0, 74.0), Vector2(-22.0 + frote * 5.0, 56.0)]
-			rig["arm_r"] = [Vector2(sh_x, 57.0), Vector2(sh_x + 17.0, 48.0), Vector2(14.0 - frote * 9.0, -28.0)]
+			rig["head_rot"] = deg_to_rad(frote * 4.5)
+			rig["arm_l"] = [Vector2(-sh_x, 57.0), Vector2(-sh_x - 14.0, 72.0), Vector2(-20.0 + frote * 5.0, 50.0)]
+			rig["arm_r"] = [Vector2(sh_x, 57.0), Vector2(sh_x + 18.0, 48.0), Vector2(18.0 - frote * 7.0, 28.0 + frote2 * 4.0)]
 			rig["brazos_delante"] = true
-			rig["mirada"] = Vector2(frote2 * 0.4, 0.3)
+			rig["mirada"] = Vector2(frote2 * 0.5, 0.3)
 			if variacion == "cantar":
 				rig["offset"] = Vector2(sin(t * 4.0) * 2.0, -absf(sin(t * 5.0)) * 3.0 + sin(t * 2.5) * 1.0)
-				rig["head_rot"] = deg_to_rad(sin(t * 5.0) * 10.0)
-				rig["arm_r"] = [Vector2(sh_x, 57.0), Vector2(sh_x + 17.0, 67.0), Vector2(16.0, 26.0)]
-				rig["arm_l"] = [Vector2(-sh_x, 57.0), Vector2(-sh_x - 22.0, 56.0), Vector2(-sh_x - 30.0, 26.0)]
+				rig["head_rot"] = deg_to_rad(sin(t * 5.0) * 9.0)
+				rig["arm_r"] = [Vector2(sh_x, 57.0), Vector2(sh_x + 17.0, 62.0), Vector2(16.0, 32.0)]
+				rig["arm_l"] = [Vector2(-sh_x, 57.0), Vector2(-sh_x - 20.0, 54.0), Vector2(-sh_x - 24.0, 28.0)]
 			elif variacion == "espuma_pelo":
-				var sf := sin(t * 11.0) * 8.0
+				var sf := sin(t * 11.0) * 6.0
 				rig["head_rot"] = deg_to_rad(sin(t * 11.0) * 5.0)
-				rig["arm_l"] = [Vector2(-sh_x, 57.0), Vector2(-sh_x - 17.0, 34.0), Vector2(-15.0 + sf, -34.0)]
-				rig["arm_r"] = [Vector2(sh_x, 57.0), Vector2(sh_x + 17.0, 34.0), Vector2(15.0 - sf, -34.0)]
+				rig["arm_l"] = [Vector2(-sh_x, 57.0), Vector2(-sh_x - 18.0, 28.0), Vector2(-18.0 + sf, -6.0)]
+				rig["arm_r"] = [Vector2(sh_x, 57.0), Vector2(sh_x + 18.0, 28.0), Vector2(18.0 - sf, -6.0)]
 			elif variacion == "agua_fria":
 				rig["offset"] = Vector2(sin(t * 34.0) * 3.2, -3.0)
 				rig["head_rot"] = deg_to_rad(sin(t * 30.0) * 2.0)
-				rig["arm_l"] = [Vector2(-sh_x, 57.0), Vector2(-sh_x - 8.0, 77.0), Vector2(10.0, 70.0)]
-				rig["arm_r"] = [Vector2(sh_x, 57.0), Vector2(sh_x + 8.0, 77.0), Vector2(-10.0, 70.0)]
+				rig["arm_l"] = [Vector2(-sh_x, 57.0), Vector2(-sh_x - 6.0, 74.0), Vector2(10.0, 56.0)]
+				rig["arm_r"] = [Vector2(sh_x, 57.0), Vector2(sh_x + 6.0, 74.0), Vector2(-10.0, 56.0)]
 			elif variacion == "burbuja_gigante":
-				var bu := sin(t * 2.0) * 2.0
+				var bu := sin(t * 2.4) * 2.5
 				rig["head_rot"] = deg_to_rad(-3.0)
-				rig["arm_l"] = [Vector2(-sh_x, 57.0), Vector2(-sh_x - 20.0, 62.0), Vector2(-18.0, 34.0 + bu)]
-				rig["arm_r"] = [Vector2(sh_x, 57.0), Vector2(sh_x + 20.0, 62.0), Vector2(18.0, 34.0 + bu)]
+				rig["arm_l"] = [Vector2(-sh_x, 57.0), Vector2(-sh_x - 18.0, 56.0), Vector2(-22.0, 34.0 + bu)]
+				rig["arm_r"] = [Vector2(sh_x, 57.0), Vector2(sh_x + 18.0, 56.0), Vector2(22.0, 34.0 + bu)]
 		"estudiar":
-			var scribble := sin(t * 10.0) * 5.0
+			var scribble := sin(t * 10.0) * 4.5
 			var resp := sin(t * 2.0) * 0.9
 			rig["offset"] = Vector2(sin(t * 0.46) * 0.8, 2.0 + resp)
 			rig["head_rot"] = deg_to_rad(5.0 + sin(t * 0.8) * 1.6)
 			rig["head_offset"] = Vector2(0.0, sin(t * 1.1) * 0.5)
 			rig["mirada"] = Vector2(sin(t * 0.35) * 0.5, 1.8)
-			rig["arm_l"] = [Vector2(-sh_x, 59.0), Vector2(-sh_x - 9.0, 87.0), Vector2(-16.0, 96.0)]
-			rig["arm_r"] = [Vector2(sh_x, 59.0), Vector2(sh_x + 11.0, 87.0), Vector2(14.0 + scribble, 94.0)]
+			rig["arm_l"] = [Vector2(-sh_x, 59.0), Vector2(-sh_x - 10.0, 82.0), Vector2(-18.0, 84.0)]
+			rig["arm_r"] = [Vector2(sh_x, 59.0), Vector2(sh_x + 10.0, 82.0), Vector2(14.0 + scribble, 82.0 + cos(t * 10.0) * 2.0)]
 			rig["brazos_delante"] = true
 			if variacion == "bombilla":
 				rig["head_rot"] = deg_to_rad(-6.0)
 				rig["mirada"] = Vector2(0.0, -0.8)
-				rig["arm_r"] = [Vector2(sh_x, 57.0), Vector2(sh_x + 20.0, 48.0), Vector2(sh_x + 16.0, 12.0)]
+				rig["arm_r"] = [Vector2(sh_x, 57.0), Vector2(sh_x + 18.0, 48.0), Vector2(sh_x + 14.0, 18.0)]
 			elif variacion == "pensar":
 				rig["head_rot"] = deg_to_rad(-8.0)
 				rig["mirada"] = Vector2(1.8, -1.4)
 				rig["arm_r"] = [Vector2(sh_x, 59.0), Vector2(sh_x + 13.0, 72.0), Vector2(11.0, 34.0)]
 			elif variacion == "pasar_pagina":
 				var pg := sin(clampf(fase_variacion, 0.0, 1.0) * PI)
-				rig["arm_l"] = [Vector2(-sh_x, 59.0), Vector2(-sh_x - 8.0, 82.0), Vector2(-12.0 + pg * 28.0, 92.0 - pg * 18.0)]
+				rig["arm_l"] = [Vector2(-sh_x, 59.0), Vector2(-sh_x - 10.0, 78.0), Vector2(-16.0 + pg * 30.0, 84.0 - pg * 16.0)]
 			elif variacion == "bostezo":
 				rig["head_rot"] = deg_to_rad(-7.0)
-				rig["arm_l"] = [Vector2(-sh_x, 57.0), Vector2(-sh_x - 22.0, 38.0), Vector2(-sh_x - 16.0, 4.0)]
-				rig["arm_r"] = [Vector2(sh_x, 57.0), Vector2(sh_x + 22.0, 38.0), Vector2(sh_x + 16.0, 4.0)]
+				rig["arm_l"] = [Vector2(-sh_x, 57.0), Vector2(-sh_x - 18.0, 38.0), Vector2(-sh_x - 12.0, 10.0)]
+				rig["arm_r"] = [Vector2(sh_x, 57.0), Vector2(sh_x + 18.0, 38.0), Vector2(sh_x + 12.0, 10.0)]
 			elif variacion == "subrayar":
 				var sub := (sin(t * 3.0) + 1.0) * 0.5
 				rig["head_rot"] = deg_to_rad(7.0)
 				rig["mirada"] = Vector2(0.0, 1.9)
-				rig["arm_r"] = [Vector2(sh_x, 59.0), Vector2(sh_x + 9.0, 84.0), Vector2(-2.0 + sub * 34.0, 92.0)]
+				rig["arm_r"] = [Vector2(sh_x, 59.0), Vector2(sh_x + 9.0, 80.0), Vector2(-4.0 + sub * 32.0, 84.0)]
 		"tv":
 			var resp := sin(t * 2.0) * 1.2
 			rig["offset"] = Vector2(sin(t * 0.7) * 0.8, resp)
-			rig["head_rot"] = deg_to_rad(-2.0 + sin(t * 0.5) * 1.5)
+			rig["head_rot"] = deg_to_rad(2.5 + sin(t * 0.6) * 1.5)
 			rig["head_offset"] = Vector2(0.0, sin(t * 1.3) * 0.5)
-			rig["mirada"] = Vector2(1.0, 0.4)
-			rig["arm_l"] = [Vector2(-sh_x, 59.0), Vector2(-sh_x - 13.0, 85.0), Vector2(-23.0, 96.0)]
-			rig["arm_r"] = [Vector2(sh_x, 59.0), Vector2(sh_x + 13.0, 85.0), Vector2(23.0, 96.0)]
+			rig["mirada"] = Vector2(1.4, 0.3)
+			rig["arm_l"] = [Vector2(-sh_x, 59.0), Vector2(-sh_x - 13.0, 82.0), Vector2(-23.0, 90.0)]
+			rig["arm_r"] = [Vector2(sh_x, 59.0), Vector2(sh_x + 13.0, 82.0), Vector2(23.0, 90.0)]
 			rig["brazos_delante"] = true
 			if variacion == "reir":
 				rig["offset"] = Vector2(sin(t * 16.0) * 1.4, sin(t * 16.0) * 3.2)
-				rig["head_rot"] = deg_to_rad(-7.0 + sin(t * 12.0) * 5.0)
+				rig["head_rot"] = deg_to_rad(-4.0 + sin(t * 12.0) * 5.0)
 			elif variacion == "palomitas":
-				var pc := (sin(t * 4.2) + 1.0) * 0.5
-				rig["head_rot"] = deg_to_rad(-3.0 - pc * 4.0)
-				rig["mirada"] = Vector2(0.0, -0.6)
-				rig["arm_r"] = [Vector2(sh_x, 59.0), Vector2(sh_x + 17.0, 74.0), Vector2(15.0 + (1.0 - pc) * 10.0, 78.0 - pc * 44.0)]
+				var pc := (sin(t * 4.4) + 1.0) * 0.5
+				rig["head_rot"] = deg_to_rad(-3.0 - pc * 3.5)
+				rig["mirada"] = Vector2(-0.8, 0.2)
+				rig["arm_l"] = [Vector2(-sh_x, 59.0), Vector2(-sh_x - 16.0, 68.0), Vector2(-24.0 + pc * 14.0, 64.0 - pc * 34.0)]
 			elif variacion == "cambiar_canal":
-				var apunta := 0.5 + sin(t * 2.0) * 0.5
-				rig["head_rot"] = deg_to_rad(-2.0)
-				rig["mirada"] = Vector2(1.7, 0.2)
-				rig["arm_r"] = [Vector2(sh_x, 59.0), Vector2(sh_x + 22.0, 76.0), Vector2(sh_x + 40.0 + apunta * 4.0, 64.0)]
+				var apunta := 0.5 + sin(t * 3.5) * 0.5
+				rig["head_rot"] = deg_to_rad(3.0)
+				rig["mirada"] = Vector2(1.8, 0.2)
+				rig["arm_r"] = [Vector2(sh_x, 59.0), Vector2(sh_x + 20.0, 66.0), Vector2(sh_x + 36.0 + apunta * 4.0, 48.0)]
+				rig["prop_r_rot"] = 0.95
 			elif variacion == "sorpresa_tv":
 				var so := sin(clampf(fase_variacion, 0.0, 1.0) * PI)
 				rig["offset"] = Vector2(0.0, -4.0 - so * 5.0)
-				rig["head_rot"] = deg_to_rad(-8.0)
-				rig["arm_l"] = [Vector2(-sh_x, 57.0), Vector2(-sh_x - 20.0, 44.0), Vector2(-sh_x - 14.0, 8.0)]
-				rig["arm_r"] = [Vector2(sh_x, 57.0), Vector2(sh_x + 20.0, 44.0), Vector2(sh_x + 14.0, 8.0)]
+				rig["head_rot"] = deg_to_rad(-6.0)
+				rig["arm_l"] = [Vector2(-sh_x, 57.0), Vector2(-sh_x - 18.0, 44.0), Vector2(-sh_x - 12.0, 14.0)]
+				rig["arm_r"] = [Vector2(sh_x, 57.0), Vector2(sh_x + 18.0, 44.0), Vector2(sh_x + 12.0, 14.0)]
 			elif variacion == "bostezo_tv":
 				var bt := sin(clampf(fase_variacion, 0.0, 1.0) * PI)
 				rig["offset"] = Vector2(0.0, -bt * 3.0)
 				rig["head_rot"] = deg_to_rad(-6.0)
-				rig["arm_l"] = [Vector2(-sh_x, 57.0), Vector2(-sh_x - 24.0, 38.0), Vector2(-sh_x - 18.0, 2.0 + bt * 4.0)]
-				rig["arm_r"] = [Vector2(sh_x, 57.0), Vector2(sh_x + 24.0, 38.0), Vector2(sh_x + 18.0, 2.0 + bt * 4.0)]
+				rig["arm_l"] = [Vector2(-sh_x, 57.0), Vector2(-sh_x - 20.0, 38.0), Vector2(-sh_x - 14.0, 10.0 + bt * 4.0)]
+				rig["arm_r"] = [Vector2(sh_x, 57.0), Vector2(sh_x + 20.0, 38.0), Vector2(sh_x + 14.0, 10.0 + bt * 4.0)]
 		"manualidades":
-			var trazo := sin(t * 6.5) * 10.0
+			var trazo := sin(t * 6.5) * 8.0
 			rig["offset"] = Vector2(sin(t * 0.8) * 0.8, sin(t * 2.5) * 1.3)
 			rig["head_rot"] = deg_to_rad(3.0 + trazo * 0.22)
 			rig["head_offset"] = Vector2(0.0, cos(t * 6.5) * 0.5)
-			rig["mirada"] = Vector2(0.9, 1.3)
-			rig["arm_l"] = [Vector2(-sh_x, 59.0), Vector2(-sh_x - 13.0, 84.0), Vector2(-20.0, 92.0)]
-			rig["arm_r"] = [Vector2(sh_x, 57.0), Vector2(sh_x + 20.0, 68.0), Vector2(25.0 + trazo, 52.0 + cos(t * 6.5) * 7.0)]
+			rig["mirada"] = Vector2(1.2, 1.2)
+			rig["arm_l"] = [Vector2(-sh_x, 59.0), Vector2(-sh_x - 13.0, 82.0), Vector2(-24.0, 84.0)]
+			rig["arm_r"] = [Vector2(sh_x, 57.0), Vector2(sh_x + 20.0, 68.0), Vector2(36.0 + trazo, 54.0 + cos(t * 6.5) * 6.0)]
+			rig["prop_r_rot"] = 0.25 + sin(t * 6.5) * 0.14
 			rig["brazos_delante"] = true
 			if variacion == "pincelada_rapida":
-				var tr2 := sin(t * 15.0) * 14.0
+				var tr2 := sin(t * 15.0) * 11.0
 				rig["offset"] = Vector2(sin(t * 1.2) * 1.4, sin(t * 7.5) * 1.8)
 				rig["head_rot"] = deg_to_rad(tr2 * 0.18)
-				rig["arm_r"] = [Vector2(sh_x, 57.0), Vector2(sh_x + 22.0, 62.0), Vector2(23.0 + tr2, 46.0 + cos(t * 15.0) * 10.0)]
+				rig["arm_r"] = [Vector2(sh_x, 57.0), Vector2(sh_x + 22.0, 62.0), Vector2(36.0 + tr2, 48.0 + cos(t * 15.0) * 8.0)]
+				rig["prop_r_rot"] = 0.30 + sin(t * 15.0) * 0.22
 			elif variacion == "admirar":
 				var ad := sin(clampf(fase_variacion, 0.0, 1.0) * PI)
 				rig["head_rot"] = deg_to_rad(-9.0)
-				rig["mirada"] = Vector2(-0.5, 0.8)
-				rig["arm_r"] = [Vector2(sh_x, 59.0), Vector2(sh_x + 13.0, 74.0), Vector2(12.0, 34.0)]
-				rig["arm_l"] = [Vector2(-sh_x, 59.0), Vector2(-sh_x - 14.0, 72.0), Vector2(-10.0, 40.0 - ad * 4.0)]
+				rig["mirada"] = Vector2(0.8, 0.8)
+				rig["arm_r"] = [Vector2(sh_x, 59.0), Vector2(sh_x + 13.0, 74.0), Vector2(16.0, 34.0)]
+				rig["arm_l"] = [Vector2(-sh_x, 59.0), Vector2(-sh_x - 14.0, 72.0), Vector2(-16.0, 38.0 - ad * 4.0)]
 				rig["hand_l_tipo"] = "mejilla_l"
 				rig["hand_r_tipo"] = "mejilla_r"
 			elif variacion == "soplar_pintura":
 				var so := sin(clampf(fase_variacion, 0.0, 1.0) * PI)
 				rig["offset"] = Vector2(so * 3.0, so * 1.0)
 				rig["head_rot"] = deg_to_rad(6.0)
-				rig["mirada"] = Vector2(1.4, 1.0)
-				rig["arm_r"] = [Vector2(sh_x, 57.0), Vector2(sh_x + 18.0, 65.0), Vector2(25.0, 52.0)]
+				rig["mirada"] = Vector2(1.5, 1.0)
+				rig["arm_r"] = [Vector2(sh_x, 57.0), Vector2(sh_x + 18.0, 65.0), Vector2(34.0, 56.0)]
 				rig["brazos_delante"] = true
 		"cocinar":
 			var rem := sin(t * 7.5) * 10.0
-			var sal := cos(t * 7.5) * 4.0
+			var sal := cos(t * 7.5) * 3.5
 			rig["offset"] = Vector2(sin(t * 0.7) * 0.7, sin(t * 3.0) * 1.3)
 			rig["head_rot"] = deg_to_rad(3.0 + sin(t * 1.2) * 1.2)
 			rig["head_offset"] = Vector2(0.0, sin(t * 1.6) * 0.4)
 			rig["mirada"] = Vector2(0.5, 1.5)
-			rig["arm_l"] = [Vector2(-sh_x, 58.0), Vector2(-sh_x - 14.0, 82.0), Vector2(-20.0, 92.0)]
-			rig["arm_r"] = [Vector2(sh_x, 58.0), Vector2(sh_x + 18.0, 76.0), Vector2(12.0 + rem, 82.0 + sal)]
+			rig["arm_l"] = [Vector2(-sh_x, 58.0), Vector2(-sh_x - 12.0, 78.0), Vector2(-34.0, 82.0)]
+			rig["arm_r"] = [Vector2(sh_x, 58.0), Vector2(sh_x + 14.0, 72.0), Vector2(14.0 + rem, 74.0 + sal)]
+			rig["prop_r_rot"] = -2.35 + sin(t * 7.5) * 0.20
 			rig["brazos_delante"] = true
 			if variacion == "probar":
 				rig["head_rot"] = deg_to_rad(-7.0)
 				rig["mirada"] = Vector2(0.0, 1.2)
-				rig["arm_r"] = [Vector2(sh_x, 58.0), Vector2(sh_x + 16.0, 68.0), Vector2(14.0, 30.0)]
+				rig["arm_r"] = [Vector2(sh_x, 58.0), Vector2(sh_x + 16.0, 68.0), Vector2(14.0, 32.0)]
+				rig["prop_r_rot"] = 0.0
 			elif variacion == "saltear":
-				var salt := sin(t * 13.0) * 11.0
-				rig["offset"] = Vector2(0.0, sin(t * 6.5) * 1.4)
+				var salt := absf(sin(t * 11.0)) * 11.0
+				rig["offset"] = Vector2(0.0, sin(t * 5.5) * 1.4)
 				rig["head_rot"] = deg_to_rad(4.0)
-				rig["arm_r"] = [Vector2(sh_x, 58.0), Vector2(sh_x + 16.0, 78.0), Vector2(18.0, 76.0 - absf(salt))]
-				rig["arm_l"] = [Vector2(-sh_x, 58.0), Vector2(-sh_x - 14.0, 82.0), Vector2(-24.0, 88.0)]
+				rig["arm_l"] = [Vector2(-sh_x, 58.0), Vector2(-sh_x - 14.0, 78.0), Vector2(-36.0, 80.0 - salt * 0.65)]
+				rig["arm_r"] = [Vector2(sh_x, 58.0), Vector2(sh_x + 14.0, 72.0), Vector2(18.0, 70.0 - salt)]
+				rig["prop_r_rot"] = -2.1 + sin(t * 11.0) * 0.35
 			elif variacion == "oler_guiso":
 				var ol := sin(clampf(fase_variacion, 0.0, 1.0) * PI)
 				rig["offset"] = Vector2(0.0, ol * 2.4)
 				rig["head_rot"] = deg_to_rad(8.0 + ol * 3.0)
 				rig["head_offset"] = Vector2(0.0, ol * 1.4)
 				rig["mirada"] = Vector2(0.0, 1.8)
-				rig["arm_l"] = [Vector2(-sh_x, 58.0), Vector2(-sh_x - 12.0, 80.0), Vector2(-24.0, 86.0)]
-				rig["arm_r"] = [Vector2(sh_x, 58.0), Vector2(sh_x + 12.0, 80.0), Vector2(24.0, 86.0)]
+				rig["arm_l"] = [Vector2(-sh_x, 58.0), Vector2(-sh_x - 12.0, 78.0), Vector2(-28.0, 80.0)]
+				rig["arm_r"] = [Vector2(sh_x, 58.0), Vector2(sh_x + 12.0, 78.0), Vector2(28.0, 80.0)]
+				rig["prop_r_rot"] = -1.75
 		"fiesta":
-			var groove := sin(t * 7.5)
-			var groove2 := sin(t * 7.5 + 1.6)
-			var bounce := absf(sin(t * 7.5)) * 5.0
-			rig["offset"] = Vector2(groove * 4.5, -bounce)
-			rig["root_rot"] = deg_to_rad(groove * 5.0)
-			rig["head_rot"] = deg_to_rad(-groove * 7.0)
-			rig["head_offset"] = Vector2(groove2 * 1.2, 0.0)
-			rig["arm_l"] = [Vector2(-sh_x, 57.0), Vector2(-sh_x - 20.0, 48.0 + groove * 12.0), Vector2(-sh_x - 16.0, 14.0 - groove * 14.0)]
-			rig["arm_r"] = [Vector2(sh_x, 57.0), Vector2(sh_x + 20.0, 48.0 - groove * 12.0), Vector2(sh_x + 16.0, 14.0 + groove * 14.0)]
-			rig["leg_l"] = [Vector2(-hip_x, 124.0), Vector2(-hip_x - 4.0 + groove * 6.0, 164.0), Vector2(-hip_x - 6.0 + groove * 8.0, 202.0)]
-			rig["leg_r"] = [Vector2(hip_x, 124.0), Vector2(hip_x + 4.0 + groove * 6.0, 164.0), Vector2(hip_x + 6.0 + groove * 8.0, 202.0)]
+			var p_f: float = t * 7.2
+			var groove: float = sin(p_f)
+			var groove2: float = sin(p_f + 1.4)
+			var bounce: float = absf(sin(p_f)) * 5.0
+			rig["offset"] = Vector2(groove * 4.0, -bounce)
+			rig["root_rot"] = deg_to_rad(groove * 4.5)
+			rig["head_rot"] = deg_to_rad(-groove * 6.5)
+			rig["head_offset"] = Vector2(groove2 * 1.1, 0.0)
+			# Brazos rítmicos con longitud constante de antebrazo/brazo
+			var up_l: float = maxf(0.0, groove)
+			var up_r: float = maxf(0.0, -groove)
+			rig["arm_l"] = _brazo_desde_angulos(Vector2(-sh_x, 57.0), -0.95 - up_l * 0.65, -2.55 + groove * 0.45, 29.0, 27.0)
+			rig["arm_r"] = _brazo_desde_angulos(Vector2(sh_x, 57.0), 0.95 + up_r * 0.65, 2.55 + groove * 0.45, 29.0, 27.0)
+			# Pasos alternos con flexión real de rodilla
+			rig["leg_l"] = [Vector2(-hip_x, 124.0), Vector2(-hip_x - 5.0 - up_l * 4.0, 162.0 - up_l * 9.0), Vector2(-hip_x - 4.0, 202.0 - up_l * 12.0)]
+			rig["leg_r"] = [Vector2(hip_x, 124.0), Vector2(hip_x + 5.0 + up_r * 4.0, 162.0 - up_r * 9.0), Vector2(hip_x + 4.0, 202.0 - up_r * 12.0)]
 			rig["hand_l_tipo"] = "puno"
 			rig["hand_r_tipo"] = "puno"
 			if variacion == "brindar":
 				var br := sin(clampf(fase_variacion, 0.0, 1.0) * PI)
-				rig["offset"] = Vector2(0.0, -br * 2.0)
-				rig["head_rot"] = deg_to_rad(-8.0)
-				rig["arm_r"] = [Vector2(sh_x, 57.0), Vector2(sh_x + 20.0, 40.0), Vector2(sh_x + 14.0, -2.0)]
-				rig["arm_l"] = [Vector2(-sh_x, 57.0), Vector2(-sh_x - 22.0, 58.0), Vector2(-sh_x - 30.0, 34.0)]
+				var sway := sin(t * 4.0) * 1.5
+				rig["offset"] = Vector2(sway, -br * 2.5 - absf(sin(t * 4.0)) * 1.5)
+				rig["root_rot"] = deg_to_rad(sway * 1.5)
+				rig["head_rot"] = deg_to_rad(-7.0)
+				rig["arm_r"] = [Vector2(sh_x, 57.0), Vector2(sh_x + 22.0, 46.0), Vector2(sh_x + 12.0, 16.0)]
+				rig["arm_l"] = [Vector2(-sh_x, 57.0), Vector2(-sh_x - 18.0, 68.0), Vector2(-sh_x - 24.0, 44.0)]
+				rig["hand_r_tipo"] = "sostener"
+				rig["prop_r_rot"] = -0.18
+				rig["leg_l"] = [Vector2(-hip_x, 124.0), Vector2(-hip_x - 4.0, 164.0), Vector2(-hip_x - 5.0, 203.0)]
+				rig["leg_r"] = [Vector2(hip_x, 124.0), Vector2(hip_x + 4.0, 164.0), Vector2(hip_x + 5.0, 203.0)]
 			elif variacion == "saltar":
 				var sj := absf(sin(clampf(fase_variacion, 0.0, 1.0) * PI * 2.0))
 				rig["offset"] = Vector2(0.0, -sj * 14.0)
-				rig["head_rot"] = deg_to_rad(-6.0)
-				rig["arm_l"] = [Vector2(-sh_x, 57.0), Vector2(-sh_x - 22.0, 34.0), Vector2(-sh_x - 18.0, -12.0)]
-				rig["arm_r"] = [Vector2(sh_x, 57.0), Vector2(sh_x + 22.0, 34.0), Vector2(sh_x + 18.0, -12.0)]
-				rig["leg_l"] = [Vector2(-hip_x, 124.0), Vector2(-hip_x - 10.0, 152.0), Vector2(-hip_x - 12.0, 188.0)]
-				rig["leg_r"] = [Vector2(hip_x, 124.0), Vector2(hip_x + 10.0, 152.0), Vector2(hip_x + 12.0, 188.0)]
+				rig["root_rot"] = 0.0
+				rig["head_rot"] = deg_to_rad(-5.0)
+				rig["arm_l"] = [Vector2(-sh_x, 57.0), Vector2(-sh_x - 22.0, 36.0), Vector2(-sh_x - 14.0, 8.0)]
+				rig["arm_r"] = [Vector2(sh_x, 57.0), Vector2(sh_x + 22.0, 36.0), Vector2(sh_x + 14.0, 8.0)]
+				rig["leg_l"] = [Vector2(-hip_x, 124.0), Vector2(-hip_x - 9.0, 154.0), Vector2(-hip_x - 10.0, 190.0)]
+				rig["leg_r"] = [Vector2(hip_x, 124.0), Vector2(hip_x + 9.0, 154.0), Vector2(hip_x + 10.0, 190.0)]
 		"futbol":
-			var cyc_f := sin(t * 6.5)
-			var resp_f := sin(t * 2.0) * 1.2
-			rig["offset"] = Vector2(0.0, -absf(cyc_f) * 4.5 + resp_f * 0.3)
-			rig["root_rot"] = deg_to_rad(3.0 + cyc_f * 4.0)
-			rig["head_rot"] = deg_to_rad(-cyc_f * 3.0 + sin(t * 1.4) * 1.4)
+			var cyc_f := sin(t * 5.8)
+			var resp_f := sin(t * 2.0) * 1.0
+			rig["offset"] = Vector2(sin(t * 2.9) * 1.5, -absf(cyc_f) * 3.5 + resp_f * 0.3)
+			rig["root_rot"] = deg_to_rad(2.5 + cyc_f * 3.0)
+			rig["head_rot"] = deg_to_rad(-cyc_f * 2.5 + sin(t * 1.4) * 1.4)
 			rig["head_offset"] = Vector2(0.0, sin(t * 3.0) * 0.5)
-			rig["arm_l"] = [Vector2(-sh_x, 57.0), Vector2(-sh_x - 18.0, 76.0 - cyc_f * 8.0), Vector2(-sh_x - 26.0, 64.0 - cyc_f * 10.0)]
-			rig["arm_r"] = [Vector2(sh_x, 57.0), Vector2(sh_x + 18.0, 76.0 + cyc_f * 8.0), Vector2(sh_x + 26.0, 64.0 + cyc_f * 10.0)]
-			var empuje_r := maxf(0.0, cyc_f) * 24.0
-			var empuje_l := maxf(0.0, -cyc_f) * 20.0
-			rig["leg_l"] = [Vector2(-hip_x, 124.0), Vector2(-hip_x - 7.0 - empuje_l * 0.35, 164.0 - empuje_l * 0.25), Vector2(-hip_x - 11.0 - empuje_l * 0.55, 203.0 - empuje_l)]
-			rig["leg_r"] = [Vector2(hip_x, 124.0), Vector2(hip_x + 13.0 + empuje_r * 0.40, 158.0 - empuje_r * 0.35), Vector2(hip_x + 22.0 + empuje_r * 0.60, 198.0 - empuje_r)]
-			rig["mirada"] = Vector2(0.6, 1.5)
+			rig["arm_l"] = [Vector2(-sh_x, 57.0), Vector2(-sh_x - 17.0, 74.0 - cyc_f * 6.0), Vector2(-sh_x - 24.0, 58.0 - cyc_f * 8.0)]
+			rig["arm_r"] = [Vector2(sh_x, 57.0), Vector2(sh_x + 17.0, 74.0 + cyc_f * 6.0), Vector2(sh_x + 24.0, 58.0 + cyc_f * 8.0)]
+			# Pie derecho da toquecitos suaves sobre el balón a la derecha (sincronizado con _frente_futbol)
+			var tap_r := maxf(0.0, cyc_f)
+			var step_l := maxf(0.0, -cyc_f) * 6.0
+			rig["leg_l"] = [Vector2(-hip_x, 124.0), Vector2(-hip_x - 5.0, 164.0 - step_l * 0.4), Vector2(-hip_x - 6.0, 203.0 - step_l)]
+			rig["leg_r"] = [Vector2(hip_x, 124.0), Vector2(hip_x + 14.0 + tap_r * 8.0, 160.0 - tap_r * 10.0), Vector2(hip_x + 24.0 + tap_r * 10.0, 198.0 - tap_r * 18.0)]
+			rig["mirada"] = Vector2(1.0, 1.5)
 			if variacion == "celebrar_gol":
 				var cg := sin(clampf(fase_variacion, 0.0, 1.0) * PI)
-				rig["offset"] = Vector2(0.0, -cg * 10.0)
-				rig["head_rot"] = deg_to_rad(-10.0)
-				rig["arm_l"] = [Vector2(-sh_x, 57.0), Vector2(-sh_x - 24.0, 34.0), Vector2(-sh_x - 18.0, -14.0)]
-				rig["arm_r"] = [Vector2(sh_x, 57.0), Vector2(sh_x + 24.0, 34.0), Vector2(sh_x + 18.0, -14.0)]
+				rig["offset"] = Vector2(0.0, -cg * 14.0)
+				rig["root_rot"] = 0.0
+				rig["head_rot"] = deg_to_rad(-9.0)
+				rig["mirada"] = Vector2(0.0, -0.5)
+				rig["arm_l"] = [Vector2(-sh_x, 57.0), Vector2(-sh_x - 22.0, 36.0), Vector2(-sh_x - 14.0, 8.0)]
+				rig["arm_r"] = [Vector2(sh_x, 57.0), Vector2(sh_x + 22.0, 36.0), Vector2(sh_x + 14.0, 8.0)]
+				rig["leg_l"] = [Vector2(-hip_x, 124.0), Vector2(-hip_x - 8.0, 156.0), Vector2(-hip_x - 10.0, 194.0)]
+				rig["leg_r"] = [Vector2(hip_x, 124.0), Vector2(hip_x + 8.0, 156.0), Vector2(hip_x + 10.0, 194.0)]
 				rig["hand_l_tipo"] = "puno"
 				rig["hand_r_tipo"] = "puno"
 			elif variacion == "regate":
-				var rg := sin(t * 8.0)
-				rig["offset"] = Vector2(rg * 4.0, -absf(rg) * 2.0)
+				var rg := sin(t * 7.2)
+				rig["offset"] = Vector2(rg * 5.0, -absf(rg) * 3.0)
 				rig["root_rot"] = deg_to_rad(rg * 7.0)
 				rig["head_rot"] = deg_to_rad(-rg * 4.0)
-				rig["leg_l"] = [Vector2(-hip_x, 124.0), Vector2(-hip_x + rg * 14.0, 160.0), Vector2(-hip_x + rg * 22.0, 200.0)]
-				rig["leg_r"] = [Vector2(hip_x, 124.0), Vector2(hip_x - rg * 14.0, 160.0), Vector2(hip_x - rg * 22.0, 200.0)]
+				rig["mirada"] = Vector2(rg * 1.4, 1.6)
+				rig["leg_l"] = [Vector2(-hip_x, 124.0), Vector2(-hip_x - 4.0 + rg * 12.0, 160.0), Vector2(-hip_x - 4.0 + rg * 18.0, 200.0 - maxf(0.0, -rg) * 10.0)]
+				rig["leg_r"] = [Vector2(hip_x, 124.0), Vector2(hip_x + 4.0 + rg * 12.0, 160.0), Vector2(hip_x + 4.0 + rg * 18.0, 200.0 - maxf(0.0, rg) * 10.0)]
 			elif variacion == "toques":
-				rig["head_rot"] = deg_to_rad(-4.0)
-				rig["mirada"] = Vector2(0.0, 1.9)
+				var toq := sin(t * 7.0)
+				var lift_l := maxf(0.0, toq) * 26.0
+				var lift_r := maxf(0.0, -toq) * 26.0
+				rig["offset"] = Vector2(toq * 2.5, -absf(toq) * 3.5)
+				rig["root_rot"] = deg_to_rad(-toq * 3.5)
+				rig["head_rot"] = deg_to_rad(3.0)
+				rig["mirada"] = Vector2(-toq * 1.2, 1.9)
+				rig["leg_l"] = [Vector2(-hip_x, 124.0), Vector2(-hip_x - 10.0, 160.0 - lift_l * 0.55), Vector2(-hip_x - 12.0, 200.0 - lift_l)]
+				rig["leg_r"] = [Vector2(hip_x, 124.0), Vector2(hip_x + 10.0, 160.0 - lift_r * 0.55), Vector2(hip_x + 12.0, 200.0 - lift_r)]
 		"trabajar":
-			var tec_l := sin(t * 12.0) * 4.0
-			var tec_r := cos(t * 12.0) * 4.0
+			var tec_l := sin(t * 13.0) * 3.5
+			var tec_r := cos(t * 13.0) * 3.5
 			var resp_t := sin(t * 2.2) * 0.9
 			rig["offset"] = Vector2(sin(t * 0.5) * 0.6, resp_t)
 			rig["head_rot"] = deg_to_rad(-1.0 + sin(t * 0.7) * 1.5)
 			rig["head_offset"] = Vector2(0.0, sin(t * 1.4) * 0.4)
 			rig["mirada"] = Vector2(sin(t * 0.3) * 0.6, 1.4)
-			rig["arm_l"] = [Vector2(-sh_x, 59.0), Vector2(-sh_x - 9.0, 87.0), Vector2(-14.0, 96.0 + tec_l)]
-			rig["arm_r"] = [Vector2(sh_x, 59.0), Vector2(sh_x + 9.0, 87.0), Vector2(14.0, 96.0 + tec_r)]
+			rig["arm_l"] = [Vector2(-sh_x, 59.0), Vector2(-sh_x - 9.0, 74.0 + tec_l * 0.5), Vector2(-14.0, 92.0 + tec_l)]
+			rig["arm_r"] = [Vector2(sh_x, 59.0), Vector2(sh_x + 9.0, 74.0 + tec_r * 0.5), Vector2(14.0, 92.0 + tec_r)]
 			rig["brazos_delante"] = true
 			if variacion == "cafe":
 				var ca := sin(clampf(fase_variacion, 0.0, 1.0) * PI)
 				rig["head_rot"] = deg_to_rad(-6.0 - ca * 2.0)
-				rig["arm_r"] = [Vector2(sh_x, 57.0), Vector2(sh_x + 17.0, 68.0), Vector2(14.0, 26.0)]
+				rig["arm_r"] = [Vector2(sh_x, 57.0), Vector2(sh_x + 19.0, 64.0), Vector2(24.0, 26.0)]
 			elif variacion == "mirar_reloj":
-				rig["head_rot"] = deg_to_rad(8.0)
-				rig["mirada"] = Vector2(-1.6, 1.6)
-				rig["arm_l"] = [Vector2(-sh_x, 59.0), Vector2(-sh_x - 11.0, 76.0), Vector2(-14.0, 56.0)]
+				rig["head_rot"] = deg_to_rad(10.0)
+				rig["mirada"] = Vector2(-1.8, 1.6)
+				rig["arm_l"] = [Vector2(-sh_x, 59.0), Vector2(-sh_x - 16.0, 66.0), Vector2(-sh_x - 18.0, 42.0)]
+				rig["prop_l_override"] = "reloj"
 			elif variacion == "ganar_dinero":
 				var gd := sin(clampf(fase_variacion, 0.0, 1.0) * PI)
 				rig["offset"] = Vector2(0.0, -gd * 3.0)
 				rig["head_rot"] = deg_to_rad(-4.0)
-				rig["arm_r"] = [Vector2(sh_x, 57.0), Vector2(sh_x + 20.0, 56.0), Vector2(sh_x + 18.0, 22.0)]
+				rig["arm_r"] = [Vector2(sh_x, 57.0), Vector2(sh_x + 20.0, 52.0), Vector2(sh_x + 16.0, 22.0)]
 				rig["hand_r_tipo"] = "puno"
 			elif variacion == "estirar_cuello":
 				var ec := sin(clampf(fase_variacion, 0.0, 1.0) * PI)
 				rig["head_rot"] = deg_to_rad(-ec * 10.0)
 				rig["head_offset"] = Vector2(ec * 2.0, -ec * 1.0)
-				rig["arm_l"] = [Vector2(-sh_x, 59.0), Vector2(-sh_x - 12.0, 78.0), Vector2(-8.0, 84.0)]
-				rig["arm_r"] = [Vector2(sh_x, 59.0), Vector2(sh_x + 12.0, 78.0), Vector2(8.0, 84.0)]
+				rig["arm_l"] = [Vector2(-sh_x, 57.0), Vector2(-sh_x - 20.0, 24.0), Vector2(-14.0, -6.0)]
+				rig["arm_r"] = [Vector2(sh_x, 57.0), Vector2(sh_x + 20.0, 24.0), Vector2(14.0, -6.0)]
+				rig["brazos_delante"] = false
 		_:
 			# "idle" con variaciones y respiración natural
+			if animar_idle and modo == "cuerpo_completo":
+				var shift_x := sin(t * 0.85) * 1.4
+				rig["offset"] = Vector2(shift_x, bob)
+				rig["leg_l"] = [Vector2(-hip_x, 124.0), Vector2(-hip_x - 2.0 + shift_x * 0.3, 165.0), Vector2(-hip_x - 3.0, 203.0)]
+				rig["leg_r"] = [Vector2(hip_x, 124.0), Vector2(hip_x + 2.0 + shift_x * 0.3, 165.0), Vector2(hip_x + 3.0, 203.0)]
 			if variacion == "saludar":
-				var wave := sin(t * 11.0) * 11.0
+				var wave := sin(t * 11.0) * 9.0
 				rig["head_rot"] = deg_to_rad(-5.0)
-				rig["arm_r"] = [Vector2(sh_x, 57.0), Vector2(sh_x + 24.0, 48.0), Vector2(sh_x + 26.0 + wave, 14.0)]
+				rig["arm_r"] = [Vector2(sh_x, 57.0), Vector2(sh_x + 22.0, 48.0), Vector2(sh_x + 24.0 + wave, 18.0)]
 				rig["brazos_delante"] = true
 			elif variacion == "mirar_movil":
 				rig["head_rot"] = deg_to_rad(6.0)
 				rig["mirada"] = Vector2(0.0, 2.0)
-				rig["arm_l"] = [Vector2(-sh_x, 59.0), Vector2(-sh_x - 9.0, 85.0), Vector2(-10.0, 76.0)]
-				rig["arm_r"] = [Vector2(sh_x, 59.0), Vector2(sh_x + 9.0, 85.0), Vector2(10.0, 74.0)]
+				rig["arm_l"] = [Vector2(-sh_x, 59.0), Vector2(-sh_x - 9.0, 82.0), Vector2(-10.0, 74.0)]
+				rig["arm_r"] = [Vector2(sh_x, 59.0), Vector2(sh_x + 9.0, 82.0), Vector2(10.0, 72.0)]
 				rig["brazos_delante"] = true
 			elif variacion == "estirarse":
 				var st := sin(clampf(fase_variacion, 0.0, 1.0) * PI)
 				rig["offset"] = Vector2(0.0, -st * 5.0)
-				rig["arm_l"] = [Vector2(-sh_x, 55.0), Vector2(-sh_x - 20.0, 32.0 - st * 18.0), Vector2(-sh_x - 11.0, -6.0 - st * 22.0)]
-				rig["arm_r"] = [Vector2(sh_x, 55.0), Vector2(sh_x + 20.0, 32.0 - st * 18.0), Vector2(sh_x + 11.0, -6.0 - st * 22.0)]
+				rig["arm_l"] = [Vector2(-sh_x, 55.0), Vector2(-sh_x - 18.0, 32.0 - st * 8.0), Vector2(-sh_x - 10.0, 6.0 - st * 10.0)]
+				rig["arm_r"] = [Vector2(sh_x, 55.0), Vector2(sh_x + 18.0, 32.0 - st * 8.0), Vector2(sh_x + 10.0, 6.0 - st * 10.0)]
 			elif variacion == "silbar":
 				rig["head_rot"] = deg_to_rad(sin(t * 4.5) * 8.0)
 				rig["mirada"] = Vector2(1.4, -1.2)
 			elif variacion == "flexionar":
 				var fx := sin(t * 7.0) * 3.0
 				rig["head_rot"] = deg_to_rad(-4.0)
-				rig["arm_r"] = [Vector2(sh_x, 57.0), Vector2(sh_x + 24.0, 56.0), Vector2(sh_x + 14.0, 26.0 + fx)]
+				rig["arm_r"] = [Vector2(sh_x, 57.0), Vector2(sh_x + 24.0, 56.0), Vector2(sh_x + 14.0, 28.0 + fx)]
 				rig["hand_r_tipo"] = "puno"
 			elif variacion == "tomar_notas":
-				var sc := sin(t * 11.0) * 4.0
+				var sc := sin(t * 11.0) * 3.5
 				rig["head_rot"] = deg_to_rad(6.0)
 				rig["mirada"] = Vector2(0.0, 2.0)
-				rig["arm_l"] = [Vector2(-sh_x, 59.0), Vector2(-sh_x - 10.0, 82.0), Vector2(-8.0, 78.0)]
-				rig["arm_r"] = [Vector2(sh_x, 59.0), Vector2(sh_x + 11.0, 82.0), Vector2(10.0 + sc, 76.0)]
+				rig["arm_l"] = [Vector2(-sh_x, 59.0), Vector2(-sh_x - 10.0, 80.0), Vector2(-10.0, 76.0)]
+				rig["arm_r"] = [Vector2(sh_x, 59.0), Vector2(sh_x + 11.0, 80.0), Vector2(8.0 + sc, 74.0)]
+				rig["prop_l_override"] = "libreta"
 				rig["brazos_delante"] = true
 
 	# Postura con la edad: hombros caídos, cabeza hundida y balanceo más rígido.
@@ -723,12 +793,35 @@ func obtener_rig_pose(nombre_pose: String, t: float, es_mujer: bool, ap_datos: D
 	return rig
 
 
+func _pierna_carrera_perfil(hip: Vector2, p: float, amp_th: float) -> Dictionary:
+	var th := cos(p) * amp_th + 0.08
+	var bend := 0.22 + 0.96 * maxf(0.0, -sin(p + 0.25))
+	var shin_ang := th - bend
+	var knee := hip + Vector2(sin(th) * 40.0, cos(th) * 40.0)
+	var foot := knee + Vector2(sin(shin_ang) * 39.0, cos(shin_ang) * 39.0)
+	var foot_rot := 0.16 - cos(p) * 0.34 - sin(p) * 0.16
+	return {"pts": [hip, knee, foot], "foot_rot": foot_rot}
+
+
+func _brazo_carrera_perfil(sh: Vector2, ang_upper: float) -> Array:
+	var el := sh + Vector2(sin(ang_upper) * 29.0, cos(ang_upper) * 29.0)
+	var ang_fore := ang_upper + 1.48 + maxf(0.0, sin(ang_upper)) * 0.22
+	var ha := el + Vector2(sin(ang_fore) * 27.0, cos(ang_fore) * 27.0)
+	return [sh, el, ha]
+
+
+func _brazo_desde_angulos(sh: Vector2, ang_upper: float, ang_fore: float, l_up: float, l_fore: float) -> Array:
+	var el := sh + Vector2(sin(ang_upper) * l_up, cos(ang_upper) * l_up)
+	var ha := el + Vector2(sin(ang_fore) * l_fore, cos(ang_fore) * l_fore)
+	return [sh, el, ha]
+
+
 func _mezclar_rig(base: Dictionary, var_: Dictionary, peso: float) -> Dictionary:
 	var out := base.duplicate(true)
 	for clave in ["offset", "head_offset"]:
 		if base.has(clave) and var_.has(clave):
 			out[clave] = (base[clave] as Vector2).lerp(var_[clave] as Vector2, peso)
-	for clave in ["root_rot", "head_rot"]:
+	for clave in ["root_rot", "head_rot", "foot_rot_l", "foot_rot_r"]:
 		if base.has(clave) and var_.has(clave):
 			out[clave] = lerpf(float(base[clave]), float(var_[clave]), peso)
 	for clave in ["arm_l", "arm_r", "leg_l", "leg_r"]:
@@ -750,7 +843,7 @@ func _mezclar_rig(base: Dictionary, var_: Dictionary, peso: float) -> Dictionary
 	# Los brazos pasan delante del torso en cuanto empieza la acción para evitar
 	# un salto visible de orden de dibujo a mitad de la transición.
 	var usar_var := peso >= 0.5
-	for clave in ["hand_l_tipo", "hand_r_tipo", "brazos_delante", "prop_r_override",
+	for clave in ["hand_l_tipo", "hand_r_tipo", "brazos_delante", "vista_perfil", "prop_r_override",
 			"prop_l_override", "bocado_en_tenedor", "comer_ojos_felices", "comer_expresion_override"]:
 		if var_.has(clave):
 			if clave == "brazos_delante":
@@ -1198,6 +1291,14 @@ func _draw() -> void:
 	var prop_r: String = str(rig.get("prop_r_override", src.prop_mano))
 	var prop_l: String = str(rig.get("prop_l_override", src.prop_mano_izq))
 
+	if bool(rig.get("vista_perfil", false)):
+		_dibujar_cuerpo_perfil(rig, es_mujer, met, ap, piel, piel_sombra, ojos, pelo,
+			ropa, pantalon, calzado_col, estilo_pelo, ropa_sup, ropa_inf, tipo_calzado,
+			estilo_atuendo, detalle_atuendo, ropa_sec, ropa_det, ropa_sup_brazos, ropa_brazos,
+			grosor, prop_r, prop_l, src)
+		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+		return
+
 	if modo_capa != "solo_brazos_delanteros":
 		# 1. Pelo trasero (detrás del torso y cuello)
 		_dibujar_pelo_trasero(head_pos, head_rot, estilo_pelo, pelo, grosor)
@@ -1375,8 +1476,8 @@ func _dibujar_piernas(leg_l: Array, leg_r: Array, met: Dictionary, ropa_inf: Str
 			draw_line(Vector2(cx + hip_w * px_f * 0.6, y_top + 6.0), Vector2(cx + hip_w * px_f * 1.1, y_bot - 2.0), Color(pant_sombra, 0.65), 1.5, true)
 
 
-func _dibujar_calzado(pos: Vector2, dir: Vector2, flip_x: float, tipo: String, color_zap: Color, grosor: float) -> void:
-	var ang := atan2(dir.y, dir.x) - PI * 0.5
+func _dibujar_calzado(pos: Vector2, dir: Vector2, flip_x: float, tipo: String, color_zap: Color, grosor: float, ang_override: float = NAN) -> void:
+	var ang := atan2(dir.y, dir.x) - PI * 0.5 if is_nan(ang_override) else ang_override
 	var centro := pos + Vector2(0.0, 4.5)
 	if tipo == "botas":
 		var bota := PackedVector2Array([
@@ -3946,11 +4047,11 @@ func _dibujar_gotas_sudor(pos: Vector2, grosor: float) -> void:
 func _dibujar_espuma_cabeza(c: Vector2, r: float, grosor: float) -> void:
 	var espuma := Color("#f8fafc")
 	var burbujas := [
-		[Vector2(-22.0, -34.0), 11.0],
-		[Vector2(-8.0, -44.0), 14.5],
-		[Vector2(10.0, -43.0), 13.5],
-		[Vector2(24.0, -33.0), 10.5],
-		[Vector2(0.0, -52.0), 11.5],
+		[Vector2(-21.0, -30.0), 9.5],
+		[Vector2(-8.0, -39.0), 12.0],
+		[Vector2(9.0, -38.0), 11.5],
+		[Vector2(22.0, -29.0), 9.0],
+		[Vector2(0.0, -43.0), 10.0],
 	]
 	for b: Array in burbujas:
 		var bp: Vector2 = _rotar(b[0], r) + c
@@ -3964,15 +4065,20 @@ func _dibujar_prop_en_mano(tipo: String, pos: Vector2, grosor: float, rig: Dicti
 	var rot_p: float = float(rig.get("prop_l_rot" if es_izquierda else "prop_r_rot", 0.0))
 	match tipo:
 		"botella":
-			var cuerpo := PackedVector2Array([
-				pos + Vector2(-7.0, -18.0), pos + Vector2(7.0, -18.0),
-				pos + Vector2(8.0, 10.0), pos + Vector2(-8.0, 10.0),
-			])
+			var cuerpo := _transformar_pts(PackedVector2Array([
+				Vector2(-6.5, -17.0), Vector2(6.5, -17.0),
+				Vector2(7.5, 9.0), Vector2(-7.5, 9.0),
+			]), pos, rot_p)
 			_poligono_tinta(cuerpo, Color("#38bdf8"), grosor * 0.75)
-			var tapon := PackedVector2Array([
-				pos + Vector2(-4.5, -24.0), pos + Vector2(4.5, -24.0),
-				pos + Vector2(4.5, -18.0), pos + Vector2(-4.5, -18.0),
-			])
+			var banda_b := _transformar_pts(PackedVector2Array([
+				Vector2(-6.8, -6.0), Vector2(6.8, -6.0),
+				Vector2(7.0, 2.0), Vector2(-7.0, 2.0),
+			]), pos, rot_p)
+			draw_colored_polygon(banda_b, Color("#bae6fd"))
+			var tapon := _transformar_pts(PackedVector2Array([
+				Vector2(-4.0, -23.0), Vector2(4.0, -23.0),
+				Vector2(4.0, -17.0), Vector2(-4.0, -17.0),
+			]), pos, rot_p)
 			_poligono_tinta(tapon, Color("#1d4ed8"), grosor * 0.7)
 		"tenedor":
 			var con_bocado: bool = bool(rig.get("bocado_en_tenedor", true))
@@ -3985,51 +4091,76 @@ func _dibujar_prop_en_mano(tipo: String, pos: Vector2, grosor: float, rig: Dicti
 		"servilleta":
 			_dibujar_servilleta(pos, rot_p, origen.estilo_vaso, grosor)
 		"esponja":
-			var esp := _elipse_pts(pos + Vector2(-2.0, -4.0), 11.5, 8.5, 16, -0.3)
+			var esp := _elipse_pts(pos + _rotar(Vector2(-2.0, -4.0), rot_p), 11.5, 8.5, 16, rot_p - 0.3)
 			_poligono_tinta(esp, Color("#fde047"), grosor * 0.75)
 			for p_dot: Vector2 in [Vector2(-5.0, -5.0), Vector2(2.0, -3.0), Vector2(-1.0, 0.0)]:
-				draw_circle(pos + p_dot, 1.6, Color("#ca8a04"), true, -1.0, true)
+				draw_circle(pos + _rotar(p_dot, rot_p), 1.6, Color("#ca8a04"), true, -1.0, true)
 		"lapiz":
-			draw_line(pos + Vector2(10.0, -16.0), pos + Vector2(-8.0, 8.0), TINTA, 6.0, true)
-			draw_line(pos + Vector2(10.0, -16.0), pos + Vector2(-8.0, 8.0), Color("#facc15"), 3.5, true)
-			draw_circle(pos + Vector2(11.0, -17.0), 2.8, Color("#fb7185"), true, -1.0, true)
+			var lp0 := pos + _rotar(Vector2(10.0, -16.0), rot_p)
+			var lp1 := pos + _rotar(Vector2(-8.0, 8.0), rot_p)
+			draw_line(lp0, lp1, TINTA, 6.0, true)
+			draw_line(lp0, lp1, Color("#facc15"), 3.5, true)
+			draw_circle(pos + _rotar(Vector2(11.0, -17.0), rot_p), 2.8, Color("#fb7185"), true, -1.0, true)
+		"libreta":
+			var lib := _transformar_pts(PackedVector2Array([
+				Vector2(-10.0, -11.0), Vector2(10.0, -11.0),
+				Vector2(10.0, 12.0), Vector2(-10.0, 12.0),
+			]), pos, rot_p - 0.14)
+			_poligono_tinta(lib, Color("#fefce8"), grosor * 0.72)
+			for ly: float in [-5.0, 0.0, 5.0]:
+				draw_line(pos + _rotar(Vector2(-6.5, ly), rot_p - 0.14), pos + _rotar(Vector2(6.5, ly), rot_p - 0.14), Color("#94a3b8"), 1.3, true)
+		"reloj":
+			var correa := _transformar_pts(PackedVector2Array([
+				Vector2(-7.0, -3.0), Vector2(7.0, -3.0),
+				Vector2(7.0, 3.0), Vector2(-7.0, 3.0),
+			]), pos + Vector2(3.0, 4.0), rot_p + 0.35)
+			_poligono_tinta(correa, Color("#475569"), grosor * 0.55)
+			draw_circle(pos + Vector2(3.0, 4.0), 5.0, Color("#f8fafc"), true, -1.0, true)
+			draw_arc(pos + Vector2(3.0, 4.0), 5.0, 0.0, TAU, 12, TINTA, 1.4, true)
+			draw_line(pos + Vector2(3.0, 4.0), pos + Vector2(3.0, 1.0), TINTA, 1.2, true)
+			draw_line(pos + Vector2(3.0, 4.0), pos + Vector2(5.5, 4.5), TINTA, 1.1, true)
 		"mando":
-			var m_pts := PackedVector2Array([
-				pos + Vector2(-5.0, -14.0), pos + Vector2(5.0, -14.0),
-				pos + Vector2(5.0, 12.0), pos + Vector2(-5.0, 12.0),
-			])
+			var m_pts := _transformar_pts(PackedVector2Array([
+				Vector2(-5.0, -14.0), Vector2(5.0, -14.0),
+				Vector2(5.0, 12.0), Vector2(-5.0, 12.0),
+			]), pos, rot_p)
 			_poligono_tinta(m_pts, Color("#334155"), grosor * 0.72)
-			draw_circle(pos + Vector2(0.0, -8.0), 2.2, Color("#ef4444"), true, -1.0, true)
+			draw_circle(pos + _rotar(Vector2(0.0, -8.0), rot_p), 2.2, Color("#ef4444"), true, -1.0, true)
 		"pincel":
-			draw_line(pos + Vector2(-8.0, 10.0), pos + Vector2(12.0, -16.0), TINTA, 5.2, true)
-			draw_line(pos + Vector2(-8.0, 10.0), pos + Vector2(12.0, -16.0), Color("#b45309"), 2.8, true)
-			draw_circle(pos + Vector2(14.5, -19.5), 4.6, Color("#ec4899"), true, -1.0, true)
-			draw_arc(pos + Vector2(14.5, -19.5), 4.6, 0.0, TAU, 12, TINTA, 1.5, true)
+			var pp0 := pos + _rotar(Vector2(-8.0, 10.0), rot_p)
+			var pp1 := pos + _rotar(Vector2(12.0, -16.0), rot_p)
+			var tip := pos + _rotar(Vector2(14.5, -19.5), rot_p)
+			draw_line(pp0, pp1, TINTA, 5.2, true)
+			draw_line(pp0, pp1, Color("#b45309"), 2.8, true)
+			draw_circle(tip, 4.6, Color("#ec4899"), true, -1.0, true)
+			draw_arc(tip, 4.6, 0.0, TAU, 12, TINTA, 1.5, true)
 		"espatula":
-			draw_line(pos + Vector2(8.0, 10.0), pos + Vector2(-8.0, -16.0), TINTA, 5.4, true)
-			draw_line(pos + Vector2(8.0, 10.0), pos + Vector2(-8.0, -16.0), Color("#b45309"), 3.0, true)
-			var pala := PackedVector2Array([
-				pos + Vector2(-14.0, -24.0), pos + Vector2(-4.0, -26.0),
-				pos + Vector2(-3.0, -15.0), pos + Vector2(-12.0, -13.0),
-			])
+			var ep0 := pos + _rotar(Vector2(8.0, 10.0), rot_p)
+			var ep1 := pos + _rotar(Vector2(-8.0, -16.0), rot_p)
+			draw_line(ep0, ep1, TINTA, 5.4, true)
+			draw_line(ep0, ep1, Color("#b45309"), 3.0, true)
+			var pala := _transformar_pts(PackedVector2Array([
+				Vector2(-14.0, -24.0), Vector2(-4.0, -26.0),
+				Vector2(-3.0, -15.0), Vector2(-12.0, -13.0),
+			]), pos, rot_p)
 			_poligono_tinta(pala, Color("#cbd5e1"), grosor * 0.65)
 		"taza":
-			var t_pts := PackedVector2Array([
-				pos + Vector2(-9.0, -10.0), pos + Vector2(9.0, -10.0),
-				pos + Vector2(8.0, 10.0), pos + Vector2(-8.0, 10.0),
-			])
+			var t_pts := _transformar_pts(PackedVector2Array([
+				Vector2(-9.0, -10.0), Vector2(9.0, -10.0),
+				Vector2(8.0, 10.0), Vector2(-8.0, 10.0),
+			]), pos, rot_p)
 			_poligono_tinta(t_pts, Color.WHITE, grosor * 0.75)
-			draw_arc(pos + Vector2(9.0, 0.0), 5.0, -PI * 0.5, PI * 0.5, 10, TINTA, 2.4, true)
+			draw_arc(pos + _rotar(Vector2(9.0, 0.0), rot_p), 5.0, rot_p - PI * 0.5, rot_p + PI * 0.5, 10, TINTA, 2.4, true)
 		"movil":
-			var tel := PackedVector2Array([
-				pos + Vector2(-8.0, -14.0), pos + Vector2(8.0, -14.0),
-				pos + Vector2(8.0, 12.0), pos + Vector2(-8.0, 12.0),
-			])
+			var tel := _transformar_pts(PackedVector2Array([
+				Vector2(-8.0, -14.0), Vector2(8.0, -14.0),
+				Vector2(8.0, 12.0), Vector2(-8.0, 12.0),
+			]), pos, rot_p)
 			_poligono_tinta(tel, Color("#1e293b"), grosor * 0.75)
-			var pant := PackedVector2Array([
-				pos + Vector2(-6.0, -11.0), pos + Vector2(6.0, -11.0),
-				pos + Vector2(6.0, 9.0), pos + Vector2(-6.0, 9.0),
-			])
+			var pant := _transformar_pts(PackedVector2Array([
+				Vector2(-6.0, -11.0), Vector2(6.0, -11.0),
+				Vector2(6.0, 9.0), Vector2(-6.0, 9.0),
+			]), pos, rot_p)
 			draw_colored_polygon(pant, Color("#38bdf8"))
 
 
@@ -4151,6 +4282,782 @@ func _dibujar_servilleta(pos: Vector2, rot: float, estilo: String, grosor: float
 	_poligono_tinta(_transformar_pts(serv, pos, rot), col_tela, grosor * 0.65)
 	draw_line(pos + _rotar(Vector2(-7.5, -4.5), rot), pos + _rotar(Vector2(7.0, 6.0), rot), Color("#cbd5e1"), 1.6, true)
 	draw_line(pos + _rotar(Vector2(-6.5, 5.5), rot), pos + _rotar(Vector2(7.5, 4.5), rot), Color(col_borde, 0.65), 1.8, true)
+
+
+# ---------------------------------------------------------------- renderizado lateral en perfil (correr)
+
+func _dibujar_cuerpo_perfil(rig: Dictionary, es_mujer: bool, met: Dictionary, ap: Dictionary,
+		piel: Color, piel_sombra: Color, ojos: Color, pelo: Color, ropa: Color,
+		pantalon: Color, calzado_col: Color, estilo_pelo: String, ropa_sup: String,
+		ropa_inf: String, tipo_calzado: String, estilo_atuendo: String, detalle_atuendo: String,
+		ropa_sec: Color, ropa_det: Color, ropa_sup_brazos: String, ropa_brazos: Color,
+		grosor: float, prop_r: String, prop_l: String, src: Personaje_Visual) -> void:
+	var head_pos: Vector2 = rig["head_offset"]
+	var head_rot: float = float(rig["head_rot"])
+	var piel_fondo := piel.darkened(0.10)
+	var piel_sombra_fondo := piel_sombra.darkened(0.10)
+	var ropa_brazos_fondo := ropa_brazos.darkened(0.16)
+	var pant_fondo := pantalon.darkened(0.15)
+	var calz_fondo := calzado_col.darkened(0.16)
+
+	if modo_capa != "solo_brazos_delanteros":
+		# 1. Brazo trasero (lejano)
+		_dibujar_brazo(rig["arm_l"], met, ropa_sup_brazos, ropa_brazos_fondo, piel_fondo,
+			piel_sombra_fondo, rig["hand_l_tipo"], src.en_ducha, grosor, estilo_atuendo,
+			detalle_atuendo, ropa_sec.darkened(0.14))
+		if prop_l != "ninguno":
+			_dibujar_prop_en_mano(prop_l, rig["arm_l"][2], grosor, rig, true, src)
+
+		# 2. Pierna trasera (lejana)
+		if src.modo == "cuerpo_completo":
+			_dibujar_pierna_perfil(rig["leg_l"], met, ropa_inf, pant_fondo, tipo_calzado,
+				calz_fondo, piel_fondo, piel_sombra_fondo, grosor, estilo_atuendo,
+				ropa_sec.darkened(0.14), ropa_det.darkened(0.14),
+				float(rig.get("foot_rot_l", NAN)), true)
+
+		# 3. Pelo trasero en perfil (coleta, melena, moño...)
+		_dibujar_pelo_trasero_perfil(head_pos, head_rot, estilo_pelo, pelo, grosor)
+
+		# 4. Torso y cuello en perfil
+		_dibujar_torso_perfil(es_mujer, met, ap, ropa_sup, ropa, piel, piel_sombra,
+			grosor, estilo_atuendo, detalle_atuendo, ropa_sec, ropa_det)
+
+		# 5. Pierna delantera (cercana) + falda/vestido si corresponde
+		if src.modo == "cuerpo_completo":
+			_dibujar_pierna_perfil(rig["leg_r"], met, ropa_inf, pantalon, tipo_calzado,
+				calzado_col, piel, piel_sombra, grosor, estilo_atuendo,
+				ropa_sec, ropa_det, float(rig.get("foot_rot_r", NAN)), false)
+			_dibujar_falda_perfil(rig["leg_r"], met, pantalon, ropa, ropa_inf,
+				estilo_atuendo, detalle_atuendo, grosor)
+
+		# 6. Cabeza completa en perfil
+		_dibujar_cabeza_perfil(head_pos, head_rot, es_mujer, met, piel, piel_sombra,
+			ojos, pelo, ap, rig["mirada"], grosor, rig, src)
+
+	if modo_capa != "sin_brazos_delanteros":
+		# 7. Brazo delantero (cercano) sobre el torso
+		_dibujar_brazo(rig["arm_r"], met, ropa_sup_brazos, ropa_brazos, piel, piel_sombra,
+			rig["hand_r_tipo"], src.en_ducha, grosor, estilo_atuendo, detalle_atuendo, ropa_sec)
+
+		if prop_r != "ninguno":
+			_dibujar_prop_en_mano(prop_r, rig["arm_r"][2], grosor, rig, false, src)
+
+		if src.pose == "correr" and src.variacion in ["secar_sudor", "sprint"]:
+			_dibujar_gotas_sudor(head_pos + Vector2(-28.0, -18.0), grosor)
+
+
+func _dibujar_pierna_perfil(pierna: Array, met: Dictionary, ropa_inf: String,
+		pantalon: Color, tipo_calzado: String, calzado_col: Color,
+		piel: Color, piel_sombra: Color, grosor: float, estilo_atuendo: String,
+		ropa_sec: Color, ropa_det: Color, foot_rot: float, es_trasera: bool) -> void:
+	var ls: float = met["leg_scale"] * 0.96
+	var hip: Vector2 = pierna[0]
+	var knee: Vector2 = pierna[1]
+	var foot: Vector2 = pierna[2]
+	var pant_sombra := pantalon.darkened(0.22)
+	var es_shorts_o_falda := ropa_inf in ["shorts", "falda"]
+
+	if es_shorts_o_falda:
+		_dibujar_extremidad_continua(hip, knee, foot, 11.0 * ls, 8.6 * ls, 6.6 * ls, piel, piel_sombra, grosor * 0.88)
+		if ropa_inf == "shorts":
+			var fin_sh := hip.lerp(knee, 0.62)
+			_dibujar_extremidad_continua(hip, hip.lerp(fin_sh, 0.5), fin_sh, 12.6 * ls, 11.6 * ls, 10.8 * ls, pantalon, pant_sombra, grosor * 0.90)
+	else:
+		_dibujar_extremidad_continua(hip, knee, foot, 12.4 * ls, 10.0 * ls, 8.2 * ls, pantalon, pant_sombra, grosor * 0.90)
+		if not es_trasera:
+			if ropa_inf == "chandal":
+				draw_line(hip + Vector2(-2.0, 4.0), knee + Vector2(-1.5, 0.0), Color(1, 1, 1, 0.84), 2.4, true)
+				draw_line(knee + Vector2(-1.5, 0.0), foot + Vector2(-1.5, -8.0), Color(1, 1, 1, 0.84), 2.4, true)
+			elif estilo_atuendo in ["gala", "michelin"]:
+				draw_line(hip + Vector2(-1.5, 4.0), knee + Vector2(-1.2, 0.0), Color(0.98, 0.75, 0.15, 0.9), 1.8, true)
+				draw_line(knee + Vector2(-1.2, 0.0), foot + Vector2(-1.2, -8.0), Color(0.98, 0.75, 0.15, 0.9), 1.8, true)
+			elif estilo_atuendo == "pijama":
+				draw_line(hip + Vector2(-1.5, 4.0), knee + Vector2(-1.2, 0.0), Color(ropa_sec, 0.75), 1.6, true)
+				draw_line(knee + Vector2(-1.2, 0.0), foot + Vector2(-1.2, -8.0), Color(ropa_sec, 0.75), 1.6, true)
+
+	if estilo_atuendo == "futbol":
+		var media_ini := knee.lerp(foot, 0.12)
+		var media_fin := foot + Vector2(0.0, -3.0)
+		_dibujar_extremidad_continua(knee.lerp(foot, 0.04), media_ini, media_fin,
+			8.8 * ls, 7.8 * ls, 6.8 * ls, ropa_sec, ropa_sec.darkened(0.18), grosor * 0.78)
+		draw_line(knee.lerp(foot, 0.34), knee.lerp(foot, 0.38), Color(ropa_det, 0.85), 2.0, true)
+
+	var dir_pie := (foot - knee).normalized()
+	_dibujar_calzado(foot, dir_pie, 1.0, tipo_calzado, calzado_col, grosor, foot_rot)
+
+
+func _dibujar_falda_perfil(leg_r: Array, _met: Dictionary, pantalon: Color, ropa: Color,
+		ropa_inf: String, estilo_atuendo: String, detalle_atuendo: String, grosor: float) -> void:
+	if estilo_atuendo == "vestido":
+		var es_largo := (detalle_atuendo == "largo")
+		var y_bot := 188.0 if es_largo else 156.0
+		var w_bot := 24.0 if es_largo else 20.0
+		var falda_v := _suavizar_cerrado(PackedVector2Array([
+			Vector2(-13.0, 98.0), Vector2(12.0, 98.0),
+			Vector2(w_bot + 4.0, y_bot - 6.0), Vector2(4.0, y_bot + 2.0),
+			Vector2(-w_bot - 6.0, y_bot - 2.0),
+		]), 4)
+		_poligono_tinta(falda_v, ropa, grosor * 0.88)
+		draw_line(Vector2(-12.5, 99.0), Vector2(11.5, 99.0), Color(ropa.darkened(0.24), 0.7), 2.4, true)
+		return
+
+	if ropa_inf != "falda":
+		return
+	var hip_y: float = float(leg_r[0].y) - 4.0
+	var knee_y: float = float(leg_r[1].y) - 6.0
+	var falda := _suavizar_cerrado(PackedVector2Array([
+		Vector2(-14.5, hip_y), Vector2(14.5, hip_y),
+		Vector2(22.0, knee_y - 2.0), Vector2(0.0, knee_y + 2.0),
+		Vector2(-24.0, knee_y - 2.0),
+	]), 3)
+	_poligono_tinta(falda, pantalon, grosor * 0.90)
+	draw_line(Vector2(-3.0, hip_y + 5.0), Vector2(-6.0, knee_y - 2.0), Color(pantalon.darkened(0.24), 0.65), 1.5, true)
+
+
+func _metricas_torso_perfil(es_mujer: bool, ap: Dictionary) -> Dictionary:
+	var comp := str(ap.get("complexion", "normal"))
+	var chest_f := 16.0 if es_mujer else 16.8
+	var waist_f := 11.8 if es_mujer else 13.5
+	var hip_f := 14.5 if es_mujer else 14.8
+	var back_b := 15.2 if es_mujer else 16.0
+	var waist_b := 12.2 if es_mujer else 13.5
+	var hip_b := 15.6 if es_mujer else 15.2
+	match comp:
+		"delgado":
+			chest_f -= 2.4
+			waist_f -= 2.2
+			hip_f -= 2.0
+			back_b -= 2.0
+			waist_b -= 2.0
+			hip_b -= 2.0
+		"atletico":
+			chest_f += 2.2
+			waist_f -= 0.5
+			back_b += 1.6
+		"robusto":
+			chest_f += 4.2
+			waist_f += 6.5
+			hip_f += 4.5
+			back_b += 3.0
+			waist_b += 3.2
+			hip_b += 3.5
+	return {
+		"chest_f": chest_f, "waist_f": waist_f, "hip_f": hip_f,
+		"back_b": back_b, "waist_b": waist_b, "hip_b": hip_b,
+	}
+
+
+func _dibujar_torso_perfil(es_mujer: bool, met: Dictionary, ap: Dictionary, ropa_sup: String,
+		ropa: Color, piel: Color, piel_sombra: Color, grosor: float, estilo_atuendo: String,
+		detalle_atuendo: String, ropa_sec: Color, ropa_det: Color) -> void:
+	var nw: float = float(met["nw"]) * 0.88
+	var mp := _metricas_torso_perfil(es_mujer, ap)
+	var chest_f: float = mp["chest_f"]
+	var waist_f: float = mp["waist_f"]
+	var hip_f: float = mp["hip_f"]
+	var back_b: float = mp["back_b"]
+	var waist_b: float = mp["waist_b"]
+	var hip_b: float = mp["hip_b"]
+
+	# Cuello en perfil ligeramente inclinado hacia adelante (+X)
+	var cuello := PackedVector2Array([
+		Vector2(-nw, 27.0), Vector2(nw, 27.0),
+		Vector2(nw + 2.5, 49.0), Vector2(0.0, 52.0), Vector2(-nw - 1.5, 49.0),
+	])
+	_poligono_tinta(cuello, piel, grosor * 0.80)
+	draw_colored_polygon(PackedVector2Array([
+		Vector2(-nw, 29.0), Vector2(nw, 29.0),
+		Vector2(nw + 0.5, 39.0), Vector2(-nw + 1.0, 38.0),
+	]), piel_sombra)
+
+	var torso_ctrl := PackedVector2Array([
+		Vector2(-10.5, 44.0),
+		Vector2(9.5, 44.0),
+		Vector2(chest_f, 65.0),
+		Vector2(waist_f, 97.0),
+		Vector2(hip_f, 124.0),
+		Vector2(0.0, 128.0),
+		Vector2(-hip_b, 124.0),
+		Vector2(-waist_b, 97.0),
+		Vector2(-back_b, 64.0),
+	])
+	var torso := _suavizar_cerrado(torso_ctrl, 4)
+
+	if ropa_sup == "top":
+		var hombros_t := _suavizar_cerrado(PackedVector2Array([
+			Vector2(-10.5, 44.0), Vector2(9.5, 44.0),
+			Vector2(chest_f - 0.5, 65.0), Vector2(waist_f, 96.0),
+			Vector2(-waist_b, 96.0), Vector2(-back_b + 0.5, 65.0),
+		]), 4)
+		_poligono_tinta(hombros_t, piel, grosor * 0.90)
+		var top_p := _suavizar_cerrado(PackedVector2Array([
+			Vector2(-12.0, 54.0), Vector2(12.0, 55.0),
+			Vector2(chest_f, 68.0), Vector2(waist_f, 98.0),
+			Vector2(hip_f, 124.0), Vector2(0.0, 127.0),
+			Vector2(-hip_b, 124.0), Vector2(-waist_b, 98.0),
+			Vector2(-back_b, 68.0),
+		]), 3)
+		_poligono_tinta(top_p, ropa, grosor * 0.92)
+		return
+
+	var col_torso := ropa_sec if estilo_atuendo in ["traje", "bata", "cuero", "fiesta"] else ropa
+	var col_sombra := col_torso.darkened(0.22)
+	var col_brillo := col_torso.lightened(0.16)
+	_poligono_tinta(torso, col_torso, grosor * 0.94)
+
+	# Cel-shading trasero y brillo frontal en el pecho
+	var sombra_back := _suavizar_cerrado(PackedVector2Array([
+		Vector2(-10.0, 47.0), Vector2(-3.0, 52.0), Vector2(-4.0, 96.0),
+		Vector2(-5.0, 125.0), Vector2(-hip_b + 1.5, 123.0),
+		Vector2(-waist_b + 1.0, 97.0), Vector2(-back_b + 1.5, 65.0),
+	]), 3)
+	draw_colored_polygon(sombra_back, Color(col_sombra, 0.55))
+	draw_line(Vector2(7.0, 52.0), Vector2(chest_f - 3.0, 68.0), Color(col_brillo, 0.72), 2.4, true)
+
+	# Detalles por prenda superior en perfil
+	match ropa_sup:
+		"sudadera":
+			# Capucha caída detrás del cuello + cuello blanco + cordón lateral + dobladillo
+			var cap_back := _suavizar_cerrado(PackedVector2Array([
+				Vector2(-7.0, 43.0), Vector2(-21.0, 46.0),
+				Vector2(-24.0, 59.0), Vector2(-12.0, 61.0), Vector2(-5.0, 50.0),
+			]), 3)
+			_poligono_tinta(cap_back, col_sombra, grosor * 0.78)
+			draw_line(Vector2(6.0, 46.0), Vector2(11.5, 51.0), Color.WHITE, 2.2, true)
+			# Cordón delantero de la sudadera
+			draw_line(Vector2(10.2, 52.0), Vector2(13.2, 76.0), TINTA, 3.4, true)
+			draw_line(Vector2(10.2, 52.0), Vector2(13.2, 76.0), Color.WHITE, 1.8, true)
+			draw_circle(Vector2(13.2, 77.2), 1.6, TINTA, true, -1.0, true)
+			# Bolsillo canguro lateral
+			var bol_p := PackedVector2Array([
+				Vector2(4.0, 102.0), Vector2(waist_f - 1.0, 102.0),
+				Vector2(hip_f - 1.0, 118.0), Vector2(3.0, 118.0),
+			])
+			draw_colored_polygon(bol_p, Color(col_sombra, 0.35))
+			draw_polyline(PackedVector2Array([bol_p[3], bol_p[0], bol_p[1]]), Color(TINTA, 0.55), 1.4, true)
+			var dob := PackedVector2Array([
+				Vector2(-hip_b + 1.0, 121.0), Vector2(hip_f - 1.0, 121.0),
+				Vector2(hip_f, 127.0), Vector2(-hip_b, 127.0),
+			])
+			_poligono_tinta(dob, col_sombra, grosor * 0.70)
+		"camiseta":
+			var cuello_c := _suavizar_abierta(PackedVector2Array([
+				Vector2(-9.5, 45.0), Vector2(2.0, 50.0), Vector2(10.2, 47.0),
+			]), 3)
+			draw_polyline(cuello_c, TINTA, 1.8, true)
+			draw_line(Vector2(-hip_b + 2.0, 122.0), Vector2(hip_f - 2.0, 122.0), Color(col_sombra, 0.70), 1.8, true)
+		"camisa":
+			var cuello_cm := PackedVector2Array([
+				Vector2(-8.0, 43.0), Vector2(9.5, 44.0), Vector2(11.5, 53.0), Vector2(1.0, 52.0),
+			])
+			_poligono_tinta(cuello_cm, col_brillo, grosor * 0.65)
+			for by: float in [66.0, 82.0, 98.0, 114.0]:
+				draw_circle(Vector2(lerpf(chest_f, hip_f, (by - 66.0) / 56.0) - 2.5, by), 1.6, col_sombra, true, -1.0, true)
+		"chaqueta":
+			var tee_f := PackedVector2Array([
+				Vector2(6.5, 44.0), Vector2(10.5, 45.0), Vector2(chest_f - 1.0, 66.0),
+				Vector2(waist_f - 1.0, 98.0), Vector2(hip_f - 1.0, 125.0), Vector2(7.0, 125.0),
+			])
+			draw_colored_polygon(tee_f, Color("#f8fafc"))
+			draw_line(Vector2(6.8, 45.0), Vector2(7.0, 125.0), Color("#cbd5e1"), 1.8, true)
+		"jersey":
+			var cuello_j := _suavizar_cerrado(PackedVector2Array([
+				Vector2(-nw - 1.5, 38.0), Vector2(nw + 1.5, 38.0),
+				Vector2(nw + 3.0, 51.0), Vector2(-nw - 2.5, 51.0),
+			]), 3)
+			_poligono_tinta(cuello_j, col_sombra, grosor * 0.76)
+
+	# Detalles rápidos de atuendos especiales en perfil
+	if estilo_atuendo == "deportivo":
+		draw_line(Vector2(2.0, 48.0), Vector2(2.0, 120.0), ropa_sec, 2.4, true)
+		draw_line(Vector2(chest_f - 1.5, 56.0), Vector2(hip_f - 1.5, 122.0), ropa_det, 1.8, true)
+	elif estilo_atuendo == "futbol":
+		draw_line(Vector2(2.0, 50.0), Vector2(2.0, 120.0), ropa_sec, 2.2, true)
+	elif estilo_atuendo == "astronauta":
+		draw_line(Vector2(-back_b + 3.0, 62.0), Vector2(chest_f - 3.0, 62.0), ropa_sec, 3.2, true)
+		draw_rect(Rect2(6.0, 74.0, 8.0, 22.0), ropa_det)
+	elif estilo_atuendo == "invierno":
+		var buf := _suavizar_cerrado(PackedVector2Array([
+			Vector2(-12.0, 42.0), Vector2(12.0, 42.0), Vector2(13.5, 52.0), Vector2(-12.0, 52.0),
+		]), 3)
+		_poligono_tinta(buf, ropa_det if detalle_atuendo == "abrigo" else ropa_sec, grosor * 0.62)
+
+
+func _dibujar_cabeza_perfil(head_pos: Vector2, head_rot: float, es_mujer: bool, met: Dictionary,
+		piel: Color, piel_sombra: Color, ojos: Color, pelo: Color, ap: Dictionary,
+		mirada: Vector2, grosor: float, rig: Dictionary, src: Personaje_Visual) -> void:
+	var c := head_pos
+	var r := head_rot
+	var jaw_w: float = met["jaw_w"]
+
+	var forma_cara := str(ap.get("forma_cara", "ovalada"))
+	var forma_ojos := str(ap.get("forma_ojos", "almendrados"))
+	var estilo_cejas := str(ap.get("estilo_cejas", "naturales"))
+	var forma_nariz := str(ap.get("forma_nariz", "normal"))
+	var forma_boca := str(ap.get("forma_boca", "normal"))
+	var color_labios := Apariencia_Personaje.color_labios_de(ap, piel)
+	var estilo_pelo := str(ap.get("estilo_pelo", "alborotado"))
+	var gafas := str(ap.get("gafas", "ninguna"))
+	var vello := str(ap.get("vello_facial", "ninguno"))
+	var pecas := bool(ap.get("pecas", false))
+	var lunar := str(ap.get("lunar", "ninguno"))
+	var rubor_lvl := str(ap.get("rubor", "suave"))
+	var delineado := bool(ap.get("delineado", false))
+	var sombrero := str(ap.get("sombrero", "ninguno"))
+	var pendientes := str(ap.get("pendientes", "ninguno"))
+
+	var expr_activa: String = str(rig.get("comer_expresion_override", ""))
+	if expr_activa == "":
+		expr_activa = src.expresion
+
+	# 1. Silueta facial de perfil (mirando hacia +X)
+	var pts_cara := _forma_rostro_perfil(es_mujer, forma_cara, forma_nariz, jaw_w)
+	var cara_suave := _suavizar_cerrado(pts_cara, 4)
+	_poligono_tinta(_transformar_pts(cara_suave, c, r), piel, grosor * 0.96)
+
+	# Sombra suave bajo mandíbula y nuca
+	var som_jaw := _suavizar_cerrado(PackedVector2Array([
+		Vector2(-22.0 * jaw_w, 8.0), Vector2(-14.0 * jaw_w, 22.0),
+		Vector2(6.0, 32.0), Vector2(18.0, 30.0),
+		Vector2(8.0, 26.5), Vector2(-10.0 * jaw_w, 17.0),
+	]), 3)
+	draw_colored_polygon(_transformar_pts(som_jaw, c, r), Color(piel_sombra, 0.34))
+
+	# Rubor en mejilla visible
+	var base_rubor := 0.0
+	if rubor_lvl == "suave":
+		base_rubor = 0.24 if es_mujer else 0.12
+	elif rubor_lvl == "intenso":
+		base_rubor = 0.40 if es_mujer else 0.26
+	if base_rubor > 0.01:
+		var pos_r: Vector2 = _rotar(Vector2(7.5, 10.5), r) + c
+		draw_colored_polygon(_elipse_pts(pos_r, 5.8, 3.1, 16, r), Color("#fb7185", base_rubor))
+
+	if pecas:
+		var col_peca := piel_sombra.darkened(0.28)
+		for p: Vector2 in [Vector2(7.5, 7.5), Vector2(11.5, 9.2), Vector2(9.0, 11.4), Vector2(14.5, 7.2)]:
+			draw_circle(_rotar(p, r) + c, 1.0, col_peca, true, -1.0, true)
+
+	if lunar != "ninguno":
+		var pos_l := Vector2(7.5, 13.0)
+		if lunar == "labio":
+			pos_l = Vector2(19.0, 15.0)
+		elif lunar == "ceja":
+			pos_l = Vector2(11.5, -8.5)
+		draw_circle(_rotar(pos_l, r) + c, 1.3, Color("#3f271d", 0.85), true, -1.0, true)
+
+	# 2. Barba / vello facial en perfil
+	if not es_mujer and vello != "ninguno":
+		_dibujar_vello_facial_perfil(c, r, jaw_w, vello, pelo, grosor)
+
+	# 3. Ojo en perfil
+	_dibujar_ojo_perfil(c, r, es_mujer, forma_ojos, delineado, piel_sombra, ojos, mirada, grosor, expr_activa)
+
+	# 4. Ceja en perfil
+	_dibujar_ceja_perfil(c, r, es_mujer, estilo_cejas, pelo, expr_activa)
+
+	# 5. Línea sutil de aleta nasal
+	var ala_n := _suavizar_abierta(PackedVector2Array([
+		Vector2(21.5, 5.5), Vector2(24.0, 7.8), Vector2(21.5, 8.8),
+	]), 3)
+	draw_polyline(_transformar_pts(ala_n, c, r), Color(TINTA, 0.55), 1.25, true)
+
+	# 6. Boca en perfil
+	_dibujar_boca_perfil(c, r, es_mujer, forma_boca, color_labios, expr_activa)
+
+	# 7. Marcas discretas de edad en perfil
+	var arrugas := float(_rasgos_edad.get("arrugas", 0.0))
+	if arrugas > 0.15:
+		draw_line(_rotar(Vector2(11.0, -16.0), r) + c, _rotar(Vector2(18.0, -16.0), r) + c,
+			Color(piel_sombra, 0.55 * arrugas), 1.1, true)
+		draw_line(_rotar(Vector2(8.0, 0.0), r) + c, _rotar(Vector2(4.0, -2.0), r) + c,
+			Color(piel_sombra, 0.55 * arrugas), 1.1, true)
+
+	# 8. Gafas en perfil (antes del flequillo para integración natural)
+	if gafas != "ninguna" and not src.en_ducha:
+		_dibujar_gafas_perfil(c, r, gafas)
+
+	# 9. Pelo delantero en perfil
+	_dibujar_pelo_delantero_perfil(c, r, estilo_pelo, pelo, grosor)
+
+	# 10. Oreja lateral + pendiente (sobre la patilla para lectura limpia)
+	var o_pos: Vector2 = _rotar(Vector2(-5.5, 4.5), r) + c
+	var oreja := _elipse_pts(o_pos, 4.8, 8.2, 20, r - 0.10)
+	_poligono_tinta(oreja, piel, grosor * 0.78)
+	draw_arc(o_pos + _rotar(Vector2(-0.5, 0.4), r), 2.5, 0.5, PI * 1.5, 10, Color(TINTA, 0.55), 1.2, true)
+	if pendientes != "ninguno" and not src.en_ducha:
+		_dibujar_pendiente(o_pos + _rotar(Vector2(0.0, 8.0), r), r, pendientes, grosor)
+
+	# 11. Sombrero o diadema en perfil
+	if sombrero != "ninguno" and src.accesorio_cabeza == "ninguno" and not src.en_ducha:
+		var color_ropa_sombrero := Apariencia_Personaje.color_de(src.apariencia, "color_ropa", Color("#2563eb"))
+		_dibujar_sombrero_perfil(c, r, sombrero, color_ropa_sombrero, grosor)
+
+
+func _forma_rostro_perfil(es_mujer: bool, forma: String, forma_nariz: String, jaw_w: float) -> PackedVector2Array:
+	var nariz_x := 29.2
+	var nariz_y := 5.8
+	match forma_nariz:
+		"respingona":
+			nariz_x = 29.6
+			nariz_y = 4.2
+		"recta":
+			nariz_x = 30.2
+			nariz_y = 6.2
+		"ancha":
+			nariz_x = 30.0
+			nariz_y = 7.2
+		"fina":
+			nariz_x = 28.6
+			nariz_y = 5.4
+	var chin_x := 20.5 if forma != "cuadrada" else 22.0
+	var chin_y := 32.5 if forma != "alargada" else 35.0
+	if es_mujer:
+		chin_x -= 1.0
+	var cranium_b := -25.5 * jaw_w
+	return PackedVector2Array([
+		Vector2(0.0, -37.2),
+		Vector2(15.5, -32.0),
+		Vector2(21.0, -17.5),
+		Vector2(21.2, -5.5),
+		Vector2(nariz_x, nariz_y),
+		Vector2(23.5, 10.5),
+		Vector2(24.5, 16.5),
+		Vector2(23.5, 21.5),
+		Vector2(24.0, 26.5),
+		Vector2(chin_x, chin_y),
+		Vector2(4.0, 32.5),
+		Vector2(-13.0 * jaw_w, 22.0),
+		Vector2(cranium_b, 4.0),
+		Vector2(cranium_b, -16.0),
+		Vector2(-15.5, -32.5),
+	])
+
+
+func _dibujar_ojo_perfil(c: Vector2, r: float, es_mujer: bool, forma_ojos: String,
+		delineado: bool, piel_sombra: Color, color_ojos: Color, mirada: Vector2,
+		grosor: float, expr_activa: String) -> void:
+	var parpadeo := _esta_parpadeando(expr_activa)
+	var ojos_felices := expr_activa in ["feliz_cerrado", "satisfecho", "cantando", "reir"]
+	var ec := Vector2(14.5, -2.0)
+	var rx := 4.4
+	var ry := 5.2 if not es_mujer else 5.5
+	if forma_ojos == "grandes":
+		rx = 4.8
+		ry = 6.0
+	elif forma_ojos == "rasgados":
+		ry = 4.3
+
+	if ojos_felices:
+		var arco := _suavizar_abierta(PackedVector2Array([
+			ec + Vector2(-rx * 0.85, 1.5), ec + Vector2(0.0, -3.2), ec + Vector2(rx * 0.85, 1.5),
+		]), 4)
+		draw_polyline(_transformar_pts(arco, c, r), TINTA, grosor * 1.0, true)
+		return
+	if parpadeo:
+		var arco_c := _suavizar_abierta(PackedVector2Array([
+			ec + Vector2(-rx * 0.85, 0.2), ec + Vector2(0.0, 1.4), ec + Vector2(rx * 0.85, 0.2),
+		]), 4)
+		draw_polyline(_transformar_pts(arco_c, c, r), TINTA, grosor * 0.90, true)
+		return
+
+	var sclera := _elipse_pts(ec, rx, ry, 20, 0.0)
+	draw_colored_polygon(_transformar_pts(sclera, c, r), Color("#fcfcfd"))
+	var ic := ec + Vector2(clampf(mirada.x * 0.55, 0.5, 1.5), mirada.y * 0.45)
+	var iris := _recortar_elipse_a_ojo(ic, 2.9, 4.1, ec, rx, ry, 18)
+	draw_colored_polygon(_transformar_pts(iris, c, r), color_ojos)
+	var pup := _recortar_elipse_a_ojo(ic + Vector2(0.4, 0.0), 1.5, 2.2, ec, rx, ry, 14)
+	draw_colored_polygon(_transformar_pts(pup, c, r), TINTA)
+	draw_circle(_rotar(ic + Vector2(-0.6, -1.3), r) + c, 1.15, Color.WHITE, true, -1.0, true)
+
+	var lid_top := _suavizar_abierta(PackedVector2Array([
+		ec + Vector2(-rx * 1.05, 0.4), ec + Vector2(0.0, -ry * 1.04), ec + Vector2(rx * 1.02, 0.2),
+	]), 4)
+	draw_polyline(_transformar_pts(lid_top, c, r), TINTA, 2.6 if (es_mujer or delineado) else 2.2, true)
+	draw_polyline(_transformar_pts(_suavizar_abierta(PackedVector2Array([
+		ec + Vector2(-rx * 0.5, ry * 0.85), ec + Vector2(rx * 0.5, ry * 0.80),
+	]), 3), c, r), Color(piel_sombra, 0.55), 1.0, true)
+
+	if delineado or es_mujer:
+		var wb := ec + Vector2(-rx * 0.95, -ry * 0.25)
+		var ala := PackedVector2Array([wb, wb + Vector2(-3.2, -2.4), wb + Vector2(-0.8, 1.0)])
+		draw_colored_polygon(_transformar_pts(ala, c, r), TINTA)
+
+
+func _dibujar_ceja_perfil(c: Vector2, r: float, es_mujer: bool, estilo_cejas: String,
+		color_pelo: Color, expr_activa: String) -> void:
+	var col_ceja := color_pelo.darkened(0.26)
+	var thick: float = (2.1 if es_mujer else 2.8) * (1.0 - 0.30 * float(_rasgos_edad.get("cejas_finas", 0.0)))
+	if estilo_cejas == "gruesas":
+		thick += 1.0
+	elif estilo_cejas == "finas":
+		thick = maxf(1.4, thick - 0.8)
+	var yb := -11.0
+	var dy_back := 0.2
+	var dy_front := 0.4
+	if expr_activa == "concentrado":
+		dy_back = -1.4
+		dy_front = 1.8
+	elif estilo_cejas == "arqueadas":
+		dy_back = 0.8
+	var ceja := _suavizar_cerrado(PackedVector2Array([
+		Vector2(8.5, yb + dy_back - thick * 0.4),
+		Vector2(14.5, yb - 1.6 - thick * 0.45),
+		Vector2(20.5, yb + dy_front),
+		Vector2(14.5, yb - 1.6 + thick * 0.45),
+		Vector2(8.5, yb + dy_back + thick * 0.4),
+	]), 3)
+	_poligono_tinta(_transformar_pts(ceja, c, r), col_ceja, 1.1)
+
+
+func _dibujar_boca_perfil(c: Vector2, r: float, es_mujer: bool, forma_boca: String,
+		color_labios: Color, expr_activa: String) -> void:
+	var mostrar_labios: bool = es_mujer or (str(apariencia.get("color_labios", "natural")) != "natural") or (forma_boca == "gruesa")
+	var col_lab := Color(color_labios, 0.55)
+	if expr_activa in ["feliz", "reir"]:
+		var boca_a := _suavizar_cerrado(PackedVector2Array([
+			Vector2(14.5, 17.5), Vector2(23.8, 16.5),
+			Vector2(23.5, 22.8), Vector2(16.5, 22.0),
+		]), 3)
+		_poligono_tinta(_transformar_pts(boca_a, c, r), Color("#45121d"), 1.65)
+		var dt := PackedVector2Array([
+			Vector2(17.5, 17.5), Vector2(23.2, 17.0),
+			Vector2(23.0, 19.2), Vector2(18.0, 19.2),
+		])
+		draw_colored_polygon(_transformar_pts(dt, c, r), Color.WHITE)
+		return
+	if expr_activa in ["feliz_cerrado", "satisfecho", "sonrisa"]:
+		var son := _suavizar_abierta(PackedVector2Array([
+			Vector2(15.0, 17.6), Vector2(19.5, 19.4), Vector2(23.8, 18.0),
+		]), 4)
+		if mostrar_labios:
+			draw_polyline(_transformar_pts(son, c, r), col_lab, 3.2, true)
+		draw_polyline(_transformar_pts(son, c, r), TINTA, 1.9, true)
+		return
+	# Concentrado / neutral
+	var lin := _suavizar_abierta(PackedVector2Array([
+		Vector2(16.0, 19.2), Vector2(20.0, 19.5), Vector2(23.8, 19.0),
+	]), 3)
+	if mostrar_labios:
+		draw_polyline(_transformar_pts(lin, c, r), col_lab, 2.8, true)
+	draw_polyline(_transformar_pts(lin, c, r), TINTA, 1.9, true)
+
+
+func _dibujar_vello_facial_perfil(c: Vector2, r: float, jaw_w: float, tipo: String,
+		pelo: Color, grosor: float) -> void:
+	var col := pelo.darkened(0.16)
+	match tipo:
+		"sombra", "barba_corta":
+			var barba := _suavizar_cerrado(PackedVector2Array([
+				Vector2(-5.5, 12.0), Vector2(4.0, 18.0), Vector2(17.0, 21.0),
+				Vector2(23.0, 24.0), Vector2(21.0, 32.5), Vector2(4.0, 33.2),
+				Vector2(-12.5 * jaw_w, 22.0), Vector2(-10.0, 11.0),
+			]), 3)
+			var alpha_b := 0.28 if tipo == "sombra" else 0.90
+			if tipo == "sombra":
+				draw_colored_polygon(_transformar_pts(barba, c, r), Color(col, alpha_b))
+			else:
+				_poligono_tinta(_transformar_pts(barba, c, r), Color(col, alpha_b), grosor * 0.55)
+		"barba_completa":
+			var bf := _suavizar_cerrado(PackedVector2Array([
+				Vector2(-7.0, 10.0), Vector2(5.0, 16.0), Vector2(19.0, 18.0),
+				Vector2(25.0, 24.0), Vector2(21.0, 38.0), Vector2(3.0, 39.0),
+				Vector2(-13.5 * jaw_w, 25.0), Vector2(-11.0, 10.0),
+			]), 3)
+			_poligono_tinta(_transformar_pts(bf, c, r), col, grosor * 0.65)
+		"bigote":
+			var big := _suavizar_cerrado(PackedVector2Array([
+				Vector2(15.0, 15.8), Vector2(20.5, 13.5), Vector2(24.8, 15.5), Vector2(18.5, 17.2),
+			]), 3)
+			_poligono_tinta(_transformar_pts(big, c, r), col, grosor * 0.55)
+		"perilla", "candado":
+			var per := _suavizar_cerrado(PackedVector2Array([
+				Vector2(16.0, 25.5), Vector2(23.5, 25.5), Vector2(22.0, 34.0), Vector2(14.5, 33.0),
+			]), 3)
+			_poligono_tinta(_transformar_pts(per, c, r), col, grosor * 0.55)
+
+
+func _dibujar_gafas_perfil(c: Vector2, r: float, tipo: String) -> void:
+	var cristal := Color(0.90, 0.97, 1.0, 0.20) if tipo != "sol" else Color("#0f172a", 0.86)
+	var montura := Color("#b45309") if tipo == "aviador" else (Color("#7f1d1d") if tipo == "cateye" else Color("#1e293b"))
+	var marco := PackedVector2Array([
+		Vector2(11.5, -7.2), Vector2(21.0, -7.2), Vector2(20.5, 5.2), Vector2(11.5, 5.2),
+	])
+	var t_m := _transformar_pts(marco, c, r)
+	draw_colored_polygon(t_m, cristal)
+	var cerr := PackedVector2Array(t_m)
+	cerr.append(t_m[0])
+	draw_polyline(cerr, montura, 1.9, true)
+	draw_line(_rotar(Vector2(11.5, -2.5), r) + c, _rotar(Vector2(-5.5, 0.5), r) + c, montura, 1.9, true)
+
+
+func _dibujar_pelo_trasero_perfil(c: Vector2, r: float, estilo: String, pelo: Color, grosor: float) -> void:
+	var pelo_sombra := pelo.darkened(0.22)
+	var sway := sin(_t * 9.0) * 3.0 if animar_idle else 0.0
+	match estilo:
+		"coleta", "dos_coletas":
+			var cola := _suavizar_cerrado(PackedVector2Array([
+				Vector2(-22.0, -18.0), Vector2(-42.0, -24.0 + sway),
+				Vector2(-58.0, -10.0 + sway * 1.4), Vector2(-50.0, 6.0 + sway),
+				Vector2(-32.0, -4.0), Vector2(-21.0, -10.0),
+			]), 4)
+			_poligono_tinta(_transformar_pts(cola, c, r), pelo, grosor * 0.90)
+			_poligono_tinta(_elipse_pts(_rotar(Vector2(-24.0, -14.0), r) + c, 4.2, 6.2, 14, r - 0.3), Color("#ef4444"), grosor * 0.65)
+		"mono":
+			var pos_m := _rotar(Vector2(-27.0, -24.0), r) + c
+			_poligono_tinta(_elipse_pts(pos_m, 12.0, 12.0, 22, r), pelo, grosor * 0.90)
+			_poligono_tinta(_elipse_pts(_rotar(Vector2(-21.0, -19.0), r) + c, 3.6, 8.0, 14, r - 0.5), Color("#ef4444"), grosor * 0.65)
+		"largo", "ondulado":
+			var back := _suavizar_cerrado(PackedVector2Array([
+				Vector2(-12.0, -35.0), Vector2(-32.0, -16.0),
+				Vector2(-42.0, 18.0 + sway * 0.6), Vector2(-46.0, 56.0 + sway),
+				Vector2(-30.0, 68.0 + sway), Vector2(-14.0, 46.0), Vector2(-12.0, 8.0),
+			]), 4)
+			_poligono_tinta(_transformar_pts(back, c, r), pelo_sombra, grosor * 0.92)
+		"media_melena", "bob":
+			var y_fin := 38.0 if estilo == "media_melena" else 26.0
+			var back_b := _suavizar_cerrado(PackedVector2Array([
+				Vector2(-12.0, -35.0), Vector2(-32.0, -14.0),
+				Vector2(-36.0, y_fin), Vector2(-16.0, y_fin + 4.0), Vector2(-10.0, 8.0),
+			]), 4)
+			_poligono_tinta(_transformar_pts(back_b, c, r), pelo_sombra, grosor * 0.90)
+		"rizado", "afro":
+			var rad := 36.0 if estilo == "afro" else 31.0
+			var back_a := _elipse_pts(_rotar(Vector2(-12.0, -12.0), r) + c, rad, rad * 0.92, 22, r)
+			_poligono_tinta(back_a, pelo_sombra, grosor * 0.90)
+
+
+func _dibujar_pelo_delantero_perfil(c: Vector2, r: float, estilo: String, pelo: Color, grosor: float) -> void:
+	var canas := float(_rasgos_edad.get("canas", 0.0))
+	var brillo := pelo.lightened(lerpf(0.24, 0.07, canas))
+	var mech_ink := Color(pelo.darkened(0.36), 0.72)
+
+	match estilo:
+		"calvo":
+			var br := _transformar_pts(_suavizar_abierta(PackedVector2Array([
+				Vector2(-8.0, -30.0), Vector2(2.0, -33.0), Vector2(10.0, -30.0),
+			]), 3), c, r)
+			draw_polyline(br, Color(1.0, 1.0, 1.0, 0.45), 2.6, true)
+		"rapado":
+			var rap := _suavizar_cerrado(PackedVector2Array([
+				Vector2(-26.0, 4.0), Vector2(-26.5, -18.0), Vector2(-15.0, -34.0),
+				Vector2(2.0, -38.5), Vector2(17.5, -32.0), Vector2(21.5, -19.0),
+				Vector2(12.0, -24.0), Vector2(-4.0, -21.0), Vector2(-10.0, -8.0),
+				Vector2(-14.0, 8.0), Vector2(-23.0, 10.0),
+			]), 3)
+			_poligono_tinta(_transformar_pts(rap, c, r), pelo, grosor * 0.80)
+		"alborotado":
+			var pts_a := _suavizar_cerrado(PackedVector2Array([
+				Vector2(-25.5, 10.0), Vector2(-31.0, -8.0), Vector2(-33.5, -21.0),
+				Vector2(-25.0, -28.0), Vector2(-24.0, -40.0), Vector2(-11.0, -42.0),
+				Vector2(-3.0, -51.0), Vector2(9.0, -44.0), Vector2(24.0, -47.0),
+				Vector2(22.0, -33.0), Vector2(29.0, -25.0), Vector2(21.0, -16.5),
+				Vector2(14.0, -22.0), Vector2(6.0, -16.5), Vector2(-3.5, -20.5),
+				Vector2(-10.0, -8.0), Vector2(-14.0, 10.0),
+			]), 4)
+			_poligono_tinta(_transformar_pts(pts_a, c, r), pelo, grosor * 0.92)
+			draw_polyline(_transformar_pts(_suavizar_abierta(PackedVector2Array([
+				Vector2(-10.0, -36.0), Vector2(2.0, -32.0), Vector2(14.0, -37.0),
+			]), 4), c, r), mech_ink, 1.4, true)
+			_brillo_pelo(c, r, Vector2(-12.0, -35.0), Vector2(12.0, -36.0), brillo)
+		"tupe":
+			var pts_t := _suavizar_cerrado(PackedVector2Array([
+				Vector2(-25.5, 8.0), Vector2(-28.0, -16.0), Vector2(-18.0, -35.0),
+				Vector2(0.0, -48.0), Vector2(22.0, -53.0), Vector2(31.0, -37.0),
+				Vector2(22.5, -20.0), Vector2(12.0, -24.0), Vector2(-5.0, -19.0),
+				Vector2(-12.0, 6.0),
+			]), 4)
+			_poligono_tinta(_transformar_pts(pts_t, c, r), pelo, grosor * 0.94)
+			_brillo_pelo(c, r, Vector2(-6.0, -41.0), Vector2(18.0, -43.0), brillo)
+		"degradado":
+			var fade := _suavizar_cerrado(PackedVector2Array([
+				Vector2(-25.5, 6.0), Vector2(-27.0, -18.0), Vector2(-14.0, -34.0),
+				Vector2(18.0, -32.0), Vector2(21.0, -19.0), Vector2(-6.0, -20.0),
+				Vector2(-14.0, 6.0),
+			]), 3)
+			_poligono_tinta(_transformar_pts(fade, c, r), pelo.darkened(0.18), grosor * 0.80)
+			var top_d := _suavizar_cerrado(PackedVector2Array([
+				Vector2(-20.0, -26.0), Vector2(-12.0, -44.0), Vector2(10.0, -47.0),
+				Vector2(24.5, -34.0), Vector2(20.0, -21.0), Vector2(4.0, -24.0),
+			]), 3)
+			_poligono_tinta(_transformar_pts(top_d, c, r), pelo, grosor * 0.92)
+			_brillo_pelo(c, r, Vector2(-8.0, -38.0), Vector2(14.0, -38.0), brillo)
+		"rizado":
+			var crown := _suavizar_cerrado(PackedVector2Array([
+				Vector2(-27.0, 6.0), Vector2(-31.5, -16.0), Vector2(-22.0, -38.0),
+				Vector2(0.0, -46.0), Vector2(21.0, -38.0), Vector2(26.0, -22.0),
+				Vector2(16.0, -18.0), Vector2(4.0, -23.0), Vector2(-9.0, -14.0),
+				Vector2(-14.0, 8.0),
+			]), 3)
+			_poligono_tinta(_transformar_pts(crown, c, r), pelo, grosor * 0.92)
+			_brillo_pelo(c, r, Vector2(-8.0, -38.0), Vector2(11.0, -38.0), brillo)
+		"afro":
+			var afro_p := _elipse_pts(_rotar(Vector2(-3.0, -18.0), r) + c, 28.0, 26.0, 20, r)
+			_poligono_tinta(afro_p, pelo, grosor * 0.92)
+			_brillo_pelo(c, r, Vector2(-10.0, -36.0), Vector2(12.0, -36.0), brillo)
+		"largo", "ondulado", "media_melena", "bob":
+			var y_f := 26.0 if estilo in ["largo", "ondulado"] else 18.0
+			var pts_l := _suavizar_cerrado(PackedVector2Array([
+				Vector2(-27.0, y_f), Vector2(-29.0, -14.0), Vector2(-17.0, -37.0),
+				Vector2(2.0, -43.5), Vector2(20.0, -34.0), Vector2(23.5, -17.0),
+				Vector2(14.0, -22.0), Vector2(2.0, -18.0), Vector2(-10.0, -8.0),
+				Vector2(-15.0, y_f),
+			]), 4)
+			_poligono_tinta(_transformar_pts(pts_l, c, r), pelo, grosor * 0.92)
+			_brillo_pelo(c, r, Vector2(-10.0, -34.0), Vector2(12.0, -34.0), brillo)
+		_:
+			# "corto", "raya_lado", "coleta", "mono", "dos_coletas"
+			var pts_c := _suavizar_cerrado(PackedVector2Array([
+				Vector2(-26.5, 8.0), Vector2(-28.5, -15.0), Vector2(-17.0, -37.0),
+				Vector2(2.0, -43.0), Vector2(20.0, -34.0), Vector2(24.0, -18.5),
+				Vector2(13.0, -22.5), Vector2(1.0, -19.0), Vector2(-9.5, -10.0),
+				Vector2(-14.0, 8.0),
+			]), 4)
+			_poligono_tinta(_transformar_pts(pts_c, c, r), pelo, grosor * 0.92)
+			_brillo_pelo(c, r, Vector2(-10.0, -34.0), Vector2(12.0, -34.0), brillo)
+
+
+func _dibujar_sombrero_perfil(c: Vector2, r: float, tipo: String, color_ropa: Color, grosor: float) -> void:
+	var col_s := color_ropa.darkened(0.08)
+	var col_s_dark := color_ropa.darkened(0.28)
+	match tipo:
+		"gorra":
+			var copa := _suavizar_cerrado(PackedVector2Array([
+				Vector2(-26.0, -18.0), Vector2(-22.0, -37.0), Vector2(-2.0, -48.0),
+				Vector2(18.0, -38.0), Vector2(23.0, -21.0), Vector2(0.0, -22.0),
+			]), 3)
+			_poligono_tinta(_transformar_pts(copa, c, r), col_s, grosor * 0.92)
+			var visera := _suavizar_cerrado(PackedVector2Array([
+				Vector2(10.0, -23.0), Vector2(36.0, -19.0),
+				Vector2(35.0, -14.5), Vector2(10.0, -18.5),
+			]), 3)
+			_poligono_tinta(_transformar_pts(visera, c, r), col_s_dark, grosor * 0.88)
+		"gorro":
+			var cuerpo_g := _suavizar_cerrado(PackedVector2Array([
+				Vector2(-27.0, -18.0), Vector2(-23.0, -39.0), Vector2(0.0, -51.5),
+				Vector2(21.0, -39.0), Vector2(23.5, -19.0),
+			]), 3)
+			_poligono_tinta(_transformar_pts(cuerpo_g, c, r), col_s, grosor * 0.92)
+			var vuelta := _suavizar_cerrado(PackedVector2Array([
+				Vector2(-28.0, -22.0), Vector2(24.0, -22.0),
+				Vector2(23.5, -13.5), Vector2(-27.5, -13.5),
+			]), 3)
+			_poligono_tinta(_transformar_pts(vuelta, c, r), col_s_dark, grosor * 0.86)
+			draw_circle(_rotar(Vector2(-2.0, -54.0), r) + c, 6.0, col_s_dark, true, -1.0, true)
+			draw_arc(_rotar(Vector2(-2.0, -54.0), r) + c, 6.0, 0.0, TAU, 14, TINTA, grosor * 0.72, true)
+		"boina":
+			var boina := _suavizar_cerrado(PackedVector2Array([
+				Vector2(-28.0, -19.0), Vector2(-33.0, -34.0), Vector2(-6.0, -47.0),
+				Vector2(22.0, -37.0), Vector2(23.0, -21.0),
+			]), 4)
+			_poligono_tinta(_transformar_pts(boina, c, r), col_s, grosor * 0.92)
+		"diadema":
+			var dia := _suavizar_abierta(PackedVector2Array([
+				Vector2(-6.0, 2.0), Vector2(-4.0, -25.0), Vector2(4.0, -37.0),
+			]), 4)
+			var pts_d := _transformar_pts(dia, c, r)
+			draw_polyline(pts_d, TINTA, 5.8, true)
+			draw_polyline(pts_d, col_s.lightened(0.15), 3.4, true)
 
 
 # ---------------------------------------------------------------- utilidades geométricas y Catmull-Rom

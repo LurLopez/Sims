@@ -1,0 +1,383 @@
+<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>PARK RUSH 3D · Salir a correr — SIMS 0.33</title><style>body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;color:#0b1220;background:#f6f9ff;line-height:1.6}main{max-width:980px;margin:0 auto;padding:40px 20px 80px}h1{font-size:40px;line-height:1.1}h2{color:#12397a;border-bottom:2px solid #dbeafe;padding-bottom:6px;margin-top:36px}table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px;background:#fff}th,td{padding:9px 11px;border-bottom:1px solid #dbe3ee;text-align:left}th{background:#e8f1ff}code{background:#eef2ff;padding:2px 5px;border-radius:5px}pre{background:#0f172a;color:#e2e8f0;padding:14px;border-radius:10px;overflow:auto}blockquote{border-left:4px solid #0284c7;background:#e0f2fe;margin:14px 0;padding:10px 14px}a{color:#1d6ef5}@media(max-width:680px){table{font-size:12px}}</style></head><body><main><h1 id="minijuego-salir-a-correr-park-rush-3d">Minijuego «Salir a correr» / PARK RUSH 3D</h1>
+<blockquote>
+<p>Runner infinito 3D de tres carriles con el Sim del proyecto como protagonista.
+Versión HTML autocontenida: <a href="MINIJUEGO_CORRER.html"><code>MINIJUEGO_CORRER.html</code></a>.
+Investigación del juego original: <a href="SUBWAY_SURFERS_INGENIERIA_INVERSA.md"><code>SUBWAY_SURFERS_INGENIERIA_INVERSA.md</code></a>.</p>
+</blockquote>
+<h2 id="1-resumen">1. Resumen</h2>
+<p>Minijuego vertical <code>720×1280</code> integrado en <strong>Minijuegos</strong>. El mundo es 3D real
+(<code>SubViewport</code> + <code>Camera3D</code>), no una proyección 2.5D: vías ferroviarias, trenes
+biselados, andenes, muros con grafiti, rampas, túneles, cielo procedural y
+curvatura de horizonte estilo <em>Subway Surfers</em>.</p>
+<p>La versión actual incorpora las mecánicas clave estudiadas en <em>Subway Surfers
+Web</em> (Poki), adaptadas a la escala y al arte de SIMS:</p>
+<ul>
+<li>Tres carriles, salto, rodado, caída rápida y rampas a los techos.</li>
+<li><strong>Tropiezo antes de morir</strong>: el primer choque marea 3 s; el segundo derriba.</li>
+<li>Trenes aparcados y <strong>trenes en movimiento</strong>, incluidos <strong>trenes largos de 3 vagones</strong> y <strong>exprés en sentido contrario</strong>.</li>
+<li><strong>Intro cinematográfica</strong> con cámara de acercamiento, <strong>túnel</strong> con cámara rasante y cuenta atrás al reanudar.</li>
+<li>Tabla hoverboard de <strong>30 s</strong>, imán, x2, súper zapatillas, <strong>jetpack</strong>,
+  <strong>pogo cohete</strong>, <strong>llave</strong> y <strong>caja misteriosa</strong>.</li>
+<li>Puntuación por distancia y multiplicador; monedas separadas.</li>
+<li><strong>Tres retos por carrera</strong> y pantalla de pausa con progreso.</li>
+<li><strong>Guardia y perro</strong> que persiguen al Sim cuando tropieza.</li>
+<li><strong>Reanimación</strong>: primera gratis y siguientes con llaves (<code>1, 2, 4…</code>).</li>
+</ul>
+<p>El corredor conserva el aspecto canónico del Sim (<code>Runner_Personaje_3D</code>), con
+ropa equipada, envejecimiento, expresiones y animación articulada.</p>
+<hr />
+<h2 id="2-archivos">2. Archivos</h2>
+<table>
+<thead>
+<tr>
+<th>Archivo</th>
+<th>Rol</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Scripts/Logica/Escena_Principal/Minijuego_Correr/Sistema_Correr.gd</code></td>
+<td>Autoload <code>Sistema_Correr</code>: récords, recompensa, aplicación al Sim y guardado en <code>user://minijuego_correr.cfg</code>.</td>
+</tr>
+<tr>
+<td><code>Scripts/GUI/Minijuego_Correr/Minijuego_Correr.gd</code></td>
+<td>Menú, HUD, gestos, teclado, pausa, reanimación, resultado y audio.</td>
+</tr>
+<tr>
+<td><code>Scripts/GUI/Minijuego_Correr/Runner_Simulacion.gd</code></td>
+<td>Lógica pura: carriles, salto, rodado, tropiezo, trenes, túneles, power-ups, monedas, retos, puntuación y reanimación.</td>
+</tr>
+<tr>
+<td><code>Scripts/GUI/Minijuego_Correr/Runner_Mundo.gd</code></td>
+<td><code>SubViewport</code> 3D, cámara, iluminación, chunks, sincronización de entidades, partículas, clima y guardia.</td>
+</tr>
+<tr>
+<td><code>Scripts/GUI/Minijuego_Correr/Runner_Personaje_3D.gd</code></td>
+<td>Sim 3D articulado; añade jetpack, pogo, tabla, aura de imán, pose de vuelo y choque.</td>
+</tr>
+<tr>
+<td><code>Scripts/GUI/Minijuego_Correr/Runner_Escenario_3D.gd</code></td>
+<td>Materiales, chunks ferroviarios, trenes, rampas, túneles, monedas y power-ups esculpidos.</td>
+</tr>
+<tr>
+<td><code>Scripts/GUI/Minijuego_Correr/Runner_Mallas_3D.gd</code></td>
+<td>Generador de mallas biseladas (vagones, rampas, monedas, imán, estrella, tabla).</td>
+</tr>
+<tr>
+<td><code>Scripts/GUI/Minijuego_Correr/Runner_Guardia_3D.gd</code></td>
+<td>Guardia y perro procedurales que persiguen al corredor.</td>
+</tr>
+<tr>
+<td><code>Scripts/GUI/Minijuego_Correr/Runner_Texturas_3D.gd</code></td>
+<td>Texturas procedurales de balasto, traviesas, muros, trenes y sombras.</td>
+</tr>
+<tr>
+<td><code>Scripts/GUI/Minijuego_Correr/Sonidos_Correr.gd</code></td>
+<td>Pool de SFX en el bus <code>SFX</code>.</td>
+</tr>
+<tr>
+<td><code>Escenas/Minijuego_Correr/Minijuego_Correr.tscn</code></td>
+<td>Escena mínima que monta el controlador.</td>
+</tr>
+<tr>
+<td><code>Escenas/Herramientas/Captura_Correr.tscn</code> + <code>Captura_Correr.gd</code></td>
+<td>Capturas QA de menú, partida, túnel, techo, tabla, jetpack, pogo, guardia, reanimación, noche, pausa y resultado.</td>
+</tr>
+<tr>
+<td><code>Funcionalidades/Minijuego_Correr/Tests/</code></td>
+<td>Tests GUT de simulación, 3D y sistema de recompensas.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="arte-y-assets">Arte y assets</h3>
+<ul>
+<li><code>Imagenes/Minijuego_Correr/</code> conserva el pack 2D histórico del parque.</li>
+<li>El runner 3D actual usa geometría y texturas generadas por código; no
+  <code>preload</code> de PNG grandes en el arranque.</li>
+<li>La ropa sale de <code>Sistema_Cocina.Obtener_Apariencia_Con_Ropa_Equipada()</code> y se
+  dibuja en el modelo 3D.</li>
+</ul>
+<h3 id="integracion">Integración</h3>
+<ul>
+<li>Autoload <code>Sistema_Correr</code> en <code>project.godot</code>.</li>
+<li><code>Script_Principal</code> añade la tarjeta y abre el minijuego como <code>CanvasLayer</code>
+  (capa 60). Al salir libera la capa y refresca el Sim.</li>
+<li>No cambia la orientación: el runner es vertical como el juego principal.</li>
+</ul>
+<hr />
+<h2 id="3-controles">3. Controles</h2>
+<table>
+<thead>
+<tr>
+<th>Acción</th>
+<th>Táctil</th>
+<th>Teclado</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cambiar de carril</td>
+<td>Desliza izquierda/derecha</td>
+<td><code>A</code>/<code>D</code>, flechas</td>
+</tr>
+<tr>
+<td>Saltar</td>
+<td>Desliza arriba o toca</td>
+<td><code>W</code>/<code>↑</code>/<code>Espacio</code></td>
+</tr>
+<tr>
+<td>Rodar</td>
+<td>Desliza abajo</td>
+<td><code>S</code>/<code>↓</code></td>
+</tr>
+<tr>
+<td>Tabla</td>
+<td>Doble toque o botón TABLA</td>
+<td><code>E</code>/<code>H</code>/<code>Shift</code></td>
+</tr>
+<tr>
+<td>Pausa</td>
+<td>Botón superior derecho</td>
+<td><code>Esc</code>/<code>P</code></td>
+</tr>
+<tr>
+<td>Salir</td>
+<td>Botón de volver / atrás Android</td>
+<td><code>Esc</code> en pausa/menú</td>
+</tr>
+</tbody>
+</table>
+<p>Gestos: 30 px de desplazamiento; doble toque dentro de 320 ms. Ratón emulado
+como toque.</p>
+<hr />
+<h2 id="4-reglas-de-juego">4. Reglas de juego</h2>
+<h3 id="pista-y-velocidad">Pista y velocidad</h3>
+<ul>
+<li>Tres carriles; el jugador empieza en el central.</li>
+<li>Velocidad <code>22 → 46 m/s</code> con la distancia (<code>1 - e^(-d/950)</code>), más un
+  multiplicador temporal del 62 % durante 0,85 s tras un tropiezo.</li>
+<li>Cambio de carril suavizado (<code>exp(-17·dt)</code>), salto <code>14,2 m/s</code> (zapatillas
+  <code>19,6 m/s</code>), gravedad <code>42 m/s²</code>, rodado <code>0,62 s</code>.</li>
+</ul>
+<h3 id="obstaculos">Obstáculos</h3>
+<table>
+<thead>
+<tr>
+<th>Tipo</th>
+<th>Cómo se supera</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>VALLA_BAJA</code></td>
+<td>Saltar o cambiar de carril</td>
+</tr>
+<tr>
+<td><code>ARCO_ALTO</code></td>
+<td>Rodar por debajo o saltar por encima</td>
+</tr>
+<tr>
+<td><code>SETO_ALTO</code> / vagón aparcado</td>
+<td>Cambiar de carril o subir por rampa</td>
+</tr>
+<tr>
+<td><code>PASARELA_RAMPA</code></td>
+<td>Subir la rampa y correr por el techo</td>
+</tr>
+<tr>
+<td><code>CICLISTA</code> / vagoneta</td>
+<td>Cambiar de carril</td>
+</tr>
+<tr>
+<td><code>TREN_MOVIL</code></td>
+<td>Cambiar de carril; se acerca o se aleja con velocidad relativa. Algunos son exprés y llegan muy rápido</td>
+</tr>
+<tr>
+<td><code>TREN_LARGO</code> / <code>TREN_LARGO_RAMPA</code></td>
+<td>Tren de <strong>3 vagones</strong> (40,5 m); cambiar de carril o subir por su rampa y correr por el techo</td>
+</tr>
+<tr>
+<td><code>TUNEL</code></td>
+<td>No colisiona; activa la cámara rasante</td>
+</tr>
+</tbody>
+</table>
+<h3 id="tropiezo-y-reanimacion">Tropiezo y reanimación</h3>
+<ul>
+<li>Primer choque frontal o lateral: <code>TROPEZANDO</code> durante <strong>3 s</strong>, cámara con
+  sacudida y guardia acercándose.</li>
+<li>El obstáculo que provocó el tropiezo se marca como golpeado para no repetir.</li>
+<li>Segundo choque mientras está mareado: <code>CAIDO</code>.</li>
+<li>Si hay tabla activa, absorbe el golpe, elimina obstáculos cercanos y deja
+  1,35 s de invulnerabilidad.</li>
+<li>En <code>CAIDO</code> se abre el modal de reanimación con cuenta atrás de 6 s:</li>
+<li>primera reanimación de la carrera: gratis;</li>
+<li>siguientes: <code>1, 2, 4…</code> llaves;</li>
+<li>si no hay llaves, solo se puede terminar la carrera.</li>
+</ul>
+<h3 id="monedas-power-ups-y-llaves">Monedas, power-ups y llaves</h3>
+<ul>
+<li>Moneda: +1 moneda (no da puntos directamente).</li>
+<li><strong>Imán</strong>: atrae monedas a 22 m durante 11 s.</li>
+<li><strong>Súper zapatillas</strong>: salto reforzado 11 s.</li>
+<li><strong>x2</strong>: duplica la puntuación 13 s.</li>
+<li><strong>Tabla</strong>: 30 s; se activa con doble toque o botón; absorbe un choque y
+  permite correr por los techos.</li>
+<li><strong>Jetpack</strong>: 9 s de vuelo a 7,8 m; monedas en el aire y aterrizaje seguro.</li>
+<li><strong>Pogo</strong>: arco de 78 m y 8,5 m de altura; monedas en tres carriles y un
+  power-up al final.</li>
+<li><strong>Caja misteriosa</strong>: +12 monedas, +1 llave, +1 tabla o +1.000 puntos.</li>
+<li><strong>Llave</strong>: se usa para reanimarse; hay una garantizada cada ~700 m.</li>
+</ul>
+<h3 id="puntuacion">Puntuación</h3>
+<pre><code>puntos = floor(distancia × 10 × multiplicador)
+</code></pre>
+<ul>
+<li>Las monedas no suman puntos (igual que en el original).</li>
+<li>Cada reto completado suma 750 puntos.</li>
+<li>Hitos cada 250 m con aviso y sonido.</li>
+<li>Récord de puntuación y de distancia en <code>Sistema_Correr</code>.</li>
+</ul>
+<h3 id="retos-por-carrera">Retos por carrera</h3>
+<p>Se eligen 3 aleatorios sin repetir entre:</p>
+<ul>
+<li>recoge 40 monedas;</li>
+<li>salta 10 veces;</li>
+<li>rueda 6 veces;</li>
+<li>cambia de carril 15 veces;</li>
+<li>corre 800 m;</li>
+<li>usa la tabla 1 vez.</li>
+</ul>
+<p>El progreso se ve en la pausa y el resultado muestra cuántos se completaron.</p>
+<hr />
+<h2 id="5-recompensa-para-el-sim">5. Recompensa para el Sim</h2>
+<p>Una carrera de <strong>≥ 100 m</strong> aplica la recompensa al terminar. Salir desde la
+pausa no la aplica.</p>
+<table>
+<thead>
+<tr>
+<th>Concepto</th>
+<th>Fórmula</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Progreso de Deporte</td>
+<td><code>1 + floor(distancia / 400)</code>, máximo 4; +1 si ≥ 30 monedas</td>
+</tr>
+<tr>
+<td>Salud física</td>
+<td><code>+3 + floor(distancia / 500)</code> (máx. +5)</td>
+</tr>
+<tr>
+<td>Salud mental</td>
+<td><code>+2 + floor(distancia / 500)</code> (máx. +4)</td>
+</tr>
+<tr>
+<td>Hambre</td>
+<td><code>-2 - floor(distancia / 500)</code> (máx. -4)</td>
+</tr>
+<tr>
+<td>Descanso</td>
+<td><code>-2 - floor(distancia / 500)</code> (máx. -4)</td>
+</tr>
+<tr>
+<td>Higiene</td>
+<td><code>-3 - floor(distancia / 500)</code> (máx. -5)</td>
+</tr>
+</tbody>
+</table>
+<p>Las monedas siguen siendo puntuación arcade, no dinero del Sim. La recompensa
+usa <code>Actividades_Habilidades.Cambiar_Progreso(0)</code> y
+<code>Actividades_Necesidades_Basicas.Cambiar_Necesidades_Basicas(±1, índice)</code>.</p>
+<p>Persistencia en <code>user://minijuego_correr.cfg</code>: <code>mejor_distancia</code>,
+<code>mejor_puntuacion</code>, <code>monedas_totales</code>, <code>carreras</code>, <code>distancia_total</code>,
+<code>ultima_distancia</code>, <code>ultima_puntuacion</code>, <code>ultima_monedas</code>,
+<code>recompensas_aplicadas</code>.</p>
+<hr />
+<h2 id="6-interfaz-y-presentacion">6. Interfaz y presentación</h2>
+<ul>
+<li><strong>Menú PARK RUSH 3D:</strong> escena 3D viva con el Sim, cámara orbital suave,
+  récord, estadísticas y botón JUGAR.</li>
+<li><strong>HUD:</strong> puntuación, multiplicador, distancia, monedas, llaves, pausa, botón
+  TABLA y medidores de power-ups (tabla, imán, salto+, x2, jetpack, pogo).</li>
+<li><strong>Avisos:</strong> tropiezo, tabla salvadora, llave, caja misteriosa, reto completado
+  e hitos.</li>
+<li><strong>Pausa:</strong> continuar (con cuenta atrás 3-2-1), reiniciar, menú, salir y lista de retos con progreso.</li>
+<li><strong>Reanimación:</strong> cuenta atrás, coste en llaves y saldo actual.</li>
+<li><strong>Resultado:</strong> distancia, monedas, récord, retos completados, recompensa y
+  botones OTRA VEZ / SALIR AL HUB.</li>
+<li><strong>Escenario:</strong> estación ferroviaria urbana con tres vías, traviesas, raíles,
+  andenes, muros con grafiti, pórticos, semáforos, puentes, árboles, farolas y
+  cielo procedural día/atardecer/noche.</li>
+<li><strong>Personaje:</strong> Sim 3D articulado con poses de carrera, salto, rodado, vuelo,
+  pogo, tabla, choque y celebración; jetpack y pogo visibles.</li>
+<li><strong>Guardia:</strong> guardia con gorra, chaleco reflectante y linterna + perro
+  policía; se acerca al tropezar y atrapa al caer.</li>
+</ul>
+<hr />
+<h2 id="7-qa">7. QA</h2>
+<h3 id="tests">Tests</h3>
+<pre><code class="language-bash">godot --headless --path . -s addons/gut/gut_cmdln.gd \
+  -gdir=res://Funcionalidades/Minijuego_Correr -ginclude_subdirs -gexit
+</code></pre>
+<p>Resultado actual: <strong>33/33 tests</strong> del runner y <strong>354/354</strong> de la suite completa.</p>
+<p>Cubren:</p>
+<ul>
+<li>carriles, salto, súper salto, rodado y caída rápida;</li>
+<li>valla, arco, rampa y techo;</li>
+<li>tropiezo lateral y frontal + segundo choque;</li>
+<li>tabla protectora y limpieza de obstáculos;</li>
+<li>imán entre carriles;</li>
+<li>tren móvil con velocidad relativa;</li>
+<li>túnel sin colisión y cámara rasante;</li>
+<li>jetpack, pogo, llaves y reanimación;</li>
+<li>puntuación por distancia/multiplicador y retos;</li>
+<li>generador de oleadas con al menos un carril pasable;</li>
+<li>apariencia 3D, peinados, atuendos y carga/limpieza de escena;</li>
+<li>recompensas, récords, persistencia y aplicación al Sim.</li>
+</ul>
+<h3 id="capturas">Capturas</h3>
+<pre><code class="language-bash">godot --path . res://Escenas/Herramientas/Captura_Correr.tscn
+</code></pre>
+<p>Salida en <code>user://capturas_correr/</code>:</p>
+<ul>
+<li><code>01_menu.png</code>, <code>02_partida.png</code>, <code>02a2_tunel.png</code>, <code>02b_techo.png</code></li>
+<li><code>02c_tabla_powerups.png</code>, <code>02c2_jetpack.png</code>, <code>02c3_pogo.png</code></li>
+<li><code>02c4_guardia.png</code>, <code>02c5_reanimar.png</code>, <code>02d_otro_sim.png</code></li>
+<li><code>02e_noche.png</code>, <code>03_pausa.png</code>, <code>04_resultado.png</code></li>
+</ul>
+<hr />
+<h2 id="8-decisiones-tecnicas">8. Decisiones técnicas</h2>
+<ul>
+<li><strong>Lógica pura separada:</strong> <code>Runner_Simulacion</code> no toca nodos 3D; se puede
+  probar con GUT y reproducir con semilla.</li>
+<li><strong>Trenes de 3 vagones:</strong> el obstáculo mide 40,5 m y se dibuja como tres vagones
+  independientes con sus sombras y enganches; la rampa se coloca delante y
+  permite rutas de techo largas.</li>
+<li><strong>Intro y cuenta atrás:</strong> la intro usa una cámara que interpola al encuadre de
+  carrera; la reanudación desde pausa hace 3-2-1 para que el jugador recupere el
+  ritmo.</li>
+<li><strong>Personaje propio:</strong> el 3D del Sim se reutiliza en todos los estados; el
+  jetpack y el pogo son accesorios procedurales, no modelos externos.</li>
+<li><strong>Escala de metros:</strong> carriles de 2,7 m y cámara baja para que la velocidad
+  se lea bien en vertical.</li>
+<li><strong>Trenes móviles con velocidad relativa:</strong> se suman al desplazamiento del
+  mundo, de modo que un tren puede alcanzar o dejar atrás al jugador.</li>
+<li><strong>Túnel sin colisión:</strong> es una cobertura visual/cámara; la simulación solo
+  marca <code>tunel</code> para que <code>Runner_Mundo</code> baje la cámara.</li>
+<li><strong>Reanimación con llaves del run:</strong> evita moneda premium y mantiene la
+  economía del Sim intacta.</li>
+<li><strong>Retos por carrera:</strong> dan variedad sin añadir persistencia diaria todavía.</li>
+<li><strong>Rendimiento:</strong> mallas compartidas, <code>MultiMesh</code> para traviesas/partículas,
+  texturas procedurales y carga perezosa de la escena.</li>
+</ul>
+<hr />
+<h2 id="9-futuro">9. Futuro</h2>
+<ol>
+<li>Misiones diarias persistentes y recompensas entre carreras.</li>
+<li>Tablas desbloqueables con poderes (doble salto, speed-up, stay-low).</li>
+<li>Chunks largos de 3 vagones y <code>train_tops</code> para runs de varios minutos.</li>
+<li>Tutorial con cámara de intro, checkpoints y guardia.</li>
+<li>Ranking local por personaje y logros permanentes.</li>
+</ol></main></body></html>

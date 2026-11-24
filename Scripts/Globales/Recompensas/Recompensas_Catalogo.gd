@@ -17,18 +17,83 @@ extends RefCounted
 # ============================================================================
 
 const SECCION_ANUNCIOS := "anuncios"
+const SECCION_COMPRAS := "compras"
 const SECCION_SERVICIOS := "servicios"
 
 const TIPO_ANUNCIO := "anuncio"
+const TIPO_COMPRA := "compra"
 const TIPO_SERVICIO := "servicio"
 
 const GRUPO_REJUVENECIMIENTO := "rejuvenecimiento"
 const GRUPO_CUIDADO := "cuidado"
 
 const ORDEN_GRUPOS := [GRUPO_REJUVENECIMIENTO, GRUPO_CUIDADO]
-const ORDEN_SECCIONES := [SECCION_SERVICIOS, SECCION_ANUNCIOS]
+const ORDEN_SECCIONES := [SECCION_ANUNCIOS, SECCION_COMPRAS, SECCION_SERVICIOS]
 
 const PRODUCTOS := {
+	# ----------------------------------------------------------------- compras
+	"compra_vip": {
+		"id": "compra_vip",
+		"seccion": SECCION_COMPRAS,
+		"tipo": TIPO_COMPRA,
+		"orden": 10,
+		"destacado": true,
+		"titulo": "Sims+ VIP",
+		"subtitulo": "Experiencia completa",
+		"descripcion": "Sin anuncios automáticos, +20 % en salarios y 2 tuppers caseros cada semana.",
+		"precio_real": "4,99 €",
+		"etiqueta": "PERMANENTE",
+		"beneficios": ["Sin anuncios", "+20 % salario", "2 tuppers/sem"],
+		"icono": "crown",
+		"color": Color("#d97706"),
+		"recompensas": [],
+	},
+	"compra_sin_anuncios": {
+		"id": "compra_sin_anuncios",
+		"seccion": SECCION_COMPRAS,
+		"tipo": TIPO_COMPRA,
+		"orden": 11,
+		"destacado": false,
+		"titulo": "Quitar anuncios",
+		"subtitulo": "Pago único",
+		"descripcion": "Elimina para siempre la publicidad automática entre actividades.",
+		"precio_real": "2,99 €",
+		"etiqueta": "VENTAJA",
+		"icono": "zap",
+		"color": Color("#4f46e5"),
+		"recompensas": [],
+	},
+	"compra_pack_impulso": {
+		"id": "compra_pack_impulso",
+		"seccion": SECCION_COMPRAS,
+		"tipo": TIPO_COMPRA,
+		"orden": 12,
+		"destacado": false,
+		"titulo": "Pack Impulso",
+		"subtitulo": "+1.000 € · 3 tuppers",
+		"descripcion": "Efectivo directo y comida casera al 100 % para empezar fuerte.",
+		"precio_real": "1,99 €",
+		"etiqueta": "PACK",
+		"icono": "package",
+		"color": Color("#0d9488"),
+		"recompensas": [],
+	},
+	"compra_pack_renovacion": {
+		"id": "compra_pack_renovacion",
+		"seccion": SECCION_COMPRAS,
+		"tipo": TIPO_COMPRA,
+		"orden": 13,
+		"destacado": false,
+		"titulo": "Pack Renovación",
+		"subtitulo": "+2.500 € · Bienestar · −3 años",
+		"descripcion": "Saldo extra, todas las necesidades al máximo y tres años menos.",
+		"precio_real": "3,99 €",
+		"etiqueta": "PACK",
+		"icono": "gem",
+		"color": Color("#e11d48"),
+		"recompensas": [],
+	},
+
 	# ---------------------------------------------------------------- anuncios
 	"anuncio_dinero": {
 		"id": "anuncio_dinero",
@@ -288,6 +353,10 @@ static func Servicios_De_Grupo(grupo: String) -> Array:
 
 static func Es_Anuncio(id: String) -> bool:
 	return str(Obtener_Producto(id).get("tipo", "")) == TIPO_ANUNCIO
+
+
+static func Es_Compra(id: String) -> bool:
+	return str(Obtener_Producto(id).get("tipo", "")) == TIPO_COMPRA
 
 
 static func Es_Servicio(id: String) -> bool:

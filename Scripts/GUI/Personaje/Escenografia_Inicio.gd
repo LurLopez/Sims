@@ -972,15 +972,15 @@ static func _dormir(c: CanvasItem, esc, w: float, h: float, t: float, _v: String
 	c.draw_rect(Rect2(cab.position.x - 5.0, y_cab - 7.0, cab.size.x + 10.0, 9.0), Color("#4a2a12"), false, 1.6)
 	c.draw_line(Vector2(cab.position.x - 2.0, y_cab - 3.0), Vector2(cab.end.x + 2.0, y_cab - 3.0),
 		_a(Color("#f0c58f"), 0.55), 1.4)
-	# Almohada mullida.
-	var alm := Rect2(cx - ancho_cab * 0.30, h * 0.465, ancho_cab * 0.60, h * 0.18)
-	_panel_borde(c, alm, 12.0, Color("#eef2ff"), Color("#94a3b8"), 1.6)
+	# Almohada mullida (elevada para arropar la cabeza inclinada del Sim).
+	var alm := Rect2(cx - ancho_cab * 0.32, h * 0.365, ancho_cab * 0.64, h * 0.28)
+	_panel_borde(c, alm, 14.0, Color("#eef2ff"), Color("#94a3b8"), 1.6)
 	c.draw_rect(Rect2(alm.position.x + 8.0, alm.position.y + 5.0, alm.size.x - 16.0, maxf(2.0, alm.size.y * 0.10)),
 		_a(Color.WHITE, 0.55))
 	c.draw_line(Vector2(alm.position.x + 5.0, alm.end.y - 5.0), Vector2(alm.end.x - 5.0, alm.end.y - 5.0),
 		_a(Color("#64748b"), 0.35), 1.2)
 	# Cojín de acento a la izquierda de la almohada.
-	var alm2 := Rect2(cx - ancho_cab * 0.44, h * 0.50, ancho_cab * 0.20, h * 0.14)
+	var alm2 := Rect2(cx - ancho_cab * 0.45, h * 0.42, ancho_cab * 0.20, h * 0.18)
 	_panel_borde(c, alm2, 8.0, Color("#0f766e"), Color("#134e4a"), 1.4)
 	c.draw_line(Vector2(alm2.position.x + 6.0, alm2.end.y - 6.0),
 		Vector2(alm2.end.x - 6.0, alm2.end.y - 6.0), _a(Color("#5eead4"), 0.30), 1.2)
@@ -1421,11 +1421,6 @@ static func _tv(c: CanvasItem, esc, w: float, h: float, t: float, v: String) -> 
 	# Palomitas y fruta decorativa en el mueble.
 	c.draw_circle(Vector2(w * 0.72, h * 0.585), 6.0, Color("#f1f5f9"), true, -1.0, true)
 	c.draw_circle(Vector2(w * 0.72, h * 0.61), 5.0, Color("#f59e0b"), true, -1.0, true)
-	# Texto de risa si toca.
-	if v == "reir":
-		var y_r := h * 0.20 + sin(t * 10.0) * 4.0
-		c.draw_string(FUENTE_COMIC, Vector2(cx + w * 0.08, y_r), "¡JAJA!",
-			HORIZONTAL_ALIGNMENT_LEFT, -1, 18, Color("#fde047"))
 	_motas(c, Rect2(w * 0.05, h * 0.10, w * 0.85, h * 0.65), t, 4, _a(col_tv, 0.25), 0.6)
 
 
@@ -1500,6 +1495,17 @@ static func _manualidades(c: CanvasItem, esc, w: float, h: float, t: float, _v: 
 	# Mesa de trabajo ancha (parte trasera).
 	c.draw_rect(Rect2(0.0, h * 0.79, w, h * 0.21), Color("#c2410c") if not noche else Color("#6b2d12"))
 	c.draw_line(Vector2(0.0, h * 0.79), Vector2(w, h * 0.79), Color("#7c2d12"), 2.0)
+	# Mini caballete de mesa justo frente a la mano derecha del Sim para que pinte sobre él.
+	var mx := cx + 52.0
+	var my := h * 0.79
+	c.draw_line(Vector2(mx - 16.0, my), Vector2(mx, my - 56.0), Color("#78350f"), 3.0, true)
+	c.draw_line(Vector2(mx + 16.0, my), Vector2(mx, my - 56.0), Color("#78350f"), 3.0, true)
+	var mini_l := Rect2(mx - 20.0, my - 54.0, 40.0, 44.0)
+	c.draw_rect(mini_l, Color("#fefce8") if not noche else Color("#d6d3d1"))
+	c.draw_rect(mini_l, Color("#78350f"), false, 1.8)
+	c.draw_circle(mini_l.position + Vector2(14.0, 15.0), 6.5, _a(Color("#ec4899"), 0.75), true, -1.0, true)
+	c.draw_circle(mini_l.position + Vector2(26.0, 26.0), 8.0, _a(Color("#38bdf8"), 0.65), true, -1.0, true)
+	c.draw_line(mini_l.position + Vector2(7.0, 34.0), mini_l.position + Vector2(32.0, 12.0), _a(Color("#f59e0b"), 0.75), 2.4, true)
 	# Rollos de papel y taburete.
 	c.draw_rect(Rect2(w * 0.045, h * 0.74, w * 0.04, h * 0.06), Color("#f8fafc"))
 	c.draw_rect(Rect2(w * 0.045, h * 0.74, w * 0.04, h * 0.06), Color("#94a3b8"), false, 1.0)
@@ -1870,13 +1876,15 @@ static func _trabajar(c: CanvasItem, esc, w: float, h: float, t: float, _v: Stri
 
 static func _frente_correr(c: CanvasItem, _esc, w: float, h: float, t: float, v: String) -> void:
 	var cx := w * 0.5
-	_sombra(c, Vector2(cx + 4.0, h * 0.955), 24.0, 5.0, 0.20)
-	# Polvo de las zapatillas.
+	var vel_cyc := 13.8 if v == "sprint" else (6.6 if v in ["beber_agua", "secar_sudor"] else 9.6)
+	var vuelo := absf(cos(t * vel_cyc))
+	_sombra(c, Vector2(cx + 2.0, h * 0.945), 24.0 - vuelo * 5.0, 4.8 - vuelo * 0.8, 0.22 - vuelo * 0.05)
+	# Polvo de las zapatillas tras el talón.
 	for i in range(4):
-		var p := fmod(t * 2.4 + float(i) * 0.25, 1.0)
-		var dx := cx - 24.0 - p * 74.0
-		var dy := h * 0.935 - sin(p * PI) * 12.0
-		var rad := (1.0 - p) * 9.0 + 2.0
+		var p := fmod(t * 2.6 + float(i) * 0.25, 1.0)
+		var dx := cx - 18.0 - p * 78.0
+		var dy := h * 0.925 - sin(p * PI) * 13.0
+		var rad := (1.0 - p) * 8.5 + 2.0
 		c.draw_circle(Vector2(dx, dy), rad, Color(0.95, 0.96, 0.98, (1.0 - p) * 0.62), true, -1.0, true)
 	# Líneas cinéticas y hojas al sprintar.
 	if v == "sprint":
@@ -1899,7 +1907,7 @@ static func _frente_correr(c: CanvasItem, _esc, w: float, h: float, t: float, v:
 static func _frente_dormir(c: CanvasItem, esc, w: float, h: float, t: float, v: String) -> void:
 	var cx := w * 0.5
 	var resp := sin(t * (3.8 if v == "roncar" else 1.9)) * 2.5
-	var y_manta := h * 0.685 + resp
+	var y_manta := h * 0.725 + resp
 	# Manta nórdica con volumen, degradado, costuras y pliegues.
 	var segs := 18
 	var pts := PackedVector2Array()
@@ -2162,7 +2170,7 @@ static func _frente_duchar(c: CanvasItem, esc, w: float, h: float, t: float, v: 
 			c.draw_line(Vector2(sx + lado * 8.0, h * 0.31), Vector2(sx, h * 0.38), Color("#0284c7"), 2.4, true)
 	elif v == "burbuja_gigante":
 		var fase: float = clampf(esc._tiempo_variacion / maxf(0.1, esc._duracion_variacion), 0.0, 1.0)
-		var bc := Vector2(cx + 58.0 + fase * 50.0, h * 0.52 - fase * h * 0.28)
+		var bc := Vector2(cx + 26.0 + fase * 62.0, h * 0.52 - fase * h * 0.28)
 		if fase < 0.82:
 			var r_g := 10.0 + fase * 22.0
 			c.draw_circle(bc, r_g, Color(0.80, 0.96, 1.0, 0.35), true, -1.0, true)
@@ -2615,11 +2623,27 @@ static func _frente_fiesta(c: CanvasItem, _esc, w: float, h: float, t: float, v:
 
 static func _frente_futbol(c: CanvasItem, _esc, w: float, h: float, t: float, v: String) -> void:
 	var cx := w * 0.5
-	# Sombra del jugador y del balón.
+	# Sombra del jugador y del balón sincronizados con el ciclo de pie.
 	_sombra(c, Vector2(cx + 2.0, h * 0.955), 26.0, 5.0, 0.20)
-	var bote := absf(sin(t * 6.5)) * 22.0
-	var bx := cx + 38.0 + (sin(t * 3.0) * 16.0 if v == "toques" else 0.0)
-	var by := h - 22.0 - bote
+	var bx := cx + 24.0
+	var by := h - 22.0
+	match v:
+		"toques":
+			var toq := sin(t * 7.0)
+			bx = cx - toq * 15.0
+			by = h - 38.0 - (1.0 - absf(toq)) * 22.0
+		"regate":
+			var rg := sin(t * 7.2)
+			bx = cx + rg * 20.0
+			by = h - 22.0 - absf(cos(t * 7.2)) * 6.0
+		"celebrar_gol":
+			bx = cx + 36.0
+			by = h - 21.0
+		_:
+			var cyc_f := sin(t * 5.8)
+			var tap_r := maxf(0.0, cyc_f)
+			bx = cx + 22.0 + tap_r * 5.0
+			by = h - 22.0 - tap_r * 14.0
 	_sombra(c, Vector2(bx, h * 0.955), 13.0, 3.4, 0.16)
 	# Balón con pentágonos que giran.
 	c.draw_circle(Vector2(bx, by), 14.0, Color.WHITE, true, -1.0, true)
@@ -2674,7 +2698,7 @@ static func _frente_trabajar(c: CanvasItem, esc, w: float, h: float, t: float, v
 		c.draw_rect(Rect2(dx + dw * 0.38, y_m + h * 0.095, dw * 0.24, maxf(2.0, h * 0.011)),
 			Color("#94a3b8"))
 	# Portátil abierto frente al Sim, con brillo.
-	var lap := Rect2(cx - 52.0, y_m - 40.0, 104.0, 45.0)
+	var lap := Rect2(cx - 52.0, y_m - 34.0, 104.0, 39.0)
 	c.draw_rect(lap, Color("#1e293b"))
 	c.draw_rect(lap, Color("#0f172a"), false, 2.0)
 	var scr := Rect2(lap.position.x + 7.0, lap.position.y + 6.0, lap.size.x - 14.0, lap.size.y - 13.0)

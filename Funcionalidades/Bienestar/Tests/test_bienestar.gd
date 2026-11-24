@@ -96,6 +96,7 @@ func test_catalogo_tiene_ids_unicos_y_campos_obligatorios() -> void:
 
 func test_secciones_y_grupos_del_catalogo() -> void:
 	assert_eq(Recompensas_Catalogo.Productos_De(Recompensas_Catalogo.SECCION_ANUNCIOS).size(), 4)
+	assert_eq(Recompensas_Catalogo.Productos_De(Recompensas_Catalogo.SECCION_COMPRAS).size(), 4)
 	assert_eq(Recompensas_Catalogo.Servicios_De_Grupo(
 		Recompensas_Catalogo.GRUPO_REJUVENECIMIENTO).size(), 3)
 	assert_eq(Recompensas_Catalogo.Servicios_De_Grupo(
@@ -104,6 +105,8 @@ func test_secciones_y_grupos_del_catalogo() -> void:
 		assert_gt(int(anuncio.get("cooldown_seg", 0)), 0)
 		assert_gt(float(anuncio.get("duracion_simulada", 0.0)), 0.0)
 		assert_ne(str(anuncio.get("recompensa_texto", "")), "")
+	for compra in Recompensas_Catalogo.Productos_De(Recompensas_Catalogo.SECCION_COMPRAS):
+		assert_ne(str(compra.get("precio_real", "")), "")
 
 
 func test_recompensas_del_catalogo_son_tipos_conocidos() -> void:
@@ -263,11 +266,41 @@ func test_tienda_bienestar_construye_tarjetas_y_refresca_saldo() -> void:
 	assert_not_null(tienda._scroll)
 	assert_not_null(tienda._lbl_dinero)
 	assert_eq(tienda._ads_refs.size(), 4)
+	assert_eq(tienda._compras_refs.size(), 4)
 	assert_eq(tienda._servicios_refs.size(), 5)
 	assert_eq(tienda._lbl_dinero.text, tienda._Formatear_Euros(int(round(Variables_Dinamicas.Dinero))))
 	Variables_Dinamicas.Dinero += 50.0
 	tienda._Sincronizar(false)
 	assert_eq(tienda._lbl_dinero.text, tienda._Formatear_Euros(int(round(Variables_Dinamicas.Dinero))))
+
+
+func test_tienda_filtros_y_aviso_beta_en_anuncios_y_compras() -> void:
+	var tienda := Tienda_Bienestar.new()
+	add_child_autofree(tienda)
+	await wait_process_frames(3)
+	assert_true(tienda._seccion_anuncios.visible)
+	assert_true(tienda._seccion_compras.visible)
+	assert_true(tienda._seccion_clinica.visible)
+
+	tienda._Seleccionar_Filtro("compras")
+	assert_false(tienda._seccion_anuncios.visible)
+	assert_true(tienda._seccion_compras.visible)
+	assert_false(tienda._seccion_clinica.visible)
+
+	var antes := float(Variables_Dinamicas.Dinero)
+	var btn_vip: Button = tienda._compras_refs["compra_vip"]["btn"]
+	btn_vip.pressed.emit()
+	await wait_process_frames(2)
+	assert_true(tienda._toast_mostrando)
+	assert_eq(tienda._toast_label.text, "No disponible en esta beta")
+	assert_almost_eq(Variables_Dinamicas.Dinero, antes, 0.001)
+
+	var btn_ad: Button = tienda._ads_refs["anuncio_dinero"]["btn"]
+	btn_ad.pressed.emit()
+	await wait_process_frames(2)
+	assert_true(tienda._toast_mostrando)
+	assert_eq(tienda._toast_label.text, "No disponible en esta beta")
+	assert_almost_eq(Variables_Dinamicas.Dinero, antes, 0.001)
 
 
 func test_modal_tratamiento_muestra_antes_y_despues() -> void:

@@ -92,7 +92,7 @@ func _Construir_Categorias() -> void:
 		_Crear_Boton_Categoria(categoria)
 	_Crear_Boton_Categoria({
 		"id": "Ventajas",
-		"nombre": "Bienestar",
+		"nombre": "Ventajas",
 		"icono": "sparkles",
 	})
 
@@ -415,6 +415,9 @@ func _Animar_Tarjetas_Visibles() -> void:
 func Refrescar() -> void:
 	for clave in _tarjetas:
 		_Actualizar_Tarjeta(clave)
+	if _ventajas != null and is_instance_valid(_ventajas) and _ventajas.visible \
+			and _ventajas.has_method("Refrescar"):
+		_ventajas.call("Refrescar")
 
 
 func _Actualizar_Tarjeta(clave: String) -> void:

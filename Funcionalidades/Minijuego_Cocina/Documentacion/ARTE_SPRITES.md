@@ -14,6 +14,8 @@ Pack de **152 sprites PNG** para el escenario del minijuego de cocina de estilo 
 **Incluido**
 
 - 134 PNG RGBA en `Imagenes/Minijuego_Cocina/` con sus `.import` de Godot.
+- 28 PNG RGBA propios de **Cocina de Mercado (Mundo 3)** en `Imagenes/Minijuego_Cocina/Mercado/` (`Fogones_Mercado`, `Cazuela_Vacia`, `Fabada`, `Pisto`, `Pisto_Huevo`, `Arroz_Senyoret`, `Arroz_Tomate`, `Arroz_Cubana`, `Alubias_Marisco`, `Zarzuela_Marisco`, `Fritada_Chorizo`, `Cazuela_Quemada`, 6 `Puesto_*`, 6 `Ing_*`, `Huevo_Frito`, `Huevo_Quemado`, `Sangria`, `Barra_Mercado`) con sus `.import` y hojas maestras en `Arte_Fuente/Minijuego_Cocina/Mercado/`.
+- 33 PNG RGBA propios de **Alta Cocina Gourmet (Mundo 4)** en `Imagenes/Minijuego_Cocina/Alta/` (`Horno_Alta`, `Tabla_Corte_Alta`, `Sarten_Fritura_1/2`, `Cazo_Salsa_Alta`, `Cazo_Quemado_Alta`, `Bodega_Alta`, 6 `Puesto_*`, 10 ingredientes/estados de corte y cocción, `Ing_Pure`, `Ing_Esparragos`, `Vino_Tinto`, `Vino_Blanco`, `Plato_Vacio_Alta`, 5 platos gourmet `Plato_*`) con sus `.import` comprimidos VRAM (`optimizar_import_texturas.py`).
 - 15 PNG RGBA de mejoras en `Imagenes/Minijuego_Cocina/Mejoras/` (3 variantes por mejora), con sus `.import`.
 - 3 recursos de composición fuera del pack: `Banner_Cocina.png` (1288×284, RGB), `Emplatado/Plato_Perspectiva.png` (640×297, RGBA) y `Fondo_Restaurante_Selector.png` (360×640, RGBA, generado por `tools/generar_fondo_selector.py`). Los dos primeros conservan maestros en `Arte_Fuente/Minijuego_Cocina/`.
 - `Imagenes/Minijuego_Cocina/escenario_layout.json` con 54 entradas de composición (`ruta`, `x`, `y`, `w`, `h`, `modo`).

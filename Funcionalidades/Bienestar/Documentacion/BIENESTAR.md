@@ -1,19 +1,15 @@
-# Bienestar y rejuvenecimiento
+# Ventajas, anuncios y clínica (Tienda → Ventajas)
 
-> Tienda → **Bienestar**. Sustituye por completo al antiguo prototipo de
-> monetización (Pase VIP, gemas y pasarela de pago simulada).
+> Pestaña **Ventajas** de la Tienda (`Tab_Ventajas` / `Objetos_Ventajas`).
+> Diseño visual definitivo de tienda móvil moderna, limpia y no invasiva.
 
 ## Resumen
 
-La pestaña **Bienestar** agrupa dos cosas, siempre conectadas con la partida:
+La pestaña **Ventajas** agrupa tres bloques, con barra compacta de estado y filtros (`Todo`, `Anuncios`, `Compras`, `Clínica`):
 
-1. **Anuncios recompensados simulados** con espera entre uno y otro.
-2. **Servicios de bienestar pagados con euros del juego**: cuidado exprés y
-   tratamientos de rejuvenecimiento que restan años reales al Sim.
-
-No hay moneda premium, ni pagos reales, ni SDKs. El diseño busca que la tienda
-sea una herramienta de partida (dinero, necesidades, comida y longevidad), no
-una pantalla de compras.
+1. **Anuncios recompensados** (rejilla 2×2): muestran la recompensa y duración finales; al pulsar en esta beta muestran `"No disponible en esta beta"`.
+2. **Ventajas y packs** (compras integradas: `Sims+ VIP`, `Quitar anuncios`, `Pack Impulso`, `Pack Renovación`): diseño definitivo sin ofertas agresivas; al pulsar en esta beta muestran `"No disponible en esta beta"`.
+3. **Clínica y cuidado** (pagados con euros del juego): medidor compacto de edad biológica, 3 tratamientos de rejuvenecimiento y 2 servicios de cuidado exprés funcionales con confirmación (`Modal_Tratamiento`).
 
 ## Archivos
 

@@ -31,7 +31,10 @@ El objetivo no es añadir más sistemas, sino cerrar bien esos cuatro pilares, e
 | **Fútbol** | 🟡 Simulación completa | Fichaje, entrenamientos, liga dominical de 4 equipos, playoff, Modo Rápido, salarios, primas, lesiones y conflictos con el trabajo. | Minijuego de partido. |
 | **Universidad** | 🟡 Funcional, diseño débil | 4 carreras (4–5 años), matrícula, examen automático + test de 10 preguntas, apuntes, diplomas y desbloqueo de trabajos. | Rediseño del ciclo, del examen y de las recompensas. |
 | **Bolsa** | 🟡 Funcional, sin juego | Inversión pasiva por ticks, aportes y retiradas parciales, eventos de mercado con titulares, gráfico de beneficio y estadísticas, auto-venta por pánico y persistencia. | Minijuego activo de trading. |
+| **«Salir a correr» / PARK RUSH 3D** (extra) | 🟢 Implementado | Runner infinito vertical de 3 carriles con mundo 3D, swipe/teclado, trenes aparcados, móviles, largos de 3 vagones y exprés, túnel con cámara rasante, intro y cuenta atrás, tropiezo con segundo aviso, tabla 30 s, imán, x2, zapatillas, jetpack, pogo, caja misteriosa, llaves y reanimación, guardia/perro y 3 retos; récords persistentes y recompensa de Deporte/necesidades desde 100 m; 33 tests del runner y 355/355 de la suite. | Pulido y QA opcional. No entra en la Fase 1 ni altera las prioridades de los cuatro pilares. |
 | **Base del simulador** | 🟢 Completa | Necesidades, progreso volátil, habilidades, calendario, trabajos, alquiler/calle, tienda, bienestar, vestuario, eventos, muerte, perfil, guardado, música y ajustes. | Pulir, conectar y equilibrar. |
+
+> **Nota:** «Salir a correr» es un minijuego secundario ya implementado. No cambia el orden de la Fase 1 (universidad → fútbol → bolsa → cocina) ni la decisión de no crear un minijuego por cada actividad: es una pieza extra independiente.
 
 ---
 

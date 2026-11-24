@@ -59,7 +59,7 @@ const VARIACIONES: Dictionary = {
 	],
 	"manualidades": [
 		["pincelada_rapida", "¡A toda velocidad!", "feliz", "pincel", 2.5],
-		["admirar", "Admirando su obra", "sonrisa", "pincel", 2.6],
+		["admirar", "Admirando su obra", "sonrisa", "ninguno", 2.6],
 		["soplar_pintura", "Soplando la pintura", "soplando", "pincel", 2.3],
 	],
 	"cocinar": [
@@ -428,16 +428,23 @@ func _aplicar_layout_personaje() -> void:
 			_personaje.position = Vector2(w * 0.5 - 82.0, 4.0)
 			_personaje.size = Vector2(164.0, h + 12.0)
 
-	_personaje.modo_capa = "sin_brazos_delanteros" if es_comer else "completo"
+	var brazos_sobre_frente := (_pose_actual in ["estudiar", "cocinar"])
+	var usar_overlay_brazos := es_comer or brazos_sobre_frente
+	_personaje.modo_capa = "sin_brazos_delanteros" if usar_overlay_brazos else "completo"
 	var es_tiempo_libre := (_pose_actual == "idle" and not _en_la_calle)
 	if _capa_mostrador != null:
 		_capa_mostrador.visible = es_tiempo_libre
 	if _capa_mesa != null:
 		_capa_mesa.visible = es_comer
 	if _personaje_brazos != null:
-		_personaje_brazos.visible = es_comer
+		_personaje_brazos.visible = usar_overlay_brazos
 		_personaje_brazos.position = _personaje.position
 		_personaje_brazos.size = _personaje.size
+		if _escena_clip != null and _capa_frente != null:
+			if brazos_sobre_frente and _personaje_brazos.get_index() < _capa_frente.get_index():
+				_escena_clip.move_child(_personaje_brazos, _capa_frente.get_index())
+			elif not brazos_sobre_frente and _personaje_brazos.get_index() > _capa_frente.get_index():
+				_escena_clip.move_child(_personaje_brazos, _capa_frente.get_index())
 	if _pill_accion != null:
 		_pill_accion.position = Vector2(10.0, maxf(8.0, h - 32.0))
 

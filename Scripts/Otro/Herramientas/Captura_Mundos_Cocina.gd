@@ -39,14 +39,38 @@ func _Capturar_Mundo(restaurante: String, nombre: String, preparar: Callable) ->
 	await get_tree().process_frame
 	mini._spawn_timer = 9999.0
 	await preparar.call(mini)
-	await get_tree().create_timer(1.2).timeout
+	await get_tree().create_timer(1.8).timeout
 	await RenderingServer.frame_post_draw
 	_Guardar(vp, nombre)
+	# Tooltip visual al pasar sobre un plato concreto del bocadillo (Mundo 3)
+	if restaurante == "cocina_mercado":
+		var t_cl1: Arte_Cocina.Ticket = mini._slots_clientes_ui[1]["ticket"]
+		var hit_z: Dictionary = t_cl1.item_en_punto(
+			Vector2(t_cl1.size.x * 0.36, t_cl1.size.y * 0.37), false)
+		if not hit_z.is_empty():
+			t_cl1.item_hover = int(hit_z["indice"])
+			t_cl1.queue_redraw()
+			mini._tip_receta_pin_cliente = 1
+			mini._tip_receta_pin_hit = hit_z
+			mini._tip_receta_pin_hasta = mini._anim_tiempo + 5.0
+			mini._Mostrar_Tip_Receta_Bocadillo(1, hit_z)
+			await get_tree().process_frame
+			await RenderingServer.frame_post_draw
+			_Guardar(vp, nombre.replace(".png", "_tooltip_receta.png"))
+			mini._Ocultar_Tip_Receta()
 	# Modal de inicio con el menú y la explicación de la mecánica
 	mini._Abrir_Modal_Inicio(1)
 	await get_tree().create_timer(0.6).timeout
 	await RenderingServer.frame_post_draw
 	_Guardar(vp, nombre.replace(".png", "_modal.png"))
+	# Guía visual de Nivel 1 (Mundos 3 y 4)
+	if restaurante in ["cocina_mercado", "alta_cocina"]:
+		mini._modal_inicio.visible = false
+		mini._Abrir_Modal_Guia(true)
+		await get_tree().create_timer(0.6).timeout
+		await RenderingServer.frame_post_draw
+		_Guardar(vp, nombre.replace(".png", "_guia.png"))
+		mini._Cerrar_Modal_Guia()
 	# Pantalla de mejoras con el nombre adaptado al mundo
 	mini._modal_inicio.visible = false
 	mini._Abrir_Modal_Mejoras()
@@ -67,7 +91,7 @@ func _Capturar_Mundo(restaurante: String, nombre: String, preparar: Callable) ->
 
 func _Preparar_Bistro(mini: Control) -> void:
 	_Forzar_Cliente(mini, 0, ["filete_patatas", "cafe"])
-	_Forzar_Cliente(mini, 1, ["filete_completo", "tarta_cereza"])
+	_Forzar_Cliente(mini, 1, ["solomillo_gourmet", "tarta_cereza"])
 	# Un filete al punto en la parrilla y otro poco hecho
 	mini._on_origen_tocado({}, {"datos": {"tipo": "bandeja", "ingrediente": "carne"}})
 	mini._on_origen_tocado({}, {"datos": {"tipo": "bandeja", "ingrediente": "carne"}})
@@ -81,22 +105,29 @@ func _Preparar_Bistro(mini: Control) -> void:
 	mini._Soltar_En_Plato({"tipo": "ingrediente", "id": "salsa"}, 0)
 	mini._on_plancha_pulsada(0)
 	mini._Soltar_En_Plato({"tipo": "ingrediente", "id": "salsa"}, 0)
+	mini._Soltar_En_Plato({"tipo": "ingrediente", "id": "perejil"}, 0)
 	mini._efectos.limpiar()
 	await get_tree().process_frame
 
 
 func _Preparar_Mercado(mini: Control) -> void:
-	_Forzar_Cliente(mini, 0, ["pisto_huevo", "agua"])
-	_Forzar_Cliente(mini, 1, ["fabada", "sangria"])
-	mini._Anadir_Ingrediente_Olla("tomate")
-	mini._Anadir_Ingrediente_Olla("pimiento")
-	mini._olla["progreso"] = 0.99
-	mini._process(0.25)
-	mini._Servir_Racion_Olla()
+	_Forzar_Cliente(mini, 0, ["arroz_cubana", "agua"])
+	_Forzar_Cliente(mini, 1, ["zarzuela", "sangria"])
+	mini._Accion_Rapida_Mercado("tomate")
+	mini._Accion_Rapida_Mercado("arroz")
+	mini._Accion_Rapida_Mercado("tomate")
+	mini._Accion_Rapida_Mercado("marisco")
+	mini._Tick_Slots_Coccion(mini._plancha, mini._slots_plancha_ui,
+		mini._tiempo_coccion_carne, "Cazuela", mini._tiempo_coccion_carne + 0.1)
+	mini._on_plancha_pulsada(0)
 	mini._on_origen_tocado({}, {"datos": {"tipo": "bandeja", "ingrediente": "huevo"}})
 	mini._Tick_Slots_Coccion(mini._freidora, mini._slots_freidora_ui,
 		mini._tiempo_coccion_b, "Huevo", mini._tiempo_coccion_b + 0.1)
 	mini._on_freidora_pulsada(0)
+	mini._Accion_Rapida_Mercado("tomate")
+	mini._on_origen_tocado({}, {"datos": {"tipo": "bandeja", "ingrediente": "huevo"}})
+	mini._Tick_Slots_Coccion(mini._freidora, mini._slots_freidora_ui,
+		mini._tiempo_coccion_b, "Huevo", mini._tiempo_coccion_b * 0.65)
 	mini._efectos.limpiar()
 	await get_tree().process_frame
 
@@ -104,17 +135,30 @@ func _Preparar_Mercado(mini: Control) -> void:
 func _Preparar_Alta(mini: Control) -> void:
 	_Forzar_Cliente(mini, 0, ["solomillo_tinto", "vino_tinto"])
 	_Forzar_Cliente(mini, 1, ["lubina_blanca", "vino_blanco"])
+	_Forzar_Cliente(mini, 2, ["salmon_crujiente", "vino_blanco"])
+	# Plato 0 listo con solomillo + salsa + puré
 	mini._on_origen_tocado({}, {"datos": {"tipo": "bandeja", "ingrediente": "solomillo"}})
-	mini._on_origen_tocado({}, {"datos": {"tipo": "bandeja", "ingrediente": "lubina"}})
 	mini._Tick_Slots_Coccion(mini._plancha, mini._slots_plancha_ui,
-		mini._tiempo_coccion_carne, "Solomillo", mini._tiempo_coccion_carne * 0.24)
-	mini._Tick_Slots_Coccion(mini._plancha, mini._slots_plancha_ui,
-		mini._tiempo_coccion_carne, "Solomillo", mini._tiempo_coccion_carne * 0.52)
+		mini._tiempo_coccion_carne, "Solomillo", mini._tiempo_coccion_carne * 0.72)
 	mini._on_plancha_pulsada(0)
 	mini._Soltar_En_Plato({"tipo": "salsa"}, 0)
 	mini._Soltar_En_Plato({"tipo": "ingrediente", "id": "pure"}, 0)
-	mini._Soltar_En_Plato({"tipo": "ingrediente", "id": "flor"}, 0)
-	mini._sarten["quemado"] = 0.42
+	# Pato en horno en ventana dorada
+	mini._on_origen_tocado({}, {"datos": {"tipo": "bandeja", "ingrediente": "pato"}})
+	mini._Tick_Slots_Coccion(mini._plancha, mini._slots_plancha_ui,
+		mini._tiempo_coccion_carne, "Pato", mini._tiempo_coccion_carne * 0.72)
+	# Salmón fileteado frito en sartén de cobre
+	mini._Accion_Rapida_Alta("salmon")
+	for _c in range(int(mini._tabla_corte[0]["cortes_req"]) + 1):
+		mini._on_tabla_corte_pulsada(0)
+	mini._Tick_Slots_Coccion(mini._freidora, mini._slots_freidora_ui,
+		mini._tiempo_coccion_b, "Salmon", mini._tiempo_coccion_b + 0.1)
+	# Lubina entera en tabla de corte a medio filetear (2/4 tajos visibles)
+	mini._Accion_Rapida_Alta("lubina")
+	mini._on_tabla_corte_pulsada(0)
+	mini._on_tabla_corte_pulsada(0)
+	mini._sarten["quemado"] = 0.44
+	mini._Actualizar_Sarten_UI()
 	mini._efectos.limpiar()
 	await get_tree().process_frame
 

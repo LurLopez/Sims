@@ -52,6 +52,38 @@ const REPARTO_BENEFICIO_SIM: float = 0.05
 const MULT_MODO_PRACTICA: float = 0.25
 const BONO_ESTRELLA_RATIO: float = 0.10
 
+# Penalización directa sobre la recaudación de la partida al tirar o descartar
+# un producto quemado/pasado/arruinado (en euros, antes de acotar a 0 €).
+const PENALIZACIONES_QUEMADO: Dictionary = {
+	RESTAURANTE_BURGER: {
+		"carne": 6,
+		"patatas": 4
+	},
+	RESTAURANTE_BISTRO: {
+		"filete": 7,
+		"carne": 7,
+		"patatas": 3
+	},
+	RESTAURANTE_MERCADO: {
+		"huevo": 2,
+		"pisto": 7,
+		"arroz_tomate": 7,
+		"fabada": 8,
+		"fritada": 8,
+		"arroz": 10,
+		"arroz_senyoret": 10,
+		"alubias_marisco": 10,
+		"zarzuela": 11
+	},
+	RESTAURANTE_ALTA: {
+		"solomillo": 11,
+		"lubina": 12,
+		"pato": 13,
+		"salmon": 13,
+		"salsa": 5
+	}
+}
+
 const ORDEN_MEJORAS: Array[String] = [
 	"plancha",
 	"emplatado",
@@ -299,6 +331,18 @@ const RECETAS_BURGER_STREET: Dictionary = {
 #   bebida · se sirve desde la estación de bebidas
 #   postre · se sirve directamente desde la vitrina de la despensa
 const RECETAS_BISTRO: Dictionary = {
+	"filete_poco_hecho": {
+		"id": "filete_poco_hecho",
+		"nombre": "Filete poco hecho",
+		"nombre_corto": "Poco hecho",
+		"detalle": "Filete poco hecho",
+		"precio_base": 14,
+		"tipo": "plato",
+		"proteina": "filete",
+		"punto": "poco_hecho",
+		"guarnicion": "",
+		"salsa": ""
+	},
 	"filete_punto": {
 		"id": "filete_punto",
 		"nombre": "Filete al punto",
@@ -310,6 +354,43 @@ const RECETAS_BISTRO: Dictionary = {
 		"punto": "al_punto",
 		"guarnicion": "",
 		"salsa": ""
+	},
+	"filete_hecho": {
+		"id": "filete_hecho",
+		"nombre": "Filete bien hecho",
+		"nombre_corto": "Bien hecho",
+		"detalle": "Filete bien hecho",
+		"precio_base": 14,
+		"tipo": "plato",
+		"proteina": "filete",
+		"punto": "hecho",
+		"guarnicion": "",
+		"salsa": ""
+	},
+	"filete_salsa": {
+		"id": "filete_salsa",
+		"nombre": "Filete con salsa",
+		"nombre_corto": "Con salsa",
+		"detalle": "Filete al punto + salsa",
+		"precio_base": 18,
+		"tipo": "plato",
+		"proteina": "filete",
+		"punto": "al_punto",
+		"guarnicion": "",
+		"salsa": "salsa"
+	},
+	"filete_perejil": {
+		"id": "filete_perejil",
+		"nombre": "Filete con perejil",
+		"nombre_corto": "Con perejil",
+		"detalle": "Filete al punto + perejil",
+		"precio_base": 17,
+		"tipo": "plato",
+		"proteina": "filete",
+		"punto": "al_punto",
+		"guarnicion": "",
+		"salsa": "",
+		"perejil": true
 	},
 	"filete_patatas": {
 		"id": "filete_patatas",
@@ -358,6 +439,32 @@ const RECETAS_BISTRO: Dictionary = {
 		"punto": "hecho",
 		"guarnicion": "patatas",
 		"salsa": ""
+	},
+	"entrecot_perejil": {
+		"id": "entrecot_perejil",
+		"nombre": "Entrecot al perejil",
+		"nombre_corto": "Hecho + perejil",
+		"detalle": "Hecho + patatas + perejil",
+		"precio_base": 25,
+		"tipo": "plato",
+		"proteina": "filete",
+		"punto": "hecho",
+		"guarnicion": "patatas",
+		"salsa": "",
+		"perejil": true
+	},
+	"solomillo_gourmet": {
+		"id": "solomillo_gourmet",
+		"nombre": "Solomillo finas hierbas",
+		"nombre_corto": "Finas hierbas",
+		"detalle": "Poco hecho + patatas + salsa + perejil",
+		"precio_base": 29,
+		"tipo": "plato",
+		"proteina": "filete",
+		"punto": "poco_hecho",
+		"guarnicion": "patatas",
+		"salsa": "salsa",
+		"perejil": true
 	},
 	"cafe": {
 		"id": "cafe",
@@ -418,6 +525,56 @@ const RECETAS_MERCADO: Dictionary = {
 		"guiso": "arroz",
 		"extra": ""
 	},
+	"arroz_tomate": {
+		"id": "arroz_tomate",
+		"nombre": "Arroz con tomate",
+		"nombre_corto": "Arroz tomate",
+		"detalle": "Tomate + arroz",
+		"precio_base": 15,
+		"tipo": "plato",
+		"guiso": "arroz_tomate",
+		"extra": ""
+	},
+	"arroz_cubana": {
+		"id": "arroz_cubana",
+		"nombre": "Arroz a la cubana",
+		"nombre_corto": "Arroz cubana",
+		"detalle": "Arroz con tomate + huevo frito",
+		"precio_base": 19,
+		"tipo": "plato",
+		"guiso": "arroz_tomate",
+		"extra": "huevo"
+	},
+	"alubias_marisco": {
+		"id": "alubias_marisco",
+		"nombre": "Fabes con marisco",
+		"nombre_corto": "Fabes marisco",
+		"detalle": "Alubias + marisco",
+		"precio_base": 21,
+		"tipo": "plato",
+		"guiso": "alubias_marisco",
+		"extra": ""
+	},
+	"zarzuela": {
+		"id": "zarzuela",
+		"nombre": "Zarzuela de marisco",
+		"nombre_corto": "Zarzuela",
+		"detalle": "Tomate + marisco",
+		"precio_base": 22,
+		"tipo": "plato",
+		"guiso": "zarzuela",
+		"extra": ""
+	},
+	"fritada": {
+		"id": "fritada",
+		"nombre": "Chorizo con pimientos",
+		"nombre_corto": "Fritada",
+		"detalle": "Chorizo + pimiento",
+		"precio_base": 17,
+		"tipo": "plato",
+		"guiso": "fritada",
+		"extra": ""
+	},
 	"agua": {
 		"id": "agua",
 		"nombre": "Agua",
@@ -441,7 +598,7 @@ const RECETAS_ALTA: Dictionary = {
 		"id": "solomillo_tinto",
 		"nombre": "Solomillo al vino tinto",
 		"nombre_corto": "Solomillo",
-		"detalle": "Solomillo + salsa + puré",
+		"detalle": "Horno: solomillo + salsa + puré",
 		"precio_base": 32,
 		"tipo": "plato",
 		"proteina": "solomillo",
@@ -451,10 +608,10 @@ const RECETAS_ALTA: Dictionary = {
 	},
 	"lubina_blanca": {
 		"id": "lubina_blanca",
-		"nombre": "Lubina con beurre blanc",
+		"nombre": "Lubina crujiente con espárragos",
 		"nombre_corto": "Lubina",
-		"detalle": "Lubina + salsa + espárragos",
-		"precio_base": 30,
+		"detalle": "Cortar y freír lubina + salsa + espárragos",
+		"precio_base": 34,
 		"tipo": "plato",
 		"proteina": "lubina",
 		"salsa": "reduccion",
@@ -464,13 +621,37 @@ const RECETAS_ALTA: Dictionary = {
 	"pato_tinto": {
 		"id": "pato_tinto",
 		"nombre": "Pato al Pedro Ximénez",
-		"nombre_corto": "Pato",
-		"detalle": "Pato + salsa + puré",
+		"nombre_corto": "Pato PX",
+		"detalle": "Horno: pato + salsa + puré",
 		"precio_base": 36,
 		"tipo": "plato",
 		"proteina": "pato",
 		"salsa": "reduccion",
 		"guarnicion": "pure",
+		"maridaje": "vino_tinto"
+	},
+	"salmon_crujiente": {
+		"id": "salmon_crujiente",
+		"nombre": "Salmón crujiente con espárragos",
+		"nombre_corto": "Salmón",
+		"detalle": "Cortar y freír salmón + salsa + espárragos",
+		"precio_base": 38,
+		"tipo": "plato",
+		"proteina": "salmon",
+		"salsa": "reduccion",
+		"guarnicion": "esparragos",
+		"maridaje": "vino_blanco"
+	},
+	"pato_esparragos": {
+		"id": "pato_esparragos",
+		"nombre": "Magret con espárragos",
+		"nombre_corto": "Magret",
+		"detalle": "Horno: pato + salsa + espárragos",
+		"precio_base": 40,
+		"tipo": "plato",
+		"proteina": "pato",
+		"salsa": "reduccion",
+		"guarnicion": "esparragos",
 		"maridaje": "vino_tinto"
 	},
 	"vino_tinto": {
@@ -498,15 +679,22 @@ const RECETAS_POR_RESTAURANTE: Dictionary = {
 	"alta_cocina": RECETAS_ALTA
 }
 
-# Combinaciones de la olla de mercado. El orden no importa.
+# Combinaciones cruzadas de la cazuela de mercado. El orden no importa.
 const COMBOS_OLLA: Dictionary = {
 	"fabada": ["alubias", "chorizo"],
 	"pisto": ["tomate", "pimiento"],
-	"arroz": ["arroz", "marisco"]
+	"arroz": ["arroz", "marisco"],
+	"arroz_tomate": ["tomate", "arroz"],
+	"alubias_marisco": ["alubias", "marisco"],
+	"zarzuela": ["tomate", "marisco"],
+	"fritada": ["chorizo", "pimiento"]
 }
 
 # Umbrales de punto del filete (progreso 0..1). El quemado se controla aparte.
 const PUNTO_FILETE_UMBRALES: Array[float] = [0.30, 0.55, 0.78, 1.0]
+const PUNTO_FILETE_QUEMADO: float = 0.45
+const BISTRO_ORDEN_PUNTOS: Dictionary = {"poco_hecho": 0, "al_punto": 1, "hecho": 2}
+const BISTRO_FACTOR_PUNTO_APROXIMADO: float = 0.65
 const VENTANA_ALTA_INICIO: float = 0.62
 const VENTANA_ALTA_FIN: float = 0.88
 
@@ -536,7 +724,7 @@ const PERFILES_RESTAURANTE: Dictionary = {
 	"bistro_tradicional": {
 		"mecanica": "punto",
 		"mecanica_titulo": "Punto de la carne",
-		"mecanica_texto": "Deja el filete en su punto exacto: poco hecho, al punto o hecho. La barra de la parrilla marca cada tramo.",
+		"mecanica_texto": "Sirve el filete poco hecho, al punto o hecho (1 salto de diferencia cobra menos; crudo o opuestos no se aceptan). Añade patatas, salsa y perejil según cada pedido.",
 		"fondo": "res://Imagenes/Minijuego_Cocina/Fondos/Fondo_Bistro.png",
 		"fondo_selector": "res://Imagenes/Minijuego_Cocina/Fondos/Fondo_Bistro.png",
 		"estacion_a": {"tipo": "parrilla", "nombre": "PARRILLA"},
@@ -548,16 +736,17 @@ const PERFILES_RESTAURANTE: Dictionary = {
 			{"id": "carne", "nombre": "Filete", "estilo": "filete_crudo"},
 			{"id": "patatas", "nombre": "Patatas", "estilo": "patatas"},
 			{"id": "salsa", "nombre": "Salsa", "estilo": "salsa"},
+			{"id": "perejil", "nombre": "Perejil", "estilo": "perejil"},
 			{"id": "tarta_cereza", "nombre": "Tarta", "estilo": "tarta"}
 		]
 	},
 	"cocina_mercado": {
-		"mecanica": "lote",
-		"mecanica_titulo": "Guisos por lotes",
-		"mecanica_texto": "Añade los ingredientes a la olla, cocina una tanda de 4 raciones y sírvelas una a una.",
+		"mecanica": "cazuelas",
+		"mecanica_titulo": "Guisos cruzados en cazuela",
+		"mecanica_texto": "Combina 2 ingredientes compatibles en cada cazuela (cada producto participa en varias recetas: Tomate+Arroz, Alubias+Marisco, Tomate+Marisco…), retíralos antes de que se quemen y corona Pisto o Arroz c/tomate con huevo.",
 		"fondo": "res://Imagenes/Minijuego_Cocina/Fondos/Fondo_Mercado.png",
 		"fondo_selector": "res://Imagenes/Minijuego_Cocina/Fondos/Fondo_Mercado.png",
-		"estacion_a": {"tipo": "olla", "nombre": "OLLA"},
+		"estacion_a": {"tipo": "cazuelas", "nombre": "CAZUELAS"},
 		"estacion_b": {"tipo": "plancha", "nombre": "PLANCHA"},
 		"bebida": {"tipo": "barra", "nombre": "BEBIDAS", "items": ["agua", "sangria"]},
 		"emplatado": "mercado",
@@ -574,22 +763,22 @@ const PERFILES_RESTAURANTE: Dictionary = {
 	},
 	"alta_cocina": {
 		"mecanica": "precision",
-		"mecanica_titulo": "Alta precisión",
-		"mecanica_texto": "Retira la proteína dentro de la ventana dorada, remueve la salsa para que no se queme y sirve el vino del maridaje.",
+		"mecanica_titulo": "Alta gastronomía en varias fases",
+		"mecanica_texto": "Corta a clicks el pescado entero en la tabla y fríelo dorado; hornea carnes en la ventana dorada, remueve la salsa y marida con vino.",
 		"fondo": "res://Imagenes/Minijuego_Cocina/Fondos/Fondo_Alta_Cocina.png",
 		"fondo_selector": "res://Imagenes/Minijuego_Cocina/Fondos/Fondo_Alta_Cocina.png",
 		"estacion_a": {"tipo": "horno", "nombre": "HORNO"},
-		"estacion_b": {"tipo": "sarten", "nombre": "SALSAS"},
+		"estacion_b": {"tipo": "sarten", "nombre": "SARTÉN"},
 		"bebida": {"tipo": "bodega", "nombre": "BODEGA", "items": ["vino_tinto", "vino_blanco"]},
 		"emplatado": "alta",
 		"tinte_mostrador": "#cfd8e8",
 		"puestos": [
 			{"id": "solomillo", "nombre": "Solomillo", "estilo": "solomillo"},
-			{"id": "lubina", "nombre": "Lubina", "estilo": "lubina"},
 			{"id": "pato", "nombre": "Pato", "estilo": "pato"},
+			{"id": "lubina", "nombre": "Lubina ent.", "estilo": "lubina"},
+			{"id": "salmon", "nombre": "Salmón ent.", "estilo": "salmon"},
 			{"id": "pure", "nombre": "Puré", "estilo": "pure"},
-			{"id": "esparragos", "nombre": "Espárragos", "estilo": "esparragos"},
-			{"id": "flor", "nombre": "Flor", "estilo": "flor"}
+			{"id": "esparragos", "nombre": "Espárragos", "estilo": "esparragos"}
 		]
 	}
 }
@@ -605,9 +794,9 @@ const NOMBRES_MEJORAS_POR_RESTAURANTE: Dictionary = {
 		"ambiente": {"nombre": "Ambiente del Bistró", "nombre_corto": "Ambiente"}
 	},
 	"cocina_mercado": {
-		"plancha": {"nombre": "Olla y Plancha", "nombre_corto": "Olla y Plancha"},
+		"plancha": {"nombre": "Cazuelas y Plancha", "nombre_corto": "Cazuelas"},
 		"emplatado": {"nombre": "Pase y Bebidas", "nombre_corto": "Pase y Bebidas"},
-		"termostato": {"nombre": "Fuego de la Olla", "nombre_corto": "Fuego"},
+		"termostato": {"nombre": "Fuego de Fogones", "nombre_corto": "Fuego"},
 		"ingredientes": {"nombre": "Producto de Mercado", "nombre_corto": "Producto"},
 		"ambiente": {"nombre": "Ambiente de Taberna", "nombre_corto": "Ambiente"}
 	},
@@ -746,6 +935,250 @@ const MEJORAS_UI_POR_RESTAURANTE: Dictionary = {
 				}
 			]
 		}
+	},
+	"cocina_mercado": {
+		"plancha": {
+			"nombre": "Cazuelas y Plancha",
+			"nombre_corto": "Cazuelas",
+			"niveles": [
+				{
+					"nombre": "Básica",
+					"beneficios": ["2 cazuelas de guiso", "2 huecos para huevos", "Cocción a ritmo normal"],
+					"ganancias": [],
+					"frase": "Dos cazuelas y dos huevos en la plancha para empezar."
+				},
+				{
+					"nombre": "Mejorada",
+					"beneficios": ["3 cazuelas de guiso", "3 huecos para huevos", "Guiso y plancha un 20% más rápidos"],
+					"ganancias": ["+1 cazuela en fogones", "+1 hueco para huevo", "−20% tiempo de cocción"],
+					"frase": "Tres cazuelas en paralelo: preparas distintos guisos a la vez."
+				},
+				{
+					"nombre": "Profesional",
+					"beneficios": ["4 cazuelas de guiso", "4 huecos para huevos", "Guiso y plancha un 35% más rápidos"],
+					"ganancias": ["+1 cazuela en fogones", "+1 hueco para huevo", "−15% tiempo de cocción"],
+					"frase": "Cuatro cazuelas a pleno rendimiento. La cocina del mercado vuela."
+				}
+			]
+		},
+		"emplatado": {
+			"nombre": "Pase y Bebidas",
+			"nombre_corto": "Pase y Bebidas",
+			"niveles": [
+				{
+					"nombre": "Básico",
+					"beneficios": ["2 platos en el pase", "Agua y sangría (2 huecos)", "Bebidas en 4.0 s"],
+					"ganancias": [],
+					"frase": "Dos platos y dos bebidas para empezar. Con tres platos sirves sin esperas."
+				},
+				{
+					"nombre": "Mejorado",
+					"beneficios": ["3 platos en el pase", "Agua y sangría (2 huecos)", "Bebidas en 2.5 s"],
+					"ganancias": ["+1 plato en el pase", "−1.5 s por bebida"],
+					"frase": "Tres platos listos para emplatar distintos guisos seguidos."
+				},
+				{
+					"nombre": "Profesional",
+					"beneficios": ["4 platos en el pase", "3 bebidas a la vez", "Bebidas en 1.0 s"],
+					"ganancias": ["+1 plato en el pase", "+1 bebida a la vez", "−1.5 s por bebida"],
+					"frase": "Cuatro platos y barra completa: despachas el servicio en segundos."
+				}
+			]
+		},
+		"termostato": {
+			"nombre": "Fuego de Fogones",
+			"nombre_corto": "Fuego",
+			"niveles": [
+				{
+					"nombre": "Tradicional",
+					"beneficios": ["6.0 s de margen antes de quemar", "Control de cazuelas y plancha", "Control básico"],
+					"ganancias": [],
+					"frase": "Seis segundos para retirar cazuelas y huevos a tiempo."
+				},
+				{
+					"nombre": "Regulado",
+					"beneficios": ["8.1 s de margen antes de quemar", "Termostato estable", "+2.1 s antes de quemar"],
+					"ganancias": ["+2.1 s de margen", "Control de fuego"],
+					"frase": "Ocho segundos de margen para no quemar ningún guiso ni huevo."
+				},
+				{
+					"nombre": "De Precisión",
+					"beneficios": ["10.5 s de margen antes de quemar", "Aviso visual temprano", "Máximo control térmico"],
+					"ganancias": ["+2.4 s de margen", "Aviso visual temprano"],
+					"frase": "Diez segundos y aviso visual temprano: cocina sin sobresaltos."
+				}
+			]
+		},
+		"ingredientes": {
+			"nombre": "Producto de Mercado",
+			"nombre_corto": "Producto",
+			"niveles": [
+				{
+					"nombre": "De temporada",
+					"beneficios": ["Precio base x1.00", "Legumbre y huerta local", "Sin bonificación"],
+					"ganancias": [],
+					"frase": "Producto fresco del mercado. Con producto de huerta selecta sube cada ticket."
+				},
+				{
+					"nombre": "De huerta",
+					"beneficios": ["Precio por plato x1.25", "Tomate y pimiento selectos", "+25% en cada ticket"],
+					"ganancias": ["+25% precio por plato", "Huerta selecta"],
+					"frase": "Guisos con mejor producto y un 25% más de valor por ración."
+				},
+				{
+					"nombre": "Denominación",
+					"beneficios": ["Precio por plato x1.50", "Fabes, ibérico y marisco fresco", "+50% en cada ticket"],
+					"ganancias": ["+25% precio por plato", "Denominación de origen"],
+					"frase": "Género de primera y cazuelas un 50% más rentables."
+				}
+			]
+		},
+		"ambiente": {
+			"nombre": "Ambiente de Taberna",
+			"nombre_corto": "Ambiente",
+			"niveles": [
+				{
+					"nombre": "Popular",
+					"beneficios": ["Paciencia x1.00", "Propinas x1.00", "Mesas de madera"],
+					"ganancias": [],
+					"frase": "Una taberna de barrio con solera. Con barricas y solera los clientes esperan mejor."
+				},
+				{
+					"nombre": "Con solera",
+					"beneficios": ["Paciencia x1.15", "Propinas x1.20", "Barricas y cerámica"],
+					"ganancias": ["+15% paciencia", "+20% propinas"],
+					"frase": "Barricas y azulejo tradicional: los comensales disfrutan la espera."
+				},
+				{
+					"nombre": "Emblemática",
+					"beneficios": ["Paciencia x1.30", "Propinas x1.40", "Taberna con encanto"],
+					"ganancias": ["+15% paciencia", "+20% propinas"],
+					"frase": "La taberna más solicitada del mercado: paciencia y propinas al máximo."
+				}
+			]
+		}
+	},
+	"alta_cocina": {
+		"plancha": {
+			"nombre": "Horno y Sartén",
+			"nombre_corto": "Horno y Sartén",
+			"niveles": [
+				{
+					"nombre": "Cocina base",
+					"beneficios": ["2 bandejas en horno y 1 sartén", "Tabla de corte (4 tajos/pez)", "Velocidad estándar"],
+					"ganancias": [],
+					"frase": "Corta pescados enteros a clicks, fríe en sartén y controla la ventana dorada del horno."
+				},
+				{
+					"nombre": "Cuchillo afilado",
+					"beneficios": ["3 huecos horno · 2 tablas · 2 sartenes", "Fileteado ágil en 3 clicks", "Cocción un 20% más rápida"],
+					"ganancias": ["+1 tabla y +1 sartén", "Pescado en 3 clicks y −20% cocción"],
+					"frase": "Doble tabla y doble sartén para cortar y freír dos pescados a la vez."
+				},
+				{
+					"nombre": "Brigada de fuego",
+					"beneficios": ["4 huecos horno · 2 tablas · 2 sartenes", "Fileteado maestro en 2 clicks", "Cocción un 35% más rápida"],
+					"ganancias": ["+1 hueco horno y filo 2 clicks", "−15% extra de cocción"],
+					"frase": "La partida caliente al máximo: cortes veloces, sartenes dobles y horno de cuatro bandejas."
+				}
+			]
+		},
+		"emplatado": {
+			"nombre": "Pase y Bodega",
+			"nombre_corto": "Pase y Bodega",
+			"niveles": [
+				{
+					"nombre": "Mesa del chef",
+					"beneficios": ["2 platos de pase en porcelana", "2 copas en bodega (tinto y blanco)", "Decantado manual por toque"],
+					"ganancias": [],
+					"frase": "Emplata dos platos simultáneos y acelera el servicio tocando las copas al rellenar."
+				},
+				{
+					"nombre": "Sommelier ágil",
+					"beneficios": ["3 platos en el pase", "Bodega rápida de copas", "Mejor ritmo entre mesas"],
+					"ganancias": ["+1 hueco de emplatado", "Bodega y pase más ágiles"],
+					"frase": "Un tercer plato en el pase permite encadenar carnes, pescados y guarniciones."
+				},
+				{
+					"nombre": "Pase Estrella",
+					"beneficios": ["4 platos simultáneos", "3 copas en bodega", "Servicio de gran salón"],
+					"ganancias": ["4º plato en el pase", "3ª copa en bodega"],
+					"frase": "El pase completo de cuatro platos y bodega triple para horas punta gourmet."
+				}
+			]
+		},
+		"termostato": {
+			"nombre": "Precisión del Horno",
+			"nombre_corto": "Precisión",
+			"niveles": [
+				{
+					"nombre": "Control manual",
+					"beneficios": ["Margen normal en fritura y salsa", "Aviso visual al llegar al punto", "Control clásico"],
+					"ganancias": [],
+					"frase": "Vigila la salsa reducción removiendo a tiempo y no descuides el pescado en sartén."
+				},
+				{
+					"nombre": "Sonda térmica",
+					"beneficios": ["+35% aguante en salsa y sartén", "Más margen antes de quemar", "Cocina más relajada"],
+					"ganancias": ["+35% tiempo antes de quemar"],
+					"frase": "La sonda estabiliza el calor del cazo y te da más margen en las fritura."
+				},
+				{
+					"nombre": "Termostato digital",
+					"beneficios": ["+75% resistencia al quemado", "Aviso temprano en rojo vivo", "Protección total del producto"],
+					"ganancias": ["+40% extra de margen", "Aviso temprano luminoso"],
+					"frase": "Temperatura calibrada al grado: salsa y sartenes avisan con antelación de sobra."
+				}
+			]
+		},
+		"ingredientes": {
+			"nombre": "Producto de Autor",
+			"nombre_corto": "Producto",
+			"niveles": [
+				{
+					"nombre": "Lonja y dehesa",
+					"beneficios": ["Lubina, salmón, solomillo y pato frescos", "Cortes y cocciones limpias", "Precio de carta base"],
+					"ganancias": [],
+					"frase": "Pescado fresco de lonja para filetear y carnes nobles que rinden mejor al mejorar."
+				},
+				{
+					"nombre": "Reserva seleccionada",
+					"beneficios": ["Precio por plato x1.25", "Vinos de bodega x1.25", "Salmón y magret más rentables"],
+					"ganancias": ["+25% precio por plato"],
+					"frase": "Producto de lonja seleccionado y maridajes que disparan la cuenta de cada mesa."
+				},
+				{
+					"nombre": "Denominación Estrella",
+					"beneficios": ["Precio por plato x1.50", "Calidad de alta guía gastronómica", "+50% valor de carta"],
+					"ganancias": ["+25% precio por plato", "Máxima categoría gourmet"],
+					"frase": "Piezas de autor de primera línea: cada pase y maridaje rinde un 50% más."
+				}
+			]
+		},
+		"ambiente": {
+			"nombre": "Ambiente Gourmet",
+			"nombre_corto": "Ambiente",
+			"niveles": [
+				{
+					"nombre": "Salón elegante",
+					"beneficios": ["Paciencia x1.00", "Propinas x1.00", "Servicio de etiqueta"],
+					"ganancias": [],
+					"frase": "Un comedor exclusivo donde los comensales valoran el maridaje y el punto exacto."
+				},
+				{
+					"nombre": "Salón con candelabros",
+					"beneficios": ["Paciencia x1.15", "Propinas x1.20", "Mejor acogida en picos"],
+					"ganancias": ["+15% paciencia", "+20% propinas"],
+					"frase": "Candelabros e iluminación cálida: los clientes esperan con calma cada plato de autor."
+				},
+				{
+					"nombre": "Salón Tres Estrellas",
+					"beneficios": ["Paciencia x1.30", "Propinas x1.40", "Clientela fiel de gala"],
+					"ganancias": ["+15% paciencia", "+20% propinas"],
+					"frase": "Ambiente insuperable de alta cocina: máxima paciencia y propinas espléndidas."
+				}
+			]
+		}
 	}
 }
 
@@ -877,55 +1310,55 @@ func _Inicializar_Restaurantes() -> void:
 	# para que la progresión se sienta coherente; lo que cambia es el menú y,
 	# sobre todo, la mecánica de cada mundo.
 	var menus_bistro: Array = [
-		["filete_punto", "cafe"],
-		["filete_punto", "cafe"],
-		["filete_punto", "filete_patatas", "cafe"],
-		["filete_punto", "filete_patatas", "cafe"],
-		["filete_punto", "filete_patatas", "entrecot_hecho", "cafe"],
-		["filete_punto", "filete_patatas", "entrecot_hecho", "cafe"],
-		["filete_punto", "filete_patatas", "entrecot_hecho", "filete_completo", "cafe"],
-		["filete_punto", "filete_patatas", "entrecot_hecho", "filete_completo", "cafe"],
-		["filete_punto", "filete_patatas", "entrecot_hecho", "filete_completo", "solomillo_jugoso", "cafe"],
-		["filete_punto", "filete_patatas", "entrecot_hecho", "filete_completo", "solomillo_jugoso", "cafe"],
-		["filete_punto", "filete_patatas", "entrecot_hecho", "filete_completo", "solomillo_jugoso", "cafe", "tarta_cereza"],
-		["filete_punto", "filete_patatas", "entrecot_hecho", "filete_completo", "solomillo_jugoso", "cafe", "tarta_cereza"],
-		["filete_punto", "filete_patatas", "entrecot_hecho", "filete_completo", "solomillo_jugoso", "cafe", "tarta_cereza"],
-		["filete_punto", "filete_patatas", "entrecot_hecho", "filete_completo", "solomillo_jugoso", "cafe", "tarta_cereza"],
-		["filete_punto", "filete_patatas", "entrecot_hecho", "filete_completo", "solomillo_jugoso", "cafe", "tarta_cereza"]
+		["filete_poco_hecho", "filete_punto", "filete_hecho", "cafe"],
+		["filete_poco_hecho", "filete_punto", "filete_hecho", "filete_patatas", "filete_salsa", "filete_perejil", "cafe"],
+		["filete_poco_hecho", "filete_punto", "filete_patatas", "filete_salsa", "filete_perejil", "entrecot_hecho", "entrecot_perejil", "cafe"],
+		["filete_poco_hecho", "filete_punto", "filete_patatas", "filete_salsa", "filete_perejil", "entrecot_hecho", "entrecot_perejil", "filete_completo", "cafe"],
+		["filete_poco_hecho", "filete_punto", "filete_patatas", "filete_salsa", "filete_perejil", "entrecot_perejil", "filete_completo", "solomillo_jugoso", "solomillo_gourmet", "cafe"],
+		["filete_poco_hecho", "filete_punto", "filete_patatas", "filete_salsa", "filete_perejil", "entrecot_perejil", "filete_completo", "solomillo_jugoso", "solomillo_gourmet", "cafe"],
+		["filete_poco_hecho", "filete_punto", "filete_hecho", "filete_patatas", "filete_salsa", "filete_perejil", "entrecot_hecho", "entrecot_perejil", "filete_completo", "solomillo_jugoso", "solomillo_gourmet", "cafe", "tarta_cereza"],
+		["filete_poco_hecho", "filete_punto", "filete_hecho", "filete_patatas", "filete_salsa", "filete_perejil", "entrecot_hecho", "entrecot_perejil", "filete_completo", "solomillo_jugoso", "solomillo_gourmet", "cafe", "tarta_cereza"],
+		["filete_poco_hecho", "filete_punto", "filete_hecho", "filete_patatas", "filete_salsa", "filete_perejil", "entrecot_hecho", "entrecot_perejil", "filete_completo", "solomillo_jugoso", "solomillo_gourmet", "cafe", "tarta_cereza"],
+		["filete_poco_hecho", "filete_punto", "filete_hecho", "filete_patatas", "filete_salsa", "filete_perejil", "entrecot_hecho", "entrecot_perejil", "filete_completo", "solomillo_jugoso", "solomillo_gourmet", "cafe", "tarta_cereza"],
+		["filete_poco_hecho", "filete_punto", "filete_hecho", "filete_patatas", "filete_salsa", "filete_perejil", "entrecot_hecho", "entrecot_perejil", "filete_completo", "solomillo_jugoso", "solomillo_gourmet", "cafe", "tarta_cereza"],
+		["filete_poco_hecho", "filete_punto", "filete_hecho", "filete_patatas", "filete_salsa", "filete_perejil", "entrecot_hecho", "entrecot_perejil", "filete_completo", "solomillo_jugoso", "solomillo_gourmet", "cafe", "tarta_cereza"],
+		["filete_poco_hecho", "filete_punto", "filete_hecho", "filete_patatas", "filete_salsa", "filete_perejil", "entrecot_hecho", "entrecot_perejil", "filete_completo", "solomillo_jugoso", "solomillo_gourmet", "cafe", "tarta_cereza"],
+		["filete_poco_hecho", "filete_punto", "filete_hecho", "filete_patatas", "filete_salsa", "filete_perejil", "entrecot_hecho", "entrecot_perejil", "filete_completo", "solomillo_jugoso", "solomillo_gourmet", "cafe", "tarta_cereza"],
+		["filete_poco_hecho", "filete_punto", "filete_hecho", "filete_patatas", "filete_salsa", "filete_perejil", "entrecot_hecho", "entrecot_perejil", "filete_completo", "solomillo_jugoso", "solomillo_gourmet", "cafe", "tarta_cereza"]
 	]
 	var menus_mercado: Array = [
-		["fabada", "agua"],
-		["fabada", "agua"],
 		["fabada", "pisto", "agua"],
-		["fabada", "pisto", "agua"],
-		["fabada", "pisto", "pisto_huevo", "agua"],
-		["fabada", "pisto", "pisto_huevo", "agua"],
-		["fabada", "pisto", "pisto_huevo", "arroz_senyoret", "agua"],
-		["fabada", "pisto", "pisto_huevo", "arroz_senyoret", "agua"],
+		["fabada", "pisto", "pisto_huevo", "agua", "sangria"],
 		["fabada", "pisto", "pisto_huevo", "arroz_senyoret", "agua", "sangria"],
-		["fabada", "pisto", "pisto_huevo", "arroz_senyoret", "agua", "sangria"],
-		["fabada", "pisto", "pisto_huevo", "arroz_senyoret", "agua", "sangria"],
-		["fabada", "pisto", "pisto_huevo", "arroz_senyoret", "agua", "sangria"],
-		["fabada", "pisto", "pisto_huevo", "arroz_senyoret", "agua", "sangria"],
-		["fabada", "pisto", "pisto_huevo", "arroz_senyoret", "agua", "sangria"],
-		["fabada", "pisto", "pisto_huevo", "arroz_senyoret", "agua", "sangria"]
+		["fabada", "pisto", "pisto_huevo", "arroz_senyoret", "arroz_tomate", "agua", "sangria"],
+		["fabada", "pisto", "pisto_huevo", "arroz_senyoret", "arroz_tomate", "arroz_cubana", "agua", "sangria"],
+		["fabada", "pisto", "pisto_huevo", "arroz_senyoret", "arroz_tomate", "arroz_cubana", "fritada", "agua", "sangria"],
+		["fabada", "pisto", "pisto_huevo", "arroz_senyoret", "arroz_tomate", "arroz_cubana", "fritada", "alubias_marisco", "agua", "sangria"],
+		["fabada", "pisto", "pisto_huevo", "arroz_senyoret", "arroz_tomate", "arroz_cubana", "fritada", "alubias_marisco", "zarzuela", "agua", "sangria"],
+		["fabada", "pisto", "pisto_huevo", "arroz_senyoret", "arroz_tomate", "arroz_cubana", "fritada", "alubias_marisco", "zarzuela", "agua", "sangria"],
+		["fabada", "pisto", "pisto_huevo", "arroz_senyoret", "arroz_tomate", "arroz_cubana", "fritada", "alubias_marisco", "zarzuela", "agua", "sangria"],
+		["fabada", "pisto", "pisto_huevo", "arroz_senyoret", "arroz_tomate", "arroz_cubana", "fritada", "alubias_marisco", "zarzuela", "agua", "sangria"],
+		["fabada", "pisto", "pisto_huevo", "arroz_senyoret", "arroz_tomate", "arroz_cubana", "fritada", "alubias_marisco", "zarzuela", "agua", "sangria"],
+		["fabada", "pisto", "pisto_huevo", "arroz_senyoret", "arroz_tomate", "arroz_cubana", "fritada", "alubias_marisco", "zarzuela", "agua", "sangria"],
+		["fabada", "pisto", "pisto_huevo", "arroz_senyoret", "arroz_tomate", "arroz_cubana", "fritada", "alubias_marisco", "zarzuela", "agua", "sangria"],
+		["fabada", "pisto", "pisto_huevo", "arroz_senyoret", "arroz_tomate", "arroz_cubana", "fritada", "alubias_marisco", "zarzuela", "agua", "sangria"]
 	]
 	var menus_alta: Array = [
-		["solomillo_tinto", "vino_tinto"],
-		["solomillo_tinto", "vino_tinto"],
-		["solomillo_tinto", "lubina_blanca", "vino_tinto"],
-		["solomillo_tinto", "lubina_blanca", "vino_tinto"],
-		["solomillo_tinto", "lubina_blanca", "vino_tinto", "vino_blanco"],
-		["solomillo_tinto", "lubina_blanca", "vino_tinto", "vino_blanco"],
-		["solomillo_tinto", "lubina_blanca", "pato_tinto", "vino_tinto", "vino_blanco"],
-		["solomillo_tinto", "lubina_blanca", "pato_tinto", "vino_tinto", "vino_blanco"],
-		["solomillo_tinto", "lubina_blanca", "pato_tinto", "vino_tinto", "vino_blanco"],
-		["solomillo_tinto", "lubina_blanca", "pato_tinto", "vino_tinto", "vino_blanco"],
-		["solomillo_tinto", "lubina_blanca", "pato_tinto", "vino_tinto", "vino_blanco"],
-		["solomillo_tinto", "lubina_blanca", "pato_tinto", "vino_tinto", "vino_blanco"],
-		["solomillo_tinto", "lubina_blanca", "pato_tinto", "vino_tinto", "vino_blanco"],
-		["solomillo_tinto", "lubina_blanca", "pato_tinto", "vino_tinto", "vino_blanco"],
-		["solomillo_tinto", "lubina_blanca", "pato_tinto", "vino_tinto", "vino_blanco"]
+		["lubina_blanca", "solomillo_tinto", "vino_blanco", "vino_tinto"],
+		["lubina_blanca", "solomillo_tinto", "vino_blanco", "vino_tinto"],
+		["lubina_blanca", "solomillo_tinto", "pato_tinto", "vino_blanco", "vino_tinto"],
+		["lubina_blanca", "solomillo_tinto", "pato_tinto", "vino_blanco", "vino_tinto"],
+		["lubina_blanca", "solomillo_tinto", "pato_tinto", "salmon_crujiente", "vino_blanco", "vino_tinto"],
+		["lubina_blanca", "solomillo_tinto", "pato_tinto", "salmon_crujiente", "vino_blanco", "vino_tinto"],
+		["lubina_blanca", "solomillo_tinto", "pato_tinto", "salmon_crujiente", "vino_blanco", "vino_tinto"],
+		["solomillo_tinto", "lubina_blanca", "pato_tinto", "salmon_crujiente", "pato_esparragos", "vino_tinto", "vino_blanco"],
+		["solomillo_tinto", "lubina_blanca", "pato_tinto", "salmon_crujiente", "pato_esparragos", "vino_tinto", "vino_blanco"],
+		["solomillo_tinto", "lubina_blanca", "pato_tinto", "salmon_crujiente", "pato_esparragos", "vino_tinto", "vino_blanco"],
+		["solomillo_tinto", "lubina_blanca", "pato_tinto", "salmon_crujiente", "pato_esparragos", "vino_tinto", "vino_blanco"],
+		["solomillo_tinto", "lubina_blanca", "pato_tinto", "salmon_crujiente", "pato_esparragos", "vino_tinto", "vino_blanco"],
+		["solomillo_tinto", "lubina_blanca", "pato_tinto", "salmon_crujiente", "pato_esparragos", "vino_tinto", "vino_blanco"],
+		["solomillo_tinto", "lubina_blanca", "pato_tinto", "salmon_crujiente", "pato_esparragos", "vino_tinto", "vino_blanco"],
+		["solomillo_tinto", "lubina_blanca", "pato_tinto", "salmon_crujiente", "pato_esparragos", "vino_tinto", "vino_blanco"]
 	]
 	var niveles_bistro: Array = _Generar_Niveles_Mundo(menus_bistro, 75)
 	var niveles_mercado: Array = _Generar_Niveles_Mundo(menus_mercado, 85)
@@ -955,9 +1388,9 @@ func _Inicializar_Restaurantes() -> void:
 		RESTAURANTE_MERCADO: {
 			"id": RESTAURANTE_MERCADO,
 			"nombre": "Cocina de Mercado",
-			"subtitulo": "Guisos por lotes, pisto y arroces de temporada",
+			"subtitulo": "Guisos en cazuela, pisto con huevo y arroces",
 			"implementado": true,
-			"mecanica": "lote",
+			"mecanica": "cazuelas",
 			"trabajo_requerido": "Cocinero de Partida",
 			"trabajos_ids": ["Trabajar_De_Cocinero_Partida"],
 			"niveles": niveles_mercado
@@ -1193,6 +1626,35 @@ static func Calcular_Coste_Merma(desperdicio_valor: int) -> int:
 	return int(round(float(maxi(0, desperdicio_valor)) * COSTE_MERMA_RATIO))
 
 
+## Importe en euros que se descuenta de la recaudación al tirar un producto quemado.
+static func Obtener_Penalizacion_Quemado(restaurante_id: String, item_id: String) -> int:
+	var clave: String = item_id.strip_edges().to_lower()
+	if clave == "":
+		return 0
+	var tabla: Dictionary = PENALIZACIONES_QUEMADO.get(restaurante_id, {})
+	if tabla.has(clave):
+		return int(tabla[clave])
+	match clave:
+		"huevo":
+			return 2
+		"patatas":
+			return 3 if restaurante_id == RESTAURANTE_BISTRO else 4
+		"salsa":
+			return 5
+		"carne", "filete":
+			return 7 if restaurante_id == RESTAURANTE_BISTRO else 6
+		"guiso":
+			return 8
+		"pescado":
+			return 12
+	return 6
+
+
+## Descuenta la penalización por quemado asegurando que el total nunca baje de 0 €.
+static func Aplicar_Penalizacion_Quemado(recaudacion_actual: int, penalizacion: int) -> int:
+	return maxi(0, maxi(0, recaudacion_actual) - maxi(0, penalizacion))
+
+
 static func Calcular_Costes_Totales(ventas: int, nivel: int, desperdicio_valor: int = 0) -> int:
 	return Calcular_Coste_Ingredientes(ventas) + Calcular_Coste_Servicio(nivel) \
 		+ Calcular_Coste_Merma(desperdicio_valor)
@@ -1323,7 +1785,7 @@ static func Obtener_Perfil_Restaurante(restaurante_id: String) -> Dictionary:
 ## Punto del filete según el progreso (0..1) y el quemado acumulado (0..1).
 ## Devuelve crudo / poco_hecho / al_punto / hecho / quemado.
 static func Calcular_Punto_Filete(progreso: float, quemado: float = 0.0) -> String:
-	if quemado >= 0.45:
+	if quemado >= PUNTO_FILETE_QUEMADO:
 		return "quemado"
 	var p: float = clampf(progreso, 0.0, 1.0)
 	if p < PUNTO_FILETE_UMBRALES[0]:
@@ -1346,7 +1808,7 @@ static func Punto_Filete_Legible(punto: String) -> String:
 
 
 static func Identificar_Plato_Bistro(proteina: String, punto: String, guarnicion: String,
-		salsa: String) -> String:
+		salsa: String, perejil: bool = false) -> String:
 	if proteina != "filete" or punto == "" or punto == "crudo" or punto == "quemado":
 		return ""
 	for rec_id in RECETAS_BISTRO.keys():
@@ -1356,9 +1818,65 @@ static func Identificar_Plato_Bistro(proteina: String, punto: String, guarnicion
 		if str(rec.get("proteina", "")) == proteina \
 				and str(rec.get("punto", "")) == punto \
 				and str(rec.get("guarnicion", "")) == guarnicion \
-				and str(rec.get("salsa", "")) == salsa:
+				and str(rec.get("salsa", "")) == salsa \
+				and bool(rec.get("perejil", false)) == perejil:
 			return rec_id
 	return ""
+
+
+## Distancia en escalones entre dos puntos servibles (poco_hecho / al_punto / hecho).
+## Devuelve -1 si alguno no es un punto válido servible (ej. crudo o quemado).
+static func Diferencia_Punto_Filete(punto_pedido: String, punto_servido: String) -> int:
+	if not BISTRO_ORDEN_PUNTOS.has(punto_pedido) or not BISTRO_ORDEN_PUNTOS.has(punto_servido):
+		return -1
+	return absi(int(BISTRO_ORDEN_PUNTOS[punto_servido]) - int(BISTRO_ORDEN_PUNTOS[punto_pedido]))
+
+
+## Evalúa si un plato del Bistró satisface algún pedido pendiente del cliente.
+## Prioriza coincidencia exacta (distancia 0, factor 1.0) y luego admite 1 salto
+## de cocción (poco_hecho <-> al_punto o al_punto <-> hecho) pagando menos.
+## Nunca acepta crudo/quemado ni extremos opuestos (poco_hecho <-> hecho).
+static func Buscar_Coincidencia_Plato_Bistro(items: Array, entregados: Array,
+		plato: Dictionary) -> Dictionary:
+	var proteina: String = str(plato.get("proteina", ""))
+	var punto: String = str(plato.get("punto", ""))
+	var guarnicion: String = str(plato.get("guarnicion", ""))
+	var salsa: String = str(plato.get("salsa", ""))
+	var perejil: bool = bool(plato.get("perejil", false))
+	if proteina != "filete" or not BISTRO_ORDEN_PUNTOS.has(punto):
+		return {"ok": false, "motivo": "incompleto", "receta": "", "distancia": -1, "factor_pago": 0.0}
+
+	var candidato_dist_1: Dictionary = {}
+	var punto_muy_distinto: String = ""
+	for j in range(items.size()):
+		if j < entregados.size() and bool(entregados[j]):
+			continue
+		var item_id: String = str(items[j])
+		var rec: Dictionary = RECETAS_BISTRO.get(item_id, {})
+		if str(rec.get("tipo", "")) != "plato":
+			continue
+		if str(rec.get("proteina", "")) != proteina \
+				or str(rec.get("guarnicion", "")) != guarnicion \
+				or str(rec.get("salsa", "")) != salsa \
+				or bool(rec.get("perejil", false)) != perejil:
+			continue
+		var p_req: String = str(rec.get("punto", ""))
+		var dist: int = Diferencia_Punto_Filete(p_req, punto)
+		if dist == 0:
+			return {"ok": true, "indice_item": j, "receta": item_id,
+				"punto_pedido": p_req, "distancia": 0, "factor_pago": 1.0}
+		if dist == 1 and candidato_dist_1.is_empty():
+			candidato_dist_1 = {"ok": true, "indice_item": j, "receta": item_id,
+				"punto_pedido": p_req, "distancia": 1, "factor_pago": BISTRO_FACTOR_PUNTO_APROXIMADO}
+		elif dist >= 2 and punto_muy_distinto == "":
+			punto_muy_distinto = p_req
+
+	if not candidato_dist_1.is_empty():
+		return candidato_dist_1
+	if punto_muy_distinto != "":
+		return {"ok": false, "motivo": "punto_muy_distinto", "receta": "",
+			"punto_pedido": punto_muy_distinto, "distancia": 2, "factor_pago": 0.0}
+	return {"ok": false, "motivo": "no_pedido", "receta": "", "distancia": -1, "factor_pago": 0.0}
 
 
 ## Devuelve el id del guiso cuya lista de ingredientes coincide exactamente.
@@ -1406,6 +1924,134 @@ static func Olla_Acepta_Ingrediente(ingredientes: Array, ing: String) -> bool:
 	return false
 
 
+## Devuelve todos los ingredientes compañeros posibles y los guisos que forman con `ing`.
+static func Ingrediente_Parejas_Olla(ing: String) -> Array[Dictionary]:
+	var resultado: Array[Dictionary] = []
+	for rec_id in COMBOS_OLLA.keys():
+		var combo: Array = COMBOS_OLLA[rec_id]
+		if combo.has(ing):
+			for otro in combo:
+				if str(otro) != ing:
+					resultado.append({"pareja": str(otro), "guiso": rec_id})
+	return resultado
+
+
+## Devuelve el primer ingrediente compañero y el guiso que forma en la olla.
+static func Ingrediente_Pareja_Olla(ing: String) -> Dictionary:
+	var parejas: Array[Dictionary] = Ingrediente_Parejas_Olla(ing)
+	return parejas[0] if not parejas.is_empty() else {}
+
+
+## Indica si el guiso emplatado admite añadirle huevo frito por encima.
+static func Guiso_Acepta_Huevo(guiso: String) -> bool:
+	if guiso == "":
+		return false
+	for rec in RECETAS_MERCADO.values():
+		if str(rec.get("tipo", "")) == "plato" \
+				and str(rec.get("guiso", "")) == guiso \
+				and str(rec.get("extra", "")) == "huevo":
+			return true
+	return false
+
+
+## Describe cómo elaborar un plato, bebida o postre de cualquier restaurante
+## para mostrarlo al pasar o tocar sobre el bocadillo de un cliente.
+static func Describir_Elaboracion_Receta(restaurante_id: String, item_id: String) -> Dictionary:
+	var rec: Dictionary = Obtener_Receta(restaurante_id, item_id)
+	if rec.is_empty():
+		return {}
+	var titulo: String = str(rec.get("nombre", item_id))
+	var ingredientes: Array[String] = []
+	var pasos: String = str(rec.get("detalle", ""))
+
+	match restaurante_id:
+		RESTAURANTE_BURGER:
+			match item_id:
+				"burger_sola":
+					ingredientes = ["pan", "carne_lista"]
+					pasos = "Carne en plancha + Pan en plato"
+				"burger_queso":
+					ingredientes = ["pan", "carne_lista", "queso"]
+					pasos = "Pan + Carne hecha + Queso"
+				"burger_completa":
+					ingredientes = ["pan", "carne_lista", "queso", "lechuga", "tomate"]
+					pasos = "Pan + Carne hecha + Queso + Lechuga + Tomate"
+				"burger_doble":
+					ingredientes = ["pan", "carne_lista", "carne_lista", "queso"]
+					pasos = "Pan + 2× Carne hecha + Queso"
+				"patatas":
+					ingredientes = ["patatas"]
+					pasos = "Freidora → directo al cliente"
+				"refresco":
+					ingredientes = ["refresco"]
+					pasos = "Dispensador → arrastra al cliente"
+		RESTAURANTE_BISTRO:
+			var tipo_b: String = str(rec.get("tipo", ""))
+			if tipo_b == "bebida":
+				ingredientes = [item_id]
+				pasos = "Cafetera automática → arrastra al cliente"
+			elif tipo_b == "postre":
+				ingredientes = [item_id]
+				pasos = "Vitrina de postres → directo al cliente"
+			else:
+				var punto_txt: String = Punto_Filete_Legible(str(rec.get("punto", "al_punto")))
+				ingredientes = ["filete_crudo"]
+				var extras_b: Array[String] = ["Parrilla (%s)" % punto_txt]
+				if str(rec.get("guarnicion", "")) != "":
+					ingredientes.append(str(rec.get("guarnicion", "")))
+					extras_b.append("Patatas (freidora)")
+				if str(rec.get("salsa", "")) != "":
+					ingredientes.append("salsa")
+					extras_b.append("Salsa")
+				if bool(rec.get("perejil", false)):
+					ingredientes.append("perejil")
+					extras_b.append("Perejil")
+				pasos = " + ".join(extras_b)
+		RESTAURANTE_MERCADO:
+			if str(rec.get("tipo", "")) == "bebida":
+				ingredientes = [item_id]
+				pasos = "Barra (automático) → arrastra al cliente"
+			else:
+				var guiso: String = str(rec.get("guiso", ""))
+				var combo: Array = COMBOS_OLLA.get(guiso, [])
+				for ing in combo:
+					ingredientes.append(str(ing))
+				var base_txt: String = str(rec.get("nombre_corto", guiso))
+				if combo.size() == 2:
+					base_txt = "%s + %s" % [str(combo[0]).capitalize(), str(combo[1]).capitalize()]
+				if str(rec.get("extra", "")) == "huevo":
+					ingredientes.append("huevo_frito")
+					pasos = "%s en cazuela → pase + Huevo (plancha)" % base_txt
+				elif combo.size() == 2:
+					pasos = "%s en cazuela → al pase" % base_txt
+		RESTAURANTE_ALTA:
+			if str(rec.get("tipo", "")) == "bebida":
+				ingredientes = [item_id]
+				pasos = "Bodega → arrastra al cliente (toca si está llenando)"
+			else:
+				var prot: String = str(rec.get("proteina", ""))
+				var guar: String = str(rec.get("guarnicion", ""))
+				var sal: String = str(rec.get("salsa", ""))
+				if prot != "":
+					ingredientes.append(prot)
+				if sal != "":
+					ingredientes.append("salsa")
+				if guar != "":
+					ingredientes.append(guar)
+				var paso_prot: String = "%s: Tabla (clicks) → Sartén" % prot.capitalize() \
+					if Es_Pescado_Entero_Alta(prot) \
+					else "%s al horno (ventana dorada)" % prot.capitalize()
+				var paso_guar: String = "Puré" if guar == "pure" else "Espárragos"
+				pasos = "%s + Salsa + %s" % [paso_prot, paso_guar]
+
+	return {
+		"item": item_id,
+		"titulo": titulo,
+		"ingredientes": ingredientes,
+		"pasos": pasos,
+	}
+
+
 static func Receta_De_Olla(receta_id: String) -> Dictionary:
 	return RECETAS_MERCADO.get(receta_id, {})
 
@@ -1420,6 +2066,31 @@ static func Identificar_Plato_Mercado(guiso: String, extra: String) -> String:
 		if str(rec.get("guiso", "")) == guiso and str(rec.get("extra", "")) == extra:
 			return rec_id
 	return ""
+
+
+static func Es_Pescado_Entero_Alta(ing: String) -> bool:
+	return ing in ["lubina", "salmon"]
+
+
+static func Es_Proteina_Horno_Alta(ing: String) -> bool:
+	return ing in ["solomillo", "pato"]
+
+
+## Número de clicks sobre el pescado entero necesarios para filetearlo en tabla.
+static func Cortes_Necesarios_Pescado(nivel_plancha: int) -> int:
+	if nivel_plancha >= 3:
+		return 2
+	if nivel_plancha == 2:
+		return 3
+	return 4
+
+
+static func Obtener_Huecos_Tabla(nivel_plancha: int) -> int:
+	return 2 if nivel_plancha >= 2 else 1
+
+
+static func Obtener_Huecos_Sarten_Alta(nivel_plancha: int) -> int:
+	return 2 if nivel_plancha >= 2 else 1
 
 
 static func Identificar_Plato_Alta(proteina: String, salsa: String, guarnicion: String) -> String:
@@ -1854,7 +2525,8 @@ func Procesar_Micro_Recompensa_Cliente(en_turno: bool, micro_propinas_acumuladas
 
 
 func Procesar_Fin_Nivel(restaurante_id: String, nivel: int, recaudacion: int,
-		propinas_servicio: int, en_turno: bool, desperdicio_valor: int = 0) -> Dictionary:
+		propinas_servicio: int, en_turno: bool, desperdicio_valor: int = 0,
+		penalizacion_quemados: int = 0) -> Dictionary:
 	var estado: Dictionary = Obtener_Estado()
 	var cfg: Dictionary = Obtener_Config_Nivel(restaurante_id, nivel)
 	var meta_1: int = int(cfg.get("meta_1", 50))
@@ -1868,8 +2540,12 @@ func Procesar_Fin_Nivel(restaurante_id: String, nivel: int, recaudacion: int,
 
 	# El ticket incluye propinas (bonus de servicio para las estrellas), pero la
 	# Caja solo ingresa las ventas de platos/bebidas: las propinas van al equipo.
-	var ventas: int = maxi(0, recaudacion - propinas_servicio)
-	var estrellas: int = Calcular_Estrellas(recaudacion, meta_1, meta_2, meta_3)
+	# Si las penalizaciones por quemados redujeron la recaudación por debajo de
+	# las propinas, acotamos las propinas efectivas para mantener la suma coherente.
+	var recaudacion_neta: int = maxi(0, recaudacion)
+	var propinas_efectivas: int = mini(maxi(0, propinas_servicio), recaudacion_neta)
+	var ventas: int = maxi(0, recaudacion_neta - propinas_efectivas)
+	var estrellas: int = Calcular_Estrellas(recaudacion_neta, meta_1, meta_2, meta_3)
 
 	# --- Caja del restaurante: ventas - ingredientes - servicio - merma ---
 	var coste_ingredientes: int = Calcular_Coste_Ingredientes(ventas)
@@ -1900,7 +2576,7 @@ func Procesar_Fin_Nivel(restaurante_id: String, nivel: int, recaudacion: int,
 	if estrellas >= 1:
 		if en_turno:
 			propinas_eur = Calcular_Propinas_Netas_Eur(
-				propinas_servicio, estrellas, true, mult_precios, bonus_ropa_propinas, false)
+				propinas_efectivas, estrellas, true, mult_precios, bonus_ropa_propinas, false)
 			reparto_sim = Calcular_Reparto_Sim(beneficio_neto, false)
 			estado["plus_nomina_turno_hoy"] = true
 			plus_nomina_activado = true
@@ -1908,13 +2584,13 @@ func Procesar_Fin_Nivel(restaurante_id: String, nivel: int, recaudacion: int,
 			var usados: int = maxi(0, int(estado.get("servicios_remunerados_hoy", 0)))
 			if usados < LIMITE_SERVICIOS_COMPLETOS_DIA:
 				propinas_eur = Calcular_Propinas_Netas_Eur(
-					propinas_servicio, estrellas, false, mult_precios, bonus_ropa_propinas, false)
+					propinas_efectivas, estrellas, false, mult_precios, bonus_ropa_propinas, false)
 				reparto_sim = Calcular_Reparto_Sim(beneficio_neto, false)
 				estado["servicios_remunerados_hoy"] = usados + 1
 			else:
 				modo_practica = true
 				propinas_eur = Calcular_Propinas_Netas_Eur(
-					propinas_servicio, estrellas, false, mult_precios, bonus_ropa_propinas, true)
+					propinas_efectivas, estrellas, false, mult_precios, bonus_ropa_propinas, true)
 				reparto_sim = Calcular_Reparto_Sim(beneficio_neto, true)
 
 	var caja_ganada: int = Calcular_Caja_Ganada(beneficio_neto, reparto_sim)
@@ -1963,8 +2639,9 @@ func Procesar_Fin_Nivel(restaurante_id: String, nivel: int, recaudacion: int,
 		"estrellas_previas": estrellas_previas,
 		"superado": estrellas >= 1,
 		"ventas": ventas,
-		"recaudacion": maxi(0, recaudacion),
-		"propinas_servicio": maxi(0, propinas_servicio),
+		"recaudacion": recaudacion_neta,
+		"propinas_servicio": propinas_efectivas,
+		"penalizacion_quemados": maxi(0, penalizacion_quemados),
 		"coste_ingredientes": coste_ingredientes,
 		"coste_servicio": coste_servicio,
 		"coste_merma": coste_merma,

@@ -153,6 +153,15 @@ static var TEX_CAFETERA: Texture2D:
 static var TEX_VITRINA: Texture2D:
 	get:
 		return _tex("res://Imagenes/Minijuego_Cocina/Estaciones/Vitrina_Preparacion.png")
+static var TEX_VITRINA_EXPOSICION: Texture2D:
+	get:
+		return _tex("res://Imagenes/Minijuego_Cocina/Mostrador/Vitrina_Exposicion.png")
+static var TEX_SAL_PIMIENTA: Texture2D:
+	get:
+		return _tex("res://Imagenes/Minijuego_Cocina/Emplatado/Sal_Pimienta.png")
+static var TEX_PINZAS: Texture2D:
+	get:
+		return _tex("res://Imagenes/Minijuego_Cocina/Emplatado/Pinzas.png")
 static var TEX_CALENTADOR: Texture2D:
 	get:
 		return _tex("res://Imagenes/Minijuego_Cocina/Estaciones/Calentador_Comida.png")
@@ -191,6 +200,195 @@ static var TEX_PILA_PLATOS: Texture2D:
 static var TEX_BANDEJAS_APILADAS: Texture2D:
 	get:
 		return _tex("res://Imagenes/Minijuego_Cocina/Emplatado/Bandejas_Apiladas.png")
+
+# --- Cocina de Mercado (Mundo 3) --------------------------------------------
+static var TEX_MERCADO_FOGONES: Texture2D:
+	get:
+		return _tex("res://Imagenes/Minijuego_Cocina/Mercado/Fogones_Mercado.png")
+static var TEX_MERCADO_CAZUELA_VACIA: Texture2D:
+	get:
+		return _tex("res://Imagenes/Minijuego_Cocina/Mercado/Cazuela_Vacia.png")
+static var TEX_MERCADO_FABADA: Texture2D:
+	get:
+		return _tex("res://Imagenes/Minijuego_Cocina/Mercado/Fabada.png")
+static var TEX_MERCADO_PISTO: Texture2D:
+	get:
+		return _tex("res://Imagenes/Minijuego_Cocina/Mercado/Pisto.png")
+static var TEX_MERCADO_PISTO_HUEVO: Texture2D:
+	get:
+		return _tex("res://Imagenes/Minijuego_Cocina/Mercado/Pisto_Huevo.png")
+static var TEX_MERCADO_ARROZ: Texture2D:
+	get:
+		return _tex("res://Imagenes/Minijuego_Cocina/Mercado/Arroz_Senyoret.png")
+static var TEX_MERCADO_ARROZ_TOMATE: Texture2D:
+	get:
+		return _tex("res://Imagenes/Minijuego_Cocina/Mercado/Arroz_Tomate.png")
+static var TEX_MERCADO_ARROZ_CUBANA: Texture2D:
+	get:
+		return _tex("res://Imagenes/Minijuego_Cocina/Mercado/Arroz_Cubana.png")
+static var TEX_MERCADO_ALUBIAS_MARISCO: Texture2D:
+	get:
+		return _tex("res://Imagenes/Minijuego_Cocina/Mercado/Alubias_Marisco.png")
+static var TEX_MERCADO_ZARZUELA: Texture2D:
+	get:
+		return _tex("res://Imagenes/Minijuego_Cocina/Mercado/Zarzuela_Marisco.png")
+static var TEX_MERCADO_FRITADA: Texture2D:
+	get:
+		return _tex("res://Imagenes/Minijuego_Cocina/Mercado/Fritada_Chorizo.png")
+static var TEX_MERCADO_CAZUELA_QUEMADA: Texture2D:
+	get:
+		return _tex("res://Imagenes/Minijuego_Cocina/Mercado/Cazuela_Quemada.png")
+static var TEX_MERCADO_PUESTO_ALUBIAS: Texture2D:
+	get:
+		return _tex("res://Imagenes/Minijuego_Cocina/Mercado/Puesto_Alubias.png")
+static var TEX_MERCADO_PUESTO_CHORIZO: Texture2D:
+	get:
+		return _tex("res://Imagenes/Minijuego_Cocina/Mercado/Puesto_Chorizo.png")
+static var TEX_MERCADO_PUESTO_PIMIENTO: Texture2D:
+	get:
+		return _tex("res://Imagenes/Minijuego_Cocina/Mercado/Puesto_Pimiento.png")
+static var TEX_MERCADO_PUESTO_ARROZ: Texture2D:
+	get:
+		return _tex("res://Imagenes/Minijuego_Cocina/Mercado/Puesto_Arroz.png")
+static var TEX_MERCADO_PUESTO_MARISCO: Texture2D:
+	get:
+		return _tex("res://Imagenes/Minijuego_Cocina/Mercado/Puesto_Marisco.png")
+static var TEX_MERCADO_PUESTO_HUEVO: Texture2D:
+	get:
+		return _tex("res://Imagenes/Minijuego_Cocina/Mercado/Puesto_Huevo.png")
+static var TEX_MERCADO_ING_ALUBIAS: Texture2D:
+	get:
+		return _tex("res://Imagenes/Minijuego_Cocina/Mercado/Ing_Alubias.png")
+static var TEX_MERCADO_ING_CHORIZO: Texture2D:
+	get:
+		return _tex("res://Imagenes/Minijuego_Cocina/Mercado/Ing_Chorizo.png")
+static var TEX_MERCADO_ING_PIMIENTO: Texture2D:
+	get:
+		return _tex("res://Imagenes/Minijuego_Cocina/Mercado/Ing_Pimiento.png")
+static var TEX_MERCADO_ING_ARROZ: Texture2D:
+	get:
+		return _tex("res://Imagenes/Minijuego_Cocina/Mercado/Ing_Arroz.png")
+static var TEX_MERCADO_ING_MARISCO: Texture2D:
+	get:
+		return _tex("res://Imagenes/Minijuego_Cocina/Mercado/Ing_Marisco.png")
+static var TEX_MERCADO_ING_HUEVO: Texture2D:
+	get:
+		return _tex("res://Imagenes/Minijuego_Cocina/Mercado/Ing_Huevo.png")
+static var TEX_MERCADO_HUEVO_FRITO: Texture2D:
+	get:
+		return _tex("res://Imagenes/Minijuego_Cocina/Mercado/Huevo_Frito.png")
+static var TEX_MERCADO_HUEVO_QUEMADO: Texture2D:
+	get:
+		return _tex("res://Imagenes/Minijuego_Cocina/Mercado/Huevo_Quemado.png")
+static var TEX_MERCADO_SANGRIA: Texture2D:
+	get:
+		return _tex("res://Imagenes/Minijuego_Cocina/Mercado/Sangria.png")
+static var TEX_MERCADO_BARRA: Texture2D:
+	get:
+		return _tex("res://Imagenes/Minijuego_Cocina/Mercado/Barra_Mercado.png")
+
+static func _tex_alta(archivo: String) -> Texture2D:
+	return _tex("res://Imagenes/Minijuego_Cocina/Alta/" + archivo)
+
+static var TEX_ALTA_HORNO: Texture2D:
+	get:
+		return _tex_alta("Horno_Alta.png")
+static var TEX_ALTA_TABLA: Texture2D:
+	get:
+		return _tex_alta("Tabla_Corte_Alta.png")
+static var TEX_ALTA_SARTEN_1: Texture2D:
+	get:
+		return _tex_alta("Sarten_Fritura_1.png")
+static var TEX_ALTA_SARTEN_2: Texture2D:
+	get:
+		return _tex_alta("Sarten_Fritura_2.png")
+static var TEX_ALTA_CAZO: Texture2D:
+	get:
+		return _tex_alta("Cazo_Salsa_Alta.png")
+static var TEX_ALTA_CAZO_QUEMADO: Texture2D:
+	get:
+		return _tex_alta("Cazo_Quemado_Alta.png")
+static var TEX_ALTA_BODEGA: Texture2D:
+	get:
+		return _tex_alta("Bodega_Alta.png")
+static var TEX_ALTA_PUESTO_SOLOMILLO: Texture2D:
+	get:
+		return _tex_alta("Puesto_Solomillo.png")
+static var TEX_ALTA_PUESTO_PATO: Texture2D:
+	get:
+		return _tex_alta("Puesto_Pato.png")
+static var TEX_ALTA_PUESTO_LUBINA: Texture2D:
+	get:
+		return _tex_alta("Puesto_Lubina.png")
+static var TEX_ALTA_PUESTO_SALMON: Texture2D:
+	get:
+		return _tex_alta("Puesto_Salmon.png")
+static var TEX_ALTA_PUESTO_PURE: Texture2D:
+	get:
+		return _tex_alta("Puesto_Pure.png")
+static var TEX_ALTA_PUESTO_ESPARRAGOS: Texture2D:
+	get:
+		return _tex_alta("Puesto_Esparragos.png")
+static var TEX_ALTA_ING_SOLOMILLO: Texture2D:
+	get:
+		return _tex_alta("Ing_Solomillo.png")
+static var TEX_ALTA_SOLOMILLO_HECHO: Texture2D:
+	get:
+		return _tex_alta("Solomillo_Hecho.png")
+static var TEX_ALTA_ING_PATO: Texture2D:
+	get:
+		return _tex_alta("Ing_Pato.png")
+static var TEX_ALTA_PATO_HECHO: Texture2D:
+	get:
+		return _tex_alta("Pato_Hecho.png")
+static var TEX_ALTA_LUBINA_ENTERA: Texture2D:
+	get:
+		return _tex_alta("Ing_Lubina_Entera.png")
+static var TEX_ALTA_SALMON_ENTERO: Texture2D:
+	get:
+		return _tex_alta("Ing_Salmon_Entero.png")
+static var TEX_ALTA_LUBINA_CORTADA: Texture2D:
+	get:
+		return _tex_alta("Lubina_Cortada.png")
+static var TEX_ALTA_SALMON_CORTADO: Texture2D:
+	get:
+		return _tex_alta("Salmon_Cortado.png")
+static var TEX_ALTA_LUBINA_FRITA: Texture2D:
+	get:
+		return _tex_alta("Lubina_Frita.png")
+static var TEX_ALTA_SALMON_FRITO: Texture2D:
+	get:
+		return _tex_alta("Salmon_Frito.png")
+static var TEX_ALTA_ING_PURE: Texture2D:
+	get:
+		return _tex_alta("Ing_Pure.png")
+static var TEX_ALTA_ING_ESPARRAGOS: Texture2D:
+	get:
+		return _tex_alta("Ing_Esparragos.png")
+static var TEX_ALTA_VINO_TINTO: Texture2D:
+	get:
+		return _tex_alta("Vino_Tinto.png")
+static var TEX_ALTA_VINO_BLANCO: Texture2D:
+	get:
+		return _tex_alta("Vino_Blanco.png")
+static var TEX_ALTA_PLATO_VACIO: Texture2D:
+	get:
+		return _tex_alta("Plato_Vacio_Alta.png")
+static var TEX_ALTA_PLATO_SOLOMILLO: Texture2D:
+	get:
+		return _tex_alta("Plato_Solomillo.png")
+static var TEX_ALTA_PLATO_LUBINA: Texture2D:
+	get:
+		return _tex_alta("Plato_Lubina.png")
+static var TEX_ALTA_PLATO_PATO: Texture2D:
+	get:
+		return _tex_alta("Plato_Pato.png")
+static var TEX_ALTA_PLATO_SALMON: Texture2D:
+	get:
+		return _tex_alta("Plato_Salmon.png")
+static var TEX_ALTA_PLATO_PATO_ESPARRAGOS: Texture2D:
+	get:
+		return _tex_alta("Plato_Pato_Esparragos.png")
 
 # --- Interfaz ---------------------------------------------------------------
 static var TEX_MONEDA: Texture2D:
@@ -327,7 +525,27 @@ const NOMBRES_INGREDIENTES: Dictionary = {
 	"lechuga": "Lechuga",
 	"tomate": "Tomate",
 	"patatas": "Patatas",
+	"salsa": "Salsa",
+	"perejil": "Perejil",
+	"tarta_cereza": "Tarta",
+	"alubias": "Alubias",
+	"chorizo": "Chorizo",
+	"pimiento": "Pimiento",
+	"arroz": "Arroz",
+	"marisco": "Marisco",
+	"huevo": "Huevo",
+	"solomillo": "Solomillo",
+	"pato": "Pato",
+	"lubina": "Lubina ent.",
+	"salmon": "Salmón ent.",
+	"pure": "Puré",
+	"esparragos": "Espárragos",
+	"vino_tinto": "Vino tinto",
+	"vino_blanco": "Vino blanco",
 }
+
+static func nombre_ingrediente(id: String) -> String:
+	return str(NOMBRES_INGREDIENTES.get(id, id.capitalize()))
 
 const TINTE_PLATO := Color("#f8fafc")
 # Proporción del plato 3/4 de cerámica blanca (642×364): perspectiva más
@@ -397,8 +615,76 @@ static func textura_item(item_id: String) -> Texture2D:
 			return TEX_CAFE
 		"agua":
 			return TEX_AGUA
+		"sangria":
+			return TEX_MERCADO_SANGRIA
 		"tarta_cereza":
 			return TEX_TARTA
+		"fabada":
+			return TEX_MERCADO_FABADA
+		"pisto":
+			return TEX_MERCADO_PISTO
+		"pisto_huevo":
+			return TEX_MERCADO_PISTO_HUEVO
+		"arroz_senyoret":
+			return TEX_MERCADO_ARROZ
+		"arroz_tomate":
+			return TEX_MERCADO_ARROZ_TOMATE
+		"arroz_cubana":
+			return TEX_MERCADO_ARROZ_CUBANA
+		"alubias_marisco":
+			return TEX_MERCADO_ALUBIAS_MARISCO
+		"zarzuela":
+			return TEX_MERCADO_ZARZUELA
+		"fritada":
+			return TEX_MERCADO_FRITADA
+		"alubias":
+			return TEX_MERCADO_ING_ALUBIAS
+		"chorizo":
+			return TEX_MERCADO_ING_CHORIZO
+		"pimiento":
+			return TEX_MERCADO_ING_PIMIENTO
+		"arroz":
+			return TEX_MERCADO_ING_ARROZ
+		"marisco":
+			return TEX_MERCADO_ING_MARISCO
+		"huevo":
+			return TEX_MERCADO_ING_HUEVO
+		"huevo_frito":
+			return TEX_MERCADO_HUEVO_FRITO
+		"vino_tinto":
+			return TEX_ALTA_VINO_TINTO
+		"vino_blanco":
+			return TEX_ALTA_VINO_BLANCO
+		"solomillo_tinto":
+			return TEX_ALTA_PLATO_SOLOMILLO
+		"lubina_blanca":
+			return TEX_ALTA_PLATO_LUBINA
+		"pato_tinto":
+			return TEX_ALTA_PLATO_PATO
+		"salmon_crujiente":
+			return TEX_ALTA_PLATO_SALMON
+		"pato_esparragos":
+			return TEX_ALTA_PLATO_PATO_ESPARRAGOS
+		"solomillo":
+			return TEX_ALTA_ING_SOLOMILLO
+		"pato":
+			return TEX_ALTA_ING_PATO
+		"lubina":
+			return TEX_ALTA_LUBINA_ENTERA
+		"salmon":
+			return TEX_ALTA_SALMON_ENTERO
+		"lubina_cortada":
+			return TEX_ALTA_LUBINA_CORTADA
+		"salmon_cortado":
+			return TEX_ALTA_SALMON_CORTADO
+		"lubina_frita":
+			return TEX_ALTA_LUBINA_FRITA
+		"salmon_frito":
+			return TEX_ALTA_SALMON_FRITO
+		"pure":
+			return TEX_ALTA_ING_PURE
+		"esparragos":
+			return TEX_ALTA_ING_ESPARRAGOS
 		"burger_sola", "burger_queso", "burger_completa", "burger_doble":
 			return TEX_PAN_SUP
 	return TEX_PLATO
@@ -430,12 +716,13 @@ static func dibujar_tex(c: CanvasItem, tex: Texture2D, caja: Rect2,
 
 
 static func dibujar_tex_centro(c: CanvasItem, tex: Texture2D, centro: Vector2,
-		ancho: float, alpha: float = 1.0) -> void:
+		ancho: float, alpha: float = 1.0, modulacion: Color = Color.WHITE) -> void:
 	if tex == null or ancho <= 0.0:
 		return
 	var alto: float = ancho * float(tex.get_height()) / maxf(1.0, float(tex.get_width()))
 	var r := Rect2(centro.x - ancho * 0.5, centro.y - alto * 0.5, ancho, alto)
-	c.draw_texture_rect(tex, r, false, Color(1.0, 1.0, 1.0, alpha))
+	c.draw_texture_rect(tex, r, false,
+		Color(modulacion.r, modulacion.g, modulacion.b, modulacion.a * alpha))
 
 
 # Rectángulo con los píxeles visibles de una textura (sin el margen
@@ -756,21 +1043,21 @@ static func dibujar_item(c: CanvasItem, item_id: String, centro: Vector2, caja: 
 			dibujar_tex(c, TEX_CAFE, Rect2(centro - Vector2(caja * 0.58, caja * 0.52), Vector2(caja * 1.16, caja * 1.04)), col)
 		"agua":
 			dibujar_tex(c, TEX_AGUA, Rect2(centro - Vector2(caja * 0.45, caja * 0.56), Vector2(caja * 0.90, caja * 1.12)), col)
-		"sangria", "vino_tinto":
+		"sangria":
+			dibujar_copa_sangria(c, centro + Vector2(0.0, caja * 0.04), caja * 1.18, alpha)
+		"vino_tinto":
 			dibujar_copa_vino(c, centro, caja, true, alpha)
 		"vino_blanco":
 			dibujar_copa_vino(c, centro, caja, false, alpha)
 		"tarta_cereza":
 			dibujar_tex(c, TEX_TARTA, Rect2(centro - Vector2(caja, caja) * 0.5, Vector2(caja, caja)), col)
-		"filete_punto", "filete_patatas", "filete_completo", "solomillo_jugoso", "entrecot_hecho":
-			var punto_item: String = "al_punto"
-			if item_id == "solomillo_jugoso":
-				punto_item = "poco_hecho"
-			elif item_id == "entrecot_hecho":
-				punto_item = "hecho"
-			var guarnicion_item: String = "" if item_id == "filete_punto" else "patatas"
-			var salsa_item: String = "salsa" if item_id in ["filete_completo", "solomillo_jugoso"] else ""
-			dibujar_icono_bistro(c, centro, caja, punto_item, guarnicion_item, salsa_item, alpha)
+		"filete_poco_hecho", "filete_punto", "filete_hecho", "filete_salsa", "filete_perejil", "filete_patatas", "filete_completo", "solomillo_jugoso", "entrecot_hecho", "entrecot_perejil", "solomillo_gourmet":
+			var rec_b: Dictionary = Sistema_Cocina.RECETAS_BISTRO.get(item_id, {})
+			dibujar_icono_bistro(c, centro, caja,
+				str(rec_b.get("punto", "al_punto")),
+				str(rec_b.get("guarnicion", "")),
+				str(rec_b.get("salsa", "")), alpha,
+				bool(rec_b.get("perejil", false)))
 		"fabada":
 			dibujar_plato_mercado(c, centro, caja, "fabada", "", alpha)
 		"pisto":
@@ -779,12 +1066,26 @@ static func dibujar_item(c: CanvasItem, item_id: String, centro: Vector2, caja: 
 			dibujar_plato_mercado(c, centro, caja, "pisto", "huevo", alpha)
 		"arroz_senyoret":
 			dibujar_plato_mercado(c, centro, caja, "arroz", "", alpha)
+		"arroz_tomate":
+			dibujar_plato_mercado(c, centro, caja, "arroz_tomate", "", alpha)
+		"arroz_cubana":
+			dibujar_plato_mercado(c, centro, caja, "arroz_tomate", "huevo", alpha)
+		"alubias_marisco":
+			dibujar_plato_mercado(c, centro, caja, "alubias_marisco", "", alpha)
+		"zarzuela":
+			dibujar_plato_mercado(c, centro, caja, "zarzuela", "", alpha)
+		"fritada":
+			dibujar_plato_mercado(c, centro, caja, "fritada", "", alpha)
 		"solomillo_tinto":
 			dibujar_icono_alta(c, centro, caja, "solomillo", "pure", alpha)
 		"lubina_blanca":
 			dibujar_icono_alta(c, centro, caja, "lubina", "esparragos", alpha)
 		"pato_tinto":
 			dibujar_icono_alta(c, centro, caja, "pato", "pure", alpha)
+		"salmon_crujiente":
+			dibujar_icono_alta(c, centro, caja, "salmon", "esparragos", alpha)
+		"pato_esparragos":
+			dibujar_icono_alta(c, centro, caja, "pato", "esparragos", alpha)
 		_:
 			if dibujar_ingrediente_icono(c, item_id, centro, caja, alpha):
 				return
@@ -797,52 +1098,26 @@ static func dibujar_item(c: CanvasItem, item_id: String, centro: Vector2, caja: 
 
 static func dibujar_copa_vino(c: CanvasItem, centro: Vector2, caja: float,
 		tinto: bool, alpha: float = 1.0) -> void:
-	var ancho: float = caja * 0.52
-	var alto: float = caja * 0.82
-	var base := centro + Vector2(0.0, alto * 0.42)
-	var col_vino := Color("#7f1d1d") if tinto else Color("#e7d8a8")
-	# Pie y tallo
-	c.draw_line(base, base + Vector2(0.0, -alto * 0.26), Color(0.85, 0.92, 1.0, 0.75 * alpha), 2.2, true)
-	c.draw_line(base + Vector2(-ancho * 0.34, 0.0), base + Vector2(ancho * 0.34, 0.0),
-		Color(0.85, 0.92, 1.0, 0.75 * alpha), 2.2, true)
-	# Copa
-	var copa := Rect2(centro + Vector2(-ancho * 0.5, -alto * 0.5), Vector2(ancho, alto * 0.55))
-	c.draw_colored_polygon(PackedVector2Array([
-		copa.position + Vector2(0.0, 0.0),
-		copa.position + Vector2(copa.size.x, 0.0),
-		copa.position + Vector2(copa.size.x * 0.76, copa.size.y * 0.72),
-		copa.position + Vector2(copa.size.x * 0.50, copa.size.y),
-		copa.position + Vector2(copa.size.x * 0.24, copa.size.y * 0.72),
-	]), Color(0.80, 0.92, 1.0, 0.22 * alpha))
-	c.draw_polyline(PackedVector2Array([
-		copa.position + Vector2(0.0, 0.0),
-		copa.position + Vector2(copa.size.x, 0.0),
-		copa.position + Vector2(copa.size.x * 0.76, copa.size.y * 0.72),
-		copa.position + Vector2(copa.size.x * 0.50, copa.size.y),
-		copa.position + Vector2(copa.size.x * 0.24, copa.size.y * 0.72),
-		copa.position + Vector2(0.0, 0.0),
-	]), Color(0.86, 0.94, 1.0, 0.80 * alpha), 1.6, true)
-	# Vino
-	c.draw_colored_polygon(PackedVector2Array([
-		copa.position + Vector2(copa.size.x * 0.06, copa.size.y * 0.34),
-		copa.position + Vector2(copa.size.x * 0.94, copa.size.y * 0.34),
-		copa.position + Vector2(copa.size.x * 0.76, copa.size.y * 0.72),
-		copa.position + Vector2(copa.size.x * 0.50, copa.size.y * 0.92),
-		copa.position + Vector2(copa.size.x * 0.24, copa.size.y * 0.72),
-	]), Color(col_vino, 0.92 * alpha))
-	c.draw_line(copa.position + Vector2(copa.size.x * 0.18, copa.size.y * 0.40),
-		copa.position + Vector2(copa.size.x * 0.34, copa.size.y * 0.40),
-		Color(1.0, 1.0, 1.0, 0.45 * alpha), 1.5, true)
+	var tex: Texture2D = TEX_ALTA_VINO_TINTO if tinto else TEX_ALTA_VINO_BLANCO
+	dibujar_tex_centro(c, tex, centro, caja * 0.56, alpha)
+
+
+static func dibujar_copa_sangria(c: CanvasItem, centro: Vector2, caja: float,
+		alpha: float = 1.0) -> void:
+	var lado: float = caja * 0.96
+	dibujar_tex(c, TEX_MERCADO_SANGRIA,
+		Rect2(centro - Vector2(lado * 0.5, lado * 0.52), Vector2(lado, lado)),
+		Color(1.0, 1.0, 1.0, alpha))
 
 
 static func punto_color(punto: String) -> Color:
 	match punto:
-		"crudo": return Color("#e0605a")
-		"poco_hecho": return Color("#d97b57")
-		"al_punto": return Color("#b5603a")
-		"hecho": return Color("#8a4a2a")
+		"crudo": return Color("#fb7185")
+		"poco_hecho": return Color("#ef4444")
+		"al_punto": return Color("#f59e0b")
+		"hecho": return Color("#854d0e")
 		"quemado": return Color("#3f2418")
-	return Color("#b5603a")
+	return Color("#f59e0b")
 
 
 static func dibujar_filete(c: CanvasItem, centro: Vector2, ancho: float,
@@ -916,23 +1191,23 @@ static func dibujar_filete(c: CanvasItem, centro: Vector2, ancho: float,
 		carne_alta = Color("#e88683")
 		centro_rosa = Color("#f5aaa4")
 	elif poco:
-		costra = Color("#3b180c")
-		grasa = Color("#eccb9d")
-		carne = Color("#a84a30")
-		carne_alta = Color("#cd6b46")
-		centro_rosa = Color("#e8786d")
+		costra = Color("#4a1e10")
+		grasa = Color("#f2d2a7")
+		carne = Color("#b54337")
+		carne_alta = Color("#dc6a58")
+		centro_rosa = Color("#f87171")
 	elif al_punto:
 		costra = Color("#30150a")
 		grasa = Color("#e4bf8f")
 		carne = Color("#943f24")
 		carne_alta = Color("#b95835")
-		centro_rosa = Color("#d25a50")
+		centro_rosa = Color("#e0685c")
 	elif hecho:
-		costra = Color("#2a130a")
-		grasa = Color("#d8b07b")
-		carne = Color("#7b3a1f")
-		carne_alta = Color("#9c4e31")
-		centro_rosa = Color("#8c4328")
+		costra = Color("#200e07")
+		grasa = Color("#cfa26a")
+		carne = Color("#5f2b16")
+		carne_alta = Color("#7d3d22")
+		centro_rosa = Color("#6f331d")
 	elif quemado:
 		costra = Color("#0c0705")
 		grasa = Color("#6b5238")
@@ -970,13 +1245,13 @@ static func dibujar_filete(c: CanvasItem, centro: Vector2, ancho: float,
 
 	# Centro jugoso: el punto se lee por el color del corazón de la pieza.
 	if not hecho and not quemado:
-		var alpha_core: float = 0.30 if crudo else (0.36 if poco else 0.22)
-		var rx_core: float = 19.0 if crudo else (18.0 if poco else 15.0)
-		var ry_core: float = 8.0 if crudo else (8.0 if poco else 6.5)
+		var alpha_core: float = 0.36 if crudo else (0.58 if poco else 0.28)
+		var rx_core: float = 19.0 if crudo else (21.0 if poco else 14.5)
+		var ry_core: float = 8.0 if crudo else (9.5 if poco else 6.0)
 		c.draw_colored_polygon(puntos_elipse(Vector2(-10.0, -2.0), rx_core, ry_core, 24),
 			Color(centro_rosa, alpha_core * alpha))
-		c.draw_colored_polygon(puntos_elipse(Vector2(-13.0, -3.0), rx_core * 0.58,
-			ry_core * 0.55, 20), Color(centro_rosa.lightened(0.22), alpha_core * 0.55 * alpha))
+		c.draw_colored_polygon(puntos_elipse(Vector2(-13.0, -3.0), rx_core * 0.62,
+			ry_core * 0.58, 20), Color(centro_rosa.lightened(0.24), alpha_core * 0.62 * alpha))
 
 	# Veteado de grasa: el crudo y el poco hecho lucen más veta.
 	if crudo or poco:
@@ -1053,12 +1328,14 @@ static func dibujar_filete(c: CanvasItem, centro: Vector2, ancho: float,
 		c.draw_polyline(linea_punto, Color(centro_rosa, 0.55 * alpha),
 			maxf(0.9, 1.5 * u) / u, true)
 
-	# Brillos de jugo y pimienta.
+	# Brillos de jugo y pimienta (siempre en el espacio transformado del filete).
 	if not quemado:
-		c.draw_set_transform(Vector2(-16.0, -17.0), -0.3, Vector2(1.0, 0.38))
-		c.draw_circle(Vector2.ZERO, 8.5, Color(1.0, 0.93, 0.84, 0.26 * alpha))
-		c.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
-		c.draw_circle(Vector2(-24.0, -19.0), 1.8, Color(1.0, 0.97, 0.90, 0.38 * alpha))
+		var xform_base := centro + Vector2(0.0, -3.0 * u)
+		var brillo_off := Vector2(-16.0, -17.0).rotated(-0.035) * u
+		c.draw_set_transform(xform_base + brillo_off, -0.335, Vector2(u, 0.38 * u))
+		c.draw_circle(Vector2.ZERO, 8.5, Color(1.0, 0.93, 0.84, 0.28 * alpha))
+		c.draw_set_transform(xform_base, -0.035, Vector2(u, u))
+		c.draw_circle(Vector2(-24.0, -19.0), 1.8, Color(1.0, 0.97, 0.90, 0.40 * alpha))
 		if not compacto:
 			c.draw_circle(Vector2(22.0, 13.0), 1.3, Color(0.10, 0.06, 0.03, 0.7 * alpha))
 			c.draw_circle(Vector2(-8.0, 14.0), 1.0, Color(0.10, 0.06, 0.03, 0.6 * alpha))
@@ -1067,8 +1344,8 @@ static func dibujar_filete(c: CanvasItem, centro: Vector2, ancho: float,
 	# Romero: solo cuando el filete ya está cocinado y hay tamaño suficiente
 	# para que la rama no se convierta en una mancha verde.
 	if not crudo and not quemado and ancho >= 55.0:
-		var tallo_a := Vector2(22.0, -35.0)
-		var tallo_b := Vector2(40.0, -29.0)
+		var tallo_a := Vector2(14.0, -24.0)
+		var tallo_b := Vector2(32.0, -18.0)
 		c.draw_line(tallo_a, tallo_b, Color("#3f6212", alpha),
 			maxf(1.0, 1.8 * u) / u, true)
 		for k in range(4):
@@ -1081,9 +1358,32 @@ static func dibujar_filete(c: CanvasItem, centro: Vector2, ancho: float,
 
 	c.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
+
+static func dibujar_pildora_punto(c: CanvasItem, centro: Vector2, ancho_ref: float,
+		punto: String, compacto: bool = false, alpha: float = 1.0) -> void:
+	if punto == "":
+		return
+	var tag: String = "AL PUNTO"
+	if punto == "poco_hecho":
+		tag = "POCO" if compacto else "POCO HECHO"
+	elif punto == "al_punto":
+		tag = "PUNTO" if compacto else "AL PUNTO"
+	elif punto == "hecho":
+		tag = "HECHO"
+	var pill_w: float = maxf(30.0, ancho_ref * 0.88) if compacto else clampf(ancho_ref * 0.80, 56.0, 78.0)
+	var pill_h: float = 11.0 if compacto else 13.0
+	var font_sz: int = 7 if compacto else 8
+	var pill_r := Rect2(centro.x - pill_w * 0.5, centro.y, pill_w, pill_h)
+	caja_redondeada(c, pill_r, 4.0, Color(0.08, 0.06, 0.04, 0.90 * alpha),
+		Color(punto_color(punto), 0.95 * alpha), 1.0)
+	c.draw_string(FUENTE_TIT, Vector2(pill_r.position.x, pill_r.position.y + pill_h - 2.8),
+		tag, HORIZONTAL_ALIGNMENT_CENTER, pill_r.size.x, font_sz,
+		Color(1.0, 0.94, 0.78, alpha))
+
+
 static func dibujar_plato_bistro(c: CanvasItem, centro: Vector2, ancho_plato: float,
 		proteina: String, punto: String, guarnicion: String, salsa: String,
-		alpha: float = 1.0) -> void:
+		alpha: float = 1.0, escala_pop: float = 1.0, perejil: bool = false) -> void:
 	if ancho_plato <= 2.0:
 		return
 	var alto_plato: float = ancho_plato * PLATO_PERSPECTIVA
@@ -1102,31 +1402,33 @@ static func dibujar_plato_bistro(c: CanvasItem, centro: Vector2, ancho_plato: fl
 	# Plato de cerámica blanca 3/4.
 	dibujar_tex_recortada(c, TEX_PLATO_PERSPECTIVA, r, Color(1.0, 0.99, 0.97, alpha))
 
-	if proteina == "":
+	if proteina == "" and guarnicion == "" and salsa == "" and not perejil:
 		return
 
-	# Salsa: media luna brillante bajo la carne, no un círculo plano.
+	var pop_s: float = maxf(0.5, escala_pop)
+
+	# Salsa: espejo brillante de reducción al vino/pimienta bien visible junto a la carne.
 	if salsa != "":
-		var salsa_c := c_plato + Vector2(-ancho_plato * 0.10, alto_plato * 0.08)
-		c.draw_set_transform(salsa_c, 0.0, Vector2(1.0, 0.34))
-		c.draw_circle(Vector2.ZERO, ancho_plato * 0.245, Color("#6b2410", 0.92 * alpha))
-		c.draw_circle(Vector2(-ancho_plato * 0.035, -ancho_plato * 0.018),
-			ancho_plato * 0.185, Color("#8f3416", 0.88 * alpha))
+		var salsa_c := c_plato + Vector2(-ancho_plato * 0.13, alto_plato * 0.12)
+		c.draw_set_transform(salsa_c, 0.0, Vector2(pop_s, 0.36 * pop_s))
+		c.draw_circle(Vector2.ZERO, ancho_plato * 0.25, Color("#7f1d1d", 0.94 * alpha))
+		c.draw_circle(Vector2(-ancho_plato * 0.035, -ancho_plato * 0.015),
+			ancho_plato * 0.19, Color("#b91c1c", 0.90 * alpha))
 		c.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 		c.draw_set_transform(salsa_c + Vector2(-ancho_plato * 0.07, -alto_plato * 0.02),
-			0.0, Vector2(1.0, 0.30))
+			0.0, Vector2(pop_s, 0.30 * pop_s))
 		c.draw_circle(Vector2.ZERO, ancho_plato * 0.075,
-			Color(1.0, 0.78, 0.62, 0.30 * alpha))
+			Color(1.0, 0.80, 0.72, 0.38 * alpha))
 		c.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
 	# Patatas: abanico dorado a la derecha del plato, apoyado en el borde.
 	if guarnicion == "patatas":
-		var origen_p := c_plato + Vector2(ancho_plato * 0.20, alto_plato * 0.06)
+		var origen_p := c_plato + Vector2(ancho_plato * 0.20, alto_plato * 0.05)
 		for i in range(6):
 			var t: float = float(i) / 5.0
-			var ang: float = lerpf(-0.62, 0.52, t)
-			var largo: float = ancho_plato * lerpf(0.14, 0.19, sin(t * PI))
-			var p := origen_p + Vector2(float(i - 2.5) * ancho_plato * 0.030,
+			var ang: float = lerpf(-0.58, 0.52, t)
+			var largo: float = ancho_plato * lerpf(0.14, 0.20, sin(t * PI)) * pop_s
+			var p := origen_p + Vector2(float(i - 2.5) * ancho_plato * 0.028,
 				-t * alto_plato * 0.04)
 			var extremo := p + Vector2(sin(ang) * largo, -cos(ang) * largo)
 			c.draw_line(p + Vector2(1.0, 2.0), extremo + Vector2(1.0, 2.0),
@@ -1139,65 +1441,95 @@ static func dibujar_plato_bistro(c: CanvasItem, centro: Vector2, ancho_plato: fl
 				Color("#fde68a", 0.65 * alpha), maxf(0.8, ancho_plato * 0.014), true)
 
 	# Filete: ocupa el centro del plato y deja sitio a la guarnición.
-	var tiene_patatas: bool = guarnicion == "patatas"
-	var ancho_filete: float = ancho_plato * (0.57 if not tiene_patatas else 0.51)
-	var c_filete := c_plato + Vector2(-ancho_plato * (0.085 if tiene_patatas else 0.015),
-		-ancho_plato * 0.035)
-	dibujar_filete(c, c_filete, ancho_filete, punto, alpha)
+	if proteina != "":
+		var tiene_patatas: bool = guarnicion == "patatas"
+		var ancho_filete: float = ancho_plato * (0.52 if not tiene_patatas else 0.47) * pop_s
+		var c_filete := c_plato + Vector2(ancho_plato * (-0.045 if tiene_patatas else 0.015),
+			-ancho_plato * 0.030)
+		dibujar_filete(c, c_filete, ancho_filete, punto, alpha)
 
-	# Perejil fresco sobre el borde superior del plato.
-	var perejil_a := c_plato + Vector2(ancho_plato * 0.04, -alto_plato * 0.26)
-	var perejil_b := c_plato + Vector2(ancho_plato * 0.17, -alto_plato * 0.34)
-	c.draw_line(perejil_a, perejil_b, Color("#3f6212", 0.95 * alpha),
-		maxf(1.0, ancho_plato * 0.014), true)
-	for k in range(3):
-		var t: float = 0.25 + 0.30 * float(k)
-		var base_h := perejil_a.lerp(perejil_b, t)
-		c.draw_line(base_h, base_h + Vector2(-ancho_plato * 0.035, -alto_plato * 0.10),
-			Color("#4d7c0f", alpha), maxf(0.8, ancho_plato * 0.012), true)
-		c.draw_line(base_h, base_h + Vector2(ancho_plato * 0.030, -alto_plato * 0.08),
-			Color("#65a30d", alpha), maxf(0.8, ancho_plato * 0.012), true)
+		# Pimienta recién molida junto a la carne.
+		for i in range(3):
+			c.draw_circle(c_plato + Vector2(ancho_plato * (0.04 + 0.032 * float(i)),
+				-alto_plato * 0.08 + alto_plato * 0.022 * float(i)),
+				maxf(0.8, ancho_plato * 0.008), Color(0.12, 0.07, 0.04, 0.55 * alpha))
 
-	# Pimienta recién molida junto a la carne.
-	for i in range(3):
-		c.draw_circle(c_plato + Vector2(ancho_plato * (0.02 + 0.035 * float(i)),
-			-alto_plato * 0.10 + alto_plato * 0.022 * float(i)),
-			maxf(0.8, ancho_plato * 0.008), Color(0.12, 0.07, 0.04, 0.55 * alpha))
+		# Píldora del punto también en el plato del pase y durante el arrastre.
+		if ancho_plato >= 46.0 and punto != "":
+			dibujar_pildora_punto(c, c_plato + Vector2(0.0, alto_plato * 0.54),
+				ancho_plato, punto, false, alpha)
+
+	# Perejil fresco requerido por receta (visible incluso si se añade antes que el filete).
+	if perejil:
+		var perejil_a := c_plato + Vector2(ancho_plato * 0.01, -alto_plato * 0.22)
+		var perejil_b := c_plato + Vector2(ancho_plato * 0.15, -alto_plato * 0.34)
+		c.draw_line(perejil_a, perejil_b, Color("#166534", 0.98 * alpha),
+			maxf(1.2, ancho_plato * 0.018), true)
+		for k in range(4):
+			var t: float = 0.20 + 0.25 * float(k)
+			var base_h := perejil_a.lerp(perejil_b, t)
+			c.draw_circle(base_h + Vector2(-ancho_plato * 0.028, -alto_plato * 0.06),
+				maxf(2.0, ancho_plato * 0.028), Color("#15803d", alpha))
+			c.draw_circle(base_h + Vector2(ancho_plato * 0.026, -alto_plato * 0.03),
+				maxf(1.8, ancho_plato * 0.025), Color("#22c55e", alpha))
+		var centro_picado: Vector2 = c_plato + (Vector2(0.0, -ancho_plato * 0.03) if proteina != "" else Vector2.ZERO)
+		for off_p in [Vector2(-0.08, -0.10), Vector2(0.06, -0.02), Vector2(-0.02, 0.06)]:
+			c.draw_circle(centro_picado + Vector2(ancho_plato * off_p.x, alto_plato * off_p.y),
+				maxf(1.0, ancho_plato * 0.013), Color("#22c55e", 0.92 * alpha))
 
 
 static func dibujar_icono_bistro(c: CanvasItem, centro: Vector2, caja: float,
-		punto: String, guarnicion: String, salsa: String, alpha: float = 1.0) -> void:
-	# Icono de ticket: plato 3/4 del pack con el filete encima. Se mantiene
-	# legible a 30-48 px sin depender de detalles que desaparezcan.
+		punto: String, guarnicion: String, salsa: String, alpha: float = 1.0,
+		perejil: bool = false) -> void:
+	# Icono de ticket: plato 3/4 del pack con el filete encima y etiqueta
+	# de punto en tamaños de burbuja (>= 28 px) para distinguir jugoso/punto/hecho.
 	if caja <= 2.0:
 		return
 	var alto_plato: float = caja * PLATO_PERSPECTIVA
-	var c_plato := centro + Vector2(0.0, caja * 0.10)
+	var c_plato := centro + Vector2(0.0, caja * 0.04)
 	var r := Rect2(c_plato - Vector2(caja * 0.98, alto_plato) * 0.5,
 		Vector2(caja * 0.98, alto_plato))
 	dibujar_tex_recortada(c, TEX_PLATO_PERSPECTIVA, r, Color(1.0, 0.99, 0.97, alpha))
 
 	if salsa != "":
-		c.draw_set_transform(c_plato + Vector2(-caja * 0.08, alto_plato * 0.20),
-			0.0, Vector2(1.0, 0.34))
-		c.draw_circle(Vector2.ZERO, caja * 0.24, Color("#6b2410", 0.90 * alpha))
+		c.draw_set_transform(c_plato + Vector2(-caja * 0.12, alto_plato * 0.22),
+			0.0, Vector2(1.0, 0.36))
+		c.draw_circle(Vector2.ZERO, caja * 0.24, Color("#7f1d1d", 0.92 * alpha))
+		c.draw_circle(Vector2(-caja * 0.03, -caja * 0.01), caja * 0.16, Color("#b91c1c", 0.86 * alpha))
 		c.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
-	dibujar_filete(c, centro + Vector2(-caja * 0.07, -caja * 0.02),
-		caja * 0.52, punto, alpha)
+	dibujar_filete(c, centro + Vector2(-caja * 0.04, -caja * 0.05),
+		caja * 0.50, punto, alpha)
 
 	if guarnicion == "patatas":
 		for i in range(6):
 			var t: float = float(i) / 5.0
-			var p := c_plato + Vector2(caja * 0.22 + t * caja * 0.12,
-				caja * 0.02 - sin(t * PI) * caja * 0.07)
-			c.draw_line(p + Vector2(-caja * 0.025, caja * 0.05),
-				p + Vector2(caja * 0.020, -caja * 0.05),
-				Color("#fbbf24", alpha), maxf(1.2, caja * 0.042), true)
-	# Perejil mínimo.
-	c.draw_line(centro + Vector2(-caja * 0.16, -caja * 0.22),
-		centro + Vector2(-caja * 0.26, -caja * 0.30),
-		Color("#15803d", 0.90 * alpha), maxf(1.0, caja * 0.022), true)
+			var p := c_plato + Vector2(caja * 0.19 + t * caja * 0.13,
+				caja * 0.02 - sin(t * PI) * caja * 0.09)
+			c.draw_line(p + Vector2(-caja * 0.03, caja * 0.07),
+				p + Vector2(caja * 0.025, -caja * 0.08),
+				Color("#fbbf24", alpha), maxf(1.6, caja * 0.055), true)
+	if perejil:
+		# Ramillete de perejil bien visible sobre el filete y el borde superior para
+		# distinguirlo de inmediato dentro del bocadillo del cliente.
+		var p_c := centro + Vector2(-caja * 0.04, -caja * 0.14)
+		c.draw_line(p_c + Vector2(-caja * 0.06, caja * 0.08),
+			p_c + Vector2(caja * 0.06, -caja * 0.12),
+			Color("#14532d", alpha), maxf(1.5, caja * 0.042), true)
+		c.draw_circle(p_c + Vector2(-caja * 0.07, -caja * 0.05),
+			maxf(2.2, caja * 0.072), Color("#15803d", alpha))
+		c.draw_circle(p_c + Vector2(caja * 0.03, -caja * 0.10),
+			maxf(2.0, caja * 0.068), Color("#22c55e", alpha))
+		c.draw_circle(p_c + Vector2(caja * 0.09, -caja * 0.02),
+			maxf(1.8, caja * 0.060), Color("#4ade80", alpha))
+		c.draw_circle(p_c + Vector2(-caja * 0.01, caja * 0.03),
+			maxf(1.4, caja * 0.040), Color("#22c55e", alpha))
+		c.draw_circle(p_c + Vector2(caja * 0.08, caja * 0.05),
+			maxf(1.3, caja * 0.038), Color("#4ade80", alpha))
+
+	if caja >= 28.0 and punto != "":
+		dibujar_pildora_punto(c, Vector2(centro.x, centro.y + caja * 0.31),
+			caja, punto, true, alpha)
 
 
 # ============================================================================
@@ -1238,18 +1570,9 @@ static func dibujar_mejora_bistro(c: CanvasItem, centro: Vector2, ancho: float,
 
 static func _bistro_mejora_plancha(c: CanvasItem, centro: Vector2, ancho: float,
 		nivel: int, compacto: bool) -> void:
-	# Mostrador de acero.
-	var mostrador := Rect2(centro.x - ancho * 0.47, centro.y + ancho * 0.26,
-		ancho * 0.94, ancho * 0.16)
-	caja_redondeada(c, mostrador, ancho * 0.045, Color("#2a3038"),
-		Color("#59626c"), maxf(1.0, ancho * 0.008))
-	c.draw_line(Vector2(mostrador.position.x + ancho * 0.04, mostrador.position.y + 1.0),
-		Vector2(mostrador.end.x - ancho * 0.04, mostrador.position.y + 1.0),
-		Color(0.94, 0.97, 1.0, 0.30), maxf(1.0, ancho * 0.006), true)
-
 	if compacto:
-		var r := Rect2(centro.x - ancho * 0.44, centro.y - ancho * 0.20,
-			ancho * 0.88, ancho * 0.54)
+		var r := Rect2(centro.x - ancho * 0.44, centro.y - ancho * 0.22,
+			ancho * 0.88, ancho * 0.50)
 		caja_redondeada(c, r, ancho * 0.08, Color("#161a1f"), Color("#424b55"), 1.5)
 		for i in range(4):
 			var x: float = r.position.x + r.size.x * (0.22 + 0.19 * float(i))
@@ -1259,7 +1582,7 @@ static func _bistro_mejora_plancha(c: CanvasItem, centro: Vector2, ancho: float,
 		dibujar_filete(c, centro + Vector2(-ancho * 0.06, -ancho * 0.03),
 			ancho * 0.46, "al_punto")
 		# Cesta de patatas mínima a la derecha.
-		var cesta := Rect2(centro.x + ancho * 0.20, centro.y + ancho * 0.06,
+		var cesta := Rect2(centro.x + ancho * 0.20, centro.y + ancho * 0.04,
 			ancho * 0.20, ancho * 0.14)
 		caja_redondeada(c, cesta, ancho * 0.03, Color("#8b1d1d"), Color("#e7b06a"), 1.2)
 		for i in range(3):
@@ -1269,10 +1592,19 @@ static func _bistro_mejora_plancha(c: CanvasItem, centro: Vector2, ancho: float,
 					cesta.position.y - ancho * 0.075), Color("#fbbf24"), maxf(1.2, ancho * 0.025), true)
 		return
 
+	# Mostrador de acero compacto bajo parrilla y freidora (sin desbordar hacia las estrellas).
+	var mostrador := Rect2(centro.x - ancho * 0.46, centro.y + ancho * 0.14,
+		ancho * 0.92, ancho * 0.12)
+	caja_redondeada(c, mostrador, ancho * 0.035, Color("#2a3038"),
+		Color("#59626c"), maxf(1.0, ancho * 0.008))
+	c.draw_line(Vector2(mostrador.position.x + ancho * 0.04, mostrador.position.y + 1.0),
+		Vector2(mostrador.end.x - ancho * 0.04, mostrador.position.y + 1.0),
+		Color(0.94, 0.97, 1.0, 0.30), maxf(1.0, ancho * 0.006), true)
+
 	# Parrilla 3/4 del pack, escorzada sobre el mostrador.
 	var w: float = ancho * 0.64
 	var h: float = w * 0.748
-	var r := Rect2(centro.x - ancho * 0.15 - w * 0.5, centro.y - ancho * 0.12 - h * 0.5,
+	var r := Rect2(centro.x - ancho * 0.15 - w * 0.5, centro.y - ancho * 0.06 - h * 0.5,
 		w, h)
 	dibujar_tex_recortada(c, TEX_PLANCHA, r)
 	# Filetes sobre los fogones visibles (coordenadas normalizadas del PNG).
@@ -1287,7 +1619,7 @@ static func _bistro_mejora_plancha(c: CanvasItem, centro: Vector2, ancho: float,
 	# Freidora al margen derecho: una cesta o dos.
 	var bw: float = ancho * 0.23
 	var bh: float = bw * 0.952
-	var br := Rect2(centro.x + ancho * 0.20, centro.y + ancho * 0.02, bw, bh)
+	var br := Rect2(centro.x + ancho * 0.20, centro.y - ancho * 0.01, bw, bh)
 	dibujar_tex_recortada(c, TEX_FREIDORA, br)
 	var patatas_n: int = 1 if nivel <= 1 else 2
 	for i in range(patatas_n):
@@ -1588,169 +1920,453 @@ static func _dibujar_estrella_mini(c: CanvasItem, centro: Vector2, radio: float,
 	c.draw_colored_polygon(pts, color)
 
 
+# ============================================================================
+# Ilustraciones procedurales de las mejoras de Cocina de Mercado
+# ============================================================================
+
+static func dibujar_mejora_mercado(c: CanvasItem, centro: Vector2, ancho: float,
+		mejora_id: String, nivel: int) -> void:
+	if ancho <= 8.0:
+		return
+	var compacto: bool = ancho < 90.0
+	var nv: int = clampi(nivel, 1, 3)
+	match mejora_id:
+		"plancha":
+			_mercado_mejora_olla(c, centro, ancho, nv, compacto)
+		"emplatado":
+			_mercado_mejora_pase(c, centro, ancho, nv, compacto)
+		"termostato":
+			_mercado_mejora_fuego(c, centro, ancho, nv, compacto)
+		"ingredientes":
+			_mercado_mejora_producto(c, centro, ancho, nv, compacto)
+		"ambiente":
+			_mercado_mejora_ambiente(c, centro, ancho, nv, compacto)
+		_:
+			_mercado_mejora_olla(c, centro, ancho, nv, compacto)
+
+
+static func _mercado_mejora_olla(c: CanvasItem, centro: Vector2, ancho: float,
+		nivel: int, compacto: bool) -> void:
+	# Fogones 2.5D con 2-4 cazuelas activas a la izquierda + plancha de huevos a la derecha.
+	var n_caz: int = clampi(nivel + 1, 2, 4)
+	var ox: float = centro.x - (ancho * 0.18 if not compacto else ancho * 0.06)
+	var oy: float = centro.y + ancho * 0.04
+	var fw: float = ancho * (0.48 if not compacto else 0.62)
+	var fh: float = fw * 0.74
+	var fogon := Rect2(ox - fw * 0.5, oy - fh * 0.5, fw, fh)
+	dibujar_tex(c, TEX_MERCADO_FOGONES, fogon)
+	var pos_c: Array[Vector2] = [
+		Vector2(0.38, 0.21), Vector2(0.72, 0.25),
+		Vector2(0.30, 0.42), Vector2(0.66, 0.47),
+	]
+	var platos_m := [TEX_MERCADO_FABADA, TEX_MERCADO_PISTO, TEX_MERCADO_ARROZ, TEX_MERCADO_CAZUELA_VACIA]
+	var caz_w: float = fw * 0.30
+	for i in range(n_caz):
+		var cp := fogon.position + Vector2(pos_c[i].x * fw, pos_c[i].y * fh)
+		dibujar_tex_centro(c, platos_m[i], cp, caz_w)
+	if not compacto:
+		var pw: float = ancho * 0.38
+		var ph: float = pw * 0.75
+		var pr := Rect2(centro.x + ancho * 0.07, centro.y - ph * 0.32, pw, ph)
+		dibujar_tex(c, TEX_PLANCHA, pr)
+		var pos_h: Array[Vector2] = [
+			Vector2(0.38, 0.24), Vector2(0.70, 0.28),
+			Vector2(0.30, 0.48), Vector2(0.64, 0.52),
+		]
+		for i in range(n_caz):
+			dibujar_huevo_frito(c, pr.position + Vector2(pos_h[i].x * pr.size.x, pos_h[i].y * pr.size.y),
+				ancho * 0.11, false, 1.0)
+		var chip := Rect2(ox - ancho * 0.16, fogon.position.y - ancho * 0.12, ancho * 0.32, ancho * 0.10)
+		caja_redondeada(c, chip, ancho * 0.03, Color("#14532d", 0.94), Color("#4ade80"), 1.0)
+		c.draw_string(FUENTE_TIT, chip.position + Vector2(0.0, chip.size.y * 0.78),
+			"%d CAZ." % n_caz, HORIZONTAL_ALIGNMENT_CENTER, chip.size.x,
+			maxi(8, int(ancho * 0.048)), Color("#dcfce7"))
+	else:
+		dibujar_huevo_frito(c, centro + Vector2(ancho * 0.26, ancho * 0.14), ancho * 0.28, false, 1.0)
+
+
+static func _mercado_mejora_pase(c: CanvasItem, centro: Vector2, ancho: float,
+		nivel: int, compacto: bool) -> void:
+	# Tabla/bandeja de madera con cazuelas de guiso + agua y sangría.
+	var tw: float = ancho * 0.80
+	var th: float = tw * 0.44
+	var tr := Rect2(centro.x - tw * 0.5, centro.y - th * 0.08, tw, th)
+	caja_redondeada(c, Rect2(tr.position + Vector2(0.0, ancho * 0.03), tr.size),
+		ancho * 0.03, Color(0.02, 0.03, 0.04, 0.35))
+	caja_redondeada(c, tr, ancho * 0.03, Color("#6b3f1d"), Color("#3f240f"), 1.5)
+	caja_redondeada(c, tr.grow(-ancho * 0.02), ancho * 0.02, Color("#8a5326"))
+	var guisos := ["fabada", "pisto", "arroz_tomate", "zarzuela"]
+	var extras := ["", "huevo", "huevo", ""]
+	var n_pl: int = clampi(nivel + 1, 2, 4)
+	var pl_w: float = minf(ancho * 0.22, tr.size.x / 4.2)
+	for i in range(n_pl):
+		var px: float = tr.position.x + tr.size.x * (0.15 + 0.23 * float(i))
+		var py: float = tr.position.y + tr.size.y * 0.52
+		dibujar_plato_mercado(c, Vector2(px, py), pl_w, guisos[i], extras[i], 1.0)
+	# Bebidas atrás (Agua + Sangría)
+	var beb_sz: float = ancho * (0.16 if not compacto else 0.22)
+	dibujar_tex_centro(c, TEX_AGUA, Vector2(tr.position.x + tr.size.x * 0.62, tr.position.y - beb_sz * 0.15), beb_sz)
+	dibujar_copa_sangria(c, Vector2(tr.position.x + tr.size.x * 0.80, tr.position.y - beb_sz * 0.10), beb_sz * 1.1, 1.0)
+
+
+static func _mercado_mejora_fuego(c: CanvasItem, centro: Vector2, ancho: float,
+		nivel: int, compacto: bool) -> void:
+	# Fogón 2.5D con llama viva + dial térmico.
+	var fw: float = ancho * (0.64 if not compacto else 0.72)
+	var fh: float = fw * 0.74
+	var r_fogon := Rect2(centro.x - fw * 0.5, centro.y - fh * 0.44, fw, fh)
+	dibujar_tex(c, TEX_MERCADO_FOGONES, r_fogon)
+	# Llamas vivas sobre los quemadores
+	for i in range(4):
+		var fx: float = r_fogon.position.x + fw * (0.28 + 0.15 * float(i))
+		var fy: float = r_fogon.position.y + fh * (0.34 if i % 2 == 0 else 0.44)
+		var alt: float = ancho * (0.10 + 0.025 * float(nivel))
+		c.draw_colored_polygon(PackedVector2Array([
+			Vector2(fx - ancho * 0.028, fy),
+			Vector2(fx, fy - alt),
+			Vector2(fx + ancho * 0.028, fy),
+		]), Color("#f97316") if i % 2 == 0 else Color("#38bdf8"))
+	# Dial frontal
+	var dial_c := centro + Vector2(ancho * 0.24, ancho * 0.14)
+	var radio: float = ancho * (0.12 if not compacto else 0.15)
+	c.draw_circle(dial_c, radio, Color("#b45309"))
+	c.draw_circle(dial_c, radio * 0.80, Color("#0f172a"))
+	var ang: float = lerpf(-0.7, 0.7, float(nivel - 1) / 2.0) - PI * 0.5
+	c.draw_line(dial_c, dial_c + Vector2(cos(ang), sin(ang)) * radio * 0.68,
+		Color("#fde68a"), maxf(1.5, ancho * 0.014), true)
+	if not compacto and nivel >= 3:
+		var badge := Rect2(centro.x - ancho * 0.18, centro.y + ancho * 0.25, ancho * 0.36, ancho * 0.10)
+		caja_redondeada(c, badge, ancho * 0.02, Color("#052e1a"), Color("#22c55e"), 1.0)
+		c.draw_string(FUENTE_TIT, badge.position + Vector2(0.0, badge.size.y * 0.76),
+			"10.5 s", HORIZONTAL_ALIGNMENT_CENTER, badge.size.x, maxi(8, int(ancho * 0.045)), Color("#86efac"))
+
+
+static func _mercado_mejora_producto(c: CanvasItem, centro: Vector2, ancho: float,
+		nivel: int, compacto: bool) -> void:
+	# Caja rústica de madera de mercado con hortalizas, fabes, arroz y marisco.
+	var cw: float = ancho * (0.74 if not compacto else 0.68)
+	var ch: float = cw * 0.52
+	var caja_r := Rect2(centro.x - cw * 0.5, centro.y - ch * 0.36, cw, ch)
+	caja_redondeada(c, Rect2(caja_r.position + Vector2(0.0, ancho * 0.025), caja_r.size),
+		ancho * 0.03, Color(0.02, 0.02, 0.01, 0.35))
+	caja_redondeada(c, caja_r, ancho * 0.03, Color("#854d0e"), Color("#451a03"), 1.5)
+	for i in range(3):
+		var yy: float = caja_r.position.y + ch * (0.28 + 0.26 * float(i))
+		c.draw_line(Vector2(caja_r.position.x + 3.0, yy), Vector2(caja_r.end.x - 3.0, yy),
+			Color("#451a03", 0.55), 1.5)
+	dibujar_ingrediente_icono(c, "pimiento", caja_r.position + Vector2(cw * 0.28, ch * 0.24), cw * 0.34, 1.0)
+	dibujar_ingrediente_icono(c, "chorizo", caja_r.position + Vector2(cw * 0.54, ch * 0.28), cw * 0.34, 1.0)
+	dibujar_ingrediente_icono(c, "marisco", caja_r.position + Vector2(cw * 0.74, ch * 0.26), cw * 0.34, 1.0)
+	if not compacto and nivel >= 2:
+		var sello := centro + Vector2(cw * 0.32, ch * 0.34)
+		c.draw_circle(sello, ancho * 0.060, Color("#b45309"))
+		c.draw_circle(sello, ancho * 0.048, Color("#fbbf24"))
+		_dibujar_estrella_mini(c, sello, ancho * 0.028, Color("#78350f"))
+
+
+static func _mercado_mejora_ambiente(c: CanvasItem, centro: Vector2, ancho: float,
+		nivel: int, compacto: bool) -> void:
+	# Pared de azulejo andaluz + barrica de roble de taberna tradicional.
+	var pw: float = ancho * (0.80 if not compacto else 0.72)
+	var ph: float = pw * 0.48
+	var pared := Rect2(centro.x - pw * 0.5, centro.y - ph * 0.62, pw, ph)
+	caja_redondeada(c, pared, ancho * 0.03, Color("#fff7ed"), Color("#c2410c"), 1.5)
+	# Zócalo de azulejo azul/cobalto
+	var zoc := Rect2(pared.position.x + 2.0, pared.end.y - ph * 0.42, pw - 4.0, ph * 0.40)
+	c.draw_rect(zoc, Color("#1d4ed8", 0.20))
+	for i in range(4):
+		var tx: float = zoc.position.x + zoc.size.x * (0.14 + 0.24 * float(i))
+		c.draw_circle(Vector2(tx, zoc.get_center().y), ph * 0.09, Color("#1e40af", 0.45))
+	# Barrica de roble
+	var bw: float = pw * 0.38
+	var bh: float = bw * 0.92
+	var barrica := Rect2(centro.x - bw * 0.5, centro.y - bh * 0.14, bw, bh)
+	caja_redondeada(c, barrica, bw * 0.22, Color("#7c2d12"), Color("#431407"), 1.5)
+	for f_y in [0.22, 0.78]:
+		c.draw_line(Vector2(barrica.position.x + 2.0, barrica.position.y + bh * float(f_y)),
+			Vector2(barrica.end.x - 2.0, barrica.position.y + bh * float(f_y)),
+			Color("#334155"), maxf(2.0, ancho * 0.016))
+	if nivel >= 2 and not compacto:
+		dibujar_copa_sangria(c, Vector2(barrica.get_center().x, barrica.position.y - ancho * 0.06),
+			ancho * 0.16, 1.0)
+	if nivel >= 3 and not compacto:
+		for dx in [-1.0, 1.0]:
+			c.draw_circle(pared.position + Vector2(pw * (0.5 + 0.34 * float(dx)), ph * 0.28),
+				ancho * 0.048, Color("#b45309"))
+			c.draw_circle(pared.position + Vector2(pw * (0.5 + 0.34 * float(dx)), ph * 0.28),
+				ancho * 0.032, Color("#fbbf24"))
+
+
+static func dibujar_pescado(c: CanvasItem, centro: Vector2, ancho: float,
+		especie: String = "lubina", cortes: int = 0, cortes_req: int = 4,
+		cortado: bool = false, frito: bool = false, corte_fx: float = 0.0,
+		quemado: bool = false, alpha: float = 1.0) -> void:
+	var es_salmon: bool = especie == "salmon"
+	if cortado or frito:
+		var tex_f: Texture2D = (TEX_ALTA_SALMON_FRITO if es_salmon else TEX_ALTA_LUBINA_FRITA) \
+			if frito else (TEX_ALTA_SALMON_CORTADO if es_salmon else TEX_ALTA_LUBINA_CORTADA)
+		var mod_f := Color(0.28, 0.22, 0.20, 1.0) if (frito and quemado) else Color.WHITE
+		dibujar_tex_centro(c, tex_f, centro, ancho * 0.96, alpha, mod_f)
+		return
+
+	var tex_ent: Texture2D = TEX_ALTA_SALMON_ENTERO if es_salmon else TEX_ALTA_LUBINA_ENTERA
+	dibujar_tex_centro(c, tex_ent, centro, ancho * 0.98, alpha)
+	var rx: float = ancho * 0.36
+	var ry: float = ancho * 0.17
+	if cortes > 0:
+		var total_c: int = maxi(1, cortes_req)
+		for ci in range(mini(cortes, total_c)):
+			var frac: float = -0.32 + 0.64 * (float(ci) + 0.5) / float(total_c)
+			var cx_c: float = centro.x + rx * frac
+			c.draw_line(Vector2(cx_c + 2.0, centro.y - ry * 0.85),
+				Vector2(cx_c - 3.0, centro.y + ry * 0.82),
+				Color("#881337", 0.90 * alpha), maxf(2.2, ancho * 0.036), true)
+			c.draw_line(Vector2(cx_c + 3.2, centro.y - ry * 0.78),
+				Vector2(cx_c - 1.8, centro.y + ry * 0.76),
+				Color("#ffe4e6", 0.75 * alpha), 1.2, true)
+	if corte_fx > 0.02:
+		var f: float = clampf(corte_fx, 0.0, 1.0)
+		var x_slash: float = centro.x + rx * (-0.28 + 0.56 * (1.0 - f))
+		var p_top := Vector2(x_slash + ancho * 0.16, centro.y - ry * 1.85)
+		var p_bot := Vector2(x_slash - ancho * 0.12, centro.y + ry * 1.45)
+		c.draw_line(p_top, p_bot, Color(1.0, 0.98, 0.85, 0.90 * f), 3.6, true)
+		c.draw_line(p_top, p_top + Vector2(ancho * 0.18, -ancho * 0.16),
+			Color("#cbd5e1", f), maxf(3.0, ancho * 0.06), true)
+		c.draw_line(p_top + Vector2(ancho * 0.18, -ancho * 0.16),
+			p_top + Vector2(ancho * 0.28, -ancho * 0.24),
+			Color("#1e293b", f), maxf(4.2, ancho * 0.075), true)
+
+
+static func dibujar_mejora_alta(c: CanvasItem, centro: Vector2, ancho: float,
+		mejora_id: String, nivel: int) -> void:
+	if ancho <= 8.0:
+		return
+	var compacto: bool = ancho < 90.0
+	var nv: int = clampi(nivel, 1, 3)
+	match mejora_id:
+		"plancha":
+			_alta_mejora_cocina(c, centro, ancho, nv, compacto)
+		"emplatado":
+			_alta_mejora_pase(c, centro, ancho, nv, compacto)
+		"termostato":
+			_alta_mejora_precision(c, centro, ancho, nv, compacto)
+		"ingredientes":
+			_alta_mejora_producto(c, centro, ancho, nv, compacto)
+		"ambiente":
+			_alta_mejora_ambiente(c, centro, ancho, nv, compacto)
+		_:
+			_alta_mejora_cocina(c, centro, ancho, nv, compacto)
+
+
+static func _alta_mejora_cocina(c: CanvasItem, centro: Vector2, ancho: float,
+		nivel: int, compacto: bool) -> void:
+	# Horno acero y latón + tabla de corte nogal con lubina entera + sartén cobre
+	var ow: float = ancho * (0.42 if not compacto else 0.50)
+	dibujar_tex_centro(c, TEX_ALTA_HORNO,
+		centro + Vector2(-ancho * (0.24 if not compacto else 0.22), 0.0), ow, 1.0)
+	if not compacto:
+		var tw: float = ancho * 0.28
+		var c_tab := centro + Vector2(ancho * 0.14, -ancho * 0.06)
+		dibujar_tex_centro(c, TEX_ALTA_TABLA, c_tab, tw, 1.0)
+		dibujar_pescado(c, c_tab + Vector2(0.0, ancho * 0.03), tw * 0.84, "lubina",
+			mini(nivel, 3), 4, false, false, 0.35 if nivel >= 2 else 0.0)
+		var tex_s: Texture2D = TEX_ALTA_SARTEN_2 if nivel >= 2 else TEX_ALTA_SARTEN_1
+		dibujar_tex_centro(c, tex_s, centro + Vector2(ancho * 0.36, ancho * 0.06), tw * 0.92, 1.0)
+	else:
+		dibujar_tex_centro(c, TEX_ALTA_LUBINA_ENTERA,
+			centro + Vector2(ancho * 0.22, ancho * 0.14), ancho * 0.44, 1.0)
+
+
+static func _alta_mejora_pase(c: CanvasItem, centro: Vector2, ancho: float,
+		nivel: int, compacto: bool) -> void:
+	# Pase oscuro con platos gourmet de porcelana y copas de bodega
+	var bw: float = ancho * 0.82
+	var bh: float = bw * 0.32
+	var pase := Rect2(centro.x - bw * 0.5, centro.y + ancho * 0.06, bw, bh)
+	caja_redondeada(c, pase, ancho * 0.025, Color("#1e293b"), Color("#fbbf24"), 1.5)
+	var n_pl: int = clampi(nivel + 1, 2, 4)
+	var platos_tex := [TEX_ALTA_PLATO_SOLOMILLO, TEX_ALTA_PLATO_LUBINA,
+		TEX_ALTA_PLATO_SALMON, TEX_ALTA_PLATO_PATO]
+	for i in range(n_pl):
+		var px: float = pase.position.x + pase.size.x * (0.14 + 0.24 * float(i))
+		var py: float = pase.position.y + pase.size.y * 0.50
+		dibujar_tex_centro(c, platos_tex[i], Vector2(px, py), minf(ancho * 0.23, bw * 0.25), 1.0)
+	var n_copas: int = 3 if nivel >= 3 else 2
+	var beb_sz: float = ancho * (0.16 if not compacto else 0.22)
+	for i in range(n_copas):
+		var gx: float = pase.position.x + pase.size.x * (0.28 + 0.22 * float(i))
+		dibujar_copa_vino(c, Vector2(gx, pase.position.y - beb_sz * 0.44),
+			beb_sz * 1.15, (i % 2 == 0), 1.0)
+
+
+static func _alta_mejora_precision(c: CanvasItem, centro: Vector2, ancho: float,
+		nivel: int, compacto: bool) -> void:
+	# Cazo de cobre con reducción + dial térmico con franja dorada
+	var cw: float = ancho * (0.42 if not compacto else 0.62)
+	var sc := centro + Vector2(-ancho * (0.16 if not compacto else 0.0), 0.0)
+	dibujar_tex_centro(c, TEX_ALTA_CAZO, sc, cw, 1.0)
+	if not compacto:
+		var bar := Rect2(centro.x + ancho * 0.08, centro.y - ancho * 0.14, ancho * 0.34, ancho * 0.18)
+		caja_redondeada(c, bar, ancho * 0.03, Color("#0f172a"), Color("#fbbf24"), 1.5)
+		c.draw_rect(Rect2(bar.position.x + bar.size.x * 0.50, bar.position.y + 4.0,
+			bar.size.x * 0.34, bar.size.y - 8.0), Color("#fbbf24", 0.85))
+		c.draw_string(FUENTE_TIT, bar.position + Vector2(0.0, bar.size.y * 0.72),
+			"%d°" % (175 + nivel * 5), HORIZONTAL_ALIGNMENT_CENTER, bar.size.x,
+			maxi(9, int(ancho * 0.055)), Color.WHITE)
+
+
+static func _alta_mejora_producto(c: CanvasItem, centro: Vector2, ancho: float,
+		nivel: int, compacto: bool) -> void:
+	# Bandeja con hielo y salmón/lubina enteros + bandeja de solomillo
+	if not compacto:
+		dibujar_tex_centro(c, TEX_ALTA_PUESTO_SALMON if nivel >= 2 else TEX_ALTA_PUESTO_LUBINA,
+			centro + Vector2(-ancho * 0.19, 0.0), ancho * 0.44, 1.0)
+		dibujar_tex_centro(c, TEX_ALTA_PUESTO_SOLOMILLO,
+			centro + Vector2(ancho * 0.21, 0.0), ancho * 0.44, 1.0)
+	else:
+		dibujar_tex_centro(c, TEX_ALTA_SALMON_ENTERO if nivel >= 2 else TEX_ALTA_LUBINA_ENTERA,
+			centro + Vector2(-ancho * 0.08, 0.0), ancho * 0.60, 1.0)
+		dibujar_tex_centro(c, TEX_ALTA_ING_SOLOMILLO,
+			centro + Vector2(ancho * 0.22, ancho * 0.10), ancho * 0.36, 1.0)
+
+
+static func _alta_mejora_ambiente(c: CanvasItem, centro: Vector2, ancho: float,
+		nivel: int, compacto: bool) -> void:
+	# Mesa vestida con mantel oscuro, candelabro dorado, bodega/copa y plato gourmet
+	var mw: float = ancho * 0.78
+	var mh: float = mw * 0.34
+	var mesa := Rect2(centro.x - mw * 0.5, centro.y + ancho * 0.08, mw, mh)
+	caja_redondeada(c, mesa, ancho * 0.03, Color("#0f172a"), Color("#f5c451"), 1.6)
+	var base_c := Vector2(centro.x, mesa.position.y)
+	c.draw_line(base_c, base_c + Vector2(0.0, -ancho * 0.28), Color("#fbbf24"), maxf(2.5, ancho * 0.025), true)
+	for dx in range(-(nivel - 1), nivel):
+		if nivel == 1 and dx != 0:
+			continue
+		var vx: float = base_c.x + float(dx) * ancho * 0.08
+		var vy: float = base_c.y - ancho * (0.28 if dx == 0 else 0.22)
+		c.draw_rect(Rect2(vx - ancho * 0.014, vy, ancho * 0.028, ancho * 0.08), Color("#fef3c7"))
+		c.draw_circle(Vector2(vx, vy - ancho * 0.02), ancho * 0.022, Color("#f97316"))
+	if not compacto:
+		dibujar_copa_vino(c, Vector2(mesa.position.x + mw * 0.22, mesa.position.y - ancho * 0.11),
+			ancho * 0.22, true, 1.0)
+		dibujar_tex_centro(c, TEX_ALTA_PLATO_SOLOMILLO,
+			Vector2(mesa.position.x + mw * 0.74, mesa.get_center().y), ancho * 0.28, 1.0)
+
+
+static func _textura_plato_alta(proteina: String, guarnicion: String) -> Texture2D:
+	match proteina:
+		"solomillo":
+			return TEX_ALTA_PLATO_SOLOMILLO
+		"lubina":
+			return TEX_ALTA_PLATO_LUBINA
+		"salmon":
+			return TEX_ALTA_PLATO_SALMON
+		"pato":
+			return TEX_ALTA_PLATO_PATO_ESPARRAGOS if guarnicion == "esparragos" \
+				else TEX_ALTA_PLATO_PATO
+	return TEX_ALTA_PLATO_VACIO
+
+
 static func dibujar_icono_alta(c: CanvasItem, centro: Vector2, caja: float,
 		proteina: String, guarnicion: String, alpha: float = 1.0) -> void:
-	# Icono de ticket de alta cocina: medallón grande, puntos de salsa y flor.
-	var base := centro + Vector2(0.0, caja * 0.22)
-	c.draw_set_transform(base, 0.0, Vector2(1.0, 0.30))
-	c.draw_circle(Vector2.ZERO, caja * 0.46, Color(0.06, 0.09, 0.15, 0.24 * alpha))
-	c.draw_circle(Vector2.ZERO, caja * 0.42, Color("#f8fafc", 0.94 * alpha))
-	c.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
-	for i in range(5):
-		var a: float = TAU * float(i) / 5.0 - 0.6
-		c.draw_circle(base + Vector2(cos(a) * caja * 0.26, sin(a) * caja * 0.10),
-			maxf(1.4, caja * 0.032), Color("#7f1d1d", 0.92 * alpha))
-	# Proteína
-	var centro_p := centro + Vector2(0.0, -caja * 0.04)
-	if proteina == "lubina":
-		c.draw_colored_polygon(PackedVector2Array([
-			centro_p + Vector2(-caja * 0.30, -caja * 0.10),
-			centro_p + Vector2(caja * 0.26, -caja * 0.18),
-			centro_p + Vector2(caja * 0.32, caja * 0.02),
-			centro_p + Vector2(-caja * 0.22, caja * 0.14),
-		]), Color("#f1f5f9", alpha))
-		c.draw_polyline(PackedVector2Array([
-			centro_p + Vector2(-caja * 0.30, -caja * 0.10),
-			centro_p + Vector2(caja * 0.26, -caja * 0.18),
-			centro_p + Vector2(caja * 0.32, caja * 0.02),
-			centro_p + Vector2(-caja * 0.22, caja * 0.14),
-			centro_p + Vector2(-caja * 0.30, -caja * 0.10),
-		]), Color("#cbd5e1", alpha), 1.2, true)
-	else:
-		var col := Color("#7f1d1d") if proteina == "solomillo" else Color("#9f1239")
-		c.draw_circle(centro_p, caja * 0.22, Color("#3f2418", alpha))
-		c.draw_circle(centro_p, caja * 0.17, Color(col, alpha))
-		c.draw_circle(centro_p + Vector2(-caja * 0.05, -caja * 0.04), caja * 0.07,
-			Color("#f2a3a0", 0.35 * alpha))
-	# Guarnición
-	if guarnicion == "pure":
-		c.draw_set_transform(centro + Vector2(-caja * 0.23, caja * 0.02), 0.0, Vector2(1.0, 0.52))
-		c.draw_circle(Vector2.ZERO, caja * 0.15, Color("#fef3c7", alpha))
-		c.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
-	else:
-		for i in range(3):
-			var p := centro + Vector2(-caja * 0.30 + float(i) * caja * 0.06, caja * 0.12)
-			c.draw_line(p, p + Vector2(caja * 0.13, -caja * 0.28),
-				Color("#4d7c0f", alpha), maxf(1.5, caja * 0.055), true)
-	# Flor
-	var p_flor := centro + Vector2(caja * 0.23, -caja * 0.22)
-	for i in range(5):
-		var a2: float = TAU * float(i) / 5.0
-		c.draw_circle(p_flor + Vector2(cos(a2), sin(a2)) * caja * 0.035,
-			maxf(1.1, caja * 0.024), Color("#f472b6", alpha))
-	c.draw_circle(p_flor, maxf(1.0, caja * 0.018), Color("#fbbf24", alpha))
+	dibujar_tex_centro(c, _textura_plato_alta(proteina, guarnicion), centro, caja * 0.98, alpha)
 
 
 static func dibujar_cuenco(c: CanvasItem, centro: Vector2, ancho: float,
-		relleno: Color, alpha: float = 1.0) -> void:
-	var alto: float = ancho * 0.46
-	var r := Rect2(centro.x - ancho * 0.5, centro.y - alto * 0.5, ancho, alto)
+		relleno: Color, alpha: float = 1.0, borde_color: Color = Color("#c2410c")) -> void:
+	var alto: float = ancho * 0.56
 	# Sombra
-	c.draw_set_transform(Vector2(centro.x, r.end.y - 2.0), 0.0, Vector2(1.0, 0.30))
-	c.draw_circle(Vector2.ZERO, ancho * 0.44, Color(0.0, 0.0, 0.0, 0.20 * alpha))
+	c.draw_set_transform(Vector2(centro.x, centro.y + alto * 0.34), 0.0, Vector2(1.0, 0.32))
+	c.draw_circle(Vector2.ZERO, ancho * 0.46, Color(0.0, 0.0, 0.0, 0.28 * alpha))
 	c.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
-	# Cuenco de cerámica
-	c.draw_colored_polygon(PackedVector2Array([
-		Vector2(r.position.x, r.position.y + alto * 0.22),
-		Vector2(r.end.x, r.position.y + alto * 0.22),
-		Vector2(r.end.x - ancho * 0.14, r.end.y - alto * 0.10),
-		Vector2(r.position.x + ancho * 0.14, r.end.y - alto * 0.10),
-	]), Color("#f1f5f9", alpha))
-	c.draw_polyline(PackedVector2Array([
-		Vector2(r.position.x, r.position.y + alto * 0.22),
-		Vector2(r.end.x, r.position.y + alto * 0.22),
-		Vector2(r.end.x - ancho * 0.14, r.end.y - alto * 0.10),
-		Vector2(r.position.x + ancho * 0.14, r.end.y - alto * 0.10),
-		Vector2(r.position.x, r.position.y + alto * 0.22),
-	]), Color("#cbd5e1", alpha), 1.5, true)
-	# Guiso
-	c.draw_set_transform(Vector2(centro.x, r.position.y + alto * 0.26), 0.0, Vector2(1.0, 0.34))
-	c.draw_circle(Vector2.ZERO, ancho * 0.42, Color(relleno, alpha))
+	# Cuerpo redondeado de cazuela de barro/cerámica
+	c.draw_set_transform(Vector2(centro.x, centro.y + alto * 0.08), 0.0, Vector2(1.0, 0.46))
+	c.draw_circle(Vector2.ZERO, ancho * 0.45, Color(borde_color.darkened(0.28), alpha))
 	c.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
-	# Borde del guiso
-	c.draw_arc(Vector2(centro.x, r.position.y + alto * 0.26), ancho * 0.42, 0.0, TAU, 28,
-		Color("#b45309", 0.65 * alpha), 2.0, true)
+	# Borde superior + asas
+	var y_boca: float = centro.y - alto * 0.06
+	c.draw_arc(Vector2(centro.x - ancho * 0.43, y_boca + alto * 0.05), ancho * 0.07,
+		PI * 0.5, PI * 1.5, 10, Color(borde_color.lightened(0.10), alpha), maxf(2.0, ancho * 0.04), true)
+	c.draw_arc(Vector2(centro.x + ancho * 0.43, y_boca + alto * 0.05), ancho * 0.07,
+		-PI * 0.5, PI * 0.5, 10, Color(borde_color.lightened(0.10), alpha), maxf(2.0, ancho * 0.04), true)
+	c.draw_set_transform(Vector2(centro.x, y_boca), 0.0, Vector2(1.0, 0.40))
+	c.draw_circle(Vector2.ZERO, ancho * 0.45, Color(borde_color, alpha))
+	c.draw_circle(Vector2.ZERO, ancho * 0.39, Color(relleno, alpha))
+	c.draw_arc(Vector2.ZERO, ancho * 0.39, 0.0, TAU, 28,
+		Color(borde_color.darkened(0.45), 0.70 * alpha), maxf(1.4, ancho * 0.026), true)
+	c.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+
+
+static func dibujar_huevo_frito(c: CanvasItem, centro: Vector2, ancho: float,
+		quemado: bool = false, alpha: float = 1.0) -> void:
+	var tex: Texture2D = TEX_MERCADO_HUEVO_QUEMADO if quemado else TEX_MERCADO_HUEVO_FRITO
+	dibujar_tex_centro(c, tex, centro, ancho * 0.96, alpha)
+
+
+static func _textura_guiso_mercado(guiso: String, extra: String = "") -> Texture2D:
+	match guiso:
+		"arroz":
+			return TEX_MERCADO_ARROZ
+		"pisto":
+			return TEX_MERCADO_PISTO_HUEVO if extra == "huevo" else TEX_MERCADO_PISTO
+		"arroz_tomate":
+			return TEX_MERCADO_ARROZ_CUBANA if extra == "huevo" else TEX_MERCADO_ARROZ_TOMATE
+		"alubias_marisco":
+			return TEX_MERCADO_ALUBIAS_MARISCO
+		"zarzuela":
+			return TEX_MERCADO_ZARZUELA
+		"fritada":
+			return TEX_MERCADO_FRITADA
+	return TEX_MERCADO_FABADA
 
 
 static func dibujar_plato_mercado(c: CanvasItem, centro: Vector2, caja: float,
 		guiso: String, extra: String, alpha: float = 1.0) -> void:
-	var relleno := Color("#9a3412")
-	var tropezones := Color("#f59e0b")
-	if guiso == "pisto":
-		relleno = Color("#b91c1c")
-		tropezones = Color("#16a34a")
-	elif guiso == "arroz":
-		relleno = Color("#eab308")
-		tropezones = Color("#f97316")
-	dibujar_cuenco(c, centro + Vector2(0.0, caja * 0.02), caja * 0.86, relleno, alpha)
-	# Tropezones
-	for i in range(5):
-		var a: float = TAU * float(i) / 5.0 + 0.4
-		var p := centro + Vector2(cos(a) * caja * 0.12, -caja * 0.05 + sin(a) * caja * 0.06)
-		c.draw_circle(p, caja * 0.035, Color(tropezones, alpha))
-	# Huevo frito
-	if extra == "huevo":
-		c.draw_circle(centro + Vector2(caja * 0.16, -caja * 0.12), caja * 0.12, Color("#f8fafc", alpha))
-		c.draw_circle(centro + Vector2(caja * 0.16, -caja * 0.12), caja * 0.06, Color("#f59e0b", alpha))
+	if guiso == "":
+		dibujar_cuenco(c, centro + Vector2(0.0, caja * 0.03), caja * 0.86,
+			Color("#e2e8f0"), alpha, Color("#cbd5e1"))
+		return
+	var tex: Texture2D = _textura_guiso_mercado(guiso, extra)
+	dibujar_tex_centro(c, tex, centro + Vector2(0.0, caja * 0.01), caja * 0.94, alpha)
+	if extra == "huevo" and not guiso in ["pisto", "arroz_tomate"]:
+		dibujar_huevo_frito(c, centro + Vector2(0.0, -caja * 0.04), caja * 0.48, false, alpha)
 
 
 static func dibujar_plato_alta(c: CanvasItem, centro: Vector2, caja: float,
-		proteina: String, salsa: String, guarnicion: String, flor: bool,
-		alpha: float = 1.0) -> void:
-	var ancho: float = caja * 0.92
-	var alto: float = ancho * 0.34
-	var centro_plato := centro + Vector2(0.0, alto * 0.16)
-	c.draw_set_transform(centro_plato, 0.0, Vector2(1.0, 0.40))
-	c.draw_circle(Vector2.ZERO, ancho * 0.50, Color(0.0, 0.0, 0.0, 0.24 * alpha))
-	c.draw_circle(Vector2.ZERO, ancho * 0.47, Color("#f8fafc", alpha))
-	c.draw_circle(Vector2.ZERO, ancho * 0.34, Color("#e2e8f0", alpha))
-	c.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
-	# Puntos de salsa
+		proteina: String, salsa: String, guarnicion: String, alpha: float = 1.0) -> void:
+	var ancho: float = caja * 0.96
+	# Si el plato coincide con una receta terminada, usamos la composición gourmet completa.
+	if Sistema_Cocina.Identificar_Plato_Alta(proteina, salsa, guarnicion) != "":
+		dibujar_tex_centro(c, _textura_plato_alta(proteina, guarnicion), centro, ancho, alpha)
+		return
+	# Durante el montaje paso a paso: plato fino con filete dorado + partes añadidas
+	dibujar_tex_centro(c, TEX_ALTA_PLATO_VACIO, centro, ancho, alpha)
+	var alto: float = ancho * 0.56
 	if salsa != "":
-		for i in range(5):
-			var a: float = TAU * float(i) / 5.0 - 0.6
-			var p := centro_plato + Vector2(cos(a) * ancho * 0.25, sin(a) * alto * 0.22)
-			c.draw_circle(p, ancho * 0.030, Color("#7f1d1d", 0.90 * alpha))
-	# Guarnición
+		for i in range(4):
+			var a: float = PI * 0.15 + PI * 0.65 * (float(i) / 3.0)
+			var p := centro + Vector2(cos(a) * ancho * 0.19, sin(a) * alto * 0.14 + alto * 0.04)
+			c.draw_circle(p, ancho * 0.025, Color("#7f1d1d", 0.92 * alpha))
 	if guarnicion == "pure":
-		c.draw_set_transform(centro_plato + Vector2(-ancho * 0.18, alto * 0.08), 0.0, Vector2(1.0, 0.52))
-		c.draw_circle(Vector2.ZERO, ancho * 0.12, Color("#fef3c7", alpha))
+		c.draw_set_transform(centro + Vector2(-ancho * 0.16, alto * 0.02), -0.15, Vector2(1.0, 0.55))
+		c.draw_circle(Vector2.ZERO, ancho * 0.10, Color("#fef08a", alpha))
 		c.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 	elif guarnicion == "esparragos":
-		for i in range(4):
-			var p := centro_plato + Vector2(-ancho * 0.22 + float(i) * ancho * 0.055, alto * 0.10)
-			c.draw_line(p, p + Vector2(ancho * 0.14, -alto * 0.30), Color("#4d7c0f", alpha), 5.0, true)
-			c.draw_line(p + Vector2(ancho * 0.09, -alto * 0.19), p + Vector2(ancho * 0.13, -alto * 0.26),
-				Color("#65a30d", alpha), 3.5, true)
-	# Proteína
-	if proteina == "solomillo" or proteina == "pato":
-		var col := Color("#7f1d1d") if proteina == "solomillo" else Color("#9f1239")
-		c.draw_set_transform(centro_plato + Vector2(0.0, -alto * 0.12), 0.0, Vector2(1.0, 0.72))
-		c.draw_circle(Vector2.ZERO, ancho * 0.14, Color("#3f2418", alpha))
-		c.draw_circle(Vector2.ZERO, ancho * 0.11, Color(col, alpha))
-		c.draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
-	elif proteina == "lubina":
-		c.draw_colored_polygon(PackedVector2Array([
-			centro_plato + Vector2(-ancho * 0.20, -alto * 0.20),
-			centro_plato + Vector2(ancho * 0.16, -alto * 0.30),
-			centro_plato + Vector2(ancho * 0.22, -alto * 0.06),
-			centro_plato + Vector2(-ancho * 0.14, alto * 0.04),
-		]), Color("#f1f5f9", alpha))
-		c.draw_polyline(PackedVector2Array([
-			centro_plato + Vector2(-ancho * 0.20, -alto * 0.20),
-			centro_plato + Vector2(ancho * 0.16, -alto * 0.30),
-			centro_plato + Vector2(ancho * 0.22, -alto * 0.06),
-			centro_plato + Vector2(-ancho * 0.14, alto * 0.04),
-			centro_plato + Vector2(-ancho * 0.20, -alto * 0.20),
-		]), Color("#cbd5e1", alpha), 1.4, true)
-	# Flor comestible opcional
-	if flor:
-		var p := centro_plato + Vector2(ancho * 0.18, -alto * 0.28)
-		for i in range(5):
-			var a: float = TAU * float(i) / 5.0
-			c.draw_circle(p + Vector2(cos(a), sin(a)) * ancho * 0.032, ancho * 0.022,
-				Color("#f472b6", alpha))
-		c.draw_circle(p, ancho * 0.016, Color("#fbbf24", alpha))
+		dibujar_tex_centro(c, TEX_ALTA_ING_ESPARRAGOS,
+			centro + Vector2(-ancho * 0.12, -alto * 0.04), ancho * 0.28, alpha)
+	match proteina:
+		"solomillo":
+			dibujar_tex_centro(c, TEX_ALTA_SOLOMILLO_HECHO,
+				centro + Vector2(ancho * 0.10, -alto * 0.06), ancho * 0.34, alpha)
+		"pato":
+			dibujar_tex_centro(c, TEX_ALTA_PATO_HECHO,
+				centro + Vector2(ancho * 0.10, -alto * 0.06), ancho * 0.36, alpha)
+		"lubina":
+			dibujar_tex_centro(c, TEX_ALTA_LUBINA_FRITA,
+				centro + Vector2(ancho * 0.10, -alto * 0.06), ancho * 0.38, alpha)
+		"salmon":
+			dibujar_tex_centro(c, TEX_ALTA_SALMON_FRITO,
+				centro + Vector2(ancho * 0.10, -alto * 0.06), ancho * 0.38, alpha)
 
 
 ## Icono de ingrediente de despensa para tickets y arrastre. Devuelve true si
@@ -1761,81 +2377,54 @@ static func dibujar_ingrediente_icono(c: CanvasItem, item_id: String, centro: Ve
 		"filete_crudo", "filete":
 			dibujar_filete(c, centro, caja * 0.82, "crudo", alpha)
 		"solomillo":
-			dibujar_filete(c, centro, caja * 0.82, "al_punto", alpha)
+			dibujar_tex_centro(c, TEX_ALTA_ING_SOLOMILLO, centro, caja * 0.84, alpha)
 		"lubina":
-			c.draw_colored_polygon(PackedVector2Array([
-				centro + Vector2(-caja * 0.32, -caja * 0.12),
-				centro + Vector2(caja * 0.30, -caja * 0.22),
-				centro + Vector2(caja * 0.36, caja * 0.02),
-				centro + Vector2(-caja * 0.22, caja * 0.18),
-			]), Color("#f1f5f9", alpha))
-			c.draw_circle(centro + Vector2(-caja * 0.24, -caja * 0.02), caja * 0.025,
-				Color("#0f172a", alpha))
+			dibujar_tex_centro(c, TEX_ALTA_LUBINA_ENTERA, centro, caja * 0.94, alpha)
+		"salmon":
+			dibujar_tex_centro(c, TEX_ALTA_SALMON_ENTERO, centro, caja * 0.94, alpha)
+		"lubina_cortada":
+			dibujar_tex_centro(c, TEX_ALTA_LUBINA_CORTADA, centro, caja * 0.88, alpha)
+		"salmon_cortado":
+			dibujar_tex_centro(c, TEX_ALTA_SALMON_CORTADO, centro, caja * 0.88, alpha)
+		"lubina_frita":
+			dibujar_tex_centro(c, TEX_ALTA_LUBINA_FRITA, centro, caja * 0.88, alpha)
+		"salmon_frito":
+			dibujar_tex_centro(c, TEX_ALTA_SALMON_FRITO, centro, caja * 0.88, alpha)
 		"pato":
-			dibujar_filete(c, centro, caja * 0.80, "hecho", alpha)
-			c.draw_line(centro + Vector2(-caja * 0.26, -caja * 0.14),
-				centro + Vector2(caja * 0.24, -caja * 0.14), Color("#fde68a", 0.75 * alpha), 3.0, true)
+			dibujar_tex_centro(c, TEX_ALTA_ING_PATO, centro, caja * 0.86, alpha)
 		"huevo":
-			c.draw_circle(centro, caja * 0.30, Color("#f8fafc", alpha))
-			c.draw_circle(centro + Vector2(caja * 0.02, caja * 0.01), caja * 0.13, Color("#f59e0b", alpha))
+			dibujar_tex_centro(c, TEX_MERCADO_ING_HUEVO, centro, caja * 0.76, alpha)
+		"huevo_frito":
+			dibujar_huevo_frito(c, centro, caja * 0.88, false, alpha)
 		"salsa":
 			dibujar_tex(c, TEX_SALSERA, Rect2(centro - Vector2(caja * 0.5, caja * 0.4), Vector2(caja, caja * 0.8)), Color(1, 1, 1, alpha))
 		"alubias":
-			# Saquito de arpillera con alubias
-			c.draw_colored_polygon(PackedVector2Array([
-				centro + Vector2(-caja * 0.26, caja * 0.24),
-				centro + Vector2(-caja * 0.20, -caja * 0.12),
-				centro + Vector2(caja * 0.20, -caja * 0.12),
-				centro + Vector2(caja * 0.26, caja * 0.24),
-			]), Color("#a16207", alpha))
-			c.draw_line(centro + Vector2(-caja * 0.18, -caja * 0.10),
-				centro + Vector2(caja * 0.18, -caja * 0.10), Color("#78350f", alpha), 3.0, true)
-			for i in range(12):
-				var a: float = TAU * float(i) / 12.0
-				c.draw_circle(centro + Vector2(cos(a) * caja * 0.13, -caja * 0.02 + sin(a) * caja * 0.08),
-					maxf(1.5, caja * 0.038), Color("#78350f", alpha))
+			dibujar_tex_centro(c, TEX_MERCADO_ING_ALUBIAS, centro, caja * 0.88, alpha)
 		"chorizo":
-			c.draw_line(centro + Vector2(-caja * 0.24, caja * 0.10),
-				centro + Vector2(caja * 0.22, -caja * 0.10), Color("#991b1b", alpha), caja * 0.18, true)
-			c.draw_line(centro + Vector2(-caja * 0.18, caja * 0.07),
-				centro + Vector2(caja * 0.16, -caja * 0.07), Color("#fca5a5", 0.55 * alpha), 2.0, true)
+			dibujar_tex_centro(c, TEX_MERCADO_ING_CHORIZO, centro, caja * 0.88, alpha)
 		"pimiento":
-			c.draw_colored_polygon(PackedVector2Array([
-				centro + Vector2(-caja * 0.18, caja * 0.18),
-				centro + Vector2(-caja * 0.26, -caja * 0.10),
-				centro + Vector2(caja * 0.06, -caja * 0.24),
-				centro + Vector2(caja * 0.24, caja * 0.02),
-				centro + Vector2(caja * 0.06, caja * 0.24),
-			]), Color("#dc2626", alpha))
-			c.draw_line(centro + Vector2(caja * 0.06, -caja * 0.24),
-				centro + Vector2(caja * 0.14, -caja * 0.32), Color("#15803d", alpha), 3.0, true)
+			dibujar_tex_centro(c, TEX_MERCADO_ING_PIMIENTO, centro, caja * 0.80, alpha)
 		"arroz":
-			dibujar_cuenco(c, centro, caja * 0.82, Color("#fef3c7"), alpha)
-			for i in range(9):
-				var p := centro + Vector2(-caja * 0.16 + float(i % 3) * caja * 0.16,
-					-caja * 0.12 + float(i / 3) * caja * 0.10)
-				c.draw_line(p, p + Vector2(caja * 0.04, -caja * 0.02), Color("#f8fafc", alpha), 2.0, true)
+			dibujar_tex_centro(c, TEX_MERCADO_ING_ARROZ, centro, caja * 0.88, alpha)
 		"marisco":
-			for i in range(3):
-				var p := centro + Vector2(-caja * 0.18 + float(i) * caja * 0.18, caja * 0.02)
-				c.draw_arc(p, caja * 0.10, PI * 0.15, PI * 0.85, 10, Color("#f97316", alpha), 4.0, true)
-				c.draw_circle(p + Vector2(caja * 0.10, -caja * 0.02), caja * 0.03, Color("#fb923c", alpha))
+			dibujar_tex_centro(c, TEX_MERCADO_ING_MARISCO, centro, caja * 0.86, alpha)
 		"pure":
-			dibujar_cuenco(c, centro, caja * 0.82, Color("#fef9c3"), alpha)
+			dibujar_tex_centro(c, TEX_ALTA_ING_PURE, centro, caja * 0.84, alpha)
 		"esparragos":
+			dibujar_tex_centro(c, TEX_ALTA_ING_ESPARRAGOS, centro, caja * 0.82, alpha)
+		"perejil":
 			for i in range(3):
-				var p := centro + Vector2(-caja * 0.15 + float(i) * caja * 0.13, caja * 0.18)
-				c.draw_line(p, p + Vector2(caja * 0.07, -caja * 0.34), Color("#4d7c0f", alpha), 4.0, true)
-				c.draw_line(p + Vector2(caja * 0.03, -caja * 0.20),
-					p + Vector2(caja * 0.09, -caja * 0.31), Color("#84cc16", alpha), 2.5, true)
-		"flor":
-			var p := centro
-			for i in range(6):
-				var a: float = TAU * float(i) / 6.0
-				c.draw_circle(p + Vector2(cos(a), sin(a)) * caja * 0.12, caja * 0.075,
-					Color("#f472b6", alpha))
-			c.draw_circle(p, caja * 0.055, Color("#fbbf24", alpha))
-		"tarta":
+				var ang: float = -0.55 + float(i) * 0.55
+				var tallo_fin := centro + Vector2(sin(ang) * caja * 0.24, -cos(ang) * caja * 0.24)
+				c.draw_line(centro + Vector2(0.0, caja * 0.20), tallo_fin,
+					Color("#166534", alpha), maxf(1.8, caja * 0.05), true)
+				c.draw_circle(tallo_fin + Vector2(-caja * 0.05, 0.0), caja * 0.09,
+					Color("#15803d", alpha))
+				c.draw_circle(tallo_fin + Vector2(caja * 0.05, -caja * 0.02), caja * 0.085,
+					Color("#22c55e", alpha))
+				c.draw_circle(tallo_fin + Vector2(0.0, -caja * 0.07), caja * 0.075,
+					Color("#4ade80", alpha))
+		"tarta", "tarta_cereza":
 			dibujar_tex(c, TEX_TARTA, Rect2(centro - Vector2(caja * 0.48, caja * 0.48),
 				Vector2(caja * 0.96, caja * 0.96)), Color(1, 1, 1, alpha))
 		_:
@@ -1918,9 +2507,53 @@ class Ticket extends Control:
 	var ratio: float = 1.0
 	var tiempo: float = 0.0
 	var destacado: bool = false
+	var item_hover: int = -1
 
 	func _init() -> void:
 		mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	func _rects_items(r: Rect2) -> Array[Dictionary]:
+		var lista: Array[Dictionary] = []
+		var n: int = items.size()
+		if n <= 0:
+			return lista
+		var icono: float = 48.0 if n == 1 else (38.0 if n == 2 else 31.0)
+		var sep: float = 4.0
+		var total: float = icono * float(n) + sep * float(n - 1)
+		var x0: float = r.position.x + (r.size.x - total) * 0.5
+		var cy: float = r.position.y + r.size.y * 0.37
+		for i in range(n):
+			var cx: float = x0 + icono * 0.5 + float(i) * (icono + sep)
+			lista.append({
+				"indice": i,
+				"item": str(items[i]),
+				"centro": Vector2(cx, cy),
+				"tam": icono,
+				"rect": Rect2(cx - icono * 0.5, cy - icono * 0.5, icono, icono),
+			})
+		return lista
+
+	func item_en_punto(pos_local: Vector2, solo_si_directo: bool = false) -> Dictionary:
+		if not visible or items.is_empty():
+			return {}
+		var r := Arte_Cocina.rect_ajustado(Arte_Cocina.TEX_BURBUJA, Rect2(0.0, 0.0, size.x, size.y))
+		var entradas := _rects_items(r)
+		for ent in entradas:
+			if (ent["rect"] as Rect2).grow(4.0).has_point(pos_local):
+				return ent
+		if solo_si_directo or not Rect2(r.position, Vector2(r.size.x, r.size.y * 0.74)).has_point(pos_local):
+			return {}
+		# Si el cursor está dentro del bocadillo pero entre iconos, elige el pedido pendiente más cercano.
+		var mejor: Dictionary = {}
+		var mejor_d: float = INF
+		for ent in entradas:
+			var idx: int = int(ent["indice"])
+			var ya_entregado: bool = idx < entregados.size() and bool(entregados[idx])
+			var d: float = (ent["centro"] as Vector2).distance_to(pos_local) + (1000.0 if ya_entregado else 0.0)
+			if d < mejor_d:
+				mejor_d = d
+				mejor = ent
+		return mejor
 
 	func _draw() -> void:
 		if size.x <= 8.0 or size.y <= 8.0:
@@ -1946,25 +2579,25 @@ class Ticket extends Control:
 		draw_texture_rect(tex, r, false, tinte)
 
 		# Iconos del pedido dentro del cuerpo de la burbuja
-		var n: int = items.size()
-		if n > 0:
-			var icono: float = 48.0 if n == 1 else (38.0 if n == 2 else 31.0)
-			var sep: float = 4.0
-			var total: float = icono * float(n) + sep * float(n - 1)
-			var x0: float = r.position.x + (r.size.x - total) * 0.5
-			var cy: float = r.position.y + r.size.y * 0.37
-			for i in range(n):
-				var cx: float = x0 + icono * 0.5 + float(i) * (icono + sep)
-				var hecho: bool = i < entregados.size() and bool(entregados[i])
-				Arte_Cocina.dibujar_item(self, str(items[i]), Vector2(cx, cy), icono,
-					0.38 if hecho else 1.0, tiempo)
-				if hecho:
-					draw_circle(Vector2(cx + icono * 0.32, cy - icono * 0.32), 8.0, Color("#16a34a"))
-					draw_polyline(PackedVector2Array([
-						Vector2(cx + icono * 0.32 - 4.0, cy - icono * 0.32),
-						Vector2(cx + icono * 0.32 - 1.0, cy - icono * 0.32 + 3.0),
-						Vector2(cx + icono * 0.32 + 4.0, cy - icono * 0.32 - 3.5),
-					]), Color.WHITE, 2.2, true)
+		var entradas := _rects_items(r)
+		for ent in entradas:
+			var i: int = int(ent["indice"])
+			var centro_ic: Vector2 = ent["centro"]
+			var icono: float = float(ent["tam"])
+			var hecho: bool = i < entregados.size() and bool(entregados[i])
+			if i == item_hover:
+				draw_circle(centro_ic, icono * 0.56, Color("#fde047", 0.26))
+				draw_arc(centro_ic, icono * 0.56, 0.0, TAU, 24,
+					Color("#f59e0b", 0.92), 2.0, true)
+			Arte_Cocina.dibujar_item(self, str(ent["item"]), centro_ic, icono,
+				0.38 if hecho else 1.0, tiempo)
+			if hecho:
+				draw_circle(centro_ic + Vector2(icono * 0.32, -icono * 0.32), 8.0, Color("#16a34a"))
+				draw_polyline(PackedVector2Array([
+					centro_ic + Vector2(icono * 0.32 - 4.0, -icono * 0.32),
+					centro_ic + Vector2(icono * 0.32 - 1.0, -icono * 0.32 + 3.0),
+					centro_ic + Vector2(icono * 0.32 + 4.0, -icono * 0.32 - 3.5),
+				]), Color.WHITE, 2.2, true)
 
 		# Barra de paciencia integrada en la parte baja de la burbuja (corazón + barra centrados)
 		var ancho_barra: float = minf(94.0, r.size.x * 0.62)
@@ -2252,7 +2885,7 @@ class Plato extends Control:
 	var guarnicion: String = ""
 	var salsa: String = ""
 	var extra: String = ""
-	var flor: bool = false
+	var perejil: bool = false
 	var pedida: bool = false
 	var seleccionado: bool = false
 	var destacado: bool = false
@@ -2265,7 +2898,7 @@ class Plato extends Control:
 	func esta_vacio() -> bool:
 		if restaurante == "burger_street":
 			return not pan and carnes <= 0
-		return proteina == "" and guiso == "" and guarnicion == "" and salsa == "" and extra == "" and not flor
+		return proteina == "" and guiso == "" and guarnicion == "" and salsa == "" and extra == "" and not perejil
 
 	func _draw() -> void:
 		if size.x <= 8.0 or size.y <= 8.0:
@@ -2288,13 +2921,13 @@ class Plato extends Control:
 		match restaurante:
 			"bistro_tradicional":
 				Arte_Cocina.dibujar_plato_bistro(self, centro, ancho_plato,
-					proteina, punto, guarnicion, salsa, 1.0)
+					proteina, punto, guarnicion, salsa, 1.0, pop_esc, perejil)
 			"cocina_mercado":
 				Arte_Cocina.dibujar_plato_mercado(self, centro, ancho_plato,
 					guiso, extra, 1.0)
 			"alta_cocina":
 				Arte_Cocina.dibujar_plato_alta(self, centro, ancho_plato,
-					proteina, salsa, guarnicion, flor, 1.0)
+					proteina, salsa, guarnicion, 1.0)
 			_:
 				# En Burger Street el plato de cerámica blanca aparece al colocar
 				# el pan; cuando el hueco está vacío se muestra la marca impresa
@@ -2393,9 +3026,142 @@ class Punto_Coccion extends Control:
 	var flip: float = 0.0
 	var punto: String = ""
 	var ventana: bool = false
+	var ingredientes: Array = []
+	var guiso: String = ""
 
 	func _init() -> void:
 		mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	func _dibujar_cazuela(centro: Vector2) -> void:
+		var w: float = size.x
+		var h: float = size.y
+		var pulso: float = 0.5 + 0.5 * sin(tiempo * 5.0)
+		var cx: float = centro.x
+		var cy: float = centro.y - 3.0
+		var bob: float = sin(tiempo * 4.5 + cx) * 0.8 if estado == "cocinando" else 0.0
+		var py: float = cy + bob
+		var ancho_caz: float = minf(w * 0.84, 62.0)
+
+		if estado == "vacio":
+			Arte_Cocina.dibujar_tex_centro(self, Arte_Cocina.TEX_MERCADO_CAZUELA_VACIA,
+				Vector2(cx, py + 1.0), ancho_caz * 0.92, 0.90)
+			draw_circle(Vector2(cx, py), 8.5, Color("#1f1408", 0.55))
+			draw_line(Vector2(cx - 4.5, py), Vector2(cx + 4.5, py),
+				Color("#fde68a", 0.72 + 0.20 * pulso), 1.8, true)
+			draw_line(Vector2(cx, py - 4.5), Vector2(cx, py + 4.5),
+				Color("#fde68a", 0.72 + 0.20 * pulso), 1.8, true)
+			return
+
+		# Sombra suave bajo la cazuela activa
+		draw_set_transform(Vector2(cx, py + 14.0), 0.0, Vector2(1.0, 0.40))
+		draw_circle(Vector2.ZERO, ancho_caz * 0.44, Color(0.0, 0.0, 0.0, 0.30))
+		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+
+		if estado == "preparando":
+			Arte_Cocina.dibujar_tex_centro(self, Arte_Cocina.TEX_MERCADO_CAZUELA_VACIA,
+				Vector2(cx, py), ancho_caz, 1.0)
+			draw_arc(Vector2(cx, py - 2.0), ancho_caz * 0.38, 0.0, TAU, 24,
+				Color("#fbbf24", 0.45 + 0.35 * pulso), 1.8, true)
+			var ing0: String = str(ingredientes[0]) if not ingredientes.is_empty() else ""
+			if ing0 != "":
+				Arte_Cocina.dibujar_ingrediente_icono(self, ing0, Vector2(cx, py - 5.0), 26.0, 1.0)
+				var parejas: Array[Dictionary] = Sistema_Cocina.Ingrediente_Parejas_Olla(ing0)
+				if not parejas.is_empty():
+					var r_falta := Rect2(4.0, h - 14.5, w - 8.0, 13.0)
+					Arte_Cocina.caja_redondeada(self, r_falta, 4.0,
+						Color("#1f1408", 0.92), Color("#fbbf24", 0.88), 1.0)
+					if parejas.size() == 1:
+						var falta: String = str(Arte_Cocina.NOMBRES_INGREDIENTES.get(
+							str(parejas[0].get("pareja", "")), "")).to_upper()
+						draw_string(Arte_Cocina.FUENTE_TIT,
+							Vector2(r_falta.position.x, r_falta.position.y + 9.8),
+							"+ " + falta, HORIZONTAL_ALIGNMENT_CENTER, r_falta.size.x, 7.5,
+							Color("#fde68a"))
+					else:
+						# Muestra "+ [iconos]" para todos los cruces válidos del ingrediente en cazuela.
+						var n_ic: int = mini(3, parejas.size())
+						var paso_x: float = 14.0
+						var total_w: float = 10.0 + float(n_ic) * paso_x
+						var x_ini: float = r_falta.get_center().x - total_w * 0.5
+						draw_string(Arte_Cocina.FUENTE_TIT,
+							Vector2(x_ini, r_falta.position.y + 10.0),
+							"+", HORIZONTAL_ALIGNMENT_LEFT, 12.0, 9.0, Color("#fde68a"))
+						for pi in range(n_ic):
+							var ing_p: String = str(parejas[pi].get("pareja", ""))
+							var c_ic := Vector2(x_ini + 14.0 + float(pi) * paso_x,
+								r_falta.get_center().y)
+							Arte_Cocina.dibujar_ingrediente_icono(self, ing_p, c_ic, 12.5, 1.0)
+			return
+
+		# Cazuela o paellera con el guiso según receta y estado
+		var tex_caz: Texture2D = Arte_Cocina.TEX_MERCADO_CAZUELA_QUEMADA if estado == "quemado" \
+			else Arte_Cocina._textura_guiso_mercado(guiso, "")
+		var col_caz := Color.WHITE
+		if estado == "alerta":
+			col_caz = col_caz.lerp(Color(0.68, 0.50, 0.45), clampf(quemado, 0.0, 1.0) * 0.60)
+		var alto_caz: float = ancho_caz * float(tex_caz.get_height()) / maxf(1.0, float(tex_caz.get_width()))
+		var r_caz := Rect2(cx - ancho_caz * 0.5, py - 4.0 - alto_caz * 0.5, ancho_caz, alto_caz)
+		draw_texture_rect(tex_caz, r_caz, false, col_caz)
+
+		if estado == "alerta" or estado == "quemado":
+			draw_circle(Vector2(cx, py - 2.0), ancho_caz * 0.40,
+				Color(1.0, 0.20, 0.15, 0.16 + 0.14 * (0.5 + 0.5 * sin(tiempo * 10.0))))
+
+		# Barra de progreso o margen de quemado
+		var barra := Rect2(8.0, h - 20.5, w - 16.0, 4.5)
+		Arte_Cocina.caja_redondeada(self, barra.grow(1.0), 2.5, Color(0.04, 0.08, 0.12, 0.80))
+		if estado == "cocinando":
+			draw_rect(Rect2(barra.position, Vector2(barra.size.x * clampf(progreso, 0.0, 1.0),
+				barra.size.y)), Color("#fb923c"))
+		elif estado == "listo" or estado == "alerta":
+			var col_b := Color("#22c55e") if estado == "listo" else Color("#ef4444")
+			draw_rect(Rect2(barra.position, Vector2(barra.size.x * clampf(1.0 - quemado, 0.0, 1.0),
+				barra.size.y)), col_b)
+		else:
+			draw_rect(barra, Color("#dc2626"))
+
+		# Pastilla inferior con nombre/estado
+		var nom_g: String = str(Sistema_Cocina.Receta_De_Olla(guiso).get("nombre_corto", guiso)).to_upper()
+		var txt_p: String = nom_g
+		var bg_p := Color("#0f172a", 0.90)
+		var bd_p := Color("#fb923c", 0.85)
+		var fg_p := Color("#fed7aa")
+		if estado == "listo":
+			txt_p = "%s · LISTO" % nom_g
+			bg_p = Color("#14532d", 0.94)
+			bd_p = Color("#4ade80", 0.96)
+			fg_p = Color("#dcfce7")
+		elif estado == "alerta":
+			txt_p = "¡SE QUEMA!"
+			bg_p = Color("#7f1d1d", 0.94)
+			bd_p = Color("#f87171", 0.96)
+			fg_p = Color("#fee2e2")
+		elif estado == "quemado":
+			txt_p = "QUEMADO"
+			bg_p = Color("#450a0a", 0.95)
+			bd_p = Color("#ef4444", 0.96)
+			fg_p = Color("#fecaca")
+		var r_etq := Rect2(4.0, h - 14.0, w - 8.0, 13.0)
+		Arte_Cocina.caja_redondeada(self, r_etq, 4.0, bg_p, bd_p, 1.0)
+		draw_string(Arte_Cocina.FUENTE_TIT,
+			Vector2(r_etq.position.x, r_etq.position.y + 9.5),
+			txt_p, HORIZONTAL_ALIGNMENT_CENTER, r_etq.size.x, 7, fg_p)
+
+		# Anillo superior derecho de estado rápido
+		var anillo_pos := Vector2(w - 10.0, 9.5)
+		match estado:
+			"cocinando":
+				Arte_Cocina.dibujar_anillo(self, anillo_pos, 6.5, progreso, Color("#fb923c"))
+			"listo":
+				Arte_Cocina.dibujar_anillo(self, anillo_pos, 6.5, 1.0 - quemado, Color("#22c55e"))
+			"alerta":
+				Arte_Cocina.dibujar_anillo(self, anillo_pos, 6.5, 1.0 - quemado, Color("#ef4444"))
+			"quemado":
+				draw_circle(anillo_pos, 6.5, Color("#dc2626"))
+				draw_line(anillo_pos + Vector2(-2.8, -2.8), anillo_pos + Vector2(2.8, 2.8),
+					Color.WHITE, 1.7, true)
+				draw_line(anillo_pos + Vector2(2.8, -2.8), anillo_pos + Vector2(-2.8, 2.8),
+					Color.WHITE, 1.7, true)
 
 	func _dibujar_proteina(centro: Vector2) -> void:
 		# Proteínas de los mundos 2-4: filete con punto, huevo, solomillo,
@@ -2409,45 +3175,55 @@ class Punto_Coccion extends Control:
 				punto_vis = "quemado"
 			elif estado == "listo" or estado == "alerta":
 				punto_vis = "hecho" if tipo != "lubina" and tipo != "huevo" else "al_punto"
-			elif progreso < 0.35:
+			elif tipo == "filete":
+				punto_vis = Sistema_Cocina.Calcular_Punto_Filete(progreso, quemado)
+			elif progreso < 0.30:
 				punto_vis = "crudo"
-			elif progreso < 0.62:
+			elif progreso < 0.55:
 				punto_vis = "poco_hecho"
-			elif progreso < 0.85:
+			elif progreso < 0.78:
 				punto_vis = "al_punto"
 			else:
 				punto_vis = "hecho"
 		match tipo:
-			"filete", "solomillo", "pato":
+			"filete":
 				# Se pasa el centro absoluto: dibujar_filete gestiona sus propios
 				# transforms (sombra, escala y giro) y no debe heredar otro.
 				Arte_Cocina.dibujar_filete(self,
 					centro + Vector2(0.0, bob + 3.0), ancho, punto_vis, 1.0)
+			"solomillo", "pato":
+				var tex_cruda: Texture2D = Arte_Cocina.TEX_ALTA_ING_SOLOMILLO \
+					if tipo == "solomillo" else Arte_Cocina.TEX_ALTA_ING_PATO
+				var tex_hecha: Texture2D = Arte_Cocina.TEX_ALTA_SOLOMILLO_HECHO \
+					if tipo == "solomillo" else Arte_Cocina.TEX_ALTA_PATO_HECHO
+				var paso_br: float = 1.0 if estado in ["listo", "pasado", "quemado"] \
+					else clampf(progreso / maxf(0.05, Sistema_Cocina.VENTANA_ALTA_INICIO), 0.0, 1.0)
+				var pos_p := centro + Vector2(0.0, bob + 1.0)
+				if paso_br < 0.98:
+					Arte_Cocina.dibujar_tex_centro(self, tex_cruda, pos_p, ancho * 0.92, 1.0 - paso_br * 0.75)
+				if paso_br > 0.04:
+					var mod_h := Color(0.28, 0.20, 0.16, 1.0) \
+						if estado in ["pasado", "quemado"] else Color.WHITE
+					Arte_Cocina.dibujar_tex_centro(self, tex_hecha, pos_p, ancho * 0.94, paso_br, mod_h)
 			"huevo":
-				draw_set_transform(centro + Vector2(0.0, bob + 2.0), 0.0,
-					Vector2(1.0, 0.72))
-				draw_circle(Vector2.ZERO, ancho * 0.62, Color("#f8fafc"))
-				draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
-				draw_circle(centro + Vector2(ancho * 0.10, -ancho * 0.02 + bob),
-					ancho * 0.24,
-					Color("#f59e0b") if estado != "quemado" else Color("#78350f"))
-			"lubina":
-				draw_set_transform(centro + Vector2(0.0, bob), 0.0, Vector2.ONE)
-				draw_colored_polygon(PackedVector2Array([
-					Vector2(-ancho * 0.52, -ancho * 0.16),
-					Vector2(ancho * 0.44, -ancho * 0.34),
-					Vector2(ancho * 0.56, 0.0),
-					Vector2(-ancho * 0.34, ancho * 0.22),
-				]), Color("#f1f5f9"))
-				draw_polyline(PackedVector2Array([
-					Vector2(-ancho * 0.52, -ancho * 0.16),
-					Vector2(ancho * 0.44, -ancho * 0.34),
-					Vector2(ancho * 0.56, 0.0),
-					Vector2(-ancho * 0.34, ancho * 0.22),
-					Vector2(-ancho * 0.52, -ancho * 0.16),
-				]), Color("#cbd5e1"), 1.5, true)
-				draw_circle(Vector2(-ancho * 0.36, -ancho * 0.10), 2.0, Color("#0f172a"))
-				draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+				var huevo_q: bool = estado == "quemado" or (estado == "alerta" and quemado >= 0.72)
+				Arte_Cocina.dibujar_huevo_frito(self, centro + Vector2(0.0, bob + 2.0),
+					ancho * 1.00, huevo_q, 1.0)
+				if estado == "cocinando":
+					for b_i in range(3):
+						var fase_h: float = fmod(tiempo * 2.2 + float(b_i) * 0.33, 1.0)
+						draw_circle(centro + Vector2((float(b_i) - 1.0) * 10.0, 4.0 - fase_h * 14.0),
+							1.5, Color("#fef08a", 0.55 * (1.0 - fase_h)))
+			"lubina", "salmon":
+				var pescado_q: bool = estado == "quemado" or estado == "pasado" or (estado == "alerta" and quemado >= 0.72)
+				var pescado_frito: bool = estado in ["listo", "alerta", "quemado"] or progreso >= 0.55
+				Arte_Cocina.dibujar_pescado(self, centro + Vector2(0.0, bob + 1.0),
+					ancho * 0.96, tipo, 4, 4, true, pescado_frito, 0.0, pescado_q, 1.0)
+				if estado == "cocinando":
+					for b_p in range(4):
+						var fase_p: float = fmod(tiempo * 2.6 + float(b_p) * 0.25, 1.0)
+						draw_circle(centro + Vector2((float(b_p) - 1.5) * 9.0, 5.0 - fase_p * 14.0),
+							1.6, Color("#fde047", 0.65 * (1.0 - fase_p)))
 			_:
 				Arte_Cocina.dibujar_ingrediente_icono(self, tipo,
 					centro + Vector2(0.0, bob), ancho, 1.0)
@@ -2465,9 +3241,33 @@ class Punto_Coccion extends Control:
 			draw_line(Vector2(marca, barra.position.y - 1.5),
 				Vector2(marca, barra.end.y + 1.5), Color.WHITE, 2.0, true)
 		else:
+			if tipo == "filete":
+				# Bandas tenues con las 4 zonas de punto (crudo, poco hecho, al punto, hecho).
+				var zonas := [
+					[0.0, 0.30, "crudo"],
+					[0.30, 0.55, "poco_hecho"],
+					[0.55, 0.78, "al_punto"],
+					[0.78, 1.0, "hecho"],
+				]
+				for z in zonas:
+					var zx: float = barra.position.x + barra.size.x * float(z[0])
+					var zw: float = barra.size.x * (float(z[1]) - float(z[0]))
+					draw_rect(Rect2(zx, barra.position.y, zw, barra.size.y),
+						Color(Arte_Cocina.punto_color(str(z[2])), 0.28))
 			var col_punto := Arte_Cocina.punto_color(punto_vis)
 			var p: float = clampf(progreso, 0.0, 1.0)
 			draw_rect(Rect2(barra.position, Vector2(barra.size.x * p, barra.size.y)), col_punto)
+			if tipo == "filete":
+				for corte in [0.30, 0.55, 0.78]:
+					var tx: float = barra.position.x + barra.size.x * corte
+					draw_line(Vector2(tx, barra.position.y),
+						Vector2(tx, barra.end.y), Color(1.0, 1.0, 1.0, 0.65), 1.0)
+				if quemado > 0.02 and estado != "quemado":
+					var pulso_q: float = 0.55 + 0.45 * sin(tiempo * 12.0)
+					var col_q := Color("#f97316", 0.90) if estado != "alerta" else Color("#ef4444", pulso_q)
+					var frac_q: float = clampf(quemado / Sistema_Cocina.PUNTO_FILETE_QUEMADO, 0.0, 1.0)
+					draw_rect(Rect2(barra.position.x, barra.position.y - 3.0,
+						barra.size.x * frac_q, 2.0), col_q)
 			var marca2: float = barra.position.x + barra.size.x * p
 			draw_line(Vector2(marca2, barra.position.y - 1.5),
 				Vector2(marca2, barra.end.y + 1.5), Color.WHITE, 1.6, true)
@@ -2490,6 +3290,9 @@ class Punto_Coccion extends Control:
 		if size.x <= 4.0 or size.y <= 4.0:
 			return
 		var centro := size * 0.5
+		if tipo == "cazuela":
+			_dibujar_cazuela(centro)
+			return
 		if estado == "vacio":
 			var rx: float = size.x * 0.30
 			draw_arc(centro, rx, 0.0, TAU, 24, Color(0.30, 0.36, 0.44, 0.28), 1.6, true)
@@ -2548,7 +3351,7 @@ class Punto_Coccion extends Control:
 					draw_line(anillo_pos + Vector2(3.5, -3.5), anillo_pos + Vector2(-3.5, 3.5),
 						Color.WHITE, 2.0, true)
 		else:
-			if tipo in ["filete", "solomillo", "lubina", "pato", "huevo", "generico"]:
+			if tipo in ["filete", "solomillo", "lubina", "salmon", "pato", "huevo", "generico"]:
 				_dibujar_proteina(centro)
 				return
 			# Patatas
@@ -2630,6 +3433,14 @@ class Icono_Mejora extends Control:
 			var lado: float = minf(size.x, size.y) * 0.94
 			Arte_Cocina.dibujar_mejora_bistro(self, size * 0.5, lado,
 				mejora_id, nivel)
+		elif restaurante == Sistema_Cocina.RESTAURANTE_MERCADO:
+			var lado_m: float = minf(size.x, size.y) * 0.94
+			Arte_Cocina.dibujar_mejora_mercado(self, size * 0.5, lado_m,
+				mejora_id, nivel)
+		elif restaurante == Sistema_Cocina.RESTAURANTE_ALTA:
+			var lado_a: float = minf(size.x, size.y) * 0.94
+			Arte_Cocina.dibujar_mejora_alta(self, size * 0.5, lado_a,
+				mejora_id, nivel)
 		elif textura != null:
 			var lado_tex: float = minf(size.x, size.y)
 			var r := Rect2((size.x - lado_tex) * 0.5, (size.y - lado_tex) * 0.5,
@@ -2656,7 +3467,9 @@ class Bebida extends Control:
 			"cafe": return Arte_Cocina.TEX_CAFE
 			"agua": return Arte_Cocina.TEX_AGUA
 			"zumo": return Arte_Cocina.TEX_ZUMO
-			"sangria", "vino_tinto", "vino_blanco": return null
+			"sangria": return Arte_Cocina.TEX_MERCADO_SANGRIA
+			"vino_tinto": return Arte_Cocina.TEX_ALTA_VINO_TINTO
+			"vino_blanco": return Arte_Cocina.TEX_ALTA_VINO_BLANCO
 		return Arte_Cocina.TEX_REFRESCO
 
 	func _draw() -> void:
@@ -2666,15 +3479,19 @@ class Bebida extends Control:
 		var tex := _textura()
 		var niv: float = clampf(progreso, 0.0, 1.0) if estado == "llenando" else 1.0
 		if tex == null:
-			# Copas de vino / sangría: se dibujan vectoriales para que el
-			# maridaje se lea por color (tinto vs. blanco).
-			var tinto: bool = tipo in ["sangria", "vino_tinto"]
+			# Copas de vino / sangría: se dibujan vectoriales para distinguirlas al instante.
 			var alpha_copa: float = (0.40 + 0.60 * niv) if estado == "llenando" else 1.0
-			Arte_Cocina.dibujar_copa_vino(self, Vector2(size.x * 0.5, size.y * 0.50),
-				minf(size.x * 0.92, size.y * 0.90), tinto, alpha_copa)
+			if tipo == "sangria":
+				Arte_Cocina.dibujar_copa_sangria(self, Vector2(size.x * 0.5, size.y * 0.52),
+					size.y * 0.88, alpha_copa)
+			else:
+				var tinto: bool = tipo == "vino_tinto"
+				Arte_Cocina.dibujar_copa_vino(self, Vector2(size.x * 0.5, size.y * 0.50),
+					minf(size.x * 0.92, size.y * 0.90), tinto, alpha_copa)
 			if estado == "llenando":
 				Arte_Cocina.dibujar_barra(self,
-					Rect2(2.0, size.y - 6.0, size.x - 4.0, 5.0), niv, Color("#f472b6"))
+					Rect2(2.0, size.y - 6.0, size.x - 4.0, 5.0), niv,
+					Color("#f97316") if tipo == "sangria" else Color("#f472b6"))
 			return
 		var r := Arte_Cocina.rect_ajustado(tex, caja)
 
@@ -2690,16 +3507,29 @@ class Bebida extends Control:
 				draw_texture_rect_region(tex, dst, src, Color(1, 1, 1, 1))
 			# Chorro desde la boquilla
 			var chorro_x: float = r_vis.position.x + r_vis.size.x * 0.5
+			var col_chorro := Color(0.25, 0.10, 0.03, 0.85)
+			var col_barra_beb := Color("#38bdf8") if tipo in ["refresco", "agua"] else Color("#d97706")
+			if tipo == "sangria":
+				col_chorro = Color("#991b1b", 0.88)
+				col_barra_beb = Color("#f97316")
+			elif tipo == "vino_tinto":
+				col_chorro = Color("#7f1d1d", 0.90)
+				col_barra_beb = Color("#dc2626")
+			elif tipo == "vino_blanco":
+				col_chorro = Color("#fef08a", 0.88)
+				col_barra_beb = Color("#fbbf24")
+			elif tipo == "agua":
+				col_chorro = Color(0.70, 0.90, 1.0, 0.80)
 			draw_line(Vector2(chorro_x, r_vis.position.y - 8.0), Vector2(chorro_x, r_vis.position.y + 4.0),
-				Color(0.25, 0.10, 0.03, 0.85), 3.0, true)
+				col_chorro, 3.0, true)
+			var col_burbuja: Color = Color(1.0, 0.9, 0.5, 0.5) if tipo == "refresco" else Color(0.92, 0.76, 0.54, 0.55)
 			for k in range(3):
 				var fase: float = fmod(tiempo * 2.0 + float(k) * 0.33, 1.0)
 				draw_circle(Vector2(chorro_x + sin(tiempo * 7.0 + k) * 3.0,
 					r_vis.position.y + r_vis.size.y * 0.55 - fase * r_vis.size.y * 0.35),
-					1.5, Color(1.0, 0.9, 0.5, 0.5 * (1.0 - fase)))
+					1.5, Color(col_burbuja.r, col_burbuja.g, col_burbuja.b, col_burbuja.a * (1.0 - fase)))
 			Arte_Cocina.dibujar_barra(self,
-				Rect2(2.0, size.y - 6.0, size.x - 4.0, 5.0), niv,
-				Color("#38bdf8") if tipo == "refresco" else Color("#fbbf24"))
+				Rect2(2.0, size.y - 6.0, size.x - 4.0, 5.0), niv, col_barra_beb)
 		else:
 			var esc: float = 1.0 + sin(clampf(pop, 0.0, 1.0) * PI) * 0.10
 			var r_pop := Rect2(r.position + (r.size - r.size * esc) * 0.5, r.size * esc)
@@ -2753,6 +3583,8 @@ class Puesto_Ingrediente extends Control:
 				_dibujar_pan(caja, pulso)
 			"carne":
 				_dibujar_carne(caja)
+			"filete_crudo":
+				_dibujar_filete_puesto(caja)
 			"queso":
 				_dibujar_queso(caja)
 			"lechuga":
@@ -2761,6 +3593,36 @@ class Puesto_Ingrediente extends Control:
 				_dibujar_tomate(caja)
 			"patatas":
 				_dibujar_patatas(caja, pulso)
+			"salsa":
+				_dibujar_salsa(caja)
+			"perejil":
+				_dibujar_perejil(caja, pulso)
+			"tarta":
+				_dibujar_tarta(caja, pulso)
+			"alubias":
+				_dibujar_alubias(caja)
+			"chorizo":
+				_dibujar_chorizo(caja)
+			"pimiento":
+				_dibujar_pimiento(caja)
+			"arroz":
+				_dibujar_arroz(caja)
+			"marisco":
+				_dibujar_marisco(caja)
+			"huevo":
+				_dibujar_huevo(caja)
+			"solomillo":
+				_dibujar_puesto_alta(caja, Arte_Cocina.TEX_ALTA_PUESTO_SOLOMILLO, 0.44)
+			"pato":
+				_dibujar_puesto_alta(caja, Arte_Cocina.TEX_ALTA_PUESTO_PATO, 0.44)
+			"lubina":
+				_dibujar_puesto_alta(caja, Arte_Cocina.TEX_ALTA_PUESTO_LUBINA, 0.44)
+			"salmon":
+				_dibujar_puesto_alta(caja, Arte_Cocina.TEX_ALTA_PUESTO_SALMON, 0.44)
+			"pure":
+				_dibujar_puesto_alta(caja, Arte_Cocina.TEX_ALTA_PUESTO_PURE, 0.36)
+			"esparragos":
+				_dibujar_puesto_alta(caja, Arte_Cocina.TEX_ALTA_PUESTO_ESPARRAGOS, 0.40)
 			_:
 				_dibujar_generico(caja, dibujo, pulso)
 		_dibujar_placa(pulso)
@@ -2852,12 +3714,13 @@ class Puesto_Ingrediente extends Control:
 
 	func _dibujar_patatas(caja: Rect2, _pulso: float) -> void:
 		# Cesta roja con patatas cortadas en bastones asomando por el borde.
-		_sombra(Vector2(size.x * 0.5, caja.end.y - 1.0), caja.size.x * 0.38, 6.0, 0.27)
+		var ancho_cesta: float = minf(caja.size.x * 0.84, 126.0)
+		_sombra(Vector2(size.x * 0.5, caja.end.y - 1.0), ancho_cesta * 0.45, 6.0, 0.27)
 		var cx: float = size.x * 0.5
 		var base_y: float = caja.end.y - 1.0
 		for i in range(7):
 			var t: float = float(i) / 6.0
-			var x: float = cx + lerpf(-30.0, 30.0, t)
+			var x: float = cx + lerpf(-ancho_cesta * 0.25, ancho_cesta * 0.25, t)
 			var alto: float = 36.0 + sin(t * PI) * 11.0
 			var incl: float = lerpf(-0.30, 0.30, t)
 			var a := Vector2(x, base_y - 18.0)
@@ -2866,29 +3729,143 @@ class Puesto_Ingrediente extends Control:
 			draw_line(a, b, Color("#fde047"), 5.0, true)
 			draw_line(a + Vector2(0.0, -1.0), b + Vector2(0.0, -1.0),
 				Color("#fef3c7", 0.60), 1.4, true)
-		var cesta := Rect2(cx - caja.size.x * 0.42, base_y - 49.0,
-			caja.size.x * 0.84, 49.0)
+		var cesta := Rect2(cx - ancho_cesta * 0.5, base_y - 49.0,
+			ancho_cesta, 49.0)
 		Arte_Cocina.dibujar_tex_recortada(self, Arte_Cocina.TEX_CESTA, cesta)
 
+	func _dibujar_filete_puesto(caja: Rect2) -> void:
+		# Tabla de roble de carnicero con tres filetes crudos listos para la parrilla y romero.
+		_sombra(Vector2(size.x * 0.5, caja.end.y - 1.0), caja.size.x * 0.44, 7.0, 0.28)
+		var tabla := Rect2(caja.position.x + 4.0, caja.position.y + caja.size.y * 0.24,
+			caja.size.x - 8.0, caja.size.y * 0.70)
+		Arte_Cocina.caja_redondeada(self, tabla, 8.0, Color("#6b3f1d"), Color("#3f240f"), 1.6)
+		Arte_Cocina.caja_redondeada(self, tabla.grow(-3.0), 6.0, Color("#8a5326"))
+		var papel := tabla.grow(-7.0)
+		Arte_Cocina.caja_redondeada(self, papel, 4.0, Color("#efe6d2", 0.92), Color("#cbb999"), 1.0)
+		var cx: float = papel.get_center().x
+		var cy: float = papel.get_center().y + 1.0
+		var ancho_f: float = clampf(papel.size.x * 0.32, 34.0, 50.0)
+		# Filete trasero central y dos delanteros laterales.
+		Arte_Cocina.dibujar_filete(self, Vector2(cx + 2.0, cy - 8.0), ancho_f * 0.88, "crudo")
+		Arte_Cocina.dibujar_filete(self, Vector2(cx - ancho_f * 0.78, cy + 3.0), ancho_f, "crudo")
+		Arte_Cocina.dibujar_filete(self, Vector2(cx + ancho_f * 0.78, cy + 3.0), ancho_f, "crudo")
+		# Ramita de romero fresco en la esquina.
+		var r0 := Vector2(papel.position.x + 12.0, papel.end.y - 6.0)
+		var r1 := r0 + Vector2(18.0, -10.0)
+		draw_line(r0, r1, Color("#3f6212"), 1.6, true)
+		for k in range(4):
+			var p: Vector2 = r0.lerp(r1, 0.22 + 0.20 * float(k))
+			draw_line(p, p + Vector2(-4.0, -4.0), Color("#65a30d"), 1.3, true)
+
+	func _dibujar_salsa(caja: Rect2) -> void:
+		# Base de pizarra con salsera metálica de jugo a la pimienta.
+		var ancho_t: float = minf(caja.size.x - 8.0, 126.0)
+		var base := Rect2(size.x * 0.5 - ancho_t * 0.5, caja.position.y + caja.size.y * 0.36,
+			ancho_t, caja.size.y * 0.58)
+		_sombra(Vector2(size.x * 0.5, caja.end.y - 1.0), ancho_t * 0.45, 6.0, 0.27)
+		Arte_Cocina.caja_redondeada(self, base, 7.0, Color("#242933"), Color("#0f1318"), 1.5)
+		Arte_Cocina.caja_redondeada(self, base.grow(-2.5), 5.0, Color("#333a47"))
+		var w_sal: float = minf(ancho_t * 0.66, 76.0)
+		var h_sal: float = w_sal * 0.74
+		var c_sal := Vector2(size.x * 0.5, base.position.y + base.size.y * 0.34)
+		Arte_Cocina.dibujar_tex_recortada(self, Arte_Cocina.TEX_SALSERA,
+			Rect2(c_sal - Vector2(w_sal, h_sal) * 0.5, Vector2(w_sal, h_sal)))
+		# Granos de pimienta decorativos sobre la pizarra.
+		for off in [Vector2(-ancho_t * 0.34, 8.0), Vector2(-ancho_t * 0.27, 13.0),
+				Vector2(ancho_t * 0.32, 9.0)]:
+			draw_circle(c_sal + off, 1.8, Color("#1c1917"))
+			draw_circle(c_sal + off + Vector2(-0.5, -0.5), 0.7, Color("#a8a29e"))
+
+	func _dibujar_perejil(caja: Rect2, _pulso: float) -> void:
+		# Tabla de madera con cuenco de pizarra lleno de perejil fresco.
+		var ancho_t: float = minf(caja.size.x - 8.0, 126.0)
+		var tabla := Rect2(size.x * 0.5 - ancho_t * 0.5, caja.position.y + caja.size.y * 0.32,
+			ancho_t, caja.size.y * 0.62)
+		_sombra(Vector2(size.x * 0.5, caja.end.y - 1.0), ancho_t * 0.45, 6.0, 0.27)
+		Arte_Cocina.caja_redondeada(self, tabla, 7.0, Color("#5c3a1e"), Color("#2c180b"), 1.5)
+		Arte_Cocina.caja_redondeada(self, tabla.grow(-2.5), 5.0, Color("#7c4d25"))
+		var cuenco_c := tabla.get_center() + Vector2(0.0, -2.0)
+		draw_set_transform(cuenco_c + Vector2(0.0, 4.0), 0.0, Vector2(1.0, 0.55))
+		draw_circle(Vector2.ZERO, 24.0, Color("#1e293b"))
+		draw_circle(Vector2.ZERO, 20.0, Color("#334155"))
+		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+		Arte_Cocina.dibujar_ingrediente_icono(self, "perejil", cuenco_c + Vector2(0.0, -4.0),
+			48.0, 1.0)
+
+	func _dibujar_tarta(caja: Rect2, pulso: float) -> void:
+		# Vitrina expositora de acero y cristal con porciones de tarta de cereza dentro.
+		var vitrina_h: float = maxf(54.0, caja.size.y * 1.12)
+		var vitrina_w: float = vitrina_h * 1.24
+		var cx: float = size.x * 0.5
+		var base_y: float = caja.end.y + 1.0
+		_sombra(Vector2(cx, base_y), vitrina_w * 0.46, 6.0, 0.28)
+		var vr := Rect2(cx - vitrina_w * 0.5, base_y - vitrina_h, vitrina_w, vitrina_h)
+		Arte_Cocina.dibujar_tex(self, Arte_Cocina.TEX_VITRINA_EXPOSICION, vr)
+		var tarta_sz := Vector2(vitrina_w * 0.28, vitrina_w * 0.24)
+		Arte_Cocina.dibujar_tex(self, Arte_Cocina.TEX_TARTA,
+			Rect2(vr.position + Vector2(vitrina_w * 0.23, vitrina_h * 0.20), tarta_sz))
+		Arte_Cocina.dibujar_tex(self, Arte_Cocina.TEX_TARTA,
+			Rect2(vr.position + Vector2(vitrina_w * 0.45, vitrina_h * 0.41), tarta_sz))
+		draw_line(vr.position + Vector2(vitrina_w * 0.22, vitrina_h * 0.20),
+			vr.position + Vector2(vitrina_w * 0.38, vitrina_h * 0.55),
+			Color(1.0, 1.0, 1.0, 0.16 + 0.08 * pulso), 2.5, true)
+
+	func _dibujar_puesto_tex(caja: Rect2, tex: Texture2D, frac_sombra: float = 0.42) -> void:
+		_sombra(Vector2(size.x * 0.5, caja.end.y - 1.0), caja.size.x * frac_sombra, 6.0, 0.28)
+		Arte_Cocina.dibujar_tex_recortada(self, tex,
+			Rect2(caja.position.x + 2.0, caja.position.y + 1.0,
+				caja.size.x - 4.0, caja.size.y - 2.0))
+
+	func _dibujar_puesto_alta(caja: Rect2, tex: Texture2D, frac_sombra: float = 0.42) -> void:
+		_sombra(Vector2(size.x * 0.5, caja.end.y - 1.0), caja.size.x * frac_sombra, 6.0, 0.28)
+		var r := Arte_Cocina.rect_ajustado(tex, Rect2(caja.position.x + 2.0, caja.position.y + 1.0,
+			caja.size.x - 4.0, caja.size.y - 2.0))
+		draw_texture_rect(tex, r, false, Color.WHITE)
+
+	func _dibujar_alubias(caja: Rect2) -> void:
+		_dibujar_puesto_tex(caja, Arte_Cocina.TEX_MERCADO_PUESTO_ALUBIAS, 0.42)
+
+	func _dibujar_chorizo(caja: Rect2) -> void:
+		_dibujar_puesto_tex(caja, Arte_Cocina.TEX_MERCADO_PUESTO_CHORIZO, 0.44)
+
+	func _dibujar_pimiento(caja: Rect2) -> void:
+		_dibujar_puesto_tex(caja, Arte_Cocina.TEX_MERCADO_PUESTO_PIMIENTO, 0.43)
+
+	func _dibujar_arroz(caja: Rect2) -> void:
+		_dibujar_puesto_tex(caja, Arte_Cocina.TEX_MERCADO_PUESTO_ARROZ, 0.40)
+
+	func _dibujar_marisco(caja: Rect2) -> void:
+		_dibujar_puesto_tex(caja, Arte_Cocina.TEX_MERCADO_PUESTO_MARISCO, 0.44)
+
+	func _dibujar_huevo(caja: Rect2) -> void:
+		_dibujar_puesto_tex(caja, Arte_Cocina.TEX_MERCADO_PUESTO_HUEVO, 0.43)
+
 	func _dibujar_generico(caja: Rect2, estilo_id: String, pulso: float) -> void:
-		# Contenedor neutro de cocina (tabla de madera o bandeja metálica) con
-		# el icono vectorial del ingrediente. Da variedad a las despensas de
-		# los mundos 2-4 sin convertir cada puesto en una tarjeta de botón.
-		var es_bandeja: bool = estilo_id in ["filete_crudo", "solomillo", "lubina", "pato",
-			"marisco", "huevo", "salsa"]
+		# Contenedor propio de cada estación en mundos 2-4: bandejas metálicas,
+		# cama de hielo para pescado entero o tabla de madera.
+		var es_pescado: bool = estilo_id in ["lubina", "salmon"]
+		var es_bandeja: bool = estilo_id in ["filete_crudo", "solomillo", "pato",
+			"marisco", "huevo", "salsa"] or es_pescado
 		var tabla := Rect2(caja.position.x + 3.0, caja.position.y + 6.0,
 			caja.size.x - 6.0, caja.size.y - 4.0)
 		_sombra(Vector2(size.x * 0.5, caja.end.y - 1.0), caja.size.x * 0.40, 6.0, 0.27)
 		if es_bandeja:
 			Arte_Cocina.dibujar_tex_recortada(self, Arte_Cocina.TEX_BANDEJA, tabla)
+			if es_pescado:
+				var hielo := tabla.grow(-7.0)
+				Arte_Cocina.caja_redondeada(self, hielo, 6.0, Color("#bae6fd", 0.34 + 0.08 * pulso))
+				for hk in range(4):
+					var hx: float = hielo.position.x + hielo.size.x * (0.20 + float(hk) * 0.20)
+					var hy: float = hielo.position.y + hielo.size.y * (0.30 if hk % 2 == 0 else 0.65)
+					draw_circle(Vector2(hx, hy), 2.2, Color("#f0f9ff", 0.65))
 		else:
 			Arte_Cocina.caja_redondeada(self, tabla, 8.0, Color("#7c4a21"), Color("#4a2a12"), 1.5)
 			Arte_Cocina.caja_redondeada(self, tabla.grow(-3.0), 6.0, Color("#a86a33"))
 			draw_circle(Vector2(tabla.end.x - 12.0, tabla.position.y + 11.0), 4.0,
 				Color("#3f240f"))
 		# El icono ocupa el centro del recipiente y respira con el hover.
-		var lado: float = minf(tabla.size.x * 0.62, tabla.size.y * 0.88)
-		var centro := Vector2(tabla.get_center().x, tabla.position.y + tabla.size.y * 0.52)
+		var lado: float = minf(tabla.size.x * 0.72, tabla.size.y * 0.90)
+		var centro := Vector2(tabla.get_center().x, tabla.position.y + tabla.size.y * 0.48)
 		Arte_Cocina.dibujar_ingrediente_icono(self, estilo_id, centro, lado, 1.0)
 		# Brillo del cristal de la vitrina de postres
 		if estilo_id == "tarta":
@@ -2917,16 +3894,11 @@ class Puesto_Ingrediente extends Control:
 # Estaciones propias de los mundos 2-4
 # ============================================================================
 
-class Estacion_Olla extends Control:
-	# Olla de guiso por lotes del mercado: muestra los ingredientes que se han
-	# añadido, el progreso de la tanda y las raciones que quedan.
-	var ingredientes: Array = []
-	var estado: String = "vacio"  # vacio | cocinando | listo
-	var progreso: float = 0.0
-	var raciones: int = 0
-	var receta: String = ""
+class Estacion_Fogones extends Control:
+	# Fogón de 4 quemadores 2.5D para las cazuelas individuales del mercado.
+	# Resalta los fogones abiertos y sella con candado Nv.2/Nv.3 los bloqueados.
+	var huecos_activos: int = 2
 	var tiempo: float = 0.0
-	var pop: float = 0.0
 
 	func _init() -> void:
 		mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -2936,131 +3908,40 @@ class Estacion_Olla extends Control:
 			return
 		var w: float = size.x
 		var h: float = size.y
-		var cx: float = w * 0.5
-		var base_y: float = h - 14.0
-		var pulso: float = 0.5 + 0.5 * sin(tiempo * 4.0)
-
-		# Fogón
-		Arte_Cocina.caja_redondeada(self, Rect2(20.0, base_y - 16.0, w - 40.0, 22.0),
-			8.0, Color("#1f2937"), Color("#0b1220"), 2.0)
-		draw_circle(Vector2(cx, base_y - 8.0), w * 0.26, Color("#f97316", 0.10 + 0.05 * pulso))
-
-		var ancho_olla: float = minf(w * 0.72, 176.0)
-		var y_rim: float = 58.0
-		var y_bottom: float = base_y - 10.0
-		var rx: float = ancho_olla * 0.5
-
-		# Sombra de contacto
-		draw_set_transform(Vector2(cx, y_bottom + 2.0), 0.0, Vector2(1.0, 0.24))
-		draw_circle(Vector2.ZERO, rx * 1.04, Color(0.0, 0.0, 0.0, 0.30))
+		var pulso: float = 0.5 + 0.5 * sin(tiempo * 3.8)
+		draw_set_transform(Vector2(w * 0.5, h - 5.0), 0.0, Vector2(1.0, 0.16))
+		draw_circle(Vector2.ZERO, w * 0.48, Color(0.0, 0.0, 0.0, 0.28))
 		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+		var r_est := Arte_Cocina.dibujar_tex(self, Arte_Cocina.TEX_MERCADO_FOGONES,
+			Rect2(0.0, 0.0, w, h))
 
-		# Cuerpo de cobre con fondo redondeado
-		var cuerpo := PackedVector2Array([
-			Vector2(cx - rx, y_rim),
-			Vector2(cx + rx, y_rim),
-			Vector2(cx + rx * 0.84, y_bottom - 14.0),
-			Vector2(cx + rx * 0.50, y_bottom),
-			Vector2(cx - rx * 0.50, y_bottom),
-			Vector2(cx - rx * 0.84, y_bottom - 14.0),
-		])
-		draw_colored_polygon(cuerpo, Color("#b45309"))
-		# Brillo y sombra del cuerpo
-		draw_colored_polygon(PackedVector2Array([
-			Vector2(cx - rx * 0.92, y_rim + 10.0),
-			Vector2(cx - rx * 0.32, y_rim + 10.0),
-			Vector2(cx - rx * 0.30, y_bottom - 18.0),
-			Vector2(cx - rx * 0.70, y_bottom - 18.0),
-		]), Color("#f59e0b", 0.22))
-		draw_colored_polygon(PackedVector2Array([
-			Vector2(cx + rx * 0.58, y_rim + 10.0),
-			Vector2(cx + rx * 0.90, y_rim + 10.0),
-			Vector2(cx + rx * 0.78, y_bottom - 18.0),
-			Vector2(cx + rx * 0.60, y_bottom - 18.0),
-		]), Color("#7c2d12", 0.35))
-		# Aros de cobre
-		for frac in [0.35, 0.68]:
-			var yy: float = lerpf(y_rim, y_bottom, float(frac))
-			draw_line(Vector2(cx - rx * 0.94, yy), Vector2(cx + rx * 0.94, yy),
-				Color("#fbbf24", 0.28), 3.0, true)
-		draw_polyline(cuerpo, Color("#5b2b12"), 3.0, true)
-
-		# Asas
-		draw_arc(Vector2(cx - rx - 1.0, y_rim + 34.0), 14.0, PI * 0.45, PI * 1.55, 14,
-			Color("#92400e"), 8.0, true)
-		draw_arc(Vector2(cx + rx + 1.0, y_rim + 34.0), 14.0, -PI * 0.55, PI * 0.55, 14,
-			Color("#92400e"), 8.0, true)
-		draw_arc(Vector2(cx - rx - 1.0, y_rim + 34.0), 14.0, PI * 0.45, PI * 1.55, 14,
-			Color("#fbbf24", 0.55), 2.0, true)
-		draw_arc(Vector2(cx + rx + 1.0, y_rim + 34.0), 14.0, -PI * 0.55, PI * 0.55, 14,
-			Color("#fbbf24", 0.55), 2.0, true)
-
-		# Borde y superficie del guiso
-		draw_set_transform(Vector2(cx, y_rim), 0.0, Vector2(1.0, 0.26))
-		draw_circle(Vector2.ZERO, rx * 1.02, Color("#d97706"))
-		draw_circle(Vector2.ZERO, rx * 0.92, Color("#5b2b12"))
-		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
-		draw_line(Vector2(cx - rx, y_rim), Vector2(cx + rx, y_rim),
-			Color("#fbbf24"), 4.0, true)
-		if estado != "vacio":
-			var col_guiso := Color("#9a3412")
-			if receta == "pisto":
-				col_guiso = Color("#b91c1c")
-			elif receta == "arroz":
-				col_guiso = Color("#eab308")
-			draw_set_transform(Vector2(cx, y_rim + 1.0), 0.0, Vector2(1.0, 0.22))
-			draw_circle(Vector2.ZERO, rx * 0.84, Color(col_guiso))
-			draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
-			# Tropezones y burbujas
-			for k in range(7):
-				var a: float = TAU * float(k) / 7.0 + tiempo * 0.5
-				var bx: float = cx + cos(a) * rx * 0.44
-				var by: float = y_rim + 2.0 + sin(a) * 8.0
-				var rr: float = 2.4 + 1.8 * (0.5 + 0.5 * sin(tiempo * 5.0 + float(k)))
-				draw_circle(Vector2(bx, by), rr,
-					Color(1.0, 0.85, 0.5, 0.55) if receta != "pisto" else Color(0.3, 0.75, 0.25, 0.55))
-			# Vapor
-			for k in range(3):
-				var fase: float = fmod(tiempo * 0.7 + float(k) * 0.33, 1.0)
-				var sx: float = cx + sin(tiempo * 1.8 + float(k) * 2.0) * 14.0
-				var sy: float = y_rim - 8.0 - fase * 30.0
-				draw_circle(Vector2(sx, sy), 4.0 + fase * 6.0,
-					Color(1.0, 1.0, 1.0, 0.18 * (1.0 - fase)))
-
-		# Ingredientes añadidos, en fila sobre la olla
-		var n: int = ingredientes.size()
-		if n > 0:
-			var lado: float = 32.0
-			var sep: float = 5.0
-			var total: float = float(n) * lado + float(n - 1) * sep
-			var x0: float = cx - total * 0.5
-			for i in range(n):
-				var centro_i := Vector2(x0 + lado * 0.5 + float(i) * (lado + sep), 30.0)
-				draw_circle(centro_i, lado * 0.60, Color(0.06, 0.09, 0.15, 0.62))
-				draw_arc(centro_i, lado * 0.60, 0.0, TAU, 20, Color("#fbbf24", 0.65), 1.5, true)
-				Arte_Cocina.dibujar_ingrediente_icono(self, str(ingredientes[i]), centro_i, lado, 1.0)
-
-		# Barra de progreso
-		if estado == "cocinando":
-			Arte_Cocina.dibujar_barra(self, Rect2(14.0, h - 9.0, w - 28.0, 6.0), progreso,
-				Color("#fb923c"))
-
-		# Píldora de raciones
-		if estado == "listo" and raciones > 0:
-			var pill := Rect2(w - 52.0, 6.0, 44.0, 22.0)
-			Arte_Cocina.caja_redondeada(self, pill, 999.0, Color("#166534", 0.95),
-				Color("#86efac"), 1.5)
-			draw_string(Arte_Cocina.FUENTE_TIT, Vector2(pill.position.x, pill.position.y + 16.0),
-				"x%d" % raciones, HORIZONTAL_ALIGNMENT_CENTER, pill.size.x, 13, Color.WHITE)
-		# Etiqueta de estado
-		var texto: String = "AÑADE 2 INGREDIENTES"
-		if estado == "cocinando":
-			texto = "COCIENDO…"
-		elif estado == "listo":
-			texto = "TOCA PARA SERVIR"
-		if texto != "":
-			draw_string(Arte_Cocina.FUENTE_UI, Vector2(0.0, 13.0), texto,
-				HORIZONTAL_ALIGNMENT_CENTER, w, 10, Color("#fde68a", 0.90))
+		# Centros alineados exactamente sobre las 4 rejillas de Fogones_Mercado.png
+		var centros: Array[Vector2] = [
+			r_est.position + Vector2(r_est.size.x * 0.38, r_est.size.y * 0.21),
+			r_est.position + Vector2(r_est.size.x * 0.72, r_est.size.y * 0.25),
+			r_est.position + Vector2(r_est.size.x * 0.30, r_est.size.y * 0.42),
+			r_est.position + Vector2(r_est.size.x * 0.66, r_est.size.y * 0.47),
+		]
+		for i in range(4):
+			var c: Vector2 = centros[i]
+			if i < huecos_activos:
+				draw_set_transform(c, 0.0, Vector2(1.0, 0.54))
+				draw_circle(Vector2.ZERO, 20.0, Color("#f97316", 0.14 + 0.08 * pulso))
+				draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+			else:
+				var rebaje := Rect2(c.x - 28.0, c.y - 16.0, 56.0, 34.0)
+				Arte_Cocina.caja_redondeada(self, rebaje, 8.0, Color("#111827", 0.90),
+					Color("#64748b", 0.85), 1.2)
+				var lock_sz := Vector2(16.0, 18.0)
+				var lock_c := c + Vector2(0.0, -4.0)
+				Arte_Cocina.dibujar_tex(self, Arte_Cocina.TEX_CANDADO_CERRADO,
+					Rect2(lock_c - lock_sz * 0.5, lock_sz))
+				var pill := Rect2(c.x - 16.0, c.y + 5.0, 32.0, 12.0)
+				Arte_Cocina.caja_redondeada(self, pill, 6.0, Color("#0f172a", 0.95),
+					Color("#fbbf24", 0.78 + 0.16 * pulso), 1.0)
+				draw_string(Arte_Cocina.FUENTE_TIT, Vector2(pill.position.x, pill.position.y + 9.2),
+					"Nv.%d" % clampi(i, 2, 3), HORIZONTAL_ALIGNMENT_CENTER, pill.size.x,
+					8, Color("#fde68a"))
 
 
 class Sarten_Salsa extends Control:
@@ -3077,57 +3958,57 @@ class Sarten_Salsa extends Control:
 			return
 		var w: float = size.x
 		var h: float = size.y
-		var cx: float = w * 0.5
-		var cy: float = h * 0.52
+		var cx: float = w * 0.45
+		var cy: float = h * 0.54
 		var pulso: float = 0.5 + 0.5 * sin(tiempo * 5.0)
-		var radio: float = minf(w * 0.34, 52.0)
+		var radio: float = minf(w * 0.25, 25.0)
 
-		# Mango
-		draw_line(Vector2(cx + radio * 0.85, cy + radio * 0.18),
-			Vector2(w - 6.0, cy - radio * 0.30), Color("#1f2937"), 10.0, true)
-		draw_line(Vector2(cx + radio * 0.85, cy + radio * 0.18),
-			Vector2(w - 6.0, cy - radio * 0.30), Color("#475569"), 5.0, true)
-		# Sartén
-		draw_circle(Vector2(cx, cy + 3.0), radio + 4.0, Color(0.0, 0.0, 0.0, 0.25))
-		draw_circle(Vector2(cx, cy), radio + 2.0, Color("#334155"))
-		draw_circle(Vector2(cx, cy), radio, Color("#0f172a"))
-		var col_salsa := Color("#7f1d1d")
-		if estado == "arruinada":
-			col_salsa = Color("#1c1917")
-		draw_circle(Vector2(cx, cy), radio * 0.82, col_salsa)
-		# Burbujas
+		var tex_cazo: Texture2D = Arte_Cocina.TEX_ALTA_CAZO_QUEMADO if estado == "arruinada" \
+			else Arte_Cocina.TEX_ALTA_CAZO
+		var r_cazo := Arte_Cocina.rect_ajustado(tex_cazo, Rect2(1.0, 2.0, w - 2.0, h - 4.0))
+		draw_texture_rect(tex_cazo, r_cazo, false, Color.WHITE)
+
 		if estado == "lista":
-			for k in range(6):
-				var a: float = TAU * float(k) / 6.0 + tiempo * 0.6
-				var rr: float = radio * (0.12 + 0.16 * (0.5 + 0.5 * sin(tiempo * 4.0 + float(k))))
-				draw_circle(Vector2(cx + cos(a) * radio * 0.38, cy + sin(a) * radio * 0.32),
-					rr, Color(1.0, 0.45, 0.30, 0.20))
-			# Destello de removido
+			for k in range(5):
+				var a: float = TAU * float(k) / 5.0 + tiempo * 0.7
+				var rr: float = radio * (0.12 + 0.14 * (0.5 + 0.5 * sin(tiempo * 4.2 + float(k))))
+				draw_circle(Vector2(cx + cos(a) * radio * 0.42, cy + sin(a) * radio * 0.26),
+					rr, Color(1.0, 0.52, 0.36, 0.28))
+			# Cuchara giratoria al remover encima de la salsa
+			var ang_cuchara: float = tiempo * (12.0 if removido > 0.05 else 0.8)
+			var pun := Vector2(cx + cos(ang_cuchara) * radio * 0.44, cy + sin(ang_cuchara) * radio * 0.28)
+			draw_line(pun, Vector2(cx - 5.0, cy - radio * 1.45), Color("#f5d0a9"), 3.2, true)
+			draw_circle(pun, 4.2, Color("#d97706"))
 			if removido > 0.02:
-				draw_arc(Vector2(cx, cy), radio * (0.45 + 0.30 * (1.0 - removido)),
-					0.0, TAU, 24, Color(1.0, 0.9, 0.6, 0.45 * removido), 3.0, true)
+				draw_arc(Vector2(cx, cy), radio * (0.48 + 0.36 * (1.0 - removido)),
+					0.0, TAU, 24, Color(1.0, 0.9, 0.6, 0.60 * removido), 3.0, true)
 		else:
 			for k in range(4):
 				var fase: float = fmod(tiempo * 0.8 + float(k) * 0.25, 1.0)
-				draw_circle(Vector2(cx + sin(tiempo * 1.3 + float(k)) * 12.0,
-					cy - 8.0 - fase * 34.0), 5.0 + fase * 6.0,
-					Color(0.15, 0.15, 0.15, 0.30 * (1.0 - fase)))
+				draw_circle(Vector2(cx + sin(tiempo * 1.3 + float(k)) * 10.0,
+					cy - 6.0 - fase * 28.0), 4.5 + fase * 5.0,
+					Color(0.15, 0.15, 0.15, 0.38 * (1.0 - fase)))
 		# Medidor de quemado
 		var barra := Rect2(8.0, h - 16.0, w - 16.0, 7.0)
-		Arte_Cocina.caja_redondeada(self, barra.grow(1.0), 3.0, Color(0.03, 0.06, 0.10, 0.80))
+		Arte_Cocina.caja_redondeada(self, barra.grow(1.0), 3.0, Color(0.03, 0.06, 0.10, 0.85))
 		var col_barra := Color("#22c55e") if quemado < 0.55 else Color("#f59e0b")
 		if quemado >= 0.82:
 			col_barra = Color("#ef4444")
 		draw_rect(Rect2(barra.position, Vector2(barra.size.x * clampf(quemado, 0.0, 1.0),
 			barra.size.y)), col_barra)
-		# Aviso de remover
+		# Aviso de remover / arruinada arriba en su banda dedicada
 		if estado == "lista" and quemado > 0.35:
-			var alpha: float = 0.55 + 0.45 * pulso
-			draw_string(Arte_Cocina.FUENTE_TIT, Vector2(0.0, 14.0), "¡REMUEVE!",
-				HORIZONTAL_ALIGNMENT_CENTER, w, 11, Color(1.0, 0.85, 0.35, alpha))
+			var alpha: float = 0.60 + 0.40 * pulso
+			var r_av := Rect2(6.0, 3.0, w - 12.0, 16.0)
+			Arte_Cocina.caja_redondeada(self, r_av, 4.0, Color("#78350f", 0.90 * alpha),
+				Color("#fbbf24", alpha), 1.0)
+			draw_string(Arte_Cocina.FUENTE_TIT, Vector2(6.0, 14.5), "¡REMUEVE!",
+				HORIZONTAL_ALIGNMENT_CENTER, w - 12.0, 9.5, Color("#fef08a", alpha))
 		elif estado == "arruinada":
-			draw_string(Arte_Cocina.FUENTE_TIT, Vector2(0.0, 14.0), "QUEMADA",
-				HORIZONTAL_ALIGNMENT_CENTER, w, 11, Color("#fca5a5"))
+			var r_q := Rect2(6.0, 3.0, w - 12.0, 16.0)
+			Arte_Cocina.caja_redondeada(self, r_q, 4.0, Color("#7f1d1d", 0.95), Color("#f87171"), 1.0)
+			draw_string(Arte_Cocina.FUENTE_TIT, Vector2(6.0, 14.5), "QUEMADA",
+				HORIZONTAL_ALIGNMENT_CENTER, w - 12.0, 9.5, Color("#fecaca"))
 
 
 class Estacion_Horno extends Control:
@@ -3142,50 +4023,107 @@ class Estacion_Horno extends Control:
 		var w: float = size.x
 		var h: float = size.y
 		var pulso: float = 0.5 + 0.5 * sin(tiempo * 3.0)
-		# Cuerpo de acero con marco dorado
-		Arte_Cocina.caja_redondeada(self, Rect2(4.0, 20.0, w - 8.0, h - 28.0), 12.0,
-			Color("#475569"), Color("#f5c451"), 2.0)
-		Arte_Cocina.caja_redondeada(self, Rect2(10.0, 26.0, w - 20.0, h - 44.0), 9.0,
-			Color("#64748b"), Color("#334155"), 1.5)
-		# Ventana de cristal con calor interior
-		var ventana := Rect2(16.0, 34.0, w - 32.0, h * 0.56)
-		Arte_Cocina.caja_redondeada(self, ventana, 8.0, Color("#0b1220"))
-		Arte_Cocina.caja_redondeada(self, ventana.grow(-5.0), 6.0,
-			Color(0.98, 0.52, 0.18, 0.22 + 0.10 * pulso))
-		# Bandeja y proteinas dentro del horno
-		var bandeja_y: float = ventana.position.y + ventana.size.y * 0.64
-		draw_rect(Rect2(ventana.position.x + 9.0, bandeja_y, ventana.size.x - 18.0, 5.0),
-			Color("#cbd5e1", 0.80))
-		draw_rect(Rect2(ventana.position.x + 9.0, bandeja_y + 5.0, ventana.size.x - 18.0, 2.0),
-			Color(0.0, 0.0, 0.0, 0.28))
-		for i in range(2):
-			draw_circle(Vector2(ventana.position.x + 34.0 + float(i) * 54.0, bandeja_y - 5.0),
-				8.0, Color("#7c2d12", 0.75))
-		# Reflejos del cristal
-		draw_line(Vector2(ventana.position.x + 10.0, ventana.end.y - 8.0),
-			Vector2(ventana.position.x + 44.0, ventana.position.y + 8.0),
-			Color(1.0, 1.0, 1.0, 0.18), 3.0, true)
-		draw_line(Vector2(ventana.position.x + 30.0, ventana.end.y - 8.0),
-			Vector2(ventana.position.x + 64.0, ventana.position.y + 8.0),
-			Color(1.0, 1.0, 1.0, 0.10), 2.0, true)
-		# Tirador
-		draw_line(Vector2(ventana.position.x + 10.0, ventana.position.y - 5.0),
-			Vector2(ventana.end.x - 10.0, ventana.position.y - 5.0),
-			Color("#e2e8f0"), 5.0, true)
-		draw_line(Vector2(ventana.position.x + 10.0, ventana.position.y - 5.0),
-			Vector2(ventana.end.x - 10.0, ventana.position.y - 5.0),
-			Color("#94a3b8"), 2.0, true)
-		# Panel de mandos
-		draw_rect(Rect2(12.0, h - 34.0, w - 24.0, 18.0), Color("#1e293b"))
-		for i in range(2):
-			draw_circle(Vector2(34.0 + float(i) * 34.0, h - 25.0), 8.0, Color("#0f172a"))
-			draw_circle(Vector2(34.0 + float(i) * 34.0, h - 25.0), 5.5, Color("#f87171"))
-		draw_rect(Rect2(w - 72.0, h - 30.0, 42.0, 10.0), Color("#0f172a"))
-		draw_string(Arte_Cocina.FUENTE_UI, Vector2(w - 71.0, h - 21.0), "180°",
-			HORIZONTAL_ALIGNMENT_CENTER, 40.0, 8, Color("#fbbf24"))
-		# Etiqueta superior
-		draw_string(Arte_Cocina.FUENTE_UI, Vector2(0.0, 12.0), "HORNO",
-			HORIZONTAL_ALIGNMENT_CENTER, w, 9, Color("#fde68a", 0.90))
+		var r_horno := Arte_Cocina.rect_ajustado(Arte_Cocina.TEX_ALTA_HORNO,
+			Rect2(1.0, 3.0, w - 2.0, h - 5.0))
+		draw_texture_rect(Arte_Cocina.TEX_ALTA_HORNO, r_horno, false, Color.WHITE)
+		# Resplandor cálido animado en la ventana de cristal
+		var win := Rect2(r_horno.position.x + r_horno.size.x * 0.14,
+			r_horno.position.y + r_horno.size.y * 0.21,
+			r_horno.size.x * 0.72, r_horno.size.y * 0.50)
+		Arte_Cocina.caja_redondeada(self, win, 5.0,
+			Color(0.98, 0.55, 0.16, 0.05 + 0.06 * pulso))
+
+
+class Estacion_Tabla_Corte extends Control:
+	var huecos_activos: int = 1
+	var tiempo: float = 0.0
+
+	func _init() -> void:
+		mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	func _draw() -> void:
+		if size.x <= 8.0 or size.y <= 8.0:
+			return
+		var w: float = size.x
+		var h: float = size.y
+		var r_tab := Arte_Cocina.rect_ajustado(Arte_Cocina.TEX_ALTA_TABLA,
+			Rect2(1.0, 3.0, w - 2.0, h - 5.0))
+		draw_texture_rect(Arte_Cocina.TEX_ALTA_TABLA, r_tab, false, Color.WHITE)
+		var y_slots: Array[float] = [h * 0.54]
+		if huecos_activos >= 2:
+			y_slots = [h * 0.36, h * 0.70]
+		for sy in y_slots:
+			var pts := Arte_Cocina.puntos_elipse(Vector2(w * 0.5, sy), w * 0.34, 18.0, 24)
+			pts.append(pts[0])
+			draw_polyline(pts, Color(1.0, 0.92, 0.76, 0.24), 1.4, true)
+
+
+class Punto_Corte extends Control:
+	var estado: String = "vacio"  # vacio | entero | cortado
+	var especie: String = "lubina"
+	var cortes: int = 0
+	var cortes_req: int = 4
+	var corte_fx: float = 0.0
+	var tiempo: float = 0.0
+
+	func _init() -> void:
+		mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	func _draw() -> void:
+		if size.x <= 6.0 or size.y <= 6.0:
+			return
+		var w: float = size.x
+		var h: float = size.y
+		var centro := Vector2(w * 0.5, h * 0.46)
+		if estado == "vacio":
+			draw_arc(centro, minf(w, h) * 0.30, 0.0, TAU, 20,
+				Color(1.0, 0.90, 0.70, 0.22), 1.5, true)
+			return
+		var rebote: float = sin(clampf(corte_fx, 0.0, 1.0) * PI) * 0.10
+		var ancho_p: float = minf(w * 0.88, 92.0) * (1.0 - rebote * 0.5)
+		var es_cortado: bool = (estado == "cortado")
+		Arte_Cocina.dibujar_pescado(self, centro, ancho_p, especie, cortes,
+			cortes_req, es_cortado, false, corte_fx, false, 1.0)
+		# Pips o badge claro del estado de corte
+		if es_cortado:
+			var pulso_l: float = 0.70 + 0.30 * sin(tiempo * 6.0)
+			var pill := Rect2(4.0, h - 15.0, w - 8.0, 14.0)
+			Arte_Cocina.caja_redondeada(self, pill, 4.0, Color("#14532d", 0.95),
+				Color("#4ade80", pulso_l), 1.2)
+			draw_string(Arte_Cocina.FUENTE_TIT, pill.position + Vector2(0.0, 10.5),
+				"¡A SARTÉN!", HORIZONTAL_ALIGNMENT_CENTER, pill.size.x, 8.5, Color("#dcfce7"))
+		else:
+			var req: int = maxi(1, cortes_req)
+			var step_x: float = 10.0
+			var start_x: float = w * 0.5 - step_x * float(req - 1) * 0.5
+			for i in range(req):
+				var lleno: bool = i < cortes
+				var pos_pip := Vector2(start_x + float(i) * step_x, h - 10.0)
+				draw_circle(pos_pip, 3.6, Color("#fbbf24") if lleno else Color("#451a03", 0.75))
+				draw_arc(pos_pip, 3.6, 0.0, TAU, 12, Color("#fef3c7", 0.8), 1.0, true)
+			var r_c := Rect2(w * 0.5 - 32.0, 1.0, 64.0, 13.0)
+			Arte_Cocina.caja_redondeada(self, r_c, 4.0, Color("#0f172a", 0.86),
+				Color("#fbbf24", 0.85), 1.0)
+			draw_string(Arte_Cocina.FUENTE_TIT, r_c.position + Vector2(0.0, 10.0),
+				"CORTA %d/%d" % [cortes, req], HORIZONTAL_ALIGNMENT_CENTER, r_c.size.x, 8, Color("#fde68a"))
+
+
+class Estacion_Sarten_Fritura extends Control:
+	var huecos_activos: int = 1
+	var tiempo: float = 0.0
+
+	func _init() -> void:
+		mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	func _draw() -> void:
+		if size.x <= 8.0 or size.y <= 8.0:
+			return
+		var w: float = size.x
+		var h: float = size.y
+		var tex_s: Texture2D = Arte_Cocina.TEX_ALTA_SARTEN_2 if huecos_activos >= 2 \
+			else Arte_Cocina.TEX_ALTA_SARTEN_1
+		var r_s := Arte_Cocina.rect_ajustado(tex_s, Rect2(1.0, 3.0, w - 2.0, h - 5.0))
+		draw_texture_rect(tex_s, r_s, false, Color.WHITE)
 
 
 class Estacion_Botellas extends Control:
@@ -3201,31 +4139,17 @@ class Estacion_Botellas extends Control:
 		var w: float = size.x
 		var h: float = size.y
 		var madera := Color("#4a2a12") if tipo == "barra" else Color("#1f2937")
-		var brillo := Color("#a86a33") if tipo == "barra" else Color("#334155")
-		# Estante
-		Arte_Cocina.caja_redondeada(self, Rect2(6.0, h - 42.0, w - 12.0, 12.0), 4.0, madera, brillo, 1.5)
-		Arte_Cocina.caja_redondeada(self, Rect2(6.0, h * 0.40, w - 12.0, 10.0), 4.0, madera, brillo, 1.5)
-		# Botellas
-		var colores := [Color("#7f1d1d"), Color("#166534"), Color("#b45309")]
-		if tipo == "bodega":
-			colores = [Color("#7f1d1d"), Color("#e7d8a8"), Color("#450a0a")]
-		for i in range(3):
-			var bx: float = 20.0 + float(i) * (w - 40.0) / 2.0
-			var by: float = h - 42.0
-			draw_rect(Rect2(bx - 6.0, by - 34.0, 12.0, 22.0), colores[i])
-			draw_rect(Rect2(bx - 6.0, by - 34.0, 12.0, 6.0), Color(0.06, 0.09, 0.15, 0.35))
-			draw_rect(Rect2(bx - 3.0, by - 48.0, 6.0, 15.0), Color("#166534"))
-			draw_circle(Vector2(bx, by - 49.0), 4.0, Color("#fbbf24", 0.55))
-		# Copas en el estante superior
-		for i in range(2):
-			draw_arc(Vector2(w * 0.30 + float(i) * w * 0.28, h * 0.40 - 10.0), 8.0,
-				PI, TAU, 12, Color(0.85, 0.94, 1.0, 0.65), 2.0, true)
-			draw_line(Vector2(w * 0.30 + float(i) * w * 0.28, h * 0.40 - 2.0),
-				Vector2(w * 0.30 + float(i) * w * 0.28, h * 0.40 + 5.0),
-				Color(0.85, 0.94, 1.0, 0.65), 2.0, true)
-		draw_string(Arte_Cocina.FUENTE_UI, Vector2(0.0, 14.0),
-			"BODEGA" if tipo == "bodega" else "BEBIDAS",
-			HORIZONTAL_ALIGNMENT_CENTER, w, 10, Color("#fde68a", 0.90))
+		var brillo := Color("#a86a33") if tipo == "barra" else Color("#f5c451", 0.65)
+		if tipo == "barra":
+			Arte_Cocina.dibujar_tex(self, Arte_Cocina.TEX_MERCADO_BARRA,
+				Rect2(w * 0.5 - 52.0, -4.0, 104.0, 104.0))
+			Arte_Cocina.caja_redondeada(self, Rect2(8.0, h - 22.0, w - 16.0, 16.0), 5.0,
+				madera.darkened(0.18), brillo, 1.2)
+			return
+		# Bodega Sommelier 2.5D con botellas gran reserva y encimera de mármol
+		var r_bod := Arte_Cocina.rect_ajustado(Arte_Cocina.TEX_ALTA_BODEGA,
+			Rect2(1.0, 2.0, w - 2.0, h - 4.0))
+		draw_texture_rect(Arte_Cocina.TEX_ALTA_BODEGA, r_bod, false, Color.WHITE)
 
 
 # ============================================================================

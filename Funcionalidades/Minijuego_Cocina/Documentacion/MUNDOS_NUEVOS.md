@@ -10,8 +10,8 @@ Los tres mundos que antes aparecían como «Fase 2» ya son jugables: **Bistró 
 |---|---|---|---|---|---|
 | Burger & Street Food | `Fondo_Restaurante.png` | Montaje de hamburguesas | Plancha | Freidora | Refrescos |
 | Bistró Tradicional | `Fondos/Fondo_Bistro.png` | **Punto del filete** | Parrilla con punto | Freidora | Cafetera |
-| Cocina de Mercado | `Fondos/Fondo_Mercado.png` | **Guisos por lotes** | Olla | Plancha de huevos | Barra (agua/sangría) |
-| Alta Cocina Gourmet | `Fondos/Fondo_Alta_Cocina.png` | **Precisión + salsa + maridaje** | Horno | Sartén de salsa | Bodega (tinto/blanco) |
+| Cocina de Mercado | `Fondos/Fondo_Mercado.png` | **Guisos en cazuela** | Fogones (2–4 cazuelas) | Plancha de huevos | Barra (agua/sangría) |
+| Alta Cocina Gourmet | `Fondos/Fondo_Alta_Cocina.png` | **Tabla corte a clicks + fritura + horno + salsa + maridaje** | Horno + Tabla corte | Sartén fritura + Cazo salsa | Bodega sommelier (tinto/blanco) |
 
 Todos comparten:
 
@@ -50,14 +50,14 @@ El Bistró se puede jugar entero **sin arrastrar**, pensando en móvil:
 |---|---|
 | Tocar el filete de la despensa | Lo pone en el primer hueco libre de la parrilla |
 | Tocar un filete en su punto | Lo pasa al primer plato libre del pase |
-| Tocar un filete quemado o crudo | Lo descarta (el quemado con coste de merma) |
+| Tocar un filete quemado o crudo | Lo descarta (el quemado resta −7 € al instante, mín. 0 €) |
 | Tocar las patatas / la freidora lista | Fríe o pasa las patatas al primer plato sin guarnición |
 | Tocar la salsa | La añade al primer plato sin salsa |
 | Tocar la tarta | La sirve al cliente que la está pidiendo |
 | Tocar un plato completo | Lo sirve al cliente que lo pide (con halo verde si hay match) |
 | Tocar un cliente | Sirve el plato, el café o el postre que tenga listo y ese cliente espere |
 | Tocar un plato que nadie pide | Avisa de que hay que arrastrarlo a la basura |
-| Arrastrar comida o plato a la basura | Lo descarta y calcula la merma |
+| Arrastrar comida o plato a la basura | Lo descarta (lo quemado resta al instante, mín. 0 €; el resto suma merma) |
 
 El arrastre sigue disponible para colocar con precisión: el destino de cliente es una zona generosa que cubre cuerpo y ticket, y los platos aceptan cualquier hueco del pase. Las zonas de toque solo se activan cuando el origen no puede arrastrarse (plato vacío, carne cruda, bebida llenándose), de modo que un gesto de arrastre nunca dispara una acción por accidente.
 
@@ -100,21 +100,25 @@ Los iconos de la lista (48 px) usan la misma composición en versión compacta y
 
 ## 3. Cocina de Mercado
 
-### Mecánica: guisos por lotes
+### Mecánica: guisos en cazuela
 
-La olla admite **dos ingredientes** y forma un guiso cuando la combinación es válida:
+Los fogones disponen de **2 a 4 cazuelas independientes** (según el nivel de la mejora `Cazuelas y Plancha`, igual que en Burger Street y Bistró). Cada cazuela admite **dos ingredientes** y cocina un guiso individual en paralelo cuando la combinación es válida:
 
-| Guiso | Ingredientes | Raciones |
+| Guiso | Ingredientes | Desbloqueo |
 |---|---|---|
-| `fabada` | `alubias` + `chorizo` | 4 |
-| `pisto` | `tomate` + `pimiento` | 4 |
-| `arroz` | `arroz` + `marisco` | 4 |
+| `fabada` | `alubias` + `chorizo` | Nivel 1 |
+| `pisto` | `tomate` + `pimiento` | Nivel 1 |
+| `arroz` | `arroz` + `marisco` | Nivel 3 |
+| `arroz_tomate` | `tomate` + `arroz` | Nivel 4 |
+| `fritada` | `chorizo` + `pimiento` | Nivel 6 |
+| `alubias_marisco` | `alubias` + `marisco` | Nivel 7 |
+| `zarzuela` | `tomate` + `marisco` | Nivel 8 |
 
-- Añadir un ingrediente que no pertenece al guiso que se está formando se rechaza.
-- La olla tarda 6,2 s en cocinar la tanda y muestra vapor, burbujas y una barra de progreso.
-- Al estar lista, **tocar la olla** sirve una ración al primer plato libre (o arrastrar la olla al pase). Cada ración es un plato independiente.
-- Cuando se agotan las 4 raciones, la olla se vacía y hay que preparar otra tanda.
-- La plancha de al lado cocina **huevos**; el huevo se añade al pisto para `pisto_huevo`.
+- Cada uno de los 6 ingredientes de despensa cruza en **2–3 recetas** distintas, mostrando en la cazuela en preparación todos sus posibles compañeros (`+ [iconos]`), mientras el toque rápido inteligente (`_Buscar_Slot_Cazuela_Para`) prioriza completar pedidos activos.
+- Añadir un ingrediente que no pertenece al guiso de una cazuela que espera su pareja abre otra cazuela libre (o se rechaza si se suelta sobre esa misma cazuela).
+- Cada cazuela tarda 4,2 s base en cocinar el guiso (acelerable con `Cazuelas y Plancha` y Destreza) y después empieza el margen de quemado (`6,0–10,5 s` según `Fuego de Fogones`), mostrando barra de progreso, aviso de quemado y estado de cada cazuela.
+- Al estar lista, **tocar la cazuela** sirve el guiso al primer plato libre del pase (o arrastrar la cazuela al plato). Una cazuela a medio preparar o quemada se vacía arrastrándola a la basura (la quemada también se descarta tocándola).
+- La plancha de al lado cocina **huevos**; el huevo se añade al **pisto** (`pisto_huevo`) o al **arroz con tomate** (`arroz_cubana`).
 
 ### Recetas
 
@@ -124,44 +128,54 @@ La olla admite **dos ingredientes** y forma un guiso cuando la combinación es v
 | `pisto` | Pisto manchego | guiso pisto | 14 € |
 | `pisto_huevo` | Pisto con huevo | guiso pisto + huevo | 18 € |
 | `arroz_senyoret` | Arroz del senyoret | guiso arroz | 20 € |
+| `arroz_tomate` | Arroz con tomate | guiso arroz_tomate | 15 € |
+| `arroz_cubana` | Arroz a la cubana | guiso arroz_tomate + huevo | 19 € |
+| `fritada` | Chorizo con pimientos | guiso fritada | 17 € |
+| `alubias_marisco` | Fabes con marisco | guiso alubias_marisco | 21 € |
+| `zarzuela` | Zarzuela de marisco | guiso zarzuela | 22 € |
 | `agua` | Agua | barra | 4 € |
 | `sangria` | Sangría | barra | 7 € |
 
-### Despensa
+### Despensa y guía visual (Nivel 1)
 
 `alubias`, `chorizo`, `tomate`, `pimiento`, `arroz`, `marisco` y `huevo`.
 
-- Los seis primeros van a la olla.
-- **Huevo** → plancha; después se arrastra al pase.
+- Los seis primeros van a las cazuelas.
+- **Huevo** → plancha; después se arrastra al pase sobre un pisto o arroz con tomate.
+- **Sprites 2.5D propios (`Imagenes/Minijuego_Cocina/Mercado/`):** 28 PNG RGBA con fogones de 4 quemadores (`Fogones_Mercado.png`), 11 cazuelas/platos (`Cazuela_Vacia`, `Fabada`, `Pisto`, `Pisto_Huevo`, `Arroz_Senyoret`, `Arroz_Tomate`, `Arroz_Cubana`, `Alubias_Marisco`, `Zarzuela_Marisco`, `Fritada_Chorizo`, `Cazuela_Quemada`), 6 puestos de despensa, 6 iconos de ingrediente, huevo frito/quemado, sangría y estante de barra (`Barra_Mercado.png`).
+- **Guía visual en Nivel 1 (`Modal_Guia_Cocina`):** al entrar al Nivel 1 tras la carga se abre una guía ilustrada con las combinaciones cruzadas del recetario (`4×2`) y los 4 pasos de la mecánica (pausa la partida hasta pulsar `¡ENTENDIDO, A COCINAR!`). Además sigue accesible desde el botón `? GUÍA` del HUD superior y junto al tutorial guiado en directo en Nivel 1.
 
 ---
 
 ## 4. Alta Cocina Gourmet
 
-### Mecánica: precisión, salsa y maridaje
+### Mecánicas: tabla de corte a clicks, fritura, horno, salsa y bodega sommelier
 
-1. **Horno con ventana dorada.** Cada proteína recorre el progreso 0–115 %. La franja dorada está entre el **62 % y el 88 %**. Antes está cruda; después está pasada y hay que tirarla. La barra del slot dibuja la franja y un marcador.
-2. **Salsa que se quema.** La sartén empieza lista y acumula quemado a razón de ~4,2 %/s. Tocar la sartén **remueve** y baja el medidor un 34 %. Arrastrar la sartén al pase añade la reducción al plato. Si llega al 100 %, la salsa queda arruinada; hay que tocarla para empezar una nueva.
-3. **Maridaje.** Cada plato tiene un vino asignado. El cliente pide siempre plato + copa; la bodega tiene dos huecos (tinto y blanco). Hay que servir la copa correcta.
-4. **Flor opcional.** Añadir una flor al plato antes de servirlo suma **+3 € de propina**.
+1. **Pescado entero → cortar a clicks → freír.** `lubina` y `salmon` entran enteros a la **Tabla de corte** (`Estacion_Tabla_Corte`); el jugador debe **hacer varios clicks encima** (4 en Nv.1, 3 en Nv.2, 2 en Nv.3) con cortes visibles y animación de cuchillo hasta filetearlos. Luego pasan a la **Sartén de fritura** (`Estacion_Sarten_Fritura`) para dorarse y quedar crujientes (se queman si se descuidan). No se puede hornear ni emplatar pescado sin filetearlo y freírlo antes.
+2. **Horno con ventana dorada.** `solomillo` y `pato` recorren el progreso 0–115 % en el **Horno** (`Estacion_Horno`, 2–4 huecos). La franja dorada está entre el **62 % y el 88 %**. Antes está cruda; después está pasada y hay que tirarla.
+3. **Cazo de salsa que se quema.** El cazo empieza listo y acumula quemado (~4,2 %/s). Tocarlo **remueve** con la cuchara y baja el medidor; arrastrarlo al pase añade la reducción al plato. Si llega al 100 % se arruina y hay que descartarla (tocándola o arrastrándola a la basura, con penalización de −5 €, mín. 0 €).
+4. **Bodega sommelier.** Cada plato pide maridaje (`vino_tinto` / `vino_blanco`). La bodega dispone siempre de al menos 2 copas (3 en Emplatado Nv.3) y tocar una copa llenándose acelera su decantado (+55 %).
+5. **Sprites 2.5D propios (`Imagenes/Minijuego_Cocina/Alta/`), Guía visual (`? GUÍA`), tutorial de Nivel 1 y mejoras propias.** 33 PNG RGBA propios de Alta Cocina (horno acero/latón, tabla de nogal con cuchillo, sartenes cobre de fritura 1/2, cazo cobre sano/quemado, bodega sommelier, 6 puestos de despensa con hielo/parchment/porcelana/caja de madera, 12 ingredientes y estados de corte/cocción, 2 copas cristal y 6 platos gourmet en porcelana 3/4). Al abrir el Nivel 1 se muestra la guía ilustrada; en partida las flechas guían cada paso en directo y en Mejoras usa ilustraciones y textos propios (`MEJORAS_UI_POR_RESTAURANTE["alta_cocina"]` + `dibujar_mejora_alta`).
 
 ### Recetas
 
 | id | Nombre | Composición | Maridaje | Precio base |
 |---|---|---|---|---|
-| `solomillo_tinto` | Solomillo al vino tinto | solomillo + reducción + puré | `vino_tinto` | 32 € |
-| `lubina_blanca` | Lubina con beurre blanc | lubina + reducción + espárragos | `vino_blanco` | 30 € |
-| `pato_tinto` | Pato al Pedro Ximénez | pato + reducción + puré | `vino_tinto` | 36 € |
+| `solomillo_tinto` | Solomillo al vino tinto | solomillo (horno) + reducción + puré | `vino_tinto` | 32 € |
+| `lubina_blanca` | Lubina crujiente con espárragos | lubina (cortar + freír) + reducción + espárragos | `vino_blanco` | 34 € |
+| `pato_tinto` | Pato al Pedro Ximénez | pato (horno) + reducción + puré | `vino_tinto` | 36 € |
+| `salmon_crujiente` | Salmón crujiente con espárragos | salmón (cortar + freír) + reducción + espárragos | `vino_blanco` | 38 € |
+| `pato_esparragos` | Magret con espárragos | pato (horno) + reducción + espárragos | `vino_tinto` | 40 € |
 | `vino_tinto` | Copa de tinto | bodega | — | 10 € |
 | `vino_blanco` | Copa de blanco | bodega | — | 10 € |
 
 ### Despensa
 
-`solomillo`, `lubina`, `pato`, `pure`, `esparragos` y `flor`.
+6 puestos limpios: `solomillo`, `pato`, `lubina`, `salmon`, `pure` y `esparragos`.
 
-- Las tres proteínas van al horno.
-- **Puré** y **espárragos** son guarniciones instantáneas del pase.
-- **Flor** es un extra opcional (+3 € de propina).
+- **Solomillo** y **pato** van al horno (`Estacion_Horno`).
+- **Lubina entera** y **salmón entero** pasan por la **Tabla de corte** (`Estacion_Tabla_Corte` → clicks para cortar) y la **Sartén de fritura** (`Estacion_Sarten_Fritura`).
+- **Puré** y **espárragos** se añaden en el pase gourmet.
 
 ---
 
@@ -193,8 +207,8 @@ Con `true`, `Esta_Desbloqueado_Minijuego()`, `Esta_Desbloqueado_Restaurante()` y
 | Archivo | Qué contiene |
 |---|---|
 | `Scripts/Logica/Escena_Principal/Minijuego_Cocina/Sistema_Cocina.gd` | `RECETAS_BISTRO`, `RECETAS_MERCADO`, `RECETAS_ALTA`, `PERFILES_RESTAURANTE`, `COMBOS_OLLA`, `PUNTO_FILETE_UMBRALES`, `VENTANA_ALTA_INICIO/FIN` y los helpers puros. |
-| `Scripts/GUI/Minijuego_Cocina/Arte_Cocina.gd` | Fondos por restaurante, platos/iconos de los mundos 2–4, `Puesto_Ingrediente` genérico, `Estacion_Olla`, `Sarten_Salsa`, `Estacion_Horno` y `Estacion_Botellas`. |
-| `Scripts/GUI/Minijuego_Cocina/Minijuego_Cocina.gd` | `_perfil_actual`, `_olla`, `_sarten`, `_Actualizar_Estaciones_Mundo()`, `_Reconstruir_Despensa()`, `_Tick_Slots_Coccion()` genérico, `_Anadir_Ingrediente_Olla()`, `_Servir_Racion_Olla()`, `_Remover_Salsa()` y el flujo de pedidos por receta. |
+| `Scripts/GUI/Minijuego_Cocina/Arte_Cocina.gd` | Fondos por restaurante, platos/iconos de los mundos 2–4, `Puesto_Ingrediente` genérico, `Estacion_Fogones`, `Sarten_Salsa`, `Estacion_Horno` y `Estacion_Botellas`. |
+| `Scripts/GUI/Minijuego_Cocina/Minijuego_Cocina.gd` | `_perfil_actual`, `_fogones_ctrl`, `_sarten`, `_Actualizar_Estaciones_Mundo()`, `_Reconstruir_Despensa()`, `_Tick_Slots_Coccion()` genérico, `_Anadir_Ingrediente_Cazuela()`, `_Remover_Salsa()` y el flujo de pedidos por receta. |
 | `Escenas/Herramientas/Captura_Mundos_Cocina.tscn` | Capturas de QA de los 3 mundos y sus modales. |
 | `Funcionalidades/Minijuego_Cocina/Tests/test_mundos_cocina.gd` | 12 tests de datos, gameplay, los 60 niveles y el modo QA. |
 

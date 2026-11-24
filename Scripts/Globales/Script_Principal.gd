@@ -89,6 +89,10 @@ var _transicion_minijuego_activa: bool = false
 var _minijuego_cocina_packed: PackedScene = null
 var _script_transicion_minijuego: Script = null
 var _dialog_minijuego_bloqueado: AcceptDialog = null
+var _capa_minijuego_correr: CanvasLayer = null
+var _minijuego_correr_activo: bool = false
+var _minijuego_correr_packed: PackedScene = null
+var _script_banner_correr: Script = null
 
 # Carrera de futbolista
 var _panel_futbol: Control = null
@@ -221,6 +225,10 @@ func _process(delta):
 					_capa_minijuego_cocina.queue_free()
 					_capa_minijuego_cocina = null
 					_minijuego_cocina_activo = false
+				if _capa_minijuego_correr != null and is_instance_valid(_capa_minijuego_correr):
+					_capa_minijuego_correr.queue_free()
+					_capa_minijuego_correr = null
+					_minijuego_correr_activo = false
 				get_tree().change_scene_to_file("res://Escenas/Menu/Menu.tscn")
 				return
 			Actualizar_Progreso()
@@ -3326,6 +3334,8 @@ func _Actualizar_Pantalla_Minijuegos() -> void:
 		btn_jugar.pressed.connect(_Abrir_Minijuego_Cocina)
 		v.add_child(btn_jugar)
 
+	_Anadir_Tarjeta_Correr()
+
 	# Contenedor modular preparado para añadir futuros minijuegos
 	var sep_lbl := Estilos_UI.texto("PRÓXIMOS MINIJUEGOS", 11, Estilos_UI.TINTA_FANTASMA, 700)
 	_minijuegos_vbox.add_child(sep_lbl)
@@ -3354,6 +3364,86 @@ func _Actualizar_Pantalla_Minijuegos() -> void:
 		fh.add_child(fv)
 		fh.add_child(Estilos_UI.pill_estado("Próximamente", Estilos_UI.SUPERFICIE, Estilos_UI.TINTA_FANTASMA))
 		_minijuegos_vbox.add_child(fcard)
+
+
+# Tarjeta del runner "Salir a correr" dentro del hub de Minijuegos.
+func _Anadir_Tarjeta_Correr() -> void:
+	var record: int = Sistema_Correr.Obtener_Record_Distancia()
+	var carreras: int = Sistema_Correr.Obtener_Carreras()
+	var monedas: int = Sistema_Correr.Obtener_Monedas_Totales()
+
+	var card := PanelContainer.new()
+	card.name = "Card_Minijuego_Correr"
+	var st := Estilos_UI.caja_tarjeta(16, 3)
+	st.border_color = Color("#16a34a")
+	card.add_theme_stylebox_override("panel", st)
+	_minijuegos_vbox.add_child(card)
+
+	var m := MarginContainer.new()
+	m.add_theme_constant_override("margin_left", 18)
+	m.add_theme_constant_override("margin_right", 18)
+	m.add_theme_constant_override("margin_top", 16)
+	m.add_theme_constant_override("margin_bottom", 16)
+	card.add_child(m)
+
+	var v := VBoxContainer.new()
+	v.add_theme_constant_override("separation", 10)
+	m.add_child(v)
+
+	var banner: Control = null
+	if _script_banner_correr == null:
+		_script_banner_correr = load("res://Scripts/GUI/Minijuego_Correr/Banner_Correr.gd") as Script
+	if _script_banner_correr != null:
+		banner = _script_banner_correr.new() as Control
+	if banner != null:
+		banner.name = "Banner_Correr"
+		banner.custom_minimum_size = Vector2(0.0, 142.0)
+		banner.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		banner.clip_contents = true
+		banner.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		v.add_child(banner)
+	else:
+		var fallback := ColorRect.new()
+		fallback.custom_minimum_size = Vector2(0.0, 142.0)
+		fallback.color = Color("#0f172a")
+		v.add_child(fallback)
+
+	var cab := HBoxContainer.new()
+	cab.add_theme_constant_override("separation", 12)
+	v.add_child(cab)
+
+	cab.add_child(Estilos_UI.badge_icono("footprints", 46, 24,
+		Color("#16a34a"), Color.WHITE, 12))
+
+	var tit_col := VBoxContainer.new()
+	tit_col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	tit_col.add_theme_constant_override("separation", 2)
+	cab.add_child(tit_col)
+	tit_col.add_child(Estilos_UI.titulo("Salir a correr", 19, Estilos_UI.TINTA))
+	tit_col.add_child(Estilos_UI.texto("PARK RUSH 3D · Runner 3D infinito de 3 carriles · Tu Sim en 3D", 12, Estilos_UI.TINTA_SUAVE, 500))
+
+	cab.add_child(Estilos_UI.pill_estado("Nuevo", Estilos_UI.EXITO_SUAVE, Estilos_UI.EXITO_OSCURO))
+
+	var chips := HBoxContainer.new()
+	chips.add_theme_constant_override("separation", 8)
+	chips.add_child(Estilos_UI.pill_estado(
+		("Récord %s" % Sistema_Correr.Formatear_Distancia(float(record))) if record > 0 else "Sin récord todavía",
+		Estilos_UI.ORO_SUAVE, Estilos_UI.ORO))
+	chips.add_child(Estilos_UI.pill_estado("%d %s" % [carreras, "carrera" if carreras == 1 else "carreras"],
+		Estilos_UI.AZUL_SUAVE, Estilos_UI.AZUL))
+	chips.add_child(Estilos_UI.pill_estado("%d monedas" % monedas,
+		Estilos_UI.SUPERFICIE_2, Estilos_UI.TINTA))
+	v.add_child(chips)
+
+	v.add_child(Estilos_UI.parrafo(
+		"Corre en 3D por el parque con tu propio Sim: sube rampas a los techos, salta vallas, rueda bajo arcos y activa tu tabla urbana. " +
+		"Recoge monedas, imán, súper zapatillas y x2 para ganar Progreso de Deporte y mejorar tus necesidades.",
+		13, Estilos_UI.TINTA_SUAVE))
+
+	var btn_jugar := Estilos_UI.boton("Jugar", "exito", "play", Estilos_UI.EXITO, 50)
+	btn_jugar.name = "Btn_Jugar_Correr"
+	btn_jugar.pressed.connect(_Abrir_Minijuego_Correr)
+	v.add_child(btn_jugar)
 
 
 # Añade un sprite al banner respetando su relación de aspecto dentro de la caja.
@@ -3500,6 +3590,41 @@ func _Refrescar_Tras_Minijuego_Cocina() -> void:
 	_Actualizar_Nav_Activa()
 
 
+# ----------------------------------------------------------------------------
+# Minijuego "Salir a correr" (runner infinito)
+# ----------------------------------------------------------------------------
+
+func _Obtener_Escena_Minijuego_Correr() -> PackedScene:
+	if _minijuego_correr_packed == null:
+		_minijuego_correr_packed = load("res://Escenas/Minijuego_Correr/Minijuego_Correr.tscn") as PackedScene
+	return _minijuego_correr_packed
+
+
+func _Abrir_Minijuego_Correr() -> void:
+	if _capa_minijuego_correr != null and is_instance_valid(_capa_minijuego_correr):
+		return
+	if _transicion_minijuego_activa:
+		return
+
+	_minijuego_correr_activo = true
+	_capa_minijuego_correr = CanvasLayer.new()
+	_capa_minijuego_correr.name = "Capa_Minijuego_Correr"
+	_capa_minijuego_correr.layer = 60
+	add_child(_capa_minijuego_correr)
+
+	var instancia := _Obtener_Escena_Minijuego_Correr().instantiate()
+	instancia.cerrado.connect(_on_minijuego_correr_cerrado)
+	_capa_minijuego_correr.add_child(instancia)
+
+
+func _on_minijuego_correr_cerrado() -> void:
+	if _capa_minijuego_correr != null and is_instance_valid(_capa_minijuego_correr):
+		_capa_minijuego_correr.queue_free()
+		_capa_minijuego_correr = null
+	_minijuego_correr_activo = false
+	_Refrescar_Tras_Minijuego_Cocina()
+
+
 func _on_restaurante_cocina_desbloqueado(restaurante_id: String, nombre_restaurante: String) -> void:
 	_minijuegos_novedad_pendiente = true
 	_Actualizar_Badges()
@@ -3586,7 +3711,6 @@ var _home_trabajo_val: Label = null
 var _home_carrera_val: Label = null
 var _home_barras: Array = []
 var _home_pcts: Array = []
-var _home_mensajes: VBoxContainer = null
 var _home_resumen_necesidades: Label = null
 # Carrusel horizontal de Acciones rápidas del Home.
 var _home_acciones_scroll: ScrollContainer = null
@@ -6088,28 +6212,6 @@ func _Crear_Home() -> void:
 
 	_Actualizar_Flechas_Acciones_Home.call_deferred()
 
-	# --- Diario de vida / Mensajes ---
-	var card_mensajes := PanelContainer.new()
-	card_mensajes.add_theme_stylebox_override("panel", Estilos_UI.caja_tarjeta(16, 3))
-	v.add_child(card_mensajes)
-
-	var m5 := MarginContainer.new()
-	m5.add_theme_constant_override("margin_left", 20)
-	m5.add_theme_constant_override("margin_right", 20)
-	m5.add_theme_constant_override("margin_top", 16)
-	m5.add_theme_constant_override("margin_bottom", 18)
-	card_mensajes.add_child(m5)
-
-	var v5 := VBoxContainer.new()
-	v5.add_theme_constant_override("separation", 8)
-	m5.add_child(v5)
-	var enc_mensajes := Estilos_UI.encabezado_seccion("Diario de vida", "Ver bandeja")
-	v5.add_child(enc_mensajes)
-	enc_mensajes.get_node("Accion").pressed.connect(_on_perfil_button_pressed)
-	_home_mensajes = VBoxContainer.new()
-	_home_mensajes.add_theme_constant_override("separation", 6)
-	v5.add_child(_home_mensajes)
-
 
 func _Estilo_Actividad_Actual(nombre_act: String) -> Array:
 	var low := nombre_act.to_lower()
@@ -6238,66 +6340,6 @@ func _Actualizar_Home() -> void:
 		var est_b := Estilos_UI.etiqueta_bienestar(suma_n / float(count_n))
 		_Actualizar_Badge_Pill(_home_bienestar_pill, est_b[0], est_b[1], est_b[2])
 
-	if _home_mensajes != null:
-		for hijo in _home_mensajes.get_children():
-			hijo.queue_free()
-		var mensajes = Variables_Dinamicas.Mensajes.duplicate()
-		mensajes.sort_custom(func(a, b): return a.minuto > b.minuto)
-		if mensajes.is_empty():
-			_home_mensajes.add_child(Estilos_UI.texto("No hay sucesos recientes.", 13, Estilos_UI.TINTA_SUAVE))
-		else:
-			for i in range(min(3, mensajes.size())):
-				var m = mensajes[i]
-				var idx_orig: int = Variables_Dinamicas.Mensajes.find(m)
-				var es_nuevo: bool = not m.leido
-				var fila_btn := Button.new()
-				fila_btn.custom_minimum_size = Vector2(0, 44)
-				fila_btn.text = ""
-				fila_btn.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-				var st_m_n := Estilos_UI.caja(Color("#fff5f5") if es_nuevo else Estilos_UI.SUPERFICIE_2, 10,
-					Color("#fecaca") if es_nuevo else Color(0, 0, 0, 0), 1 if es_nuevo else 0, 0)
-				var st_m_h := Estilos_UI.caja(Color("#fee2e2") if es_nuevo else Color("#eceff5"), 10,
-					Color("#fca5a5") if es_nuevo else Color(0, 0, 0, 0), 1 if es_nuevo else 0, 0)
-				fila_btn.add_theme_stylebox_override("normal", st_m_n)
-				fila_btn.add_theme_stylebox_override("hover", st_m_h)
-				fila_btn.add_theme_stylebox_override("pressed", st_m_h)
-				fila_btn.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
-				if idx_orig >= 0:
-					fila_btn.pressed.connect(_Abrir_Mensaje_Desde_Home.bind(idx_orig))
-				else:
-					fila_btn.pressed.connect(_on_perfil_button_pressed)
-
-				var fila := HBoxContainer.new()
-				fila.set_anchors_preset(Control.PRESET_FULL_RECT)
-				fila.offset_left = 10
-				fila.offset_right = -10
-				fila.mouse_filter = Control.MOUSE_FILTER_IGNORE
-				fila.add_theme_constant_override("separation", 10)
-				fila_btn.add_child(fila)
-
-				var punto := Panel.new()
-				punto.custom_minimum_size = Vector2(9, 9)
-				punto.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-				punto.mouse_filter = Control.MOUSE_FILTER_IGNORE
-				punto.add_theme_stylebox_override("panel",
-					Estilos_UI.caja(Estilos_UI.PRIMARIO if es_nuevo else Estilos_UI.BORDE_FUERTE, 999, Color(0, 0, 0, 0), 0, 0))
-				fila.add_child(punto)
-
-				var lbl := Estilos_UI.texto(m.titulo, 13, Estilos_UI.TINTA if es_nuevo else Estilos_UI.TINTA_SUAVE, 700 if es_nuevo else 500)
-				lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-				lbl.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-				lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
-				fila.add_child(lbl)
-
-				if es_nuevo:
-					fila.add_child(Estilos_UI.pill_estado("NUEVO", Estilos_UI.ROJO_BIT, Color.WHITE))
-
-				var ch := Estilos_UI.icono_rect("chevron-right", 15, Estilos_UI.TINTA_FANTASMA)
-				ch.mouse_filter = Control.MOUSE_FILTER_IGNORE
-				fila.add_child(ch)
-
-				_home_mensajes.add_child(fila_btn)
-
 	_Actualizar_Flechas_Acciones_Home()
 
 
@@ -6357,12 +6399,6 @@ func _Abrir_Horario_Desde_Home() -> void:
 	mirar_semana = Variables_Dinamicas.Minute_Day / 7
 	_Ocultar_Home()
 	_on_temporales_pressed()
-
-
-func _Abrir_Mensaje_Desde_Home(indice_original: int) -> void:
-	_on_perfil_button_pressed()
-	if indice_original >= 0 and indice_original < Variables_Dinamicas.Mensajes.size():
-		_Mostrar_Mensaje(indice_original)
 
 
 func _Titulo_Acceso_Rapido(clave: String) -> String:

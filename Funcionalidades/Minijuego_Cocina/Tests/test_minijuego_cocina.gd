@@ -931,6 +931,184 @@ func test_12_mejoras_presentacion_y_compra_en_modal() -> void:
 	mini._Salir_Al_Sim()
 
 
+func test_13_penalizacion_quemados_y_tope_cero() -> void:
+	# 1. Fórmulas puras: tabla por producto y tope mínimo en 0 €
+	assert_eq(Sistema_Cocina.Obtener_Penalizacion_Quemado("burger_street", "carne"), 6)
+	assert_eq(Sistema_Cocina.Obtener_Penalizacion_Quemado("burger_street", "patatas"), 4)
+	assert_eq(Sistema_Cocina.Obtener_Penalizacion_Quemado("bistro_tradicional", "filete"), 7)
+	assert_eq(Sistema_Cocina.Obtener_Penalizacion_Quemado("bistro_tradicional", "patatas"), 3)
+	assert_eq(Sistema_Cocina.Obtener_Penalizacion_Quemado("cocina_mercado", "huevo"), 2)
+	assert_eq(Sistema_Cocina.Obtener_Penalizacion_Quemado("cocina_mercado", "pisto"), 7)
+	assert_eq(Sistema_Cocina.Obtener_Penalizacion_Quemado("cocina_mercado", "fabada"), 8)
+	assert_eq(Sistema_Cocina.Obtener_Penalizacion_Quemado("cocina_mercado", "arroz"), 10)
+	assert_eq(Sistema_Cocina.Obtener_Penalizacion_Quemado("cocina_mercado", "zarzuela"), 11)
+	assert_eq(Sistema_Cocina.Obtener_Penalizacion_Quemado("alta_cocina", "solomillo"), 11)
+	assert_eq(Sistema_Cocina.Obtener_Penalizacion_Quemado("alta_cocina", "lubina"), 12)
+	assert_eq(Sistema_Cocina.Obtener_Penalizacion_Quemado("alta_cocina", "pato"), 13)
+	assert_eq(Sistema_Cocina.Obtener_Penalizacion_Quemado("alta_cocina", "salmon"), 13)
+	assert_eq(Sistema_Cocina.Obtener_Penalizacion_Quemado("alta_cocina", "salsa"), 5)
+
+	assert_eq(Sistema_Cocina.Aplicar_Penalizacion_Quemado(20, 6), 14)
+	assert_eq(Sistema_Cocina.Aplicar_Penalizacion_Quemado(4, 6), 0, "Nunca debe bajar de 0 €")
+	assert_eq(Sistema_Cocina.Aplicar_Penalizacion_Quemado(0, 13), 0, "Desde 0 € debe mantenerse en 0 €")
+
+	var res_cero: Dictionary = Sistema_Cocina.Procesar_Fin_Nivel("burger_street", 1, 0, 5, false, 0, 10)
+	assert_eq(int(res_cero["recaudacion"]), 0)
+	assert_eq(int(res_cero["propinas_servicio"]), 0, "Si el total queda en 0 €, las propinas efectivas no exceden 0 €")
+	assert_eq(int(res_cero["ventas"]), 0)
+	assert_eq(int(res_cero["estrellas"]), 0)
+	assert_eq(int(res_cero["penalizacion_quemados"]), 10)
+
+	# 2. Gameplay en Burger Street: arrastrar y tocar quemados descuenta dinero y actualiza estrellas
+	Sistema_Cocina.Registrar_Minuto_Trabajo_Hosteleria("Trabajar_En_Comida_Rapida")
+	var mini = load("res://Escenas/Minijuego_Cocina/Minijuego_Cocina.tscn").instantiate()
+	add_child_autofree(mini)
+	await get_tree().process_frame
+	mini._restaurante_actual = Sistema_Cocina.RESTAURANTE_BURGER
+	mini._Iniciar_Nivel(1)
+	mini._spawn_timer = 9999.0
+
+	# Empezando en 0 €, quemar carne y tirarla a la papelera mantiene el total en 0 € (sin negativos)
+	mini._on_ingrediente_carne()
+	mini._Tick_Slots_Coccion(mini._plancha, mini._slots_plancha_ui, mini._tiempo_coccion_carne,
+		"Carne", mini._tiempo_coccion_carne + 0.1)
+	mini._Tick_Slots_Coccion(mini._plancha, mini._slots_plancha_ui, mini._tiempo_coccion_carne,
+		"Carne", mini._tiempo_quemado + 0.1)
+	assert_eq(str(mini._plancha[0]["estado"]), "quemado")
+	var pay_carne: Dictionary = mini._Obtener_Payload_Plancha({"indice": 0})
+	assert_eq(str(pay_carne.get("payload", {}).get("tipo", "")), "carne_quemada")
+	assert_true(mini._Soltar_En_Papelera(pay_carne["payload"]))
+	assert_eq(mini._recaudacion, 0, "Desde 0 € no debe pasar a negativo")
+	assert_eq(mini._lbl_cocina_recaudacion.text, "0 €")
+	assert_eq(mini._penalizacion_quemados, 0, "Sin recaudación previa no se descuenta deuda oculta")
+
+	# Al servir un cliente después de tocar 0 €, cobra entero sin arrastrar deuda negativa
+	mini._clientes[0]["activo"] = true
+	mini._clientes[0]["items"] = ["burger_sola"]
+	mini._clientes[0]["entregados"] = [false]
+	mini._clientes[0]["paciencia_max"] = 30.0
+	mini._clientes[0]["paciencia"] = 30.0
+	mini._clientes[0]["precio_total"] = 12
+	mini._slots_clientes_ui[0]["visible_antes"] = true
+	mini._slots_clientes_ui[0]["fase"] = "esperando"
+	mini._Actualizar_Cliente_UI(0)
+	mini._on_ingrediente_pan()
+	mini._on_ingrediente_carne()
+	mini._Tick_Slots_Coccion(mini._plancha, mini._slots_plancha_ui, mini._tiempo_coccion_carne,
+		"Carne", mini._tiempo_coccion_carne + 0.1)
+	assert_true(mini._Soltar_En_Plato({"tipo": "carne_lista", "indice": 0}, 0))
+	assert_true(mini._Soltar_En_Cliente({"tipo": "plato", "indice": 0, "receta": "burger_sola"}, 0))
+	assert_gte(mini._recaudacion, 12, "Debe sumar sin arrastrar negativos previos")
+
+	# Subir recaudación justo por encima de meta_1 (55 €) y bajar de estrella al quemar carne (-6 €)
+	mini._recaudacion = 58
+	mini._Actualizar_HUD_Cocina()
+	assert_eq(mini._estrellas_hud[0].texture, Arte_Cocina.TEX_ESTRELLA)
+	mini._on_ingrediente_carne()
+	mini._Tick_Slots_Coccion(mini._plancha, mini._slots_plancha_ui, mini._tiempo_coccion_carne,
+		"Carne", mini._tiempo_coccion_carne + 0.1)
+	mini._Tick_Slots_Coccion(mini._plancha, mini._slots_plancha_ui, mini._tiempo_coccion_carne,
+		"Carne", mini._tiempo_quemado + 0.1)
+	mini._on_plancha_pulsada(0)
+	assert_eq(mini._recaudacion, 52, "Tocar carne quemada debe restar 6 €")
+	assert_eq(mini._estrellas_hud[0].texture, Arte_Cocina.TEX_ESTRELLA_VACIA,
+		"Si la recaudación cae bajo meta_1, debe perderse la estrella en el HUD")
+
+	# Quemar patatas en freidora resta 4 € tanto por arrastre como por toque, y si queda < 0 baja a 0 €
+	mini._recaudacion = 3
+	mini._Actualizar_HUD_Cocina()
+	mini._on_ingrediente_patatas()
+	mini._Tick_Slots_Coccion(mini._freidora, mini._slots_freidora_ui, mini._tiempo_coccion_b,
+		"Patatas", mini._tiempo_coccion_b + 0.1)
+	mini._Tick_Slots_Coccion(mini._freidora, mini._slots_freidora_ui, mini._tiempo_coccion_b,
+		"Patatas", mini._tiempo_quemado + 0.1)
+	assert_eq(str(mini._freidora[0]["estado"]), "quemado")
+	mini._on_freidora_pulsada(0)
+	assert_eq(mini._recaudacion, 0, "3 € - 4 € debe acotarse a 0 €")
+	assert_eq(mini._penalizacion_quemados, 9, "6 € previos + 3 € reales descontados")
+
+	# Verificar que aparece en el Modal de Resultados
+	mini._Finalizar_Servicio()
+	var modal_res: Node = mini.get_node("Modal_Resultados")
+	assert_true(modal_res.visible)
+	var textos_res: Array[String] = []
+	for lbl in modal_res.find_children("*", "Label", true, false):
+		textos_res.append((lbl as Label).text)
+	assert_true(" | ".join(textos_res).contains("Penalización por quemados"))
+	mini._Salir_Al_Sim()
+
+
+func test_14_modal_inicio_oculta_habilidades_y_mejoras_usa_bloques_y_manrope() -> void:
+	Sistema_Cocina.Registrar_Minuto_Trabajo_Hosteleria("Trabajar_En_Comida_Rapida")
+	Variables_Estaticas.Habilidades = [50, 50, 39, 50, 50, 54, 42]
+	var mini = load("res://Escenas/Minijuego_Cocina/Minijuego_Cocina.tscn").instantiate()
+	add_child_autofree(mini)
+	await get_tree().process_frame
+
+	# 1. Modal de inicio: no debe exponer habilidades ni sus valores numéricos
+	mini._Abrir_Modal_Inicio(1)
+	await get_tree().process_frame
+	var textos_inicio: Array[String] = []
+	for lbl in mini._modal_inicio.find_children("*", "Label", true, false):
+		textos_inicio.append((lbl as Label).text)
+	var todo_inicio: String = "\n".join(textos_inicio)
+	assert_false(todo_inicio.contains("Destreza"), "No debe mostrar Destreza")
+	assert_false(todo_inicio.contains("Paciencia"), "No debe mostrar Paciencia")
+	assert_false(todo_inicio.contains("Sangre Fría"), "No debe mostrar Sangre Fría")
+	assert_false(todo_inicio.contains("39"), "No debe filtrar valor de Destreza")
+	assert_false(todo_inicio.contains("54"), "No debe filtrar valor de Paciencia")
+	assert_false(todo_inicio.contains("42"), "No debe filtrar valor de Sangre Fría")
+	assert_true(todo_inicio.contains("Caja:"), "Debe mostrar resumen de Caja")
+	assert_true(todo_inicio.contains("Quemar comida"), "Debe mostrar resumen de quemados/merma")
+	assert_true(todo_inicio.contains("servicios al 100%"), "Debe resumir servicios al 100%")
+	mini._modal_inicio.visible = false
+
+	# En turno activo también resume la ventaja de turno
+	var act_cr: Actividad_Fija_Trabajo = Variables_Estaticas.Catalogo_Actividades["Trabajar_En_Comida_Rapida"]
+	Variables_Dinamicas.Matriz_Jugador[600][DIA_PRUEBA] = act_cr
+	mini._Abrir_Modal_Inicio(1)
+	await get_tree().process_frame
+	var textos_turno: Array[String] = []
+	for lbl in mini._modal_inicio.find_children("*", "Label", true, false):
+		textos_turno.append((lbl as Label).text)
+	assert_true("\n".join(textos_turno).contains("En turno:"), "Debe resumir el turno activo")
+	mini._modal_inicio.visible = false
+
+	# 2. Mejoras: bloques integrados Actual vs Mejora + fuentes TitanOne / Manrope
+	var modal: Control = mini._modal_mejoras
+	modal.call("abrir", "burger_street")
+	await get_tree().process_frame
+	var benef: Node = modal.find_child("Beneficios", true, false)
+	assert_not_null(benef)
+	assert_not_null(benef.find_child("Tarjeta_Actual", true, false), "Debe tener tarjeta Actual")
+	assert_not_null(benef.find_child("Tarjeta_Mejora", true, false), "Debe tener tarjeta Con la Mejora")
+
+	for lbl in modal.find_children("*", "Label", true, false):
+		var f: Font = (lbl as Label).get_theme_font("font")
+		var ruta_f: String = f.resource_path if f != null else ""
+		assert_true(ruta_f.contains("Manrope") or ruta_f.contains("TitanOne"),
+			"Label '%s' debe usar Manrope o TitanOne (encontrado: %s)" % [(lbl as Label).text, ruta_f])
+		assert_false(ruta_f.contains("Fraunces"), "No debe usar Fraunces")
+		assert_false(ruta_f.contains("DMSans"), "No debe usar DMSans")
+
+	var cta := modal.find_child("Boton_Comprar_Mejora", true, false) as Button
+	assert_not_null(cta)
+	var f_cta: Font = cta.get_theme_font("font")
+	assert_true(f_cta != null and f_cta.resource_path.contains("Manrope"),
+		"El botón principal debe usar Manrope")
+
+	# Nivel máximo actualiza la tarjeta derecha
+	Variables_Dinamicas.Cocina_Estado["mejoras"]["burger_street"]["plancha"] = 3
+	modal.call("abrir", "burger_street")
+	await get_tree().process_frame
+	var textos_max: Array[String] = []
+	for lbl in benef.find_children("*", "Label", true, false):
+		textos_max.append((lbl as Label).text)
+	assert_true(" | ".join(textos_max).contains("RENDIMIENTO MÁXIMO"))
+	modal.call("cerrar")
+	mini._Salir_Al_Sim()
+
+
 ## Coloca el progreso del minijuego en un total exacto de estrellas repartidas
 ## entre todos los restaurantes. Sirve para probar los umbrales de Maestría.
 func _Fijar_Estrellas_Totales(total: int) -> void:

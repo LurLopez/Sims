@@ -3,19 +3,21 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bowsqfalbxh5k"
-path="res://.godot/imported/Boton_Modal_Verde.png-49d38eb1763686fd7e6bd6d9dd4309b8.ctex"
+path.s3tc="res://.godot/imported/Boton_Modal_Verde.png-49d38eb1763686fd7e6bd6d9dd4309b8.s3tc.ctex"
+path.etc2="res://.godot/imported/Boton_Modal_Verde.png-49d38eb1763686fd7e6bd6d9dd4309b8.etc2.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 
 [deps]
 
 source_file="res://Imagenes/Minijuego_Cocina/UI/Boton_Modal_Verde.png"
-dest_files=["res://.godot/imported/Boton_Modal_Verde.png-49d38eb1763686fd7e6bd6d9dd4309b8.ctex"]
+dest_files=["res://.godot/imported/Boton_Modal_Verde.png-49d38eb1763686fd7e6bd6d9dd4309b8.s3tc.ctex", "res://.godot/imported/Boton_Modal_Verde.png-49d38eb1763686fd7e6bd6d9dd4309b8.etc2.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0

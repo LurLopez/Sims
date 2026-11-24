@@ -203,6 +203,46 @@ class Fondo_Creativo extends Control:
 		return r - sqrt(maxf(0.0, r * r - dy * dy))
 
 
+class Fondo_Tarjeta_VIP extends Control:
+	"""Fondo oscuro sereno con gradiente sutil para la tarjeta destacada VIP."""
+
+	var radio: float = 18.0
+	var _estilo_borde: StyleBoxFlat
+
+	func _ready() -> void:
+		mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_estilo_borde = StyleBoxFlat.new()
+		_estilo_borde.bg_color = Color(0, 0, 0, 0)
+		_estilo_borde.set_corner_radius_all(int(radio))
+		_estilo_borde.set_border_width_all(1)
+		_estilo_borde.border_color = Color(1.0, 1.0, 1.0, 0.10)
+		_estilo_borde.anti_aliasing = true
+		queue_redraw()
+
+	func _draw() -> void:
+		var s := size
+		if s.x < 2.0 or s.y < 2.0:
+			return
+		var centro_oro := Vector2(s.x * 0.84, s.y * 0.38)
+		var max_r := minf(s.x - centro_oro.x, centro_oro.y) - 6.0
+		if max_r > 12.0:
+			for i in range(4):
+				var r := minf(max_r, 18.0 + float(i) * 10.0)
+				draw_circle(centro_oro, r, Color("#f59e0b", 0.022))
+		if _estilo_borde != null:
+			draw_style_box(_estilo_borde, Rect2(Vector2.ZERO, s))
+
+	func _Inset_Radio(y: float, s: Vector2, r: float) -> float:
+		var dy := 0.0
+		if y < r:
+			dy = r - y
+		elif y > s.y - r:
+			dy = y - (s.y - r)
+		if dy <= 0.0:
+			return 0.0
+		return r - sqrt(maxf(0.0, r * r - dy * dy))
+
+
 class Medidor_Edad extends Control:
 	"""Barra de edad de 18 a 100 años con marca fantasma de la edad original."""
 
@@ -211,6 +251,7 @@ class Medidor_Edad extends Control:
 
 	var edad_actual: int = 18
 	var edad_sin_tratamientos: int = 18
+	var fondo_oscuro: bool = false
 	var _actual_anim: float = 18.0
 	var _referencia_anim: float = 18.0
 	var _tween: Tween
@@ -219,9 +260,9 @@ class Medidor_Edad extends Control:
 
 	func _ready() -> void:
 		mouse_filter = Control.MOUSE_FILTER_IGNORE
-		custom_minimum_size = Vector2(0, 34)
+		custom_minimum_size = Vector2(0, 28)
 		_fondo = StyleBoxFlat.new()
-		_fondo.bg_color = Color(1, 1, 1, 0.14)
+		_fondo.bg_color = Color(1, 1, 1, 0.14) if fondo_oscuro else Color("#e2e8f0")
 		_fondo.set_corner_radius_all(999)
 		_fondo.anti_aliasing = true
 		_relleno = StyleBoxFlat.new()
@@ -254,8 +295,9 @@ class Medidor_Edad extends Control:
 		var s := size
 		if s.x < 30.0:
 			return
+		_fondo.bg_color = Color(1, 1, 1, 0.14) if fondo_oscuro else Color("#e2e8f0")
 		var y := s.y * 0.5
-		var alto := 10.0
+		var alto := 8.0
 		var margen := 8.0
 		var ancho_util := s.x - margen * 2.0
 		draw_style_box(_fondo, Rect2(margen, y - alto * 0.5, ancho_util, alto))
@@ -266,23 +308,25 @@ class Medidor_Edad extends Control:
 			maxf(alto, ancho_util * t_actual), alto))
 
 		# Marcas cada 10 años.
+		var color_marca := Color(1, 1, 1, 0.18) if fondo_oscuro else Color(0.39, 0.45, 0.55, 0.25)
 		for edad in range(20, 101, 10):
 			var x := margen + ancho_util * _Progreso(float(edad))
 			draw_line(Vector2(x, y - alto * 0.5), Vector2(x, y + alto * 0.5),
-				Color(1, 1, 1, 0.16), 1.0, true)
+				color_marca, 1.0, true)
 
 		# Marca fantasma: dónde estaría el Sim sin los tratamientos.
 		if _referencia_anim > _actual_anim + 0.4:
 			var x_ref := margen + ancho_util * _Progreso(_referencia_anim)
-			draw_line(Vector2(x_ref, y - 11.0), Vector2(x_ref, y + 11.0),
-				Color(1, 1, 1, 0.52), 2.0, true)
-			draw_circle(Vector2(x_ref, y - 14.0), 3.4, Color(1, 1, 1, 0.52))
+			var color_ref := Color(1, 1, 1, 0.52) if fondo_oscuro else Color("#64748b")
+			draw_line(Vector2(x_ref, y - 9.0), Vector2(x_ref, y + 9.0),
+				color_ref, 2.0, true)
+			draw_circle(Vector2(x_ref, y - 11.0), 3.0, color_ref)
 
 		# Marcador actual.
 		var x_act := margen + ancho_util * t_actual
-		draw_circle(Vector2(x_act, y), 9.0, Color(0.02, 0.06, 0.08, 0.35))
-		draw_circle(Vector2(x_act, y), 7.0, Color.WHITE)
-		draw_circle(Vector2(x_act, y), 4.6, _Color_Para_Edad(_actual_anim))
+		draw_circle(Vector2(x_act, y), 8.5, Color(0.06, 0.09, 0.16, 0.18))
+		draw_circle(Vector2(x_act, y), 6.5, Color.WHITE)
+		draw_circle(Vector2(x_act, y), 4.2, _Color_Para_Edad(_actual_anim))
 
 	func _Progreso(edad: float) -> float:
 		return clampf((edad - EDAD_MIN) / (EDAD_MAX - EDAD_MIN), 0.0, 1.0)

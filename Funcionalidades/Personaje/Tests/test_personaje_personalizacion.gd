@@ -123,3 +123,22 @@ func test_creador_personaje_se_construye_y_emite_apariencia() -> void:
 	assert_eq(recibida.size(), 1)
 	assert_eq(recibida[0]["personalidad"], "Deportista")
 	assert_eq(recibida[0]["ropa_superior"], "chaqueta")
+
+
+func test_correr_en_perfil_y_capas_actividades_inicio() -> void:
+	var pj := Personaje_Visual.new(Apariencia_Personaje.por_defecto(), "cuerpo_completo")
+	add_child_autofree(pj)
+	pj.establecer_actividad("Salir_A_Correr")
+	var rig := pj.obtener_rig_pose("correr", 0.35, false, pj.apariencia)
+	assert_true(bool(rig.get("vista_perfil", false)), "La pose de correr debe usar vista lateral en perfil")
+	assert_true(rig.has("foot_rot_l") and rig.has("foot_rot_r"), "La carrera en perfil debe incluir rotaciones de calzado")
+
+	var escenario := Escenario_Actividad.new()
+	escenario.size = Vector2(640, 184)
+	add_child_autofree(escenario)
+	await wait_process_frames(2)
+
+	for act in ["Estudiar", "Cocinar", "Comer_Tupper"]:
+		escenario.actualizar_estado(act, false, Apariencia_Personaje.por_defecto(), 780)
+		await wait_process_frames(1)
+		assert_true(escenario._personaje_brazos.visible, "La actividad '%s' debe mostrar brazos delanteros sobre el mueble" % act)
