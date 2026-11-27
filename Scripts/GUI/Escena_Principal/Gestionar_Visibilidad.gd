@@ -66,6 +66,8 @@ func Visibilizar_Lo_Basico(raiz):
 	raiz.get_node("Dinero_Label").visible = true
 	if raiz.has_node("Boton_Tienda_Header"):
 		raiz.get_node("Boton_Tienda_Header").visible = true
+	if raiz.has_node("Boton_Granja_Header"):
+		raiz.get_node("Boton_Granja_Header").visible = Sistema_Granja.Comprada()
 	raiz.get_node("Boton_Perfil").visible = true
 	raiz.get_node("Economia_Button").visible = true
 	raiz.get_node("Calendario_Button").visible = true

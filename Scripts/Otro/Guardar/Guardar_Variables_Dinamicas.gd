@@ -159,6 +159,9 @@ func load_game():
 		# Minijuego de cocina — fallback y merge recursivo para saves antiguos.
 		Variables_Dinamicas.Cocina_Estado = _Normalizar_Cocina_Estado(
 			game_data.get("Cocina_Estado", {}))
+		# «La Granja» — saves antiguos cargan la propiedad bloqueada.
+		Variables_Dinamicas.Granja_Estado = Sistema_Granja.Normalizar_Estado(
+			game_data.get("Granja_Estado", {}))
 		if game_data.has("Muerto"):
 			Variables_Dinamicas.Muerto = game_data["Muerto"]
 			Variables_Dinamicas.Edad_Muerte = game_data["Edad_Muerte"]
@@ -335,6 +338,7 @@ func game_data_func():
 		"Tuppers": Variables_Dinamicas.Tuppers,
 		"Tupper_Seleccionado_Idx": Variables_Dinamicas.Tupper_Seleccionado_Idx,
 		"Cocina_Estado": Variables_Dinamicas.Cocina_Estado.duplicate(true),
+		"Granja_Estado": Variables_Dinamicas.Granja_Estado.duplicate(true),
 	}
 	return game_data
 

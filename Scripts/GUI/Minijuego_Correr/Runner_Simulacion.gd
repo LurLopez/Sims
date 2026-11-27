@@ -34,7 +34,7 @@ const VELOCIDAD_RELATIVA_TREN_MAX: float = 10.0
 const TIEMPO_MIN_LLEGADA_TREN_MOVIL: float = 3.2
 
 # Física del corredor
-const SUAVIZADO_CARRIL: float = 17.0
+const SUAVIZADO_CARRIL: float = 19.5
 const VELOCIDAD_SALTO: float = 14.2
 const VELOCIDAD_SUPER_SALTO: float = 19.6
 const GRAVEDAD: float = 42.0
@@ -72,7 +72,7 @@ const DURACION_MULTIPLICADOR: float = 13.0
 const DURACION_TABLA: float = 30.0
 const DURACION_JETPACK: float = 9.0
 const DURACION_POGO: float = 4.6
-const ALTURA_VUELO_JETPACK: float = 7.8
+const ALTURA_VUELO_JETPACK: float = 15.2
 const ALTURA_MAXIMA_POGO: float = 8.5
 const DISTANCIA_POGO: float = 78.0
 const TABLAS_INICIALES: int = 3
@@ -224,6 +224,9 @@ func _crear_estado_jugador() -> Dictionary:
 		"estado": "CORRIENDO", # CORRIENDO | SALTANDO | RODANDO | TROPEZANDO | VOLANDO | POGO | CAIDO | CHOCADO
 		"carril_objetivo": 0,
 		"x": 0.0,
+		"vx": 0.0,
+		"cambio_carril_pulso": 0.0,
+		"cambio_carril_dir": 0,
 		"y": 0.0,
 		"vy": 0.0,
 		"suelo_y": 0.0,
@@ -236,6 +239,10 @@ func _crear_estado_jugador() -> Dictionary:
 		"ciclo_carrera": 0.0,
 		"squash_x": 1.0,
 		"squash_y": 1.0,
+		"salto_t": 0.0,
+		"salto_pie": 1,
+		"aterrizaje_t": 0.0,
+		"vel_norm": 0.0,
 		"buffer_accion": "",
 		"buffer_tiempo": 0.0,
 		"invulnerable": 0.0,
@@ -409,6 +416,8 @@ func aplicar_comando(comando: String) -> String:
 				return "TROPIEZO"
 
 		jugador["carril_objetivo"] = siguiente_carril
+		jugador["cambio_carril_pulso"] = 1.0
+		jugador["cambio_carril_dir"] = dir
 		_progreso_mision("carriles", 1)
 		return "CARRIL"
 
@@ -438,8 +447,11 @@ func aplicar_comando(comando: String) -> String:
 			jugador["vy"] = vel_salto
 			jugador["estado"] = "SALTANDO"
 			jugador["tiempo_rodar"] = 0.0
-			jugador["squash_x"] = 0.84
-			jugador["squash_y"] = 1.22
+			jugador["salto_t"] = 0.0
+			jugador["aterrizaje_t"] = 0.0
+			jugador["salto_pie"] = 1 if cos(float(jugador.get("ciclo_carrera", 0.0))) >= 0.0 else -1
+			jugador["squash_x"] = 0.82
+			jugador["squash_y"] = 1.24
 			jugador["buffer_accion"] = ""
 			jugador["buffer_tiempo"] = 0.0
 			_progreso_mision("saltos", 1)
@@ -867,23 +879,30 @@ func avanzar(dt: float, generar_oleadas: bool = true) -> Dictionary:
 		eventos["hito"] = _proximo_hito
 		_proximo_hito += INTERVALO_HITO_METROS
 
-	# Cambio suave de carril + inclinación lateral
+	# Cambio suave de carril + inclinación lateral y pulso de zancada
 	var x_objetivo: float = carril_a_x(int(jugador["carril_objetivo"]))
 	var x_prev: float = float(jugador["x"])
-	var alfa_x: float = 1.0 - exp(-SUAVIZADO_CARRIL * dt)
+	var suavizado_ef: float = SUAVIZADO_CARRIL + obtener_progreso_velocidad() * 4.5
+	var alfa_x: float = 1.0 - exp(-suavizado_ef * dt)
 	var x_actual: float = x_prev + (x_objetivo - x_prev) * alfa_x
 	if absf(x_objetivo - x_actual) < 0.004:
 		x_actual = x_objetivo
 	jugador["x"] = x_actual
 
 	var vx: float = (x_actual - x_prev) / dt if dt > 0.0 else 0.0
-	var inclinacion_obj: float = clampf(-vx * 0.018, -0.28, 0.28)
-	jugador["inclinacion_z"] = float(jugador["inclinacion_z"]) + (inclinacion_obj - float(jugador["inclinacion_z"])) * (1.0 - exp(-16.0 * dt))
+	jugador["vx"] = vx
+	if float(jugador.get("cambio_carril_pulso", 0.0)) > 0.0:
+		jugador["cambio_carril_pulso"] = maxf(0.0, float(jugador["cambio_carril_pulso"]) - dt * 4.4)
+	var inclinacion_obj: float = clampf(-vx * 0.015, -0.26, 0.26)
+	jugador["inclinacion_z"] = float(jugador["inclinacion_z"]) + (inclinacion_obj - float(jugador["inclinacion_z"])) * (1.0 - exp(-14.0 * dt))
 
-	# Recuperación de squash & stretch
+	# Recuperación de squash & stretch + temporizadores de aterrizaje/velocidad
 	var sq_decay: float = 1.0 - exp(-15.0 * dt)
 	jugador["squash_x"] = float(jugador["squash_x"]) + (1.0 - float(jugador["squash_x"])) * sq_decay
 	jugador["squash_y"] = float(jugador["squash_y"]) + (1.0 - float(jugador["squash_y"])) * sq_decay
+	jugador["vel_norm"] = obtener_progreso_velocidad()
+	if float(jugador.get("aterrizaje_t", 0.0)) > 0.0:
+		jugador["aterrizaje_t"] = maxf(0.0, float(jugador["aterrizaje_t"]) - dt)
 
 	# Buffer de entrada
 	if float(jugador["buffer_tiempo"]) > 0.0:
@@ -915,7 +934,7 @@ func avanzar(dt: float, generar_oleadas: bool = true) -> Dictionary:
 		jugador["suelo_y"] = 0.0
 		jugador["en_techo"] = false
 		jugador["vuelo_t"] = float(jugador["vuelo_t"]) + dt
-		var alfa_vuelo: float = 1.0 - exp(-3.0 * dt)
+		var alfa_vuelo: float = 1.0 - exp(-3.6 * dt)
 		jugador["y"] = lerpf(float(jugador["y"]), ALTURA_VUELO_JETPACK, alfa_vuelo)
 		if float(powerups["jetpack"]) <= 0.0:
 			jugador["estado"] = "SALTANDO"
@@ -950,15 +969,18 @@ func avanzar(dt: float, generar_oleadas: bool = true) -> Dictionary:
 
 		var estaba_en_aire: bool = float(jugador["y"]) > suelo_y + 0.08
 		if float(jugador["y"]) > suelo_y or float(jugador["vy"]) > 0.0:
+			jugador["salto_t"] = float(jugador.get("salto_t", 0.0)) + dt
 			jugador["vy"] = float(jugador["vy"]) - GRAVEDAD * dt
 			jugador["y"] = float(jugador["y"]) + float(jugador["vy"]) * dt
 			if float(jugador["y"]) <= suelo_y:
 				jugador["y"] = suelo_y
 				jugador["vy"] = 0.0
+				jugador["salto_t"] = 0.0
 				if estaba_en_aire:
 					eventos["aterrizo"] = true
-					jugador["squash_x"] = 1.22
-					jugador["squash_y"] = 0.78
+					jugador["aterrizaje_t"] = 0.24
+					jugador["squash_x"] = 1.24
+					jugador["squash_y"] = 0.76
 					if str(jugador["estado"]) == "SALTANDO":
 						jugador["estado"] = "CORRIENDO"
 					if str(jugador["buffer_accion"]) != "":
@@ -971,6 +993,7 @@ func avanzar(dt: float, generar_oleadas: bool = true) -> Dictionary:
 		else:
 			jugador["y"] = suelo_y
 			jugador["vy"] = 0.0
+			jugador["salto_t"] = 0.0
 
 	# Temporizador de rodar
 	if str(jugador["estado"]) == "RODANDO":
@@ -984,9 +1007,10 @@ func avanzar(dt: float, generar_oleadas: bool = true) -> Dictionary:
 				if aplicar_comando("SALTAR") == "SALTAR":
 					eventos["buffer_disparado"] = "SALTAR"
 
-	# Ciclo de zancada
+	# Ciclo de zancada legible y fluida (cadencia atlética sin vibración excesiva a alta velocidad)
 	if str(jugador["estado"]) == "CORRIENDO" and float(jugador["y"]) <= float(jugador["suelo_y"]) + 0.08 and float(powerups["tabla"]) <= 0.0:
-		jugador["ciclo_carrera"] = float(jugador["ciclo_carrera"]) + velocidad * factor_ralenti * dt * 0.54
+		var vel_ciclo: float = clampf(velocidad * 0.44, 7.0, 10.6)
+		jugador["ciclo_carrera"] = float(jugador["ciclo_carrera"]) + vel_ciclo * factor_ralenti * dt
 		var paso_idx: int = int(floor(float(jugador["ciclo_carrera"]) / PI))
 		if paso_idx != _ultimo_paso_idx:
 			_ultimo_paso_idx = paso_idx
@@ -1131,13 +1155,14 @@ func _activar_jetpack() -> void:
 	jugador["tiempo_tropiezo"] = 0.0
 	jugador["anim_tropiezo"] = 0.0
 
-	# Estela de monedas en el aire para que el vuelo se lea como en Subway Surfers.
-	for k in range(22):
-		var z: float = -16.0 - float(k) * 3.2
-		var carril: int = 0
-		if k % 7 > 3:
-			carril = -1 if (k / 7) % 2 == 0 else 1
-		anadir_moneda(carril, ALTURA_VUELO_JETPACK + 0.95, z, float(k) * 0.35)
+	# Estela larga de monedas en lo alto del cielo para que el vuelo se disfrute todo el trayecto.
+	var secuencia_carriles: Array[int] = [0, 0, -1, -1, 0, 1, 1, 0, -1, 0, 1, 0]
+	for k in range(44):
+		var z: float = -18.0 - float(k) * 3.1
+		var carril: int = secuencia_carriles[(k / 4) % secuencia_carriles.size()]
+		var subida: float = clampf(float(k) / 4.0, 0.25, 1.0)
+		var y_moneda: float = lerpf(float(jugador["y"]) + 1.2, ALTURA_VUELO_JETPACK + 0.75, subida)
+		anadir_moneda(carril, y_moneda, z, float(k) * 0.35)
 
 
 func _activar_pogo() -> void:

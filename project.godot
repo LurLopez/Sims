@@ -40,6 +40,7 @@ Sistema_Futbol="*res://Scripts/Logica/Escena_Principal/Actividades/Futbol/Sistem
 Sistema_Manager="*res://Scripts/Logica/Escena_Principal/Manager/Sistema_Manager.gd"
 Alimentacion="*res://Scripts/Logica/Escena_Principal/Actividades/Alimentacion.gd"
 Sistema_Cocina="*res://Scripts/Logica/Escena_Principal/Minijuego_Cocina/Sistema_Cocina.gd"
+Sistema_Granja="*res://Scripts/Logica/Escena_Principal/Granja/Sistema_Granja.gd"
 Sistema_Correr="*res://Scripts/Logica/Escena_Principal/Minijuego_Correr/Sistema_Correr.gd"
 Eventos_Aleatorios="*res://Scripts/Logica/Escena_Principal/Actividades/Eventos_Aleatorios.gd"
 Gestionar_Visibilidad="*res://Scripts/GUI/Escena_Principal/Gestionar_Visibilidad.gd"

@@ -1,6 +1,7 @@
 """
-Moneda dorada estilizada estilo Subway Surfers para PARK RUSH 3D.
-Canto estriado, doble cara rehundida con aro biselado y estrella 3D en relieve.
+Moneda dorada grande y muy amarilla estilo Subway Surfers para PARK RUSH 3D.
+Aro exterior biselado grueso, cara interior rehundida en amarillo oro intenso
+y estrella 3D en relieve pronunciado para máxima visibilidad en carrera.
 """
 
 import math
@@ -17,38 +18,50 @@ import lib_blender as lb
 
 
 def construir():
-    m_oro = lb.material("Moneda_Oro", "#f59e0b", rough=0.16, metal=0.88,
-                        emision="#d97706", emision_fuerza=0.25)
-    m_estrella = lb.material("Moneda_Estrella", "#ffe45e", rough=0.12, metal=0.80,
-                             emision="#facc15", emision_fuerza=0.45)
+    # Amarillos intensos y saturados (sin emisión forzada que lave el color en Blender)
+    m_oro = lb.material("Moneda_Oro", "#ffd800", rough=0.20, metal=0.24)
+    m_fondo = lb.material("Moneda_Fondo", "#d99b00", rough=0.26, metal=0.20)
+    m_estrella = lb.material("Moneda_Estrella", "#ffef2e", rough=0.14, metal=0.18)
 
     piezas = []
 
-    # 1. Disco torneado con bisel en canto y caras rehundidas (eje Y = normal de la moneda)
-    # Perfil (r, z) en torno a Z y luego rotado 90° en X para mirar a ±Y
-    perfil_disco = [
-        (0.0, 0.044),
-        (0.32, 0.044),
-        (0.35, 0.072),
-        (0.42, 0.072),
-        (0.445, 0.052),
-        (0.445, -0.052),
-        (0.42, -0.072),
-        (0.35, -0.072),
-        (0.32, -0.044),
-        (0.0, -0.044),
+    # 1. Aro exterior torneado grueso y redondeado (radio 0.58 m -> 1.16 m de diámetro)
+    perfil_aro = [
+        (0.38, 0.044),
+        (0.415, 0.094),
+        (0.45, 0.106),
+        (0.54, 0.106),
+        (0.575, 0.076),
+        (0.585, 0.034),
+        (0.585, -0.034),
+        (0.575, -0.076),
+        (0.54, -0.106),
+        (0.45, -0.106),
+        (0.415, -0.094),
+        (0.38, -0.044),
     ]
-    piezas.append(lb.revolucion("Moneda_Disco", perfil_disco, (0.0, 0.0, 0.0), m_oro, lados=24, rot=(math.radians(90), 0.0, 0.0)))
+    piezas.append(lb.revolucion(
+        "Moneda_Aro", perfil_aro, (0.0, 0.0, 0.0), m_oro,
+        lados=32, rot=(math.radians(90), 0.0, 0.0)
+    ))
 
-    # 2. Estriado sutil del canto (16 muescas alrededor del borde)
-    for k in range(16):
-        ang = math.tau * k / 16
-        px = math.cos(ang) * 0.444
-        pz = math.sin(ang) * 0.444
-        piezas.append(lb.caja("Moneda_Estria", (0.022, 0.088, 0.024), (px, 0.0, pz), m_oro, rot=(0.0, -ang, 0.0)))
+    # 2. Disco interior rehundido para dar profundidad real al relieve
+    perfil_fondo = [
+        (0.0, 0.046),
+        (0.39, 0.046),
+        (0.39, -0.046),
+        (0.0, -0.046),
+    ]
+    piezas.append(lb.revolucion(
+        "Moneda_Fondo", perfil_fondo, (0.0, 0.0, 0.0), m_fondo,
+        lados=32, rot=(math.radians(90), 0.0, 0.0)
+    ))
 
-    # 3. Estrella 3D en relieve por ambas caras
-    piezas.append(lb.estrella_3d("Moneda_Estrella", 0.255, 0.112, 0.145, (0.0, 0.0, 0.0), m_estrella, puntas=5, bisel_cara=0.42))
+    # 3. Estrella 3D gruesa y con relieve pronunciado por ambas caras
+    piezas.append(lb.estrella_3d(
+        "Moneda_Estrella", 0.34, 0.155, 0.25,
+        (0.0, 0.0, 0.0), m_estrella, puntas=5, bisel_cara=0.28
+    ))
 
     obj = lb.unir(piezas, "Moneda")
     obj.location = (0.0, 0.0, 0.0)

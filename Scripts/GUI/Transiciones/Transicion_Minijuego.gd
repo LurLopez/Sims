@@ -28,6 +28,7 @@ const COLOR_ACENTO := Color("#ea580c")
 const COLOR_SUBTITULO := Color("#fde68a")
 
 const TEX_CHEF := preload("res://Imagenes/Minijuego_Cocina/Chef/Poses/Chef_Pulgar_Arriba.png")
+const TEX_GALLINA := preload("res://Imagenes/Granja/Gallina.png")
 
 var _raiz: Control
 var _cortina: Panel
@@ -35,6 +36,7 @@ var _rayos: Rayos_Telon
 var _centro: CenterContainer
 var _contenido: VBoxContainer
 var _hero_manager: HBoxContainer
+var _hero_granja: TextureRect
 var _chef: TextureRect
 var _lbl_titulo: Label
 var _lbl_sub: Label
@@ -87,7 +89,7 @@ func Cubrir(titulo: String, subtitulo: String) -> void:
 	_cortina.position = Vector2(0.0, _alto + 8.0)
 	_contenido.modulate.a = 0.0
 	_puntos.modulate.a = 0.0
-	var figura: Control = _hero_manager if _tema == "manager" else _chef
+	var figura: Control = _hero_manager if _tema == "manager" else (_hero_granja if _tema == "granja" else _chef)
 	figura.scale = Vector2(0.82, 0.82)
 
 	_tween = create_tween()
@@ -191,6 +193,18 @@ func _Construir() -> void:
 	_chef.pivot_offset = _chef.custom_minimum_size * 0.5
 	_contenido.add_child(_chef)
 
+	_hero_granja = TextureRect.new()
+	_hero_granja.name = "Hero_Granja"
+	_hero_granja.texture = TEX_GALLINA
+	_hero_granja.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_hero_granja.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	_hero_granja.custom_minimum_size = Vector2(126.0, 150.0)
+	_hero_granja.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	_hero_granja.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_hero_granja.visible = false
+	_hero_granja.pivot_offset = _hero_granja.custom_minimum_size * 0.5
+	_contenido.add_child(_hero_granja)
+
 	_lbl_titulo = Estilos_UI.titulo("Cocina", 34, Color.WHITE)
 	_lbl_titulo.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_lbl_titulo.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -231,16 +245,31 @@ func _Ajustar_Al_Viewport() -> void:
 
 func _Aplicar_Tema() -> void:
 	var es_mgr: bool = _tema == "manager"
-	_chef.visible = not es_mgr
+	var es_granja: bool = _tema == "granja"
+	_chef.visible = not es_mgr and not es_granja
 	_hero_manager.visible = es_mgr
-	var acento: Color = Color("#10b981") if es_mgr else COLOR_ACENTO
-	var sub_col: Color = Color("#a7f3d0") if es_mgr else COLOR_SUBTITULO
+	_hero_granja.visible = es_granja
+	var acento: Color = COLOR_ACENTO
+	if es_mgr:
+		acento = Color("#10b981")
+	elif es_granja:
+		acento = Color("#65a30d")
+	var sub_col: Color = COLOR_SUBTITULO
+	if es_mgr:
+		sub_col = Color("#a7f3d0")
+	elif es_granja:
+		sub_col = Color("#fde68a")
 	var st := _cortina.get_theme_stylebox("panel") as StyleBoxFlat
 	if st != null:
 		st.border_color = acento
 	_lbl_sub.add_theme_color_override("font_color", sub_col)
-	_rayos.color_rayo = Color(0.06, 0.72, 0.50, 0.08) if es_mgr else Color(0.98, 0.62, 0.15, 0.055)
-	_puntos.color_punto = Color("#34d399") if es_mgr else Color(0.984, 0.749, 0.141)
+	if es_mgr:
+		_rayos.color_rayo = Color(0.06, 0.72, 0.50, 0.08)
+	elif es_granja:
+		_rayos.color_rayo = Color(0.30, 0.70, 0.15, 0.07)
+	else:
+		_rayos.color_rayo = Color(0.98, 0.62, 0.15, 0.055)
+	_puntos.color_punto = Color("#34d399") if es_mgr else (Color("#fbbf24") if es_granja else Color(0.984, 0.749, 0.141))
 
 	if not es_mgr:
 		return
@@ -265,7 +294,7 @@ func _Detener_Tween() -> void:
 
 
 func _Iniciar_Balanceo_Figura() -> void:
-	var figura: Control = _hero_manager if _tema == "manager" else _chef
+	var figura: Control = _hero_manager if _tema == "manager" else (_hero_granja if _tema == "granja" else _chef)
 	if figura == null or not is_instance_valid(figura):
 		return
 	figura.scale = Vector2.ONE

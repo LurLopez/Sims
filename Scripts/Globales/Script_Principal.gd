@@ -94,6 +94,10 @@ var _capa_minijuego_correr: CanvasLayer = null
 var _minijuego_correr_activo: bool = false
 var _minijuego_correr_packed: PackedScene = null
 var _script_banner_correr: Script = null
+var _capa_granja: CanvasLayer = null
+var _granja: Control = null
+var _granja_packed: PackedScene = null
+var _dialog_granja: ConfirmationDialog = null
 
 # Carrera de futbolista
 var _panel_futbol: Control = null
@@ -3342,6 +3346,7 @@ func _Actualizar_Pantalla_Minijuegos() -> void:
 
 	_Anadir_Tarjeta_Correr()
 	_Anadir_Tarjeta_Manager()
+	_Anadir_Tarjeta_Granja()
 
 	# Contenedor modular preparado para añadir futuros minijuegos
 	var sep_lbl := Estilos_UI.texto("PRÓXIMOS MINIJUEGOS", 11, Estilos_UI.TINTA_FANTASMA, 700)
@@ -3560,6 +3565,210 @@ func _Formatear_Euros_Manager(numero: int) -> String:
 		if contador % 3 == 0 and i > 0:
 			salida = "." + salida
 	return ("-" if negativo else "") + salida + " €"
+
+
+# Tarjeta de «La Granja» dentro del hub de Minijuegos.
+func _Anadir_Tarjeta_Granja() -> void:
+	var resumen: Dictionary = Sistema_Granja.Resumen()
+	var comprada: bool = bool(resumen.get("comprada", false))
+	var precio: int = int(resumen.get("precio", 0))
+	var card := PanelContainer.new()
+	card.name = "Card_Minijuego_Granja"
+	var st := Estilos_UI.caja_tarjeta(16, 3)
+	st.border_color = Color("#65a30d") if comprada else Color("#d97706")
+	card.add_theme_stylebox_override("panel", st)
+	_minijuegos_vbox.add_child(card)
+
+	var m := MarginContainer.new()
+	m.add_theme_constant_override("margin_left", 18)
+	m.add_theme_constant_override("margin_right", 18)
+	m.add_theme_constant_override("margin_top", 16)
+	m.add_theme_constant_override("margin_bottom", 16)
+	card.add_child(m)
+
+	var v := VBoxContainer.new()
+	v.add_theme_constant_override("separation", 10)
+	m.add_child(v)
+
+	var banner := TextureRect.new()
+	banner.name = "Banner_Granja"
+	banner.custom_minimum_size = Vector2(0.0, 142.0)
+	banner.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	banner.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	banner.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	banner.clip_contents = true
+	banner.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	if ResourceLoader.exists("res://Imagenes/Granja/Banner_Granja.png"):
+		banner.texture = load("res://Imagenes/Granja/Banner_Granja.png")
+	v.add_child(banner)
+
+	var cab := HBoxContainer.new()
+	cab.add_theme_constant_override("separation", 12)
+	v.add_child(cab)
+	cab.add_child(Estilos_UI.badge_icono("leaf" if comprada else "lock", 46, 22,
+		Color("#65a30d") if comprada else Estilos_UI.TINTA_FANTASMA, Color.WHITE, 12))
+	var tit_col := VBoxContainer.new()
+	tit_col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	tit_col.add_theme_constant_override("separation", 2)
+	cab.add_child(tit_col)
+	tit_col.add_child(Estilos_UI.titulo("La Granja", 19, Estilos_UI.TINTA))
+	tit_col.add_child(Estilos_UI.texto("Mapa libre 24×24 · cultivos, animales y talleres", 12,
+		Estilos_UI.TINTA_SUAVE, 500))
+	if comprada:
+		cab.add_child(Estilos_UI.pill_estado("Disponible", Estilos_UI.EXITO_SUAVE, Estilos_UI.EXITO_OSCURO))
+	elif precio <= 0:
+		cab.add_child(Estilos_UI.pill_estado("Gratis (pruebas)", Estilos_UI.ORO_SUAVE, Estilos_UI.ORO))
+	else:
+		cab.add_child(Estilos_UI.pill_estado("%d €" % precio, Estilos_UI.ORO_SUAVE, Estilos_UI.ORO))
+
+	var chips := HFlowContainer.new()
+	chips.add_theme_constant_override("h_separation", 8)
+	chips.add_theme_constant_override("v_separation", 6)
+	if comprada:
+		chips.add_child(Estilos_UI.pill_estado("%d MG" % int(resumen.get("monedas", 0)),
+			Estilos_UI.ORO_SUAVE, Estilos_UI.ORO))
+		chips.add_child(Estilos_UI.pill_estado("%d listos" % int(resumen.get("listos", 0)),
+			Estilos_UI.EXITO_SUAVE, Estilos_UI.EXITO_OSCURO))
+		chips.add_child(Estilos_UI.pill_estado("%d parcelas" % int(resumen.get("parcelas", 0)),
+			Estilos_UI.AZUL_SUAVE, Estilos_UI.AZUL))
+	else:
+		chips.add_child(Estilos_UI.pill_estado("4 parcelas", Estilos_UI.SUPERFICIE_2, Estilos_UI.TINTA))
+		chips.add_child(Estilos_UI.pill_estado("3 cultivos", Estilos_UI.SUPERFICIE_2, Estilos_UI.TINTA))
+		chips.add_child(Estilos_UI.pill_estado("3 máquinas", Estilos_UI.SUPERFICIE_2, Estilos_UI.TINTA))
+	v.add_child(chips)
+
+	if comprada:
+		v.add_child(Estilos_UI.parrafo(
+			"Recoge cosechas, alimenta animales y carga máquinas. Convierte Monedas de Granja en euros con la ventanilla «Cobrar»: los primeros 10 MG del día van a 1:1.",
+			13, Estilos_UI.TINTA_SUAVE))
+		var btn_entrar := Estilos_UI.boton("Entrar a la granja", "exito", "play", Estilos_UI.EXITO, 50)
+		btn_entrar.name = "Btn_Entrar_Granja"
+		btn_entrar.pressed.connect(_Abrir_Granja)
+		v.add_child(btn_entrar)
+	else:
+		v.add_child(Estilos_UI.parrafo(
+			"Compra la granja y empieza con 4 parcelas, una gallina y un molino. Los tiempos van en horas; en Modo Rápido se dividen entre 7.",
+			13, Estilos_UI.TINTA_SUAVE))
+		var texto_btn: String = "Comprar granja · Gratis (pruebas)" if precio <= 0 else "Comprar granja · %d €" % precio
+		var btn_comprar := Estilos_UI.boton(texto_btn, "oro", "key", Estilos_UI.ORO, 50)
+		btn_comprar.name = "Btn_Comprar_Granja"
+		btn_comprar.pressed.connect(_Comprar_Granja)
+		v.add_child(btn_comprar)
+
+
+func _Comprar_Granja() -> void:
+	if Sistema_Granja.Comprada():
+		_Abrir_Granja()
+		return
+	var validacion: Dictionary = Sistema_Granja.Puede_Comprar()
+	if not bool(validacion.get("ok", false)):
+		_Mostrar_Toast_Desbloqueo("No puedes comprar la granja", str(validacion.get("motivo", "")),
+			"leaf", Color("#d97706"))
+		return
+	var precio: int = int(validacion.get("precio", 0))
+	if precio <= 0:
+		_Confirmar_Compra_Granja()
+		return
+	if _dialog_granja == null or not is_instance_valid(_dialog_granja):
+		_dialog_granja = ConfirmationDialog.new()
+		_dialog_granja.title = "Comprar La Granja"
+		_dialog_granja.ok_button_text = "Comprar"
+		_dialog_granja.cancel_button_text = "Cancelar"
+		add_child(_dialog_granja)
+	_dialog_granja.dialog_text = "¿Comprar La Granja por %d €?\n\nEs una propiedad permanente: podrás cultivar, criar animales y procesar productos." % precio
+	if not _dialog_granja.confirmed.is_connected(_Confirmar_Compra_Granja):
+		_dialog_granja.confirmed.connect(_Confirmar_Compra_Granja)
+	_dialog_granja.popup_centered(Vector2i(560, 260))
+
+
+func _Confirmar_Compra_Granja() -> void:
+	var r: Dictionary = Sistema_Granja.Comprar()
+	if not bool(r.get("ok", false)):
+		_Mostrar_Toast_Desbloqueo("No se pudo comprar", str(r.get("motivo", "")),
+			"leaf", Color("#d97706"))
+		return
+	Guardar_Variables_Dinamicas.save_game()
+	Actualizar_Dinero()
+	_Actualizar_Pantalla_Minijuegos()
+	_Actualizar_Boton_Granja_Header()
+	_Abrir_Granja()
+
+
+func _Actualizar_Boton_Granja_Header() -> void:
+	var btn := get_node_or_null("Boton_Granja_Header") as Button
+	if btn != null:
+		btn.visible = Sistema_Granja.Comprada()
+
+
+func _Abrir_Granja() -> void:
+	if not Sistema_Granja.Comprada():
+		_Comprar_Granja()
+		return
+	if _capa_granja != null and is_instance_valid(_capa_granja):
+		return
+	if _transicion_minijuego_activa:
+		return
+	_transicion_minijuego_activa = true
+
+	var transicion = _Obtener_Transicion_Minijuego().new()
+	transicion.name = "Transicion_Minijuego"
+	transicion.configurar_tema("granja")
+	add_child(transicion)
+	await transicion.Cubrir("La Granja", "Preparando el campo…")
+
+	if not is_inside_tree() or not is_instance_valid(transicion):
+		_transicion_minijuego_activa = false
+		return
+
+	_capa_granja = CanvasLayer.new()
+	_capa_granja.name = "Capa_Granja"
+	_capa_granja.layer = 60
+	add_child(_capa_granja)
+	if _granja_packed == null:
+		_granja_packed = load("res://Escenas/Granja/Granja.tscn") as PackedScene
+	_granja = _granja_packed.instantiate()
+	_granja.cerrado.connect(_on_granja_cerrado)
+	_capa_granja.add_child(_granja)
+	await get_tree().create_timer(0.14).timeout
+
+	if not is_inside_tree() or not is_instance_valid(transicion):
+		_transicion_minijuego_activa = false
+		return
+
+	await transicion.Descubrir("¡A cultivar!")
+	_transicion_minijuego_activa = false
+
+
+func _on_granja_cerrado() -> void:
+	if _transicion_minijuego_activa:
+		return
+	_transicion_minijuego_activa = true
+	var transicion = _Obtener_Transicion_Minijuego().new()
+	transicion.name = "Transicion_Minijuego"
+	transicion.configurar_tema("granja")
+	add_child(transicion)
+	await transicion.Cubrir("Volviendo al Sim", "Recogiendo la granja…")
+
+	if not is_inside_tree():
+		_transicion_minijuego_activa = false
+		return
+
+	if _granja != null and is_instance_valid(_granja):
+		_granja.visible = false
+	if _capa_granja != null and is_instance_valid(_capa_granja):
+		_capa_granja.queue_free()
+	_capa_granja = null
+	_granja = null
+	_Refrescar_Tras_Minijuego_Cocina()
+	await get_tree().process_frame
+	await get_tree().process_frame
+
+	if not is_inside_tree() or not is_instance_valid(transicion):
+		_transicion_minijuego_activa = false
+		return
+
+	await transicion.Descubrir("¡De vuelta a casa!")
+	_transicion_minijuego_activa = false
 
 
 func _Abrir_Manager() -> void:
@@ -3828,7 +4037,8 @@ func _on_restaurante_cocina_desbloqueado(restaurante_id: String, nombre_restaura
 			"Su mundo de cocina llegará al apartado Minijuegos en la Fase 2.")
 
 
-func _Mostrar_Toast_Desbloqueo(titulo_toast: String, subtitulo_toast: String) -> void:
+func _Mostrar_Toast_Desbloqueo(titulo_toast: String, subtitulo_toast: String,
+		icono_toast: String = "utensils", color_toast: Color = Color("#ea580c")) -> void:
 	if not is_inside_tree():
 		return
 	var capa := CanvasLayer.new()
@@ -3858,7 +4068,7 @@ func _Mostrar_Toast_Desbloqueo(titulo_toast: String, subtitulo_toast: String) ->
 	h.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	m.add_child(h)
 
-	h.add_child(Estilos_UI.badge_icono("utensils", 42, 20, Color("#ea580c"), Color.WHITE, 11))
+	h.add_child(Estilos_UI.badge_icono(icono_toast, 42, 20, color_toast, Color.WHITE, 11))
 
 	var col := VBoxContainer.new()
 	col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -4086,6 +4296,19 @@ func _Redisenar_Superior() -> void:
 	btn_tienda.position = Vector2(460, 15)
 	btn_tienda.size = Vector2(38, 38)
 	btn_tienda.z_index = 30
+
+	# Acceso rápido a La Granja cuando ya está comprada.
+	var btn_granja := get_node_or_null("Boton_Granja_Header") as Button
+	if btn_granja == null:
+		btn_granja = Estilos_UI.boton_icono("leaf", Color("#65a30d"), 38)
+		btn_granja.name = "Boton_Granja_Header"
+		btn_granja.tooltip_text = "La Granja"
+		btn_granja.pressed.connect(_Abrir_Granja)
+		add_child(btn_granja)
+	btn_granja.position = Vector2(368, 15)
+	btn_granja.size = Vector2(38, 38)
+	btn_granja.z_index = 30
+	btn_granja.visible = Sistema_Granja.Comprada()
 
 	var nav := get_node_or_null("Nav_Superior") as Panel
 	if nav == null:

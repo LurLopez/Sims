@@ -1935,18 +1935,25 @@ static func _dibujar_torso_espalda(l: Lienzo_2D, _es_mujer: bool, met: Dictionar
 		Vector2(12.0, 46.0), Vector2(sh_x + 4.0, 54.0), Vector2(waist_x + 4.0, 99.0),
 		Vector2(hip_x + 4.0, 128.0), Vector2(9.0, 128.0), Vector2(14.0, 94.0), Vector2(15.0, 65.0),
 	]), 3)
-	l.poligono(som_b, Color(sombra, 0.58))
-	l.linea(Vector2(-sh_x + 6.0, 54.0), Vector2(-15.0, 48.0), Color(brillo, 0.75), 2.6)
+	l.poligono(som_b, Color(sombra, 0.62))
+	l.linea(Vector2(-sh_x + 6.0, 54.0), Vector2(-15.0, 48.0), Color(brillo, 0.78), 2.8)
+	# Costuras de hombros y pliegues diagonales suaves hacia la cintura
+	l.polilinea(suavizar_abierta(PackedVector2Array([
+		Vector2(-sh_x + 3.0, 54.0), Vector2(-waist_x + 4.0, 82.0), Vector2(-waist_x + 1.0, 114.0),
+	]), 3), Color(sombra, 0.42), 1.5)
+	l.polilinea(suavizar_abierta(PackedVector2Array([
+		Vector2(sh_x - 3.0, 54.0), Vector2(waist_x - 4.0, 82.0), Vector2(waist_x - 1.0, 114.0),
+	]), 3), Color(sombra, 0.50), 1.5)
 
 	# Capucha trasera dibujada en la espalda de la sudadera / deportivo
 	if ropa_sup == "sudadera" or estilo == "deportivo":
 		var cap_espalda := suavizar_cerrado(PackedVector2Array([
 			Vector2(-21.0, 43.0), Vector2(21.0, 43.0),
-			Vector2(18.0, 58.0), Vector2(0.0, 63.5), Vector2(-18.0, 58.0),
+			Vector2(18.0, 59.0), Vector2(0.0, 65.0), Vector2(-18.0, 59.0),
 		]), 3)
 		l.poligono_tinta(cap_espalda, sombra, grosor * 0.78)
 		l.polilinea(suavizar_abierta(PackedVector2Array([
-			Vector2(-13.0, 48.0), Vector2(0.0, 54.5), Vector2(13.0, 48.0),
+			Vector2(-13.0, 48.0), Vector2(0.0, 55.5), Vector2(13.0, 48.0),
 		]), 3), Color(TINTA, 0.55), 1.4)
 
 	# Dobladillo inferior con tinta

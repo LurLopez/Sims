@@ -16,6 +16,26 @@ func test_bus_de_musica_y_bucles_configurados() -> void:
 	assert_not_null(pista_minijuego)
 	assert_true(pista_minijuego.loop,
 		"La pista del minijuego debe estar importada con bucle")
+	var pista_correr := load(Musica.RUTA_PISTA_CORRER) as AudioStreamMP3
+	assert_not_null(pista_correr)
+	assert_true(pista_correr.loop,
+		"La pista del minijuego de correr debe estar importada con bucle")
+
+
+func test_cambio_correr_y_vuelta() -> void:
+	Musica.Reproducir_Correr()
+	await wait_seconds(ESPERA_FUNDIDO)
+	assert_eq(Musica._pista_activa, Musica.Pista.CORRER)
+	assert_true(Musica._reproductor_correr.playing)
+	assert_true(Musica._reproductor_general.stream_paused,
+		"La pista general debe pausarse durante correr")
+
+	Musica.Reproducir_General()
+	await wait_seconds(ESPERA_FUNDIDO)
+	assert_eq(Musica._pista_activa, Musica.Pista.GENERAL)
+	assert_false(Musica._reproductor_general.stream_paused)
+	assert_false(Musica._reproductor_correr.playing,
+		"La pista de correr debe detenerse al volver")
 
 
 func test_cambio_general_minijuego_y_vuelta() -> void:

@@ -32,6 +32,7 @@ El objetivo de este roadmap **no es añadir más sistemas**, sino cerrar bien es
 | **Universidad** | 🟡 Funcional, diseño débil | 4 carreras (4–5 años), matrícula, examen automático + test de 10 preguntas, apuntes, diplomas y desbloqueo de trabajos. | Rediseño del ciclo, del examen y de las recompensas. |
 | **Bolsa** | 🟡 Funcional, sin juego | Inversión pasiva por ticks, aportes y retiradas parciales, eventos de mercado con titulares, gráfico de beneficio y estadísticas, auto-venta por pánico y persistencia. | Minijuego activo de trading. |
 | **Base del simulador** | 🟢 Completa | Necesidades, progreso volátil, habilidades, calendario, trabajos, alquiler/calle, tienda, bienestar, vestuario, eventos, muerte, perfil, guardado, música y ajustes. | Pulir, conectar y equilibrar. |
+| **La Granja** | 🟢 MVP simple | Compra gratis en QA, pantalla horizontal `1280×720`, 4–6 parcelas, 2 corrales, 3 talleres, 3 cultivos, 2 animales, 3 máquinas, mejoras, Monedas de Granja y conversión diaria a euros; 24 tests. | Más contenido, pedidos, niveles y colocación libre *solo si se decide ampliarla*. |
 
 > La suite GUT y las capturas de QA se mantienen en verde. Cualquier cambio de este roadmap debe actualizar sus tests y su documentación de funcionalidad.
 
@@ -247,7 +248,7 @@ La carrera de futbolista está implementada: fichaje, entrenamientos, liga domin
 - Modo mánager de fútbol.
 - Más mundos o niveles de cocina.
 - Más carreras universitarias (4 bastan hasta que los exámenes sean divertidos).
-- Un minijuego distinto para cada actividad.
+- Un minijuego distinto para cada actividad (La Granja es una excepción solicitada y ya está en MVP; no ampliarla mientras se cierran los cuatro pilares).
 - Multijugador o funciones sociales.
 - Pagos o moneda premium.
 - Ampliar el avatar visual (ya existe creador y personaje).
@@ -283,6 +284,7 @@ La carrera de futbolista está implementada: fichaje, entrenamientos, liga domin
 - **Fútbol:** [`Funcionalidades/Actividades/Futbol/Documentacion/CARRERA_FUTBOL.md`](Funcionalidades/Actividades/Futbol/Documentacion/CARRERA_FUTBOL.md).
 - **Universidad:** [`Funcionalidades/Carreras/Documentacion/SISTEMA_CARRERAS.md`](Funcionalidades/Carreras/Documentacion/SISTEMA_CARRERAS.md).
 - **Bolsa:** [`Funcionalidades/Economia/Invertir_En_Bolsa/Documentacion/INVERTIR.md`](Funcionalidades/Economia/Invertir_En_Bolsa/Documentacion/INVERTIR.md).
+- **La Granja:** [`Funcionalidades/Granja/Documentacion/GRANJA.md`](Funcionalidades/Granja/Documentacion/GRANJA.md).
 - **Propuesta de fútbol y mánager:** [`notebookLM/08_PROPUESTA_FUTBOL_Y_MANAGER.md`](notebookLM/08_PROPUESTA_FUTBOL_Y_MANAGER.md).
 
 ---

@@ -544,3 +544,49 @@ func test_escena_correr_3d_carga_y_libera_limpio() -> void:
 	add_child_autofree(instancia)
 	await get_tree().process_frame
 	assert_not_null(instancia.get_node_or_null("Runner_Mundo"))
+
+
+func test_animacion_fluida_saltos_transiciones_y_aterrizaje() -> void:
+	var sim := Runner_Simulacion.new()
+	sim.reiniciar(false)
+	sim.jugador["ciclo_carrera"] = 0.0
+	assert_eq(sim.aplicar_comando("SALTAR"), "SALTAR")
+	var pie1: int = int(sim.jugador["salto_pie"])
+	var aterrizo: bool = false
+	for _i in range(60):
+		var ev := sim.avanzar(0.02, false)
+		if bool(ev.get("aterrizo", false)):
+			aterrizo = true
+			break
+	assert_true(aterrizo, "Debe registrar el aterrizaje del primer salto")
+	assert_gt(float(sim.jugador.get("aterrizaje_t", 0.0)), 0.0)
+
+	# Segundo salto con la fase opuesta de zancada debe alternar la pierna líder
+	sim.jugador["ciclo_carrera"] = PI
+	assert_eq(sim.aplicar_comando("SALTAR"), "SALTAR")
+	assert_ne(int(sim.jugador["salto_pie"]), pie1)
+
+	var pj := Runner_Personaje_3D.new()
+	add_child_autofree(pj)
+	var pu := {"tabla": 0.0, "zapatillas": 0.0, "iman": 0.0, "jetpack": 0.0, "pogo": 0.0}
+	pj.actualizar_animacion(sim.jugador, pu, 0.2, false, 0.016, false, 1.0)
+	pj.actualizar_animacion(sim.jugador, pu, 0.23, false, 0.016, false, 1.0)
+
+	# Transición suave hacia vuelo horizontal en jetpack
+	var j_fly: Dictionary = sim.jugador.duplicate()
+	j_fly["estado"] = "VOLANDO"
+	j_fly["y"] = Runner_Simulacion.ALTURA_VUELO_JETPACK
+	var pu_fly := {"tabla": 0.0, "zapatillas": 0.0, "iman": 0.0, "jetpack": 4.0, "pogo": 0.0}
+	for f in range(18):
+		pj.actualizar_animacion(j_fly, pu_fly, 0.4 + float(f) * 0.016, false, 0.016, false, 1.0)
+	var body_piv := pj.get_node_or_null("BodyPivot") as Node3D
+	var pogo_node := pj.get_node_or_null("BodyPivot/PogoCohete") as Node3D
+	assert_lt(body_piv.rotation.x, -1.1)
+
+	# En Pogo el bastón hereda el giro de BodyPivot sin duplicar rotación Y
+	var j_pogo: Dictionary = sim.jugador.duplicate()
+	j_pogo["estado"] = "POGO"
+	j_pogo["pogo_progreso"] = 0.45
+	var pu_pogo := {"tabla": 0.0, "zapatillas": 0.0, "iman": 0.0, "jetpack": 0.0, "pogo": 2.0}
+	pj.actualizar_animacion(j_pogo, pu_pogo, 1.0, false, 0.016, true, 1.0)
+	assert_almost_eq(pogo_node.rotation.y, 0.0, 0.001)

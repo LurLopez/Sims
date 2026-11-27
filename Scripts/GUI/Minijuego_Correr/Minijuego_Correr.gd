@@ -89,6 +89,8 @@ var _tiempo_fin: float = -1.0
 var _resumen: Dictionary = {}
 var _tam: Vector2 = Vector2(720.0, 1280.0)
 var _quit_on_go_back_previo: bool = true
+var _racha_monedas: int = 0
+var _ultimo_coin_ms: int = 0
 
 # Gestos táctiles (swipe 4 direcciones + doble toque para activar la Tabla)
 var _touch_indice: int = -1
@@ -117,6 +119,7 @@ func _ready() -> void:
 
 	_Conectar_Mundo()
 	_Mostrar_Menu()
+	Musica.Reproducir_Correr()
 
 	_velo.modulate.a = 1.0
 	_velo_tween = create_tween()
@@ -127,6 +130,7 @@ func _exit_tree() -> void:
 	get_tree().set_quit_on_go_back(_quit_on_go_back_previo)
 	if _sonidos != null and is_instance_valid(_sonidos):
 		_sonidos.parar_todo()
+	Musica.Reproducir_General()
 
 
 func _notification(que: int) -> void:
@@ -764,6 +768,9 @@ func _Conectar_Mundo() -> void:
 	_mundo.deslizamiento_realizado.connect(_on_deslizamiento)
 	_mundo.carril_cambiado.connect(_on_carril_cambiado)
 	_mundo.aterrizaje.connect(_on_aterrizaje)
+	_mundo.paso_dado.connect(_on_paso_dado)
+	_mundo.jetpack_iniciado.connect(_on_jetpack_iniciado)
+	_mundo.pogo_iniciado.connect(_on_pogo_iniciado)
 	_mundo.hito.connect(_on_hito)
 
 
@@ -813,7 +820,9 @@ func _Empezar_Carrera() -> void:
 	_mundo.iniciar(_Apariencia_Actual())
 	_mundo.pausar(false)
 	_Actualizar_HUD()
-	_sonidos.reproducir("start", -11.0)
+	_racha_monedas = 0
+	_sonidos.reproducir("start", -10.0)
+	_sonidos.reproducir("whistle", -8.0, 1.0)
 
 
 func _Alternar_Pausa() -> void:
@@ -912,7 +921,8 @@ func _Cerrar() -> void:
 		return
 	_estado = "cerrando"
 	_mundo.detener()
-	_sonidos.reproducir("click", -13.0)
+	_sonidos.reproducir("click", -12.0)
+	Musica.Reproducir_General()
 	if _velo_tween != null and _velo_tween.is_valid():
 		_velo_tween.kill()
 	_velo.modulate.a = 0.0
@@ -932,7 +942,7 @@ func _process(delta: float) -> void:
 				_lbl_cuenta.visible = false
 				_estado = "jugando"
 				_mundo.pausar(false)
-				_sonidos.reproducir("whoosh", -11.0, 1.2)
+				_sonidos.reproducir("swipe", -8.0, 1.15)
 				_Mostrar_Aviso("¡SIGUE!", COLOR_VERDE)
 			else:
 				_lbl_cuenta.text = str(_cuenta_paso)
@@ -1174,9 +1184,15 @@ func _Construir_Resultado(resumen: Dictionary) -> void:
 # Señales del mundo 3D
 # ----------------------------------------------------------------------------
 
-func _on_moneda_recogida(total: int, _posicion: Vector3) -> void:
-	var tono := 1.0 + minf(0.45, float(total % 25) * 0.018)
-	_sonidos.reproducir("coin", -12.0, tono)
+func _on_moneda_recogida(_total: int, _posicion: Vector3) -> void:
+	var ahora: int = Time.get_ticks_msec()
+	if ahora - _ultimo_coin_ms > 900:
+		_racha_monedas = 0
+	else:
+		_racha_monedas = mini(_racha_monedas + 1, 18)
+	_ultimo_coin_ms = ahora
+	var tono := 1.0 + float(_racha_monedas) * 0.024
+	_sonidos.reproducir("coin", -8.0, tono)
 	if _chip_monedas != null and is_instance_valid(_chip_monedas):
 		_chip_monedas.pivot_offset = _chip_monedas.size * 0.5
 		_chip_monedas.scale = Vector2(1.13, 1.13)
@@ -1185,7 +1201,8 @@ func _on_moneda_recogida(total: int, _posicion: Vector3) -> void:
 
 
 func _on_powerup_recogido(tipo: String, _duracion: float) -> void:
-	_sonidos.reproducir("star", -9.0, 1.18)
+	if tipo != "JETPACK" and tipo != "POGO" and tipo != "LLAVE":
+		_sonidos.reproducir("powerup", -7.0, 1.05)
 	match tipo:
 		"IMAN":
 			_Mostrar_Aviso("¡IMÁN DE MONEDAS!", COLOR_ROSA)
@@ -1194,6 +1211,7 @@ func _on_powerup_recogido(tipo: String, _duracion: float) -> void:
 		"MULTIPLICADOR":
 			_Mostrar_Aviso("¡PUNTOS x2!", COLOR_ORO)
 		"TABLA":
+			_sonidos.reproducir("hoverboard", -8.0, 1.1)
 			_Mostrar_Aviso("+1 TABLA URBANA", COLOR_CIAN)
 		"JETPACK":
 			_Mostrar_Aviso("¡JETPACK! VUELA", Color("#fb923c"))
@@ -1202,27 +1220,28 @@ func _on_powerup_recogido(tipo: String, _duracion: float) -> void:
 		"LLAVE":
 			pass
 		"CAJA":
-			_sonidos.reproducir("star", -9.0, 0.9)
+			_sonidos.reproducir("star", -8.0, 0.95)
 
 
 func _on_tabla_activada(_restantes: int) -> void:
-	_sonidos.reproducir("star", -10.0, 1.32)
+	_sonidos.reproducir("hoverboard", -6.5, 1.05)
 	_Mostrar_Aviso("¡TABLA ACTIVADA!", COLOR_CIAN)
 
 
 func _on_tabla_salvo() -> void:
-	_sonidos.reproducir("ding", -9.0, 0.85)
+	_sonidos.reproducir("shield_break", -5.5, 1.0)
 	_Mostrar_Aviso("¡SALVADO POR LA TABLA!", COLOR_CIAN)
 
 
 func _on_tropiezo() -> void:
-	_sonidos.reproducir("trash", -14.0, 1.15)
+	_sonidos.reproducir("stumble", -5.5, 1.0)
+	_sonidos.reproducir("whistle", -9.0, 1.12)
 	_Mostrar_Aviso("¡TROPIEZO!", Color("#fb923c"))
 
 
 func _on_choque(_tipo: String) -> void:
-	_sonidos.reproducir("trash", -8.0, 0.8)
-	_sonidos.reproducir("angry", -13.0, 0.9)
+	_sonidos.reproducir("crash", -4.5, 1.0)
+	_sonidos.reproducir("whistle", -8.0, 0.92)
 	if DisplayServer.get_name().to_lower() == "android":
 		Input.vibrate_handheld(90)
 
@@ -1261,7 +1280,7 @@ func _Abrir_Revive() -> void:
 	_modal_revive.modulate.a = 0.0
 	var tw := create_tween()
 	tw.tween_property(_modal_revive, "modulate:a", 1.0, 0.18)
-	_sonidos.reproducir("angry", -9.0, 0.85)
+	_sonidos.reproducir("stumble", -9.0, 0.92)
 
 
 func _Reanimar() -> void:
@@ -1301,42 +1320,58 @@ func _on_revivido() -> void:
 
 func _on_intro_terminada() -> void:
 	_Mostrar_Aviso("¡CORRE!", COLOR_VERDE)
-	_sonidos.reproducir("whoosh", -10.0, 1.15)
+	_sonidos.reproducir("swipe", -8.0, 1.05)
 
 
 func _on_llave_recogida(total: int) -> void:
-	_sonidos.reproducir("coin", -10.0, 1.35)
+	_sonidos.reproducir("key", -7.0, 1.08)
 	_Mostrar_Aviso("+1 LLAVE · %d" % total, Color("#c4b5fd"))
 
 
 func _on_caja_abierta(texto: String) -> void:
-	_sonidos.reproducir("level_end", -11.0, 1.3)
+	_sonidos.reproducir("powerup", -7.0, 1.18)
 	_Mostrar_Aviso("CAJA MISTERIOSA · %s" % texto, COLOR_ORO)
 
 
 func _on_mision_completada(texto: String) -> void:
-	_sonidos.reproducir("star", -8.0, 1.25)
+	_sonidos.reproducir("star", -6.5, 1.25)
 	_Mostrar_Aviso("RETO COMPLETADO · %s" % texto, COLOR_VERDE)
 
 
 func _on_salto(super_salto: bool) -> void:
-	_sonidos.reproducir("pop", -14.0, 1.55 if super_salto else 1.32)
+	if super_salto:
+		_sonidos.reproducir("super_jump", -6.5, 1.04)
+	else:
+		_sonidos.reproducir("jump", -7.0, 1.02)
 
 
 func _on_deslizamiento() -> void:
-	_sonidos.reproducir("whoosh", -15.0, 0.78)
+	_sonidos.reproducir("roll", -6.5, 1.0)
 
 
-func _on_carril_cambiado(_direccion: int) -> void:
-	_sonidos.reproducir("whoosh", -18.0, 1.25)
+func _on_carril_cambiado(direccion: int) -> void:
+	var tono: float = 0.96 if direccion < 0 else 1.05
+	_sonidos.reproducir("swipe", -7.0, tono)
 
 
 func _on_aterrizaje() -> void:
-	_sonidos.reproducir("pop", -18.0, 0.9)
+	_sonidos.reproducir("land", -9.5, 1.0)
+
+
+func _on_paso_dado(en_techo: bool) -> void:
+	_sonidos.reproducir_paso(en_techo)
+
+
+func _on_jetpack_iniciado() -> void:
+	_sonidos.reproducir("jetpack", -5.5, 1.0)
+
+
+func _on_pogo_iniciado() -> void:
+	_sonidos.reproducir("pogo", -6.0, 1.0)
 
 
 func _on_hito(distancia_hito: int) -> void:
-	_sonidos.reproducir("star", -11.0, 1.08)
+	_sonidos.reproducir("star", -8.0, 1.1)
 	_Mostrar_Aviso("¡%s!" % Sistema_Correr.Formatear_Distancia(float(distancia_hito)), COLOR_ORO)
 
 

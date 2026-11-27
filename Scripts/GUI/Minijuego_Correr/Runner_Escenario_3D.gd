@@ -220,10 +220,19 @@ func _convertir_material_glb(nombre_glb: String, std_raw: Material) -> ShaderMat
 	elif mat_name == "Farola_Luz" or mat_name == "Tunel_LuzLED" or mat_name == "Puente_FocoLuz":
 		smat = _mat(Color("#ffe599"), 0.12, 0.0, alb_tex, Vector2.ONE, null, 0.0,
 			null, Color("#ffbf24"), 0.55, 1.25, 0.12, 0.0, 0.0)
-	elif mat_name == "Moneda_Oro" or mat_name == "Estrella2X_Oro" or mat_name == "Llave_Oro" or mat_name == "Caja_Oro":
+	elif mat_name == "Moneda_Oro":
+		smat = _mat(Color("#ffcc00"), 0.22, 0.12, null, Vector2.ONE, null, 0.0,
+			null, Color("#ffa800"), 0.10, 0.55, 0.28, 0.22, 0.0)
+	elif mat_name == "Moneda_Fondo":
+		smat = _mat(Color("#c47600"), 0.28, 0.10, null, Vector2.ONE, null, 0.0,
+			null, Color("#995200"), 0.04, 0.30, 0.32, 0.08, 0.0)
+	elif mat_name == "Moneda_Estrella":
+		smat = _mat(Color("#ffe100"), 0.18, 0.10, null, Vector2.ONE, null, 0.0,
+			null, Color("#ffc000"), 0.14, 0.68, 0.24, 0.26, 0.0)
+	elif mat_name == "Estrella2X_Oro" or mat_name == "Llave_Oro" or mat_name == "Caja_Oro":
 		smat = _mat(col, 0.14, 0.84, null, Vector2.ONE, null, 0.0,
 			null, Color("#ffcf40"), 0.22, 0.78, 0.22, 0.36, 0.0)
-	elif mat_name == "Moneda_Estrella" or mat_name == "Estrella2X_Brillo" or mat_name == "Llave_OroClaro" or mat_name == "Caja_Estrella":
+	elif mat_name == "Estrella2X_Brillo" or mat_name == "Llave_OroClaro" or mat_name == "Caja_Estrella":
 		smat = _mat(col, 0.12, 0.78, null, Vector2.ONE, null, 0.0,
 			null, Color("#ffe86b"), 0.32, 0.95, 0.20, 0.42, 0.0)
 	elif mat_name == "Vagon_Faro" or mat_name == "Movil_Faro" or mat_name == "Speeder_Faro":
@@ -425,6 +434,7 @@ func crear_chunk_parque(variante: int) -> Node3D:
 	if variante % 3 == 2:
 		var cartel_idx: int = (variante / 3) % 3
 		var mi_puente := _add_glb(chunk, "puente_cartel", Vector3(0.0, 8.4, 2.0), 0.0, Vector3.ONE, false, 20.0)
+		mi_puente.name = "PuenteCartel"
 		_set_surf(mi_puente, "puente_cartel", "Puente_Cartel", mats["cartel_%d" % cartel_idx])
 
 	return chunk

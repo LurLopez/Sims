@@ -5,9 +5,10 @@ extends Node
 #
 # - Pista general: menú principal, escena principal y resto del juego.
 # - Pista del minijuego: minijuego de cocina de comida rápida.
+# - Pista de correr: minijuego PARK RUSH 3D (estilo Subway Surfers).
 #
-# Usa dos AudioStreamPlayer con fundido cruzado sobre el bus "Musica".
-# El estado del reproductor general se conserva (pausado) mientras dura el
+# Usa AudioStreamPlayer independientes con fundido cruzado sobre el bus "Musica".
+# El estado del reproductor general se conserva (pausado) mientras dura un
 # minijuego y se reanuda justo donde se quedó al salir. El volumen y el
 # silencio los gestiona el autoload Ajustes (user://configuracion_ajustes.cfg).
 # ============================================================================
@@ -16,21 +17,25 @@ signal silencio_cambiado(silenciado: bool)
 
 const RUTA_PISTA_GENERAL := "res://Sonidos/Musica/Lunchtime_Conspiracies.mp3"
 const RUTA_PISTA_MINIJUEGO := "res://Sonidos/Musica/Seven_Minutes_to_Service.mp3"
-# La pista general es la única que hace falta al arrancar. La del minijuego
-# (4,3 MB) se carga la primera vez que se entra a cocinar.
+const RUTA_PISTA_CORRER := "res://Sonidos/Musica/Subway_Rush_Theme.mp3"
+# La pista general es la única que hace falta al arrancar. Las pistas de
+# minijuegos se cargan la primera vez que se entra en cada uno.
 const PISTA_GENERAL := preload("res://Sonidos/Musica/Lunchtime_Conspiracies.mp3")
 var _pista_minijuego: AudioStream = null
+var _pista_correr: AudioStream = null
 
 const BUS_MUSICA := "Musica"
 const DURACION_FUNDIDO := 0.9
 const VOLUMEN_GENERAL_DB := -9.0
 const VOLUMEN_MINIJUEGO_DB := -7.0
+const VOLUMEN_CORRER_DB := -7.5
 const VOLUMEN_APAGADO_DB := -80.0
 
-enum Pista { GENERAL, MINIJUEGO }
+enum Pista { GENERAL, MINIJUEGO, CORRER }
 
 var _reproductor_general: AudioStreamPlayer
 var _reproductor_minijuego: AudioStreamPlayer
+var _reproductor_correr: AudioStreamPlayer
 var _pista_activa: Pista = Pista.GENERAL
 var _tween_fundido: Tween
 var _app_pausada: bool = false
@@ -42,9 +47,11 @@ func _ready() -> void:
 
 	_reproductor_general = _Crear_Reproductor(
 		"Reproductor_General", PISTA_GENERAL, _on_general_finished)
-	# El reproductor del minijuego se crea sin pista: el MP3 se carga al entrar.
+	# Los reproductores de minijuegos se crean sin stream: el MP3 se carga al entrar.
 	_reproductor_minijuego = _Crear_Reproductor(
 		"Reproductor_Minijuego", null, _on_minijuego_finished)
+	_reproductor_correr = _Crear_Reproductor(
+		"Reproductor_Correr", null, _on_correr_finished)
 
 	if not Ajustes.silencio_musica_cambiado.is_connected(_on_ajustes_silencio_musica):
 		Ajustes.silencio_musica_cambiado.connect(_on_ajustes_silencio_musica)
@@ -54,7 +61,7 @@ func _ready() -> void:
 func _exit_tree() -> void:
 	if _tween_fundido != null and _tween_fundido.is_valid():
 		_tween_fundido.kill()
-	for reproductor in [_reproductor_general, _reproductor_minijuego]:
+	for reproductor in [_reproductor_general, _reproductor_minijuego, _reproductor_correr]:
 		if reproductor != null and is_instance_valid(reproductor):
 			reproductor.stop()
 
@@ -71,6 +78,11 @@ func Reproducir_General() -> void:
 # Reproduce la música del minijuego de comida rápida con un fundido suave.
 func Reproducir_Minijuego() -> void:
 	_Cambiar_Pista(Pista.MINIJUEGO)
+
+
+# Reproduce la música estilo Subway Surfers del minijuego de correr con un fundido suave.
+func Reproducir_Correr() -> void:
+	_Cambiar_Pista(Pista.CORRER)
 
 
 func Esta_Silenciado() -> bool:
@@ -101,17 +113,35 @@ func _on_ajustes_silencio_musica(silenciado: bool) -> void:
 # Gestión de pistas y fundido cruzado
 # ----------------------------------------------------------------------------
 
-func _Cambiar_Pista(pista: Pista) -> void:
-	if _reproductor_general == null or _reproductor_minijuego == null:
+func _Reproductor_De(pista: Pista) -> AudioStreamPlayer:
+	match pista:
+		Pista.MINIJUEGO:
+			return _reproductor_minijuego
+		Pista.CORRER:
+			return _reproductor_correr
+		_:
+			return _reproductor_general
+
+
+func _Asegurar_Stream_Pista(pista: Pista, destino: AudioStreamPlayer) -> void:
+	if destino.stream != null:
 		return
-
-	var destino: AudioStreamPlayer = _reproductor_general if pista == Pista.GENERAL else _reproductor_minijuego
-	var origen: AudioStreamPlayer = _reproductor_minijuego if pista == Pista.GENERAL else _reproductor_general
-
-	if pista == Pista.MINIJUEGO and destino.stream == null:
+	if pista == Pista.MINIJUEGO:
 		if _pista_minijuego == null:
 			_pista_minijuego = load(RUTA_PISTA_MINIJUEGO) as AudioStream
 		destino.stream = _pista_minijuego
+	elif pista == Pista.CORRER:
+		if _pista_correr == null:
+			_pista_correr = load(RUTA_PISTA_CORRER) as AudioStream
+		destino.stream = _pista_correr
+
+
+func _Cambiar_Pista(pista: Pista) -> void:
+	if _reproductor_general == null or _reproductor_minijuego == null or _reproductor_correr == null:
+		return
+
+	var destino: AudioStreamPlayer = _Reproductor_De(pista)
+	_Asegurar_Stream_Pista(pista, destino)
 
 	if _pista_activa == pista and destino.playing:
 		return
@@ -127,38 +157,47 @@ func _Cambiar_Pista(pista: Pista) -> void:
 	# Si estaba pausada (música general durante el minijuego), se reanuda aquí.
 	destino.stream_paused = _app_pausada
 
-	if origen.playing:
-		if origen == _reproductor_general:
-			# Mantener la posición de la pista general para reanudarla al volver.
-			origen.stream_paused = false
-		_tween_fundido = create_tween()
-		_tween_fundido.set_parallel(true)
-		_tween_fundido.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-		_tween_fundido.tween_property(destino, "volume_db", _Volumen_Destino(pista), DURACION_FUNDIDO)
+	var salientes: Array[AudioStreamPlayer] = []
+	for candidato in [_reproductor_general, _reproductor_minijuego, _reproductor_correr]:
+		if candidato != destino and candidato.playing:
+			if candidato == _reproductor_general:
+				# Mantener la posición de la pista general para reanudarla al volver.
+				candidato.stream_paused = false
+			salientes.append(candidato)
+
+	_tween_fundido = create_tween()
+	_tween_fundido.set_parallel(true)
+	_tween_fundido.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_tween_fundido.tween_property(destino, "volume_db", _Volumen_Destino(pista), DURACION_FUNDIDO)
+	for origen in salientes:
 		_tween_fundido.tween_property(origen, "volume_db", VOLUMEN_APAGADO_DB, DURACION_FUNDIDO)
-		_tween_fundido.chain().tween_callback(_Finalizar_Fundido.bind(origen, pista))
-	else:
-		_tween_fundido = create_tween()
-		_tween_fundido.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-		_tween_fundido.tween_property(destino, "volume_db", _Volumen_Destino(pista), DURACION_FUNDIDO)
+	if not salientes.is_empty():
+		_tween_fundido.chain().tween_callback(_Finalizar_Fundido.bind(salientes, pista))
 
 
-func _Finalizar_Fundido(origen: AudioStreamPlayer, pista_activa: Pista) -> void:
+func _Finalizar_Fundido(origenes: Array[AudioStreamPlayer], pista_activa: Pista) -> void:
 	if _pista_activa != pista_activa:
 		return
-	if origen == null or not is_instance_valid(origen):
-		return
-	if origen == _reproductor_general:
-		# La general se pausa (no se detiene) para conservar el punto de reproducción.
-		if _pista_activa != Pista.GENERAL:
-			origen.stream_paused = true
-	else:
-		origen.stop()
-		origen.volume_db = VOLUMEN_APAGADO_DB
+	for origen in origenes:
+		if origen == null or not is_instance_valid(origen):
+			continue
+		if origen == _reproductor_general:
+			# La general se pausa (no se detiene) para conservar el punto de reproducción.
+			if _pista_activa != Pista.GENERAL:
+				origen.stream_paused = true
+		else:
+			origen.stop()
+			origen.volume_db = VOLUMEN_APAGADO_DB
 
 
 func _Volumen_Destino(pista: Pista) -> float:
-	return VOLUMEN_GENERAL_DB if pista == Pista.GENERAL else VOLUMEN_MINIJUEGO_DB
+	match pista:
+		Pista.MINIJUEGO:
+			return VOLUMEN_MINIJUEGO_DB
+		Pista.CORRER:
+			return VOLUMEN_CORRER_DB
+		_:
+			return VOLUMEN_GENERAL_DB
 
 
 # ----------------------------------------------------------------------------
@@ -201,6 +240,11 @@ func _on_minijuego_finished() -> void:
 		_reproductor_minijuego.play()
 
 
+func _on_correr_finished() -> void:
+	if _pista_activa == Pista.CORRER:
+		_reproductor_correr.play()
+
+
 func _notification(que: int) -> void:
 	match que:
 		NOTIFICATION_APPLICATION_PAUSED:
@@ -216,3 +260,5 @@ func _Actualizar_Pausa_Reproductores() -> void:
 		_reproductor_general.stream_paused = _app_pausada or _pista_activa != Pista.GENERAL
 	if _reproductor_minijuego != null:
 		_reproductor_minijuego.stream_paused = _app_pausada or _pista_activa != Pista.MINIJUEGO
+	if _reproductor_correr != null:
+		_reproductor_correr.stream_paused = _app_pausada or _pista_activa != Pista.CORRER

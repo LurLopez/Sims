@@ -25,10 +25,13 @@ signal mision_completada(texto: String)
 signal intro_terminada()
 signal vuelo_iniciado()
 signal vuelo_terminado()
+signal jetpack_iniciado()
+signal pogo_iniciado()
 signal salto_realizado(super_salto: bool)
 signal deslizamiento_realizado()
 signal carril_cambiado(direccion: int)
 signal aterrizaje()
+signal paso_dado(en_techo: bool)
 signal hito(distancia_hito: int)
 
 const NUM_CHUNKS: int = 6
@@ -78,6 +81,8 @@ var _cam_pos := Vector3(1.8, 2.95, 5.6)
 var _cam_look := Vector3(0.0, 1.65, -14.0)
 var _fov_actual: float = 62.0
 var _factor_tunel: float = 0.0
+var _factor_vuelo: float = 0.0
+var _cam_roll: float = 0.0
 var _tamano_vista := Vector2(720.0, 1280.0)
 var _ultimo_minuto_clima: int = -1
 var _rng := RandomNumberGenerator.new()
@@ -99,7 +104,7 @@ func _ready() -> void:
 	_actualizar_ambiente_horario(true)
 	_actualizar_camara(0.016, true)
 	if _personaje_3d != null:
-		_personaje_3d.actualizar_animacion(simulacion.jugador, simulacion.powerups, 0.0, true)
+		_personaje_3d.actualizar_animacion(simulacion.jugador, simulacion.powerups, 0.0, true, 0.016, true)
 
 
 func _construir_escena_3d() -> void:
@@ -269,7 +274,7 @@ func iniciar_menu(apariencia: Dictionary, edad: int = -1) -> void:
 	_actualizar_ambiente_horario(true)
 	_actualizar_camara(0.016, true)
 	if _personaje_3d != null:
-		_personaje_3d.actualizar_animacion(simulacion.jugador, simulacion.powerups, _tiempo, true)
+		_personaje_3d.actualizar_animacion(simulacion.jugador, simulacion.powerups, _tiempo, true, 0.016, true)
 
 
 func preparar(apariencia: Dictionary, edad: int = -1) -> void:
@@ -463,7 +468,7 @@ func forzar_sincronizacion_visual() -> void:
 	_actualizar_curva_horizonte()
 	_actualizar_camara(0.016, true)
 	if _personaje_3d != null:
-		_personaje_3d.actualizar_animacion(simulacion.jugador, simulacion.powerups, _tiempo, _modo == "menu")
+		_personaje_3d.actualizar_animacion(simulacion.jugador, simulacion.powerups, _tiempo, _modo == "menu", 0.016, true)
 	_actualizar_guardia(0.016)
 
 
@@ -484,7 +489,8 @@ func _process(delta: float) -> void:
 		_intro_t += dt
 		_sincronizar_entidades()
 		if _personaje_3d != null:
-			_personaje_3d.actualizar_animacion(simulacion.jugador, simulacion.powerups, _tiempo, false)
+			var intro_factor: float = clampf(_intro_t / 0.45, 0.0, 1.0)
+			_personaje_3d.actualizar_animacion(simulacion.jugador, simulacion.powerups, _tiempo, false, dt, false, intro_factor)
 		_actualizar_guardia(dt)
 		_actualizar_camara(dt, false)
 		_actualizar_ambiente_horario(false)
@@ -527,8 +533,8 @@ func _process(delta: float) -> void:
 					_acum_trail_tabla = 0.0
 					var jx_f: float = float(simulacion.jugador["x"])
 					var jy_f: float = float(simulacion.jugador["y"])
-					_emitir_particulas(Vector3(jx_f, jy_f + 0.55, 0.45), 2, Color("#fb923c"), 4.2)
-					_emitir_particulas(Vector3(jx_f, jy_f + 0.40, 0.50), 1, Color("#fde047"), 3.4)
+					_emitir_particulas(Vector3(jx_f - 0.22, jy_f + 0.88, 0.72), 2, Color("#fb923c"), 4.6)
+					_emitir_particulas(Vector3(jx_f + 0.22, jy_f + 0.88, 0.72), 2, Color("#fde047"), 4.0)
 			elif estado_pj == "POGO":
 				_acum_trail_tabla += dt
 				if _acum_trail_tabla >= 0.06:
@@ -539,7 +545,7 @@ func _process(delta: float) -> void:
 
 	_sincronizar_entidades()
 	if _personaje_3d != null:
-		_personaje_3d.actualizar_animacion(simulacion.jugador, simulacion.powerups, _tiempo, _modo == "menu")
+		_personaje_3d.actualizar_animacion(simulacion.jugador, simulacion.powerups, _tiempo, _modo == "menu", dt, false)
 	_actualizar_guardia(dt)
 	_actualizar_particulas(dt)
 	_actualizar_camara(dt, false)
@@ -554,6 +560,7 @@ func _procesar_eventos_simulacion(ev: Dictionary) -> void:
 	var jy: float = float(simulacion.jugador["y"])
 
 	if bool(ev["paso"]):
+		paso_dado.emit(bool(simulacion.jugador.get("en_techo", false)))
 		_emitir_particulas(Vector3(jx, jy + 0.08, 0.25), 2, Color("#e2e8f0"), 1.9)
 	if bool(ev["aterrizo"]):
 		aterrizaje.emit()
@@ -589,9 +596,11 @@ func _procesar_eventos_simulacion(ev: Dictionary) -> void:
 				dur = Runner_Simulacion.DURACION_TABLA
 			"JETPACK":
 				dur = Runner_Simulacion.DURACION_JETPACK
+				jetpack_iniciado.emit()
 				vuelo_iniciado.emit()
 			"POGO":
 				dur = Runner_Simulacion.DURACION_POGO
+				pogo_iniciado.emit()
 				vuelo_iniciado.emit()
 		powerup_recogido.emit(pu, dur)
 		_emitir_particulas(Vector3(jx, jy + 1.1, 0.0), 18, Color("#38bdf8"), 6.0)
@@ -679,6 +688,13 @@ func _limpiar_mallas_dinamicas() -> void:
 func _sincronizar_entidades() -> void:
 	if _raiz_3d == null:
 		return
+
+	# Evitar que carteles de puentes y pórticos elevados detrás del corredor bloqueen o corten la cámara
+	for c in _chunks:
+		for nombre_alto in ["PuenteCartel", "portico_catenaria"]:
+			var alto := c.get_node_or_null(nombre_alto) as Node3D
+			if alto != null:
+				alto.visible = (c.position.z + alto.position.z) < -0.8
 
 	# 1. Obstáculos
 	var ids_obs: Dictionary = {}
@@ -789,6 +805,8 @@ func _actualizar_camara(dt: float, inmediato: bool) -> void:
 
 	if _modo == "menu":
 		_factor_tunel = 0.0
+		_factor_vuelo = 0.0
+		_cam_roll = 0.0
 		var tx: float = (1.35 if es_vertical else 1.55) + sin(_tiempo * 0.55) * 0.35
 		var ty: float = (2.85 if es_vertical else 3.15) + cos(_tiempo * 0.45) * 0.10
 		var tz: float = 5.4 if es_vertical else 5.8
@@ -801,20 +819,49 @@ func _actualizar_camara(dt: float, inmediato: bool) -> void:
 		var alfa_tunel: float = 1.0 if inmediato else (1.0 - exp(-4.5 * maxf(dt, 0.016)))
 		_factor_tunel = lerpf(_factor_tunel, objetivo_tunel, alfa_tunel)
 
-		var tx: float = jx * 0.62
-		var ty: float = (4.55 if es_vertical else 4.35) + jy * 0.72 - 1.45 * _factor_tunel
-		var tz: float = (8.15 if es_vertical else 7.45) + 0.35 * _factor_tunel
-		_cam_pos = _cam_pos.lerp(Vector3(tx, ty, tz), alfa)
+		var objetivo_vuelo: float = 1.0 if str(simulacion.jugador.get("estado", "")) == "VOLANDO" else 0.0
+		var alfa_vuelo: float = 1.0 if inmediato else (1.0 - exp(-4.2 * maxf(dt, 0.016)))
+		_factor_vuelo = lerpf(_factor_vuelo, objetivo_vuelo, alfa_vuelo)
 
-		var lx: float = jx * 0.42
-		var ly: float = 1.55 + jy * 0.58 - 0.35 * _factor_tunel
-		_cam_look = _cam_look.lerp(Vector3(lx, ly, -15.0), alfa)
+		var base_y: float = 4.55 if es_vertical else 4.35
+		var base_z: float = 8.15 if es_vertical else 7.45
+		var ater_t: float = clampf(float(simulacion.jugador.get("aterrizaje_t", 0.0)) / 0.24, 0.0, 1.0)
+		var dip_y: float = -0.05 * sin(ater_t * PI)
+
+		var pos_suelo := Vector3(
+			jx * 0.54,
+			base_y + jy * 0.72 + dip_y - 1.45 * _factor_tunel,
+			base_z + 0.35 * _factor_tunel
+		)
+		var look_suelo := Vector3(
+			jx * 0.48,
+			1.55 + jy * 0.58 + dip_y * 0.5 - 0.35 * _factor_tunel,
+			-15.0
+		)
+
+		var pos_vuelo := Vector3(jx * 0.62 + 2.25, jy + 0.85, base_z - 0.20)
+		var look_vuelo := Vector3(jx * 0.44 - 0.22, jy - 0.58, -18.0)
+
+		var obj_pos: Vector3 = pos_suelo.lerp(pos_vuelo, _factor_vuelo)
+		var obj_look: Vector3 = look_suelo.lerp(look_vuelo, _factor_vuelo)
+		var alfa_x: float = 1.0 if inmediato else (1.0 - exp(-6.8 * maxf(dt, 0.016)))
+		_cam_pos.x = lerpf(_cam_pos.x, obj_pos.x, alfa_x)
+		_cam_pos.y = lerpf(_cam_pos.y, obj_pos.y, alfa)
+		_cam_pos.z = lerpf(_cam_pos.z, obj_pos.z, alfa)
+		_cam_look.x = lerpf(_cam_look.x, obj_look.x, alfa_x)
+		_cam_look.y = lerpf(_cam_look.y, obj_look.y, alfa)
+		_cam_look.z = lerpf(_cam_look.z, obj_look.z, alfa)
 
 		var vel_t: float = simulacion.obtener_progreso_velocidad()
+		var aire_fov: float = 1.2 if str(simulacion.jugador.get("estado", "")) in ["SALTANDO", "POGO"] else 0.0
 		var base_fov: float = 66.0 if es_vertical else 58.0
-		var fov_obj: float = base_fov + vel_t * 7.0 + (3.0 if float(simulacion.powerups["tabla"]) > 0.0 else 0.0) + 2.0 * _factor_tunel
+		var fov_obj: float = base_fov + vel_t * 6.0 + aire_fov + (2.5 if float(simulacion.powerups["tabla"]) > 0.0 else 0.0) + 2.0 * _factor_tunel + 7.0 * _factor_vuelo
 		var alfa_fov: float = 1.0 if inmediato else (1.0 - exp(-5.0 * maxf(dt, 0.016)))
 		_fov_actual = lerpf(_fov_actual, fov_obj, alfa_fov)
+
+		# Inclinación mínima anti-mareo: solo un leve matiz lateral sin voltear el horizonte
+		var roll_obj: float = clampf(-float(simulacion.jugador.get("vx", 0.0)) * 0.00055, -0.010, 0.010)
+		_cam_roll = roll_obj if inmediato else lerpf(_cam_roll, roll_obj, 1.0 - exp(-7.5 * maxf(dt, 0.016)))
 
 	if absf(_camara.fov - _fov_actual) > 0.04:
 		_camara.fov = _fov_actual
@@ -827,6 +874,8 @@ func _actualizar_camara(dt: float, inmediato: bool) -> void:
 
 	_camara.position = _cam_pos + shake
 	_camara.look_at(_cam_look, Vector3.UP)
+	if absf(_cam_roll) > 0.0002:
+		_camara.rotate_z(_cam_roll)
 
 
 func _actualizar_guardia(_dt: float) -> void:

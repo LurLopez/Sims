@@ -111,6 +111,7 @@ func Crear_Progreso():
 	Variables_Dinamicas.Tupper_Seleccionado_Idx = -1
 	Variables_Dinamicas.Minutos_Cocinando_Actuales = 0
 	Variables_Dinamicas.Cocina_Estado = Variables_Dinamicas.Cocina_Estado_Por_Defecto()
+	Variables_Dinamicas.Granja_Estado = Sistema_Granja.Estado_Por_Defecto()
 
 func Crear_Necesidades_Basicas():
 	Variables_Dinamicas.Necesidades_Basicas.clear()

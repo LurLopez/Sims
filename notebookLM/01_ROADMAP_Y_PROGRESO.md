@@ -33,6 +33,7 @@ El objetivo no es añadir más sistemas, sino cerrar bien esos cuatro pilares, e
 | **Bolsa** | 🟡 Funcional, sin juego | Inversión pasiva por ticks, aportes y retiradas parciales, eventos de mercado con titulares, gráfico de beneficio y estadísticas, auto-venta por pánico y persistencia. | Minijuego activo de trading. |
 | **«Salir a correr» / PARK RUSH 3D** (extra) | 🟢 Implementado | Runner infinito vertical de 3 carriles con mundo 3D, swipe/teclado, trenes aparcados, móviles, largos de 3 vagones y exprés, túnel con cámara rasante, intro y cuenta atrás, tropiezo con segundo aviso, tabla 30 s, imán, x2, zapatillas, jetpack, pogo, caja misteriosa, llaves y reanimación, guardia/perro y 3 retos; récords persistentes y recompensa de Deporte/necesidades desde 100 m; 33 tests del runner y 355/355 de la suite. | Pulido y QA opcional. No entra en la Fase 1 ni altera las prioridades de los cuatro pilares. |
 | **Base del simulador** | 🟢 Completa | Necesidades, progreso volátil, habilidades, calendario, trabajos, alquiler/calle, tienda, bienestar, vestuario, eventos, muerte, perfil, guardado, música y ajustes. | Pulir, conectar y equilibrar. |
+| **La Granja** | 🟢 MVP simple | Compra gratis en QA, pantalla horizontal `1280×720`, 4–6 parcelas, 2 corrales, 3 talleres, 3 cultivos, 2 animales, 3 máquinas, mejoras, Monedas de Granja y conversión diaria a euros; 24 tests. | Más contenido, pedidos, niveles y colocación libre *solo si se decide ampliarla*. |
 
 > **Nota:** «Salir a correr» es un minijuego secundario ya implementado. No cambia el orden de la Fase 1 (universidad → fútbol → bolsa → cocina) ni la decisión de no crear un minijuego por cada actividad: es una pieza extra independiente.
 
@@ -248,7 +249,7 @@ La carrera de futbolista está implementada: fichaje, entrenamientos, liga domin
 - Modo mánager de fútbol.
 - Más mundos o niveles de cocina.
 - Más carreras universitarias (4 bastan hasta que los exámenes sean divertidos).
-- Un minijuego distinto para cada actividad.
+- Un minijuego distinto para cada actividad (La Granja es una excepción solicitada y ya está en MVP; no ampliarla mientras se cierran los cuatro pilares).
 - Multijugador o funciones sociales.
 - Pagos o moneda premium.
 - Ampliar el avatar visual (ya existe creador y personaje).

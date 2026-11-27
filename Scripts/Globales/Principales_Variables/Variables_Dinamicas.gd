@@ -174,6 +174,10 @@ var Cocina_Estado: Dictionary = COCINA_ESTADO_BASE.duplicate(true)
 func Cocina_Estado_Por_Defecto() -> Dictionary:
 	return COCINA_ESTADO_BASE.duplicate(true)
 
+# Sistema de «La Granja» (MVP simple: campo, animales, máquinas, MG y conversión).
+# El estado base y su normalización viven en el autoload Sistema_Granja.
+var Granja_Estado: Dictionary = {}
+
 # Sistema de Mensajes/Notificaciones
 var Mensajes: Array = []
 
